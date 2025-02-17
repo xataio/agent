@@ -10,7 +10,7 @@ type ToolSetConfig = {
       env?: Record<string, string>;
     };
   };
-  onToolCall?: (serverName: string, toolName: string, args: any, result: Promise<string>) => void;
+  onToolCall?: <Result>(serverName: string, toolName: string, args: any, result: Result) => void;
 };
 
 type ToolSet = {
@@ -23,12 +23,11 @@ type ToolSet = {
 };
 
 export async function createToolSet(config: ToolSetConfig): Promise<ToolSet> {
-  let toolset: ToolSet = {
+  const toolset: ToolSet = {
     tools: {},
     clients: {}
   };
 
-  // could probably speed this up by spinning these up in parallel
   for (const [serverName, serverConfig] of Object.entries(config.mcpServers)) {
     const transport = new StdioClientTransport({
       ...serverConfig,
@@ -44,31 +43,26 @@ export async function createToolSet(config: ToolSetConfig): Promise<ToolSet> {
         capabilities: {}
       }
     );
+
     toolset.clients[serverName] = client;
     await client.connect(transport);
 
-    // Get list of tools and add them to the toolset
-    const toolList = await client.listTools();
-    for (const tool of toolList.tools) {
-      let toolName = tool.name;
-      if (toolName !== serverName) {
-        toolName = `${serverName}_${toolName}`;
-      }
+    const { tools } = await client.listTools();
+    for (const tool of tools) {
+      const toolName = tool.name === serverName ? tool.name : `${serverName}_${tool.name}`;
+
       toolset.tools[toolName] = {
         description: tool.description || '',
         parameters: jsonSchema(tool.inputSchema as any),
         execute: async (args) => {
-          const resultPromise = (async () => {
-            const result = await client.callTool({
-              name: tool.name,
-              arguments: args
-            });
-            return JSON.stringify(result);
-          })();
+          const result = await client.callTool({
+            name: tool.name,
+            arguments: args
+          });
 
-          config.onToolCall?.(serverName, toolName, args, resultPromise);
+          config.onToolCall?.(serverName, toolName, args, result);
 
-          return resultPromise;
+          return JSON.stringify(result);
         }
       };
     }
