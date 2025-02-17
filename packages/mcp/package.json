@@ -1,0 +1,23 @@
+{
+  "name": "@dbagent/mcp",
+  "version": "0.0.1",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint ./src",
+    "tsc": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@internal/tsconfig": "workspace:*",
+    "@types/node": "^22.13.4"
+  },
+  "dependencies": {
+    "typescript": "^5.7.3"
+  },
+  "peerDependencies": {
+    "@modelcontextprotocol/sdk": "^1.5.0",
+    "ai": "^4.1.41"
+  }
+}

@@ -96,7 +96,7 @@ export function ChatsUI({ connections }: { connections: DbConnection[] }) {
     }
 
     // Include the context in the message
-    await handleSubmit(e, {
+    handleSubmit(e, {
       body: {
         connectionId,
         model,
