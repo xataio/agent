@@ -1,6 +1,6 @@
 /* eslint-disable no-process-env */
-const { Client } = require('pg');
-const { setTimeout: sleep } = require('timers/promises');
+import pg from 'pg';
+import { setTimeout as sleep } from 'timers/promises';
 
 interface QueryStats {
   queryCount: number;
@@ -10,7 +10,7 @@ interface QueryStats {
 function createConnection(): Promise<any> {
   console.log('Connecting to database:', process.env.DATABASE_URL);
 
-  const client = new Client({
+  const client = new pg.Client({
     connectionString: process.env.DATABASE_URL,
     ssl: {
       rejectUnauthorized: false // Allow self-signed certificates

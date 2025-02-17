@@ -11,7 +11,7 @@
     "tsc": "tsc --noEmit",
     "test": "vitest --passWithNoTests",
     "dbmigrate": "tsx scripts/dbmigrate.ts",
-    "load-test": "ts-node scripts/load-testing/musicbrainz-loader.ts"
+    "load-test": "tsx scripts/load-testing/musicbrainz-loader.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.1.8",
@@ -51,14 +51,13 @@
     "@internal/tsconfig": "workspace:*",
     "@types/bytes": "^3.1.5",
     "@types/pg": "^8.11.11",
-    "@types/react": "^19.0.9",
-    "@types/react-dom": "^19.0.3",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
     "@types/react-syntax-highlighter": "^15.5.13",
     "autoprefixer": "^10.4.20",
     "dotenv": "^16.4.7",
     "postcss": "^8.5.2",
     "tailwindcss": "^4.0.6",
-    "ts-node": "^10.9.2",
     "tsx": "^4.19.2"
   },
   "engines": {
