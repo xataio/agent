@@ -1,0 +1,26 @@
+{
+  "name": "@internal/theme",
+  "version": "1.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "tsx scripts/generate-theme.ts",
+    "lint": "eslint ./src",
+    "tsc": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@internal/tsconfig": "workspace:*",
+    "@tailwindcss/typography": "^0.5.16",
+    "@types/chroma-js": "^3.1.1",
+    "@types/node": "^22.13.4",
+    "chokidar-cli": "^3.0.0",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "dependencies": {
+    "chroma-js": "^3.1.2",
+    "tailwindcss": "^4.0.6",
+    "typescript": "^5.7.3"
+  }
+}

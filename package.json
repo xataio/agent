@@ -1,0 +1,51 @@
+{
+  "name": "db-agent",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "tsc": "turbo run tsc",
+    "format-check": "prettier --check \"./**/*.{ts,tsx,css,json,md,yml,yaml}\"",
+    "format-write": "prettier --write \"./**/*.{ts,tsx,css,json,md,yml,yaml}\"",
+    "prepare": "husky"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@internal/tsconfig": "workspace:*",
+    "@types/node": "^22.12.0",
+    "@types/react": "^19.0.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
+    "prettier": "^3.4.2",
+    "prettier-plugin-organize-imports": "^4.1.0",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "tsx": "^4.19.2",
+    "turbo": "^2.3.4",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.4"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "npx prettier --config=.prettierrc.precommit.js --write"
+    ],
+    "*.{css,json,md,yml,yaml}": [
+      "npx prettier --write"
+    ]
+  },
+  "pnpm": {
+    "overrides": {}
+  },
+  "engines": {
+    "node": "22.x",
+    "pnpm": "9.x"
+  },
+  "packageManager": "pnpm@9.15.4"
+}

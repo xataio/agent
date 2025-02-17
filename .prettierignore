@@ -1,0 +1,10 @@
+**/node_modules/
+**/.eslintcache
+**/.next/
+**/public/
+**/pnpm-lock.yaml
+**/*.hbs
+
+# turbo
+**/.turbo
+**/.vercel

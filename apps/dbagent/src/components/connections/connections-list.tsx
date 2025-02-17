@@ -1,0 +1,94 @@
+'use client';
+
+import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@internal/components';
+import { CheckIcon } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { DbConnection } from '~/lib/db/connections';
+import { actionListConnections, actionMakeConnectionDefault } from './actions';
+
+function maskConnectionString(connString: string): string {
+  // Handle URL format for both postgresql:// and postgres:// prefixes
+  const urlFormat = connString.replace(/(postgres(?:ql)?:\/\/[^:]+:)[^@]+(@.*)/i, '$1****$2');
+
+  // Handle key-value format (password=value)
+  return urlFormat.replace(/password=([^;]+)/i, 'password=****');
+}
+
+export function ConnectionsList() {
+  const [connections, setConnections] = useState<DbConnection[]>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    const loadConnections = async () => {
+      const connections = await actionListConnections();
+      if (connections.length === 0) {
+        router.push('/start/connect/add');
+        return;
+      }
+      setConnections(connections);
+    };
+    void loadConnections();
+  }, [router]);
+
+  const handleMakeDefault = async (id: number) => {
+    await actionMakeConnectionDefault(id);
+    setConnections(
+      connections.map((conn) => ({
+        ...conn,
+        is_default: conn.id === id
+      }))
+    );
+  };
+
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Database Connections</h1>
+        <Button asChild>
+          <Link href="/start/connect/add">Add New Connection</Link>
+        </Button>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Connection String</TableHead>
+            <TableHead className="w-[100px]">Actions</TableHead>
+            <TableHead className="w-[150px]">Default</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {connections.map((connection) => (
+            <TableRow key={connection.id}>
+              <TableCell>{connection.name}</TableCell>
+              <TableCell className="font-mono text-sm">{maskConnectionString(connection.connstring)}</TableCell>
+              <TableCell>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/start/connect/edit/${connection.id}`}>Edit</Link>
+                </Button>
+              </TableCell>
+              <TableCell>
+                {connection.is_default ? (
+                  <div className="flex items-center justify-center">
+                    <CheckIcon className="h-5 w-5 text-green-500" />
+                  </div>
+                ) : (
+                  <Button
+                    onClick={() => handleMakeDefault(connection.id)}
+                    variant="secondary"
+                    size="sm"
+                    className="w-full"
+                  >
+                    Make Default
+                  </Button>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}

@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: dbagent
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: dbagent
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

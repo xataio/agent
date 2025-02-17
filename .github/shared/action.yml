@@ -1,0 +1,28 @@
+name: 'Setup and install'
+description: 'Common setup steps for Actions'
+
+# Inspiration: https://github.com/t3-oss/create-t3-turbo/blob/main/tooling/github/setup/action.yml
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: echo "NVMRC=$(cat .nvmrc)" >> $GITHUB_OUTPUT
+      name: Read .nvmrc
+      id: nvm
+
+    - uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+
+    - name: Use Node.js ${{ steps.nvm.outputs.NVMRC }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ steps.nvm.outputs.NVMRC }}
+        cache: 'pnpm'
+
+    - shell: bash
+      run: pnpm install --frozen-lockfile
