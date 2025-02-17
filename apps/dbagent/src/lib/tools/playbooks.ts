@@ -30,15 +30,53 @@ the reason for which is slow, and the DDL to create the index if you found one. 
 from the index.
 `;
 
+const GENERAL_MONITORING_PLAYBOOK = `
+Objective:
+To assess and ensure the optimal performance of the PostgreSQL database by reviewing key metrics, logs, and slow queries.
+
+Step 1:
+Check CPU Utilization:
+
+Retrieve and analyze the CPU utilization metrics.
+Ensure CPU usage is within acceptable limits (e.g., below 60%).
+
+Step 2:
+Review Other Key Metrics:
+
+Freeable Memory: Ensure sufficient memory is available (e.g., above 20 GB).
+Database Connections: Monitor for spikes; ensure connections are within expected limits.
+Read/Write IOPS: Check for any unusual spikes or bottlenecks.
+Disk Queue Depth: Ensure it remains at 0 to avoid I/O bottlenecks.
+
+Step 3:
+Analyze Logs:
+
+Retrieve recent logs and look for warnings or errors.
+
+Step 4:
+Evaluate Slow Queries:
+
+Retrieve and review slow queries.
+Identify known queries and ensure they are optimized or deemed acceptable.
+
+Step 5:
+Document Findings:
+
+Record any issues found and actions taken.
+Note any recurring patterns or areas for improvement.
+`;
+
 export function getPlaybook(name: string): string {
   switch (name) {
     case 'investigateSlowQueries':
       return SLOW_QUERIES_PLAYBOOK;
+    case 'generalMonitoring':
+      return GENERAL_MONITORING_PLAYBOOK;
     default:
       return `Error:Playbook ${name} not found`;
   }
 }
 
 export function listPlaybooks(): string[] {
-  return ['investigateSlowQueries'];
+  return ['investigateSlowQueries', 'generalMonitoring'];
 }
