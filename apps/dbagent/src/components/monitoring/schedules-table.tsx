@@ -26,9 +26,11 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
         <h1 className="text-2xl font-bold">Monitoring Schedules</h1>
         <div className="mb-6 flex items-center justify-between">
           <ConnectionSelector connections={connections} value={selectedDatabase} onChange={setSelectedDatabase} />
-          <Button>
-            <PlusIcon className="mr-2 h-4 w-4" /> Add New Schedule
-          </Button>
+          <Link href="/monitoring/schedule/add">
+            <Button>
+              <PlusIcon className="mr-2 h-4 w-4" /> Add New Schedule
+            </Button>
+          </Link>
         </div>
       </div>
       <Table>

@@ -1,5 +1,9 @@
 'use server';
 
+import { openai } from '@ai-sdk/openai';
+import { generateText } from 'ai';
+import { listPlaybooks } from '~/lib/tools/playbooks';
+
 export type Schedule = {
   id: string;
   schedule: string;
@@ -8,6 +12,18 @@ export type Schedule = {
   failures: number;
   enabled: boolean;
 };
+
+export async function generateCronExpression(description: string): Promise<string> {
+  const prompt = `Generate a cron expression for the following schedule description: "${description}". 
+  Return strictly the cron expression, no quotes or anything else.`;
+
+  const { text } = await generateText({
+    model: openai('gpt-4o'),
+    prompt: prompt
+  });
+
+  return text.trim();
+}
 
 export async function getSchedules(): Promise<Schedule[]> {
   // TODO: Replace with actual database query
@@ -45,4 +61,8 @@ export async function getSchedules(): Promise<Schedule[]> {
       enabled: true
     }
   ];
+}
+
+export async function actionListPlaybooks(): Promise<string[]> {
+  return listPlaybooks();
 }
