@@ -43,20 +43,24 @@ export function CronExpressionModal({ isOpen, onClose, onGenerate }: CronExpress
             <Label htmlFor="schedule-description" className="text-right">
               Description
             </Label>
-            <Input
-              id="schedule-description"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              className="col-span-3"
-              placeholder="e.g., Every Monday at 9 AM"
-            />
+            <div className="col-span-3">
+              <Input
+                id="schedule-description"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                className="w-full"
+                placeholder="e.g., Every Monday at 9 AM"
+              />
+            </div>
           </div>
           {generatedExpression && (
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="generated-expression" className="text-right">
                 Generated
               </Label>
-              <Input id="generated-expression" value={generatedExpression} readOnly className="col-span-3" />
+              <div className="col-span-3">
+                <Input id="generated-expression" value={generatedExpression} readOnly />
+              </div>
             </div>
           )}
         </div>

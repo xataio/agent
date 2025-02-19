@@ -29,15 +29,6 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { CronExpressionModal } from './cron-expression-modal';
 
-type FormData = {
-  playbook: string;
-  cronExpression: string;
-  additionalDetails: string;
-  database: string;
-  description: string;
-  enabled: boolean;
-};
-
 const formSchema = z.object({
   playbook: z.string().min(1, { message: 'Please select a playbook' }),
   scheduleType: z.enum(['automatic', 'cron']),
@@ -54,42 +45,32 @@ export function ScheduleForm({ scheduleId, playbooks }: { scheduleId: string; pl
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      playbook: '',
+      playbook: playbooks[0] || '',
       scheduleType: 'cron',
-      minInterval: '',
-      maxInterval: '',
-      cronExpression: '',
+      minInterval: '5',
+      maxInterval: '1440',
+      cronExpression: '0 * * * *',
       additionalInstructions: '',
       enabled: true
     }
   });
   const isEditMode = scheduleId !== 'add';
 
-  const { control, handleSubmit, reset } = useForm<FormData>({
-    defaultValues: {
-      cronExpression: '0 5 * * *',
-      playbook: playbooks[0] || '',
-      additionalDetails: '',
-      database: 'Prod',
-      description: '',
-      enabled: true
-    }
-  });
-
   useEffect(() => {
     if (isEditMode) {
       // TODO: Fetch schedule data from API or database
       // For now, we'll just simulate fetching data
-      reset({
-        cronExpression: '0 5 * * *',
+      form.reset({
+        cronExpression: '0 * * * *',
+        scheduleType: 'cron',
+        minInterval: '5',
+        maxInterval: '60',
         playbook: playbooks[0] || '',
-        additionalDetails: '',
-        database: 'Prod',
-        description: '',
+        additionalInstructions: '',
         enabled: true
       });
     }
-  }, [isEditMode, reset]);
+  }, [isEditMode, form.reset]);
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     console.log(data);
@@ -200,7 +181,9 @@ export function ScheduleForm({ scheduleId, playbooks }: { scheduleId: string; pl
                       <FormLabel>Cron Expression</FormLabel>
                       <FormControl>
                         <div className="flex space-x-2">
-                          <Input {...field} />
+                          <div className="w-full">
+                            <Input {...field} />
+                          </div>
                           <Button type="button" variant="outline" onClick={() => setShowCronModal(true)}>
                             Generate with AI
                           </Button>
