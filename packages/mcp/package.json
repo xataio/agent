@@ -18,6 +18,6 @@
   },
   "peerDependencies": {
     "@modelcontextprotocol/sdk": "^1.5.0",
-    "ai": "^4.1.41"
+    "ai": "^4.1.44"
   }
 }
