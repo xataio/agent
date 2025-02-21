@@ -149,3 +149,12 @@ export async function getSchedule(id: string): Promise<Schedule> {
     client.release();
   }
 }
+
+export async function deleteSchedule(id: string): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query('DELETE FROM schedules WHERE id = $1', [id]);
+  } finally {
+    client.release();
+  }
+}

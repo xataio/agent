@@ -29,7 +29,13 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { actionCreateSchedule, actionGetSchedule, actionUpdateSchedule, Schedule } from './actions';
+import {
+  actionCreateSchedule,
+  actionDeleteSchedule,
+  actionGetSchedule,
+  actionUpdateSchedule,
+  Schedule
+} from './actions';
 import { CronExpressionModal } from './cron-expression-modal';
 
 const formSchema = z.object({
@@ -53,6 +59,7 @@ export function ScheduleForm({
 }) {
   const router = useRouter();
   const [showCronModal, setShowCronModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -103,6 +110,11 @@ export function ScheduleForm({
       await actionCreateSchedule(schedule);
     }
     console.log(data);
+    router.push('/monitoring');
+  };
+
+  const handleDelete = async () => {
+    await actionDeleteSchedule(scheduleId);
     router.push('/monitoring');
   };
 
@@ -253,6 +265,34 @@ export function ScheduleForm({
               <Button type="submit" className="mr-2">
                 {isEditMode ? 'Update Schedule' : 'Create Schedule'}
               </Button>
+              {isEditMode && (
+                <>
+                  {!showDeleteConfirm ? (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      className="mr-2"
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      Delete
+                    </Button>
+                  ) : (
+                    <>
+                      <Button type="button" variant="destructive" className="mr-2" onClick={handleDelete}>
+                        Confirm Delete
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="mr-2"
+                        onClick={() => setShowDeleteConfirm(false)}
+                      >
+                        Cancel Delete
+                      </Button>
+                    </>
+                  )}
+                </>
+              )}
               <Link href="/monitoring">
                 <Button variant="outline">Cancel</Button>
               </Link>

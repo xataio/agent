@@ -2,7 +2,7 @@
 
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
-import { getSchedule, getSchedules, insertSchedule, updateSchedule } from '~/lib/db/monitoring';
+import { deleteSchedule, getSchedule, getSchedules, insertSchedule, updateSchedule } from '~/lib/db/monitoring';
 import { listPlaybooks } from '~/lib/tools/playbooks';
 
 export type Schedule = {
@@ -47,6 +47,10 @@ export async function actionGetSchedules(): Promise<Schedule[]> {
 
 export async function actionGetSchedule(id: string): Promise<Schedule> {
   return getSchedule(id);
+}
+
+export async function actionDeleteSchedule(id: string): Promise<void> {
+  return deleteSchedule(id);
 }
 
 export async function actionListPlaybooks(): Promise<string[]> {
