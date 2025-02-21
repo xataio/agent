@@ -9,10 +9,16 @@ import { actionGetSchedules, actionUpdateScheduleEnabled, Schedule } from './act
 
 export function MonitoringScheduleTable({ connections }: { connections: DbConnection[] }) {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     const loadSchedules = async () => {
-      const schedules = await actionGetSchedules();
-      setSchedules(schedules);
+      try {
+        const schedules = await actionGetSchedules();
+        setSchedules(schedules);
+      } finally {
+        setIsLoading(false);
+      }
     };
     void loadSchedules();
   }, []);
@@ -23,6 +29,32 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
     const updatedSchedules = await actionGetSchedules();
     setSchedules(updatedSchedules);
   };
+
+  const SkeletonRow = () => (
+    <TableRow>
+      <TableCell>
+        <div className="bg-muted h-4 w-24 animate-pulse rounded" />
+      </TableCell>
+      <TableCell>
+        <div className="bg-muted h-4 w-32 animate-pulse rounded" />
+      </TableCell>
+      <TableCell>
+        <div className="bg-muted h-4 w-28 animate-pulse rounded" />
+      </TableCell>
+      <TableCell>
+        <div className="bg-muted h-4 w-24 animate-pulse rounded" />
+      </TableCell>
+      <TableCell>
+        <div className="bg-muted h-4 w-16 animate-pulse rounded" />
+      </TableCell>
+      <TableCell>
+        <div className="bg-muted h-6 w-10 animate-pulse rounded" />
+      </TableCell>
+      <TableCell>
+        <div className="bg-muted h-8 w-8 animate-pulse rounded" />
+      </TableCell>
+    </TableRow>
+  );
 
   return (
     <div>
@@ -49,7 +81,13 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
           </TableRow>
         </TableHeader>
         <TableBody>
-          {schedules.length === 0 ? (
+          {isLoading ? (
+            <>
+              <SkeletonRow />
+              <SkeletonRow />
+              <SkeletonRow />
+            </>
+          ) : schedules.length === 0 ? (
             <>
               <TableRow>
                 <TableCell colSpan={6} className="text-muted-foreground py-8 text-center">
