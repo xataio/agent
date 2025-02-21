@@ -5,7 +5,7 @@ import { PencilIcon, PlusIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { DbConnection } from '~/lib/db/connections';
-import { actionGetSchedules, Schedule } from './actions';
+import { actionGetSchedules, actionUpdateScheduleEnabled, Schedule } from './actions';
 
 export function MonitoringScheduleTable({ connections }: { connections: DbConnection[] }) {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -16,6 +16,13 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
     };
     void loadSchedules();
   }, []);
+
+  const handleToggleEnabled = async (scheduleId: string, enabled: boolean) => {
+    await actionUpdateScheduleEnabled(scheduleId, enabled);
+    // Refresh the schedules list
+    const updatedSchedules = await actionGetSchedules();
+    setSchedules(updatedSchedules);
+  };
 
   return (
     <div>
@@ -69,7 +76,10 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
                 <TableCell>{schedule.lastRun}</TableCell>
                 <TableCell>{schedule.failures}</TableCell>
                 <TableCell>
-                  <Switch checked={schedule.enabled} />
+                  <Switch
+                    checked={schedule.enabled}
+                    onCheckedChange={(checked) => handleToggleEnabled(schedule.id, checked)}
+                  />
                 </TableCell>
                 <TableCell>
                   <div className="flex space-x-2">

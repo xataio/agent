@@ -158,3 +158,12 @@ export async function deleteSchedule(id: string): Promise<void> {
     client.release();
   }
 }
+
+export async function updateScheduleEnabled(id: string, enabled: boolean): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query('UPDATE schedules SET enabled = $1 WHERE id = $2', [enabled, id]);
+  } finally {
+    client.release();
+  }
+}
