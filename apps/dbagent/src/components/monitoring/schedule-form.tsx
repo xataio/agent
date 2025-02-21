@@ -24,9 +24,12 @@ import {
   Textarea,
   zodResolver
 } from '@internal/components';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { actionCreateSchedule, actionGetSchedule, actionUpdateSchedule, Schedule } from './actions';
 import { CronExpressionModal } from './cron-expression-modal';
 
 const formSchema = z.object({
@@ -39,8 +42,16 @@ const formSchema = z.object({
   enabled: z.boolean()
 });
 
-export function ScheduleForm({ scheduleId, playbooks }: { scheduleId: string; playbooks: string[] }) {
-  //const router = useRouter();
+export function ScheduleForm({
+  scheduleId,
+  playbooks,
+  connectionId
+}: {
+  scheduleId: string;
+  playbooks: string[];
+  connectionId: string;
+}) {
+  const router = useRouter();
   const [showCronModal, setShowCronModal] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -58,24 +69,41 @@ export function ScheduleForm({ scheduleId, playbooks }: { scheduleId: string; pl
 
   useEffect(() => {
     if (isEditMode) {
-      // TODO: Fetch schedule data from API or database
-      // For now, we'll just simulate fetching data
-      form.reset({
-        cronExpression: '0 * * * *',
-        scheduleType: 'cron',
-        minInterval: '5',
-        maxInterval: '60',
-        playbook: playbooks[0] || '',
-        additionalInstructions: '',
-        enabled: true
-      });
+      const fetchSchedule = async () => {
+        const schedule = await actionGetSchedule(scheduleId);
+        form.reset({
+          playbook: schedule.playbook,
+          scheduleType: schedule.scheduleType as 'automatic' | 'cron',
+          cronExpression: schedule.cronExpression,
+          minInterval: schedule.minInterval?.toString(),
+          maxInterval: schedule.maxInterval?.toString(),
+          additionalInstructions: schedule.additionalInstructions,
+          enabled: schedule.enabled
+        });
+      };
+      void fetchSchedule();
     }
-  }, [isEditMode, form.reset]);
+  }, [isEditMode, form.reset, scheduleId]);
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    const schedule: Schedule = {
+      id: scheduleId,
+      connectionId: connectionId,
+      playbook: data.playbook,
+      scheduleType: data.scheduleType,
+      cronExpression: data.cronExpression,
+      additionalInstructions: data.additionalInstructions,
+      minInterval: Number(data.minInterval),
+      maxInterval: Number(data.maxInterval),
+      enabled: data.enabled
+    };
+    if (isEditMode) {
+      await actionUpdateSchedule(schedule);
+    } else {
+      await actionCreateSchedule(schedule);
+    }
     console.log(data);
-    // Here you would typically send the data to your backend
-    alert('Form submitted! Check console for data.');
+    router.push('/monitoring');
   };
 
   return (
@@ -110,7 +138,6 @@ export function ScheduleForm({ scheduleId, playbooks }: { scheduleId: string; pl
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="scheduleType"
@@ -120,7 +147,7 @@ export function ScheduleForm({ scheduleId, playbooks }: { scheduleId: string; pl
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                         className="flex flex-col space-y-1"
                       >
                         <FormItem className="flex items-center space-x-3 space-y-0">
@@ -223,7 +250,12 @@ export function ScheduleForm({ scheduleId, playbooks }: { scheduleId: string; pl
                 )}
               />
 
-              <Button type="submit">Create Schedule</Button>
+              <Button type="submit" className="mr-2">
+                {isEditMode ? 'Update Schedule' : 'Create Schedule'}
+              </Button>
+              <Link href="/monitoring">
+                <Button variant="outline">Cancel</Button>
+              </Link>
             </form>
 
             <CronExpressionModal

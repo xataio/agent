@@ -5,7 +5,7 @@ import { PencilIcon, PlusIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { DbConnection } from '~/lib/db/connections';
-import { getSchedules, Schedule } from './actions';
+import { actionGetSchedules, Schedule } from './actions';
 import { ConnectionSelector } from './conn-selector';
 
 export function MonitoringScheduleTable({ connections }: { connections: DbConnection[] }) {
@@ -14,7 +14,7 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
   const [selectedDatabase, setSelectedDatabase] = useState<DbConnection | null>(defaultConnection || null);
   useEffect(() => {
     const loadSchedules = async () => {
-      const schedules = await getSchedules();
+      const schedules = await actionGetSchedules();
       setSchedules(schedules);
     };
     void loadSchedules();
@@ -47,7 +47,9 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
         <TableBody>
           {schedules.map((schedule) => (
             <TableRow key={schedule.id}>
-              <TableCell className="font-medium">{schedule.schedule}</TableCell>
+              <TableCell className="font-medium">
+                {schedule.scheduleType === 'cron' ? schedule.cronExpression : 'Automatic'}
+              </TableCell>
               <TableCell>{schedule.playbook}</TableCell>
               <TableCell>{schedule.lastRun}</TableCell>
               <TableCell>{schedule.failures}</TableCell>
