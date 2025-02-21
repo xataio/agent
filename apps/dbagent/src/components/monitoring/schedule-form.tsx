@@ -29,6 +29,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { DbConnection } from '~/lib/db/connections';
 import {
   actionCreateSchedule,
   actionDeleteSchedule,
@@ -40,6 +41,7 @@ import { CronExpressionModal } from './cron-expression-modal';
 
 const formSchema = z.object({
   playbook: z.string().min(1, { message: 'Please select a playbook' }),
+  connection: z.string().min(1, { message: 'Please select a connection' }),
   scheduleType: z.enum(['automatic', 'cron']),
   minInterval: z.string().optional(),
   maxInterval: z.string().optional(),
@@ -51,11 +53,12 @@ const formSchema = z.object({
 export function ScheduleForm({
   scheduleId,
   playbooks,
-  connectionId
+  connections
 }: {
   scheduleId: string;
   playbooks: string[];
-  connectionId: string;
+  connections: DbConnection[];
+  connection?: string;
 }) {
   const router = useRouter();
   const [showCronModal, setShowCronModal] = useState(false);
@@ -64,6 +67,7 @@ export function ScheduleForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       playbook: playbooks[0] || '',
+      connection: connections.find((c) => c.is_default)?.name || '',
       scheduleType: 'cron',
       minInterval: '5',
       maxInterval: '1440',
@@ -80,6 +84,7 @@ export function ScheduleForm({
         const schedule = await actionGetSchedule(scheduleId);
         form.reset({
           playbook: schedule.playbook,
+          connection: connections.find((c) => c.id === Number(schedule.connectionId))?.name || '',
           scheduleType: schedule.scheduleType as 'automatic' | 'cron',
           cronExpression: schedule.cronExpression,
           minInterval: schedule.minInterval?.toString(),
@@ -95,7 +100,7 @@ export function ScheduleForm({
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     const schedule: Schedule = {
       id: scheduleId,
-      connectionId: connectionId,
+      connectionId: connections.find((c) => c.name === data.connection)?.id.toString() || '',
       playbook: data.playbook,
       scheduleType: data.scheduleType,
       cronExpression: data.cronExpression,
@@ -127,6 +132,29 @@ export function ScheduleForm({
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="connection"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Database</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a database" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {connections.map((connection) => (
+                          <SelectItem key={connection.name} value={connection.name}>
+                            {connection.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="playbook"
