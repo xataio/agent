@@ -2,6 +2,7 @@ import '@internal/theme';
 import { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import { Providers } from '~/components/providers';
+//import '~/lib/services/local-scheduler'; // This starts the local scheduler
 
 const inter = Inter({
   subsets: ['latin'],

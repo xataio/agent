@@ -1,25 +1,45 @@
 'use client';
 
 import { Button, Switch, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@internal/components';
-import { PencilIcon, PlusIcon } from 'lucide-react';
+import { PencilIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { DbConnection } from '~/lib/db/connections';
-import { actionGetSchedules, actionUpdateScheduleEnabled, Schedule } from './actions';
+import { Schedule } from '~/lib/db/schedules';
+import { actionGetSchedules, actionUpdateScheduleEnabled } from './actions';
+
+function displayRelativeTime(date1: Date, date2: Date): string {
+  const diff = date2.getTime() - date1.getTime();
+  const diffSeconds = Math.floor(diff / 1000);
+  if (diffSeconds < 60) {
+    return `${diffSeconds}s`;
+  }
+  const diffMinutes = Math.floor(diff / (1000 * 60));
+  if (diffMinutes < 60) {
+    return `${diffMinutes}m`;
+  }
+  if (diffMinutes < 1440) {
+    return `${Math.floor(diffMinutes / 60)}h`;
+  }
+  return `${Math.floor(diffMinutes / 1440)}d`;
+}
 
 export function MonitoringScheduleTable({ connections }: { connections: DbConnection[] }) {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const loadSchedules = async () => {
+    setIsLoading(true);
+    try {
+      const schedules = await actionGetSchedules();
+      // Sort schedules by ID to maintain stable order
+      setSchedules(schedules.sort((a, b) => String(a.id || '').localeCompare(String(b.id || ''))));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadSchedules = async () => {
-      try {
-        const schedules = await actionGetSchedules();
-        setSchedules(schedules);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     void loadSchedules();
   }, []);
 
@@ -27,7 +47,8 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
     await actionUpdateScheduleEnabled(scheduleId, enabled);
     // Refresh the schedules list
     const updatedSchedules = await actionGetSchedules();
-    setSchedules(updatedSchedules);
+    // Sort schedules by ID to maintain stable order
+    setSchedules(updatedSchedules.sort((a, b) => String(a.id || '').localeCompare(String(b.id || ''))));
   };
 
   const SkeletonRow = () => (
@@ -60,7 +81,10 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Monitoring Schedules</h1>
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex items-center gap-2">
+          <Button variant="outline" onClick={() => loadSchedules()}>
+            <RefreshCwIcon className="mr-2 h-4 w-4" />
+          </Button>
           <Link href="/monitoring/schedule/add">
             <Button>
               <PlusIcon className="mr-2 h-4 w-4" /> Add New Schedule
@@ -74,9 +98,11 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
             <TableHead className="w-[150px]">Playbook</TableHead>
             <TableHead className="w-[150px]">Database</TableHead>
             <TableHead className="w-[150px]">Schedule</TableHead>
+            <TableHead className="w-[150px]">Status</TableHead>
             <TableHead className="w-[150px]">Last Run</TableHead>
+            <TableHead className="w-[150px]">Next Run</TableHead>
             <TableHead className="w-[100px]">Failures</TableHead>
-            <TableHead className="w-[100px]">Status</TableHead>
+            <TableHead className="w-[100px]">Enabled</TableHead>
             <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -111,7 +137,27 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
                 <TableCell className="font-medium">
                   {schedule.scheduleType === 'cron' ? schedule.cronExpression : 'Automatic'}
                 </TableCell>
-                <TableCell>{schedule.lastRun}</TableCell>
+                <TableCell>{schedule.status}</TableCell>
+                <TableCell>
+                  {schedule.lastRun ? (
+                    <span title={schedule.lastRun}>
+                      {displayRelativeTime(new Date(Date.parse(schedule.lastRun)), new Date())} ago
+                    </span>
+                  ) : (
+                    '-'
+                  )}
+                </TableCell>
+                <TableCell>
+                  {schedule.nextRun ? (
+                    <span title={schedule.nextRun}>
+                      {new Date(schedule.nextRun) <= new Date()
+                        ? 'now'
+                        : `in ${displayRelativeTime(new Date(), new Date(schedule.nextRun))}`}
+                    </span>
+                  ) : (
+                    '-'
+                  )}
+                </TableCell>
                 <TableCell>{schedule.failures}</TableCell>
                 <TableCell>
                   <Switch
