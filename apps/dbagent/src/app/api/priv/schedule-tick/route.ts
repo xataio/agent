@@ -1,7 +1,6 @@
-import { SchedulerService } from '~/lib/services/scheduler';
+import { checkAndRunJobs } from '~/lib/services/scheduler';
 
 export async function POST() {
-  const scheduler = new SchedulerService();
-  await scheduler.checkAndRunJobs();
+  await checkAndRunJobs();
   return new Response('OK', { status: 200 });
 }

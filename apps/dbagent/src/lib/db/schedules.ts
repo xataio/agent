@@ -19,7 +19,6 @@ export type Schedule = {
 };
 
 export function shouldRunSchedule(schedule: Schedule, now: Date): boolean {
-  console.log('shouldRunSchedule', schedule, now);
   if (schedule.enabled === false || schedule.nextRun === undefined) return false;
   return now >= new Date(schedule.nextRun);
 }
