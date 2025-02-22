@@ -18,11 +18,6 @@ export type Schedule = {
   enabled: boolean;
 };
 
-export function shouldRunSchedule(schedule: Schedule, now: Date): boolean {
-  if (schedule.enabled === false || schedule.nextRun === undefined) return false;
-  return now >= new Date(schedule.nextRun);
-}
-
 export function scheduleGetNextRun(schedule: Schedule, now: Date): Date {
   if (schedule.scheduleType === 'cron' && schedule.cronExpression) {
     const interval = CronExpressionParser.parse(schedule.cronExpression);

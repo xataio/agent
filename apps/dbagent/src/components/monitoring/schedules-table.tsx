@@ -39,6 +39,11 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
     }
   };
 
+  const refreshSchedules = async () => {
+    const schedules = await actionGetSchedules();
+    setSchedules(schedules.sort((a, b) => String(a.id || '').localeCompare(String(b.id || ''))));
+  };
+
   useEffect(() => {
     void loadSchedules();
   }, []);
@@ -82,7 +87,7 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Monitoring Schedules</h1>
         <div className="mb-6 flex items-center gap-2">
-          <Button variant="outline" onClick={() => loadSchedules()}>
+          <Button variant="outline" onClick={() => refreshSchedules()}>
             <RefreshCwIcon className="mr-2 h-4 w-4" />
           </Button>
           <Link href="/monitoring/schedule/add">
