@@ -10,11 +10,6 @@ import {
   CardHeader,
   CardTitle,
   ScrollArea,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Textarea
 } from '@internal/components';
 import { useChat } from 'ai/react';
@@ -26,6 +21,7 @@ import { DbConnection } from '~/lib/db/connections';
 import { ChatSidebar } from './chat-sidebar';
 import { ConnectionSelector } from './conn-selector';
 import { mockChats } from './mock-data';
+import { ModelSelector } from './model-selector';
 
 export function ChatsUI({ connections }: { connections: DbConnection[] }) {
   const searchParams = useSearchParams();
@@ -135,17 +131,7 @@ export function ChatsUI({ connections }: { connections: DbConnection[] }) {
                   : 'Select or start a new chat'}
               </CardTitle>
               <div className="flex items-center gap-2">
-                <Select value={model} onValueChange={setModel}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="openai-gpt-4o">GPT-4o</SelectItem>
-                    <SelectItem value="openai-gpt-4-turbo">GPT-4 Turbo</SelectItem>
-                    <SelectItem value="deepseek-chat">DeepSeek Chat</SelectItem>
-                    <SelectItem value="anthropic-claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</SelectItem>
-                  </SelectContent>
-                </Select>
+                <ModelSelector value={model} onValueChange={setModel} />
                 <ConnectionSelector connections={connections} onSelect={handleContextSelect} />
               </div>
             </div>

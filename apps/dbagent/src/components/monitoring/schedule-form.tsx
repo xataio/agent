@@ -31,12 +31,14 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { DbConnection } from '~/lib/db/connections';
 import { Schedule } from '~/lib/db/schedules';
+import { ModelSelector } from '../chats/model-selector';
 import { actionCreateSchedule, actionDeleteSchedule, actionGetSchedule, actionUpdateSchedule } from './actions';
 import { CronExpressionModal } from './cron-expression-modal';
 
 const formSchema = z.object({
   playbook: z.string().min(1, { message: 'Please select a playbook' }),
   connection: z.string().min(1, { message: 'Please select a connection' }),
+  model: z.string().min(1, { message: 'Please select a model' }),
   scheduleType: z.enum(['automatic', 'cron']),
   minInterval: z.string().optional(),
   maxInterval: z.string().optional(),
@@ -63,6 +65,7 @@ export function ScheduleForm({
     defaultValues: {
       playbook: playbooks[0] || '',
       connection: connections.find((c) => c.is_default)?.name || '',
+      model: 'openai-gpt-4o',
       scheduleType: 'cron',
       minInterval: '5',
       maxInterval: '1440',
@@ -80,6 +83,7 @@ export function ScheduleForm({
         form.reset({
           playbook: schedule.playbook,
           connection: connections.find((c) => c.id === Number(schedule.connectionId))?.name || '',
+          model: schedule.model || 'openai-gpt-4o',
           scheduleType: schedule.scheduleType as 'automatic' | 'cron',
           cronExpression: schedule.cronExpression,
           minInterval: schedule.minInterval?.toString(),
@@ -96,6 +100,7 @@ export function ScheduleForm({
     const schedule: Schedule = {
       id: scheduleId,
       connectionId: connections.find((c) => c.name === data.connection)?.id.toString() || '',
+      model: data.model,
       playbook: data.playbook,
       scheduleType: data.scheduleType,
       cronExpression: data.cronExpression,
@@ -171,6 +176,18 @@ export function ScheduleForm({
                         ))}
                       </SelectContent>
                     </Select>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="model"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Model</FormLabel>
+                    <FormControl>
+                      <ModelSelector value={field.value} onValueChange={field.onChange} />
+                    </FormControl>
                   </FormItem>
                 )}
               />

@@ -1,4 +1,4 @@
-import { checkAndRunJobs } from '~/lib/services/scheduler';
+import { checkAndRunJobs } from '~/lib/monitoring/scheduler';
 
 export async function POST() {
   await checkAndRunJobs();
