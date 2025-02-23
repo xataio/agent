@@ -30,13 +30,8 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { DbConnection } from '~/lib/db/connections';
-import {
-  actionCreateSchedule,
-  actionDeleteSchedule,
-  actionGetSchedule,
-  actionUpdateSchedule,
-  Schedule
-} from './actions';
+import { Schedule } from '~/lib/db/schedules';
+import { actionCreateSchedule, actionDeleteSchedule, actionGetSchedule, actionUpdateSchedule } from './actions';
 import { CronExpressionModal } from './cron-expression-modal';
 
 const formSchema = z.object({
@@ -107,7 +102,8 @@ export function ScheduleForm({
       additionalInstructions: data.additionalInstructions,
       minInterval: Number(data.minInterval),
       maxInterval: Number(data.maxInterval),
-      enabled: data.enabled
+      enabled: data.enabled,
+      status: data.enabled ? 'scheduled' : 'disabled'
     };
     if (isEditMode) {
       await actionUpdateSchedule(schedule);
