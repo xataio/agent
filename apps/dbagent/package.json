@@ -11,7 +11,8 @@
     "tsc": "tsc --noEmit",
     "test": "vitest --passWithNoTests",
     "dbmigrate": "tsx scripts/dbmigrate.ts",
-    "load-test": "tsx scripts/load-testing/musicbrainz-loader.ts"
+    "load-test": "tsx scripts/load-testing/musicbrainz-loader.ts",
+    "dev-scheduler": "tsx scripts/scheduler.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.1.9",
@@ -29,6 +30,7 @@
     "bytes": "^3.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cron-parser": "^5.0.4",
     "framer-motion": "^12.4.7",
     "kysely": "^0.27.5",
     "lucide-react": "^0.475.0",

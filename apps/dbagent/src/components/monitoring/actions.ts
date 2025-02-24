@@ -7,24 +7,12 @@ import {
   getSchedule,
   getSchedules,
   insertSchedule,
+  Schedule,
+  scheduleGetNextRun,
   updateSchedule,
-  updateScheduleEnabled
-} from '~/lib/db/monitoring';
+  updateScheduleRunData
+} from '~/lib/db/schedules';
 import { listPlaybooks } from '~/lib/tools/playbooks';
-
-export type Schedule = {
-  id: string;
-  connectionId: string;
-  playbook: string;
-  scheduleType: string;
-  cronExpression?: string;
-  additionalInstructions?: string;
-  minInterval?: number;
-  maxInterval?: number;
-  lastRun?: string;
-  failures?: number;
-  enabled: boolean;
-};
 
 export async function generateCronExpression(description: string): Promise<string> {
   const prompt = `Generate a cron expression for the following schedule description: "${description}". 
@@ -39,6 +27,10 @@ export async function generateCronExpression(description: string): Promise<strin
 }
 
 export async function actionCreateSchedule(schedule: Schedule): Promise<Schedule> {
+  if (schedule.enabled) {
+    schedule.status = 'scheduled';
+    schedule.nextRun = scheduleGetNextRun(schedule, new Date()).toISOString();
+  }
   return insertSchedule(schedule);
 }
 
@@ -48,7 +40,15 @@ export async function actionUpdateSchedule(schedule: Schedule): Promise<Schedule
 
 export async function actionGetSchedules(): Promise<Schedule[]> {
   const schedules = await getSchedules();
-  console.log(schedules);
+  // Ensure last_run is serialized as string
+  schedules.forEach((schedule) => {
+    if (schedule.lastRun) {
+      schedule.lastRun = schedule.lastRun.toString();
+    }
+    if (schedule.nextRun) {
+      schedule.nextRun = schedule.nextRun.toString();
+    }
+  });
   return schedules;
 }
 
@@ -65,5 +65,18 @@ export async function actionListPlaybooks(): Promise<string[]> {
 }
 
 export async function actionUpdateScheduleEnabled(scheduleId: string, enabled: boolean) {
-  return updateScheduleEnabled(scheduleId, enabled);
+  if (enabled) {
+    const schedule = await getSchedule(scheduleId);
+    schedule.enabled = true;
+    schedule.status = 'scheduled';
+    schedule.nextRun = scheduleGetNextRun(schedule, new Date()).toUTCString();
+    console.log('nextRun', schedule.nextRun);
+    await updateScheduleRunData(schedule);
+  } else {
+    const schedule = await getSchedule(scheduleId);
+    schedule.enabled = false;
+    schedule.status = 'disabled';
+    schedule.nextRun = undefined;
+    await updateScheduleRunData(schedule);
+  }
 }
