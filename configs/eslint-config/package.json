@@ -12,7 +12,6 @@
     "@eslint/compat": "^1.2.7",
     "@eslint/js": "^9.21.0",
     "@next/eslint-plugin-next": "^15.1.7",
-    "@types/eslint__js": "^9.14.0",
     "eslint-plugin-check-file": "^3.1.0",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
