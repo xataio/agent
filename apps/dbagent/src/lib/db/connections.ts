@@ -1,4 +1,6 @@
-import { pool } from './db';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export type DbConnection = {
   id: number;
@@ -8,27 +10,33 @@ export type DbConnection = {
 };
 
 export async function listConnections(): Promise<DbConnection[]> {
-  const client = await pool.connect();
   try {
-    const result = await client.query('SELECT id, name, connstring, is_default FROM connections');
-    return result.rows;
+    const connections = await prisma.connections.findMany({
+      select: {
+        id: true,
+        name: true,
+        connstring: true,
+        is_default: true
+      }
+    });
+    return connections;
   } catch (error) {
     console.error('Error listing connections:', error);
     throw error;
-  } finally {
-    client.release();
   }
 }
 
 export async function getDefaultConnection(): Promise<DbConnection | null> {
   try {
-    const client = await pool.connect();
-    try {
-      const result = await client.query('SELECT id, name, connstring FROM connections WHERE is_default = true');
-      return result.rows[0] || null;
-    } finally {
-      client.release();
-    }
+    const connection = await prisma.connections.findFirst({
+      where: { is_default: true },
+      select: {
+        id: true,
+        name: true,
+        connstring: true
+      }
+    });
+    return connection || null;
   } catch (error) {
     console.error('Error fetching connection:', error);
     return null;
@@ -36,81 +44,100 @@ export async function getDefaultConnection(): Promise<DbConnection | null> {
 }
 
 export async function getConnection(id: number): Promise<DbConnection | null> {
-  const client = await pool.connect();
   try {
-    const result = await client.query('SELECT id, name, connstring, is_default FROM connections WHERE id = $1', [id]);
-    return result.rows[0] || null;
-  } finally {
-    client.release();
+    const connection = await prisma.connections.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        connstring: true,
+        is_default: true
+      }
+    });
+    return connection || null;
+  } catch (error) {
+    console.error('Error fetching connection:', error);
+    return null;
   }
 }
 
 export async function makeConnectionDefault(id: number) {
-  const client = await pool.connect();
   try {
-    await client.query('BEGIN');
-    await client.query('UPDATE connections SET is_default = false WHERE is_default = true');
-    await client.query('UPDATE connections SET is_default = true WHERE id = $1', [id]);
-    await client.query('COMMIT');
+    await prisma.$transaction(async (prisma) => {
+      await prisma.connections.updateMany({
+        where: { is_default: true },
+        data: { is_default: false }
+      });
+      await prisma.connections.update({
+        where: { id },
+        data: { is_default: true }
+      });
+    });
   } catch (error) {
-    await client.query('ROLLBACK');
+    console.error('Error making connection default:', error);
     throw error;
-  } finally {
-    client.release();
   }
 }
 
 export async function deleteConnection(id: number) {
-  const client = await pool.connect();
   try {
-    await client.query('BEGIN');
+    await prisma.$transaction(async (prisma) => {
+      const wasDefault = await prisma.connections.findUnique({
+        where: { id },
+        select: { is_default: true }
+      });
 
-    // Check if this was the default connection
-    const wasDefault = await client.query('SELECT is_default FROM connections WHERE id = $1', [id]);
+      await prisma.assoc_instance_connections.deleteMany({
+        where: { connection_id: id }
+      });
+      await prisma.dbinfo.deleteMany({
+        where: { connid: id }
+      });
+      await prisma.connections.delete({
+        where: { id }
+      });
 
-    // Delete the connection
-    await client.query('DELETE FROM assoc_instance_connections WHERE connection_id = $1', [id]);
-    await client.query('DELETE FROM dbinfo WHERE connid = $1', [id]);
-    await client.query('DELETE FROM connections WHERE id = $1', [id]);
-
-    // If it was default, try to make another connection default
-    if (wasDefault.rows[0]?.is_default) {
-      const nextConnection = await client.query('SELECT id FROM connections LIMIT 1');
-      if (nextConnection.rows.length > 0) {
-        await client.query('UPDATE connections SET is_default = true WHERE id = $1', [nextConnection.rows[0].id]);
+      if (wasDefault?.is_default) {
+        const nextConnection = await prisma.connections.findFirst({
+          select: { id: true }
+        });
+        if (nextConnection) {
+          await prisma.connections.update({
+            where: { id: nextConnection.id },
+            data: { is_default: true }
+          });
+        }
       }
-    }
-
-    await client.query('COMMIT');
+    });
   } catch (error) {
-    await client.query('ROLLBACK');
+    console.error('Error deleting connection:', error);
     throw error;
-  } finally {
-    client.release();
   }
 }
 
 export async function addConnection({ name, connstring }: { name: string; connstring: string }): Promise<DbConnection> {
-  const client = await pool.connect();
   try {
-    await client.query('BEGIN');
+    const count = await prisma.connections.count();
+    const isFirst = count === 0;
 
-    // Check if this is the first connection
-    const countResult = await client.query('SELECT COUNT(*) FROM connections');
-    const isFirst = parseInt(countResult.rows[0].count) === 0;
+    const connection = await prisma.connections.create({
+      data: {
+        name,
+        connstring,
+        is_default: isFirst
+      },
+      select: {
+        id: true,
+        name: true,
+        connstring: true,
+        is_default: true
+      }
+    });
 
-    const result = await client.query(
-      'INSERT INTO connections(name, connstring, is_default) VALUES($1, $2, $3) RETURNING id, name, connstring, is_default',
-      [name, connstring, isFirst]
-    );
-
-    await client.query('COMMIT');
-    return result.rows[0];
+    return connection;
   } catch (error) {
-    await client.query('ROLLBACK');
+    console.error('Error adding connection:', error);
     throw error;
-  } finally {
-    client.release();
   }
 }
 
@@ -123,19 +150,24 @@ export async function updateConnection({
   name: string;
   connstring: string;
 }): Promise<DbConnection> {
-  const client = await pool.connect();
   try {
-    const result = await client.query(
-      'UPDATE connections SET name = $1, connstring = $2 WHERE id = $3 RETURNING id, name, connstring, is_default',
-      [name, connstring, id]
-    );
+    const connection = await prisma.connections.update({
+      where: { id },
+      data: {
+        name,
+        connstring
+      },
+      select: {
+        id: true,
+        name: true,
+        connstring: true,
+        is_default: true
+      }
+    });
 
-    if (result.rows.length === 0) {
-      throw new Error('Connection not found');
-    }
-
-    return result.rows[0];
-  } finally {
-    client.release();
+    return connection;
+  } catch (error) {
+    console.error('Error updating connection:', error);
+    throw error;
   }
 }

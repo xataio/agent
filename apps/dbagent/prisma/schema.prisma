@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model connections {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  is_default  Boolean
+  connstring  String   @unique
+  params      Json?
+  dbinfo      dbinfo[]
+  schedules   schedules[]
+  instances   assoc_instance_connections[]
+}
+
+model dbinfo {
+  id      Int      @id @default(autoincrement())
+  connid  Int
+  module  String
+  data    Json
+  connection connections @relation(fields: [connid], references: [id])
+
+  @@unique([connid, module])
+}
+
+model integrations {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  data  Json
+  instances instances[]
+}
+
+model instances {
+  id                  Int    @id @default(autoincrement())
+  instance_identifier String
+  integration         String
+  data                Json
+  integration_rel     integrations @relation(fields: [integration], references: [name])
+  connections         assoc_instance_connections[]
+}
+
+model assoc_instance_connections {
+  id            Int        @id @default(autoincrement())
+  instance_id   Int
+  connection_id Int
+  instance      instances  @relation(fields: [instance_id], references: [id])
+  connection    connections @relation(fields: [connection_id], references: [id])
+}
+
+model schedules {
+  id                     Int       @id @default(autoincrement())
+  connection_id          Int
+  playbook               String
+  schedule_type          String
+  cron_expression        String?
+  additional_instructions String?
+  min_interval           Int?
+  max_interval           Int?
+  enabled                Boolean
+  last_run               DateTime?
+  next_run               DateTime?
+  status                 schedule_status @default(disabled)
+  failures               Int @default(0)
+  model                  String @default("openai-gpt-4o")
+  connection             connections @relation(fields: [connection_id], references: [id])
+}
+
+enum schedule_status {
+  disabled
+  scheduled
+  running
+}

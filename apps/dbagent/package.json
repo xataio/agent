@@ -46,7 +46,9 @@
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.7.3",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2",
+    "prisma": "^4.8.0",
+    "@prisma/client": "^4.8.0"
   },
   "devDependencies": {
     "@internal/eslint-config": "workspace:*",

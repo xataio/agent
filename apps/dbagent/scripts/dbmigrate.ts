@@ -1,9 +1,9 @@
 /* eslint-disable no-process-env */
 import { execSync } from 'child_process';
 import * as dotenv from 'dotenv';
-import * as fs from 'fs';
-import * as path from 'path';
+import { PrismaClient } from '@prisma/client';
 import { fileURLToPath } from 'url';
+import * as path from 'path';
 
 // Load .env.local file
 dotenv.config({ path: '.env.local' });
@@ -11,32 +11,19 @@ dotenv.config({ path: '.env.local' });
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const MIGRATIONS_DIR = path.join(__dirname, '..', 'migrations');
+const prisma = new PrismaClient();
 
-function executeMigration(filePath: string) {
-  console.log(`\nExecuting migration: ${path.basename(filePath)}`);
+async function runMigrations() {
   try {
-    execSync(`psql "${process.env.DATABASE_URL}" < "${filePath}"`, {
-      stdio: 'inherit'
-    });
+    console.log('Running Prisma migrations...');
+    execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+    console.log('Prisma migrations completed successfully');
   } catch (error) {
-    console.error(`Failed to execute migration ${filePath}`);
+    console.error('Failed to run Prisma migrations');
     throw error;
+  } finally {
+    await prisma.$disconnect();
   }
-}
-
-function runMigrations() {
-  // Get all .sql files and sort them alphabetically
-  const migrationFiles = fs
-    .readdirSync(MIGRATIONS_DIR)
-    .filter((file: string) => file.endsWith('.sql'))
-    .sort();
-
-  for (const file of migrationFiles) {
-    executeMigration(path.join(MIGRATIONS_DIR, file));
-  }
-
-  console.log('All migrations completed successfully');
 }
 
 runMigrations();

@@ -1,16 +1,23 @@
 import { PerformanceSetting, PgExtension, TableStat } from '../targetdb/db';
-import { pool } from './db';
+import { prisma } from './db';
 
 export async function saveDbInfo(connid: number, module: string, data: string) {
-  const client = await pool.connect();
-  try {
-    await client.query(
-      'INSERT INTO dbinfo(connid, module, data) VALUES($1, $2, $3) ON CONFLICT (connid, module) DO UPDATE SET data = $3',
-      [connid, module, data]
-    );
-  } finally {
-    client.release();
-  }
+  await prisma.dbinfo.upsert({
+    where: {
+      connid_module: {
+        connid,
+        module
+      }
+    },
+    update: {
+      data
+    },
+    create: {
+      connid,
+      module,
+      data
+    }
+  });
 }
 
 type DbInfoModules = {
@@ -24,11 +31,16 @@ export async function getDbInfo<T extends keyof DbInfoModules>(
   connid: number,
   module: T
 ): Promise<DbInfoModules[T] | null> {
-  const client = await pool.connect();
-  try {
-    const result = await client.query('SELECT data FROM dbinfo WHERE connid = $1 AND module = $2', [connid, module]);
-    return result.rows[0]?.data || null;
-  } finally {
-    client.release();
-  }
+  const result = await prisma.dbinfo.findUnique({
+    where: {
+      connid_module: {
+        connid,
+        module
+      }
+    },
+    select: {
+      data: true
+    }
+  });
+  return result?.data || null;
 }

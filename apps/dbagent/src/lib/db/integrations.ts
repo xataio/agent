@@ -1,4 +1,6 @@
-import { pool } from './db';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export type AwsIntegration = {
   accessKeyId: string;
@@ -11,25 +13,19 @@ type IntegrationModules = {
 };
 
 export async function saveIntegration<T extends keyof IntegrationModules>(name: T, data: IntegrationModules[T]) {
-  const client = await pool.connect();
-  try {
-    await client.query(
-      'INSERT INTO integrations(name, data) VALUES($1, $2) ON CONFLICT (name) DO UPDATE SET data = $2',
-      [name, data]
-    );
-  } finally {
-    client.release();
-  }
+  await prisma.integrations.upsert({
+    where: { name },
+    update: { data },
+    create: { name, data }
+  });
 }
 
 export async function getIntegration<T extends keyof IntegrationModules>(
   name: string
 ): Promise<IntegrationModules[T] | null> {
-  const client = await pool.connect();
-  try {
-    const result = await client.query('SELECT * FROM integrations WHERE name = $1', [name]);
-    return result.rows[0]?.data;
-  } finally {
-    client.release();
-  }
+  const result = await prisma.integrations.findUnique({
+    where: { name },
+    select: { data: true }
+  });
+  return result?.data || null;
 }
