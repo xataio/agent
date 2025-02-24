@@ -1,5 +1,5 @@
-import { RDSClusterDetailedInfo } from '../aws/rds';
 import { PrismaClient } from '@prisma/client';
+import { RDSClusterDetailedInfo } from '../aws/rds';
 
 const prisma = new PrismaClient();
 

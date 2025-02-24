@@ -1,9 +1,9 @@
 /* eslint-disable no-process-env */
+import { PrismaClient } from '@prisma/client';
 import { execSync } from 'child_process';
 import * as dotenv from 'dotenv';
-import { PrismaClient } from '@prisma/client';
-import { fileURLToPath } from 'url';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
 // Load .env.local file
 dotenv.config({ path: '.env.local' });
