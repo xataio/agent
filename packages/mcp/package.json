@@ -10,18 +10,18 @@
     "tsc": "tsc --noEmit"
   },
   "dependencies": {
-    "fastmcp": "^1.17.0",
+    "fastmcp": "^1.18.0",
     "pg": "8.13.3",
     "typescript": "^5.7.3",
     "zod": "^3.24.2"
   },
   "devDependencies": {
     "@internal/tsconfig": "workspace:*",
-    "@types/node": "^22.13.4",
+    "@types/node": "^22.13.5",
     "@types/pg": "^8.11.11"
   },
   "peerDependencies": {
     "@modelcontextprotocol/sdk": "^1.5.0",
-    "ai": "^4.1.44"
+    "ai": "^4.1.45"
   }
 }

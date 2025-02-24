@@ -20,11 +20,11 @@
   "license": "ISC",
   "devDependencies": {
     "@internal/tsconfig": "workspace:*",
-    "@types/node": "^22.13.4",
+    "@types/node": "^22.13.5",
     "@types/react": "^19.0.10",
     "husky": "^9.1.7",
     "lint-staged": "^15.4.3",
-    "prettier": "^3.5.1",
+    "prettier": "^3.5.2",
     "prettier-plugin-organize-imports": "^4.1.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tsx": "^4.19.3",
@@ -41,7 +41,9 @@
     ]
   },
   "pnpm": {
-    "overrides": {}
+    "overrides": {
+      "esbuild@<=0.24.2": ">=0.25.0"
+    }
   },
   "engines": {
     "node": "22.x",
