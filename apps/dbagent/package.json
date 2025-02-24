@@ -23,6 +23,7 @@
     "@fluentui/react-icons": "^2.0.274",
     "@internal/components": "workspace:*",
     "@internal/theme": "workspace:*",
+    "@prisma/client": "^6.4.1",
     "@tailwindcss/postcss": "^4.0.8",
     "@tanstack/react-query": "^5.66.9",
     "@vercel/functions": "^2.0.0",
@@ -37,6 +38,7 @@
     "next": "^15.1.7",
     "next-themes": "^0.4.4",
     "pg": "^8.13.3",
+    "prisma": "^6.4.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-hook-form": "^7.54.2",
@@ -46,9 +48,7 @@
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.7.3",
-    "zod": "^3.24.2",
-    "prisma": "^4.8.0",
-    "@prisma/client": "^4.8.0"
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@internal/eslint-config": "workspace:*",
