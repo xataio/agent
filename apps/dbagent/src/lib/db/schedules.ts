@@ -6,6 +6,7 @@ export type Schedule = {
   id: string;
   connectionId: string;
   playbook: string;
+  model: string;
   scheduleType: string;
   cronExpression?: string;
   additionalInstructions?: string;
@@ -40,6 +41,7 @@ export async function insertSchedule(schedule: Schedule): Promise<Schedule> {
     INSERT INTO schedules (
       connection_id,
       playbook,
+      model,
       schedule_type, 
       cron_expression,
       additional_instructions,
@@ -49,12 +51,13 @@ export async function insertSchedule(schedule: Schedule): Promise<Schedule> {
       status,
       next_run
     ) VALUES (
-      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
     ) RETURNING *
   `,
       [
         schedule.connectionId,
         schedule.playbook,
+        schedule.model,
         schedule.scheduleType,
         schedule.cronExpression,
         schedule.additionalInstructions,
@@ -72,6 +75,7 @@ export async function insertSchedule(schedule: Schedule): Promise<Schedule> {
       id: savedSchedule.id,
       connectionId: savedSchedule.connection_id,
       playbook: savedSchedule.playbook,
+      model: savedSchedule.model,
       scheduleType: savedSchedule.schedule_type,
       cronExpression: savedSchedule.cron_expression,
       additionalInstructions: savedSchedule.additional_instructions,
@@ -96,22 +100,24 @@ export async function updateSchedule(schedule: Schedule): Promise<Schedule> {
     SET
       connection_id = $1,
       playbook = $2,
-      schedule_type = $3,
-      cron_expression = $4,
-      additional_instructions = $5,
-      min_interval = $6,
-      max_interval = $7,
-      enabled = $8,
-      next_run = $9,
-      failures = $10,
-      last_run = $11,
-      status = $12
-    WHERE id = $13
+      model = $3,
+      schedule_type = $4,
+      cron_expression = $5,
+      additional_instructions = $6,
+      min_interval = $7,
+      max_interval = $8,
+      enabled = $9,
+      next_run = $10,
+      failures = $11,
+      last_run = $12,
+      status = $13
+    WHERE id = $14
     RETURNING *
     `,
       [
         schedule.connectionId,
         schedule.playbook,
+        schedule.model,
         schedule.scheduleType,
         schedule.cronExpression,
         schedule.additionalInstructions,
@@ -136,6 +142,7 @@ export async function updateSchedule(schedule: Schedule): Promise<Schedule> {
       id: savedSchedule.id,
       connectionId: savedSchedule.connection_id,
       playbook: savedSchedule.playbook,
+      model: savedSchedule.model,
       scheduleType: savedSchedule.schedule_type,
       cronExpression: savedSchedule.cron_expression,
       additionalInstructions: savedSchedule.additional_instructions,
@@ -158,6 +165,7 @@ export async function getSchedules(): Promise<Schedule[]> {
     const result = await client.query(`SELECT id,
       connection_id,
       playbook,
+      model,
       schedule_type,
       cron_expression,
       additional_instructions,
@@ -172,6 +180,7 @@ export async function getSchedules(): Promise<Schedule[]> {
       id: row.id,
       connectionId: row.connection_id,
       playbook: row.playbook,
+      model: row.model,
       scheduleType: row.schedule_type,
       cronExpression: row.cron_expression,
       additionalInstructions: row.additional_instructions,
@@ -195,6 +204,7 @@ export async function getSchedule(id: string): Promise<Schedule> {
       `SELECT id,
              connection_id,
              playbook,
+             model,
              schedule_type,
              cron_expression,
              additional_instructions,
@@ -219,6 +229,7 @@ export async function getSchedule(id: string): Promise<Schedule> {
       id: row.id,
       connectionId: row.connection_id,
       playbook: row.playbook,
+      model: row.model,
       scheduleType: row.schedule_type,
       cronExpression: row.cron_expression,
       additionalInstructions: row.additional_instructions,
@@ -279,8 +290,8 @@ export async function updateScheduleRunData(schedule: Schedule): Promise<void> {
   const client = await pool.connect();
   try {
     await client.query('UPDATE schedules SET next_run = $1, last_run = $2, status = $3, enabled = $4  WHERE id = $5', [
-      schedule.nextRun,
-      schedule.lastRun,
+      schedule.nextRun || null,
+      schedule.lastRun || null,
       schedule.status,
       schedule.enabled,
       schedule.id

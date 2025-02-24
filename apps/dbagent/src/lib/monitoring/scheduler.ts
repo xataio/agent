@@ -7,6 +7,7 @@ import {
   updateScheduleRunData
 } from '~/lib/db/schedules';
 import { env } from '../env/scheduler';
+import { runSchedule } from './runner';
 
 export function shouldRunSchedule(schedule: Schedule, now: Date): boolean {
   if (schedule.enabled === false || schedule.nextRun === undefined) return false;
@@ -74,13 +75,7 @@ async function runJob(schedule: Schedule, now: Date) {
   }
 
   try {
-    // TODO: Implement playbook execution
-    //await executePlaybook(schedule.playbook, {
-    //  connectionId: schedule.connectionId,
-    //  additionalInstructions: schedule.additionalInstructions
-    //});
-    // Simulate job execution with 5 second delay
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await runSchedule(schedule);
   } catch (error) {
     console.error(`Error running playbook ${schedule.playbook}:`, error);
     await incrementScheduleFailures(schedule.id);
