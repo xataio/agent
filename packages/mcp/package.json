@@ -9,12 +9,16 @@
     "lint": "eslint ./src",
     "tsc": "tsc --noEmit"
   },
+  "dependencies": {
+    "fastmcp": "^1.17.0",
+    "pg": "8.13.3",
+    "typescript": "^5.7.3",
+    "zod": "^3.24.2"
+  },
   "devDependencies": {
     "@internal/tsconfig": "workspace:*",
-    "@types/node": "^22.13.4"
-  },
-  "dependencies": {
-    "typescript": "^5.7.3"
+    "@types/node": "^22.13.4",
+    "@types/pg": "^8.11.11"
   },
   "peerDependencies": {
     "@modelcontextprotocol/sdk": "^1.5.0",
