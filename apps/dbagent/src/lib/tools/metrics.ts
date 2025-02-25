@@ -24,7 +24,7 @@ export async function getClusterMetric(
 
   try {
     const datapoints = await getRDSClusterMetric(
-      cluster.cluster_identifier,
+      cluster.clusterIdentifier,
       cluster.region,
       awsCredentials,
       metricName,

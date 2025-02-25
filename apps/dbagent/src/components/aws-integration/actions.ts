@@ -79,9 +79,9 @@ export async function saveClusterDetails(
     return { success: false, message: 'RDS instance not found' };
   }
   const instanceId = await saveCluster({
-    cluster_identifier: clusterIdentifier,
+    clusterIdentifier,
     integration: 'aws',
-    region: region,
+    region,
     data: instance
   });
   await associateClusterConnection(instanceId, connection.id);

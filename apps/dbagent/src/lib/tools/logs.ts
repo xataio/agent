@@ -19,7 +19,7 @@ export async function getInstanceLogs(connection: DbConnection): Promise<string>
   const rdsClient = initializeRDSClient(awsCredentials, cluster.region);
 
   // Get logs from the last 24 hours
-  const logs = await getRDSClusterLogs(cluster.cluster_identifier, rdsClient);
+  const logs = await getRDSClusterLogs(cluster.clusterIdentifier, rdsClient);
 
   if (logs.length === 0) {
     return 'No logs found for the last 24 hours';

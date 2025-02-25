@@ -48,7 +48,7 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
     void loadSchedules();
   }, []);
 
-  const handleToggleEnabled = async (scheduleId: string, enabled: boolean) => {
+  const handleToggleEnabled = async (scheduleId: number, enabled: boolean) => {
     await actionUpdateScheduleEnabled(scheduleId, enabled);
     // Refresh the schedules list
     const updatedSchedules = await actionGetSchedules();

@@ -1,34 +1,50 @@
+import { and, eq } from 'drizzle-orm';
 import { PerformanceSetting, PgExtension, TableStat } from '../targetdb/db';
-import { pool } from './db';
+import { db } from './db';
+import { dbinfo } from './schema';
 
-export async function saveDbInfo(connid: number, module: string, data: string) {
-  const client = await pool.connect();
-  try {
-    await client.query(
-      'INSERT INTO dbinfo(connid, module, data) VALUES($1, $2, $3) ON CONFLICT (connid, module) DO UPDATE SET data = $3',
-      [connid, module, data]
-    );
-  } finally {
-    client.release();
-  }
+type DbInfoModules =
+  | {
+      module: 'tables';
+      data: TableStat[];
+    }
+  | {
+      module: 'extensions';
+      data: PgExtension[];
+    }
+  | {
+      module: 'performance_settings';
+      data: PerformanceSetting[];
+    }
+  | {
+      module: 'vacuum_settings';
+      data: PerformanceSetting[];
+    };
+
+type DbInfo = {
+  connid: number;
+} & DbInfoModules;
+
+export async function saveDbInfo({ connid, module, data }: DbInfo) {
+  await db
+    .insert(dbinfo)
+    .values({ connid, module, data })
+    .onConflictDoUpdate({
+      target: [dbinfo.connid, dbinfo.module],
+      set: { data }
+    })
+    .execute();
 }
 
-type DbInfoModules = {
-  tables: TableStat[];
-  extensions: PgExtension[];
-  performance_settings: PerformanceSetting[];
-  vacuum_settings: PerformanceSetting[];
-};
-
-export async function getDbInfo<T extends keyof DbInfoModules>(
+export async function getDbInfo<Key extends DbInfoModules['module'], Value extends DbInfoModules & { module: Key }>(
   connid: number,
-  module: T
-): Promise<DbInfoModules[T] | null> {
-  const client = await pool.connect();
-  try {
-    const result = await client.query('SELECT data FROM dbinfo WHERE connid = $1 AND module = $2', [connid, module]);
-    return result.rows[0]?.data || null;
-  } finally {
-    client.release();
-  }
+  key: Key
+): Promise<Value['data'] | null> {
+  const result = await db
+    .select({ data: dbinfo.data })
+    .from(dbinfo)
+    .where(and(eq(dbinfo.connid, connid), eq(dbinfo.module, key)))
+    .execute();
+
+  return (result[0]?.data as Value['data']) ?? null;
 }

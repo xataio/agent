@@ -27,7 +27,7 @@ export function ChatsUI({ connections }: { connections: DbConnection[] }) {
   const searchParams = useSearchParams();
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [chats, setChats] = useState(mockChats);
-  const defaultConnection = connections.find((c) => c.is_default);
+  const defaultConnection = connections.find((c) => c.isDefault);
   const [connectionId, setConnectionId] = useState<number>(defaultConnection?.id || 0);
   const [model, setModel] = useState('openai-gpt-4o');
   const messagesEndRef = useRef<HTMLDivElement>(null);

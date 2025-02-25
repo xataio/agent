@@ -1,1 +1,0 @@
-ALTER TABLE schedules ADD COLUMN model TEXT DEFAULT 'openai-gpt-4o';

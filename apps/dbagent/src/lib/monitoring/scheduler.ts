@@ -10,7 +10,7 @@ import { env } from '../env/scheduler';
 import { runSchedule } from './runner';
 
 export function shouldRunSchedule(schedule: Schedule, now: Date): boolean {
-  if (schedule.enabled === false || schedule.nextRun === undefined) return false;
+  if (schedule.enabled === false || !schedule.nextRun) return false;
   const nextRun = new Date(schedule.nextRun);
 
   if (schedule.status !== 'scheduled') {

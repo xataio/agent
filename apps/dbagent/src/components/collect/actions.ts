@@ -41,7 +41,7 @@ export async function collectTables(
     return { success: false, message: `Error collecting tables: ${error}`, data: [] };
   }
   try {
-    await saveDbInfo(conn.id, 'tables', JSON.stringify(data));
+    await saveDbInfo({ connid: conn.id, module: 'tables', data });
   } catch (error) {
     return { success: false, message: `Error saving tables: ${error}`, data: [] };
   }
@@ -65,7 +65,7 @@ export async function collectExtensions(
     return { success: false, message: `Error collecting extensions: ${error}`, data: [] };
   }
   try {
-    await saveDbInfo(conn.id, 'extensions', JSON.stringify(data));
+    await saveDbInfo({ connid: conn.id, module: 'extensions', data });
   } catch (error) {
     return { success: false, message: `Error saving extensions: ${error}`, data: [] };
   }
@@ -85,7 +85,7 @@ export async function collectPerformanceSettings(
     return { success: false, message: `Error collecting performance settings: ${error}`, data: [] };
   }
   try {
-    await saveDbInfo(conn.id, 'performance_settings', JSON.stringify(data));
+    await saveDbInfo({ connid: conn.id, module: 'performance_settings', data });
   } catch (error) {
     return { success: false, message: `Error saving performance settings: ${error}`, data: [] };
   }
@@ -105,7 +105,7 @@ export async function collectVacuumData(
     return { success: false, message: `Error collecting vacuum data: ${error}`, data: [] };
   }
   try {
-    await saveDbInfo(conn.id, 'vacuum_settings', JSON.stringify(data));
+    await saveDbInfo({ connid: conn.id, module: 'vacuum_settings', data });
   } catch (error) {
     return { success: false, message: `Error saving vacuum data: ${error}`, data: [] };
   }
