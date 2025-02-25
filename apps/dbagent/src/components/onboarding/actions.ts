@@ -3,6 +3,7 @@
 import { getClusters } from '~/lib/db/clusters';
 import { getDefaultConnection } from '~/lib/db/connections';
 import { getDbInfo } from '~/lib/db/dbinfo';
+import { getIntegration } from '~/lib/db/integrations';
 
 // Server action to get completed tasks
 export async function getCompletedTasks(): Promise<string[]> {
@@ -22,6 +23,11 @@ export async function getCompletedTasks(): Promise<string[]> {
   const clusters = await getClusters();
   if (clusters.length > 0) {
     completedTasks.push('cloud');
+  }
+
+  const slack = await getIntegration<'slack'>('slack');
+  if (slack) {
+    completedTasks.push('notifications');
   }
 
   return completedTasks;

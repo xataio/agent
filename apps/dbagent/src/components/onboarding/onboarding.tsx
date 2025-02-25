@@ -1,6 +1,7 @@
 'use client';
 
-import { Activity, Database, GitBranch, Server, TowerControlIcon } from 'lucide-react';
+import { Button } from '@internal/components';
+import { Activity, Check, Database, GitBranch, Server } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getCompletedTasks } from './actions';
@@ -44,15 +45,6 @@ export function Onboarding() {
       navigateTo: '/start/cloud'
     },
     {
-      id: 'report',
-      title: 'Get an initial assessment',
-      description:
-        'I will get an initial assessment of your database, instance/cluster type, main settings and activity and provide you with an initial report.',
-      icon: <TowerControlIcon className="text-primary h-5 w-5" />,
-      buttonText: 'Get initial assessment',
-      navigateTo: '/chats?start=report'
-    },
-    {
       id: 'notifications',
       title: 'Setup Slack notifications',
       description: 'Configure a Slack integration so I can notify you if I find any issues with your database.',
@@ -92,6 +84,30 @@ export function Onboarding() {
             />
           ))}
         </div>
+        {completedTasks.length === tasks.length && (
+          <div className="mt-8 space-y-4 rounded-lg border border-green-200 p-6">
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
+                <Check className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="flex-1 space-y-4">
+                <div>
+                  <h3 className="font-medium">Congratulations! All tasks completed</h3>
+                  <p className="text-muted-foreground mt-2 text-sm">
+                    Great job! You&apos;ve completed all the setup tasks. I&apos;m now ready to help you monitor and
+                    optimize your database.
+                  </p>
+                </div>
+                <div className="flex gap-4">
+                  <Button onClick={() => router.push('/chats?start=report')}>Get Initial Assessment</Button>
+                  <Button onClick={() => router.push('/monitoring')} variant="outline">
+                    Setup Periodic Monitoring
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
