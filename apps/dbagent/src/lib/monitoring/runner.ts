@@ -1,4 +1,4 @@
-import { generateObject, generateText } from 'ai';
+import { CoreMessage, generateObject, generateText } from 'ai';
 import { z } from 'zod';
 import { Schedule } from '~/lib/db/schedules';
 import { getModelInstance, getTools, monitoringSystemPrompt } from '../ai/aidba';
@@ -18,19 +18,24 @@ export async function runSchedule(schedule: Schedule) {
 
   const modelInstance = getModelInstance(schedule.model);
 
+  const messages = [
+    {
+      role: 'user',
+      content: `Run this playbook: ${schedule.playbook}`
+    }
+  ] as CoreMessage[];
+
+  if (schedule.additionalInstructions) {
+    messages.push({
+      role: 'user',
+      content: schedule.additionalInstructions
+    });
+  }
+
   const result = await generateText({
     model: modelInstance,
     system: monitoringSystemPrompt,
-    messages: [
-      {
-        role: 'user',
-        content: `Run this playbook: ${schedule.playbook}`
-      },
-      {
-        role: 'user',
-        content: schedule.additionalInstructions ?? ''
-      }
-    ],
+    messages: messages,
     tools: await getTools(connection, targetClient),
     maxSteps: 20
   });
