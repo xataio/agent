@@ -32,3 +32,8 @@ export async function getCompletedTasks(): Promise<string[]> {
 
   return completedTasks;
 }
+
+export async function getCompletedTaskPercentage(): Promise<number> {
+  const completedTasks = await getCompletedTasks();
+  return Math.round((completedTasks.length / 4) * 100);
+}

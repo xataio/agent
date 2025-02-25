@@ -1,12 +1,44 @@
 'use client';
 
 import { Button } from '@internal/components';
+import confetti from 'canvas-confetti';
 import { Activity, Check, Database, GitBranch, Server } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getCompletedTasks } from './actions';
 import { OnboardingProgress } from './onboarding-progress';
 import { OnboardingTask } from './onboarding-task';
+
+export const onboardingTasks = [
+  {
+    id: 'connect',
+    title: 'Connect to Database',
+    description: `Add at least a database connection. You'd normally configure your production database connection here. Don't worry, I won't run any destructive queries.`,
+    icon: <Database className="text-primary h-5 w-5" />,
+    navigateTo: '/start/connect'
+  },
+  {
+    id: 'collect',
+    title: 'Collect Database Info',
+    description: `Let's check that I have proper access and that I can collect some basic information about your database.`,
+    icon: <Server className="text-primary h-5 w-5" />,
+    navigateTo: '/start/collect'
+  },
+  {
+    id: 'cloud',
+    title: 'Connect cloud management',
+    description: `Use an integration to allow me to read your relevant instance and observability data.`,
+    icon: <Activity className="text-primary h-5 w-5" />,
+    navigateTo: '/start/cloud'
+  },
+  {
+    id: 'notifications',
+    title: 'Setup Slack notifications',
+    description: 'Configure a Slack integration so I can notify you if I find any issues with your database.',
+    icon: <GitBranch className="text-primary h-5 w-5" />,
+    navigateTo: '/start/notifications'
+  }
+];
 
 export function Onboarding() {
   const router = useRouter();
@@ -15,43 +47,25 @@ export function Onboarding() {
   useEffect(() => {
     getCompletedTasks()
       .then((tasks) => {
+        if (tasks.length === onboardingTasks.length && completedTasks.length < onboardingTasks.length) {
+          void confetti({
+            particleCount: 200,
+            spread: 2000,
+            origin: { y: 0.3 }
+          });
+        }
         setCompletedTasks(tasks);
+        // Dispatch a custom event when tasks are loaded
+        window.dispatchEvent(
+          new CustomEvent('onboardingStatusChanged', {
+            detail: { completed: Math.round((tasks.length / onboardingTasks.length) * 100) }
+          })
+        );
       })
       .catch((error) => {
         console.error('Failed to load completed tasks:', error);
       });
   }, []);
-
-  const tasks = [
-    {
-      id: 'connect',
-      title: 'Connect to Database',
-      description: `Add at least a database connection. You'd normally configure your production database connection here. Don't worry, I won't run any destructive queries.`,
-      icon: <Database className="text-primary h-5 w-5" />,
-      navigateTo: '/start/connect'
-    },
-    {
-      id: 'collect',
-      title: 'Collect Database Info',
-      description: `Let's check that I have proper access and that I can collect some basic information about your database.`,
-      icon: <Server className="text-primary h-5 w-5" />,
-      navigateTo: '/start/collect'
-    },
-    {
-      id: 'cloud',
-      title: 'Connect cloud management',
-      description: `Use an integration to allow me to read your relevant instance and observability data.`,
-      icon: <Activity className="text-primary h-5 w-5" />,
-      navigateTo: '/start/cloud'
-    },
-    {
-      id: 'notifications',
-      title: 'Setup Slack notifications',
-      description: 'Configure a Slack integration so I can notify you if I find any issues with your database.',
-      icon: <GitBranch className="text-primary h-5 w-5" />,
-      navigateTo: '/start/notifications'
-    }
-  ];
 
   const handleTaskAction = async (navigateTo: string) => {
     router.push(navigateTo);
@@ -69,22 +83,22 @@ export function Onboarding() {
           </p>
         </div>
 
-        <OnboardingProgress completedSteps={completedTasks.length} totalSteps={tasks.length} />
+        <OnboardingProgress completedSteps={completedTasks.length} totalSteps={onboardingTasks.length} />
 
         <div className="space-y-4">
-          {tasks.map((task) => (
+          {onboardingTasks.map((task) => (
             <OnboardingTask
               key={task.id}
               title={task.title}
               description={task.description}
               icon={task.icon}
-              buttonText={task.buttonText || 'Setup'}
+              buttonText="Setup"
               isCompleted={completedTasks.includes(task.id)}
               onAction={() => handleTaskAction(task.navigateTo)}
             />
           ))}
         </div>
-        {completedTasks.length === tasks.length && (
+        {completedTasks.length === onboardingTasks.length && (
           <div className="mt-8 space-y-4 rounded-lg border border-green-200 p-6">
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">

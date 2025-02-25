@@ -1,3 +1,4 @@
+import { DbConnection } from '../db/connections';
 import { getIntegration } from '../db/integrations';
 import { Schedule } from '../db/schedules';
 import { env } from '../env/general';
