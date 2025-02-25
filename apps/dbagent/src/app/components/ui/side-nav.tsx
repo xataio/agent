@@ -3,10 +3,10 @@
 import { cn, Input } from '@internal/components';
 import {
   ActivityIcon,
+  AlarmClock,
   BotMessageSquare,
   CloudIcon,
   DatabaseIcon,
-  GitBranch,
   PlugIcon,
   Server,
   ZapIcon
@@ -68,11 +68,11 @@ export function SideNav({ className }: SideNavProps) {
 
         <nav className="space-y-2">
           <Link
-            href="/start/environments"
+            href="/start/notifications"
             className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-xs', isActive(`/start/environments`))}
           >
-            <GitBranch className="h-4 w-4 pl-2" />
-            Setup environments
+            <AlarmClock className="h-4 w-4 pl-2" />
+            Setup notifications
           </Link>
         </nav>
 

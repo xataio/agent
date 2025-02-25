@@ -6,8 +6,13 @@ export type AwsIntegration = {
   region: string;
 };
 
+export type SlackIntegration = {
+  webhookUrl: string;
+};
+
 type IntegrationModules = {
   aws: AwsIntegration;
+  slack: SlackIntegration;
 };
 
 export async function saveIntegration<T extends keyof IntegrationModules>(name: T, data: IntegrationModules[T]) {

@@ -53,12 +53,11 @@ export function Onboarding() {
       navigateTo: '/chats?start=report'
     },
     {
-      id: 'environments',
-      title: 'Setup staging and dev environments',
-      description:
-        'If I can use a staging environment that supports copy-on-write branches, I will be able to test changes in a safe environment on my own.',
+      id: 'notifications',
+      title: 'Setup Slack notifications',
+      description: 'Configure a Slack integration so I can notify you if I find any issues with your database.',
       icon: <GitBranch className="text-primary h-5 w-5" />,
-      navigateTo: '/start/environments'
+      navigateTo: '/start/notifications'
     }
   ];
 

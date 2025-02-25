@@ -31,7 +31,7 @@ export async function fetchRDSClusters(
 export async function fetchRDSClusterDetails(
   clusterIdentifier: string
 ): Promise<{ success: boolean; message: string; data: RDSClusterDetailedInfo | null }> {
-  const aws = await getIntegration('aws');
+  const aws = await getIntegration<'aws'>('aws');
   if (!aws) {
     return { success: false, message: 'AWS integration not found', data: null };
   }
@@ -49,7 +49,7 @@ export async function fetchRDSClusterDetails(
 
 export async function getAWSIntegration(): Promise<{ success: boolean; message: string; data: AwsIntegration | null }> {
   try {
-    const aws = await getIntegration('aws');
+    const aws = await getIntegration<'aws'>('aws');
     if (!aws) {
       return { success: false, message: 'AWS integration not found', data: null };
     }
@@ -65,7 +65,7 @@ export async function saveClusterDetails(
   region: string,
   connection: DbConnection
 ): Promise<{ success: boolean; message: string }> {
-  const aws = await getIntegration('aws');
+  const aws = await getIntegration<'aws'>('aws');
   if (!aws) {
     return { success: false, message: 'AWS integration not found' };
   }
