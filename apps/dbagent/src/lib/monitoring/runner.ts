@@ -60,6 +60,7 @@ export async function runSchedule(schedule: Schedule) {
 
   await sendScheduleNotification(
     schedule,
+    connection,
     notificationResult.object.notificationLevel,
     notificationResult.object.summary,
     result.text

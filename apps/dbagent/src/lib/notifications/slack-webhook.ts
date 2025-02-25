@@ -6,6 +6,7 @@ export type NotificationLevel = 'info' | 'warning' | 'alert';
 
 export async function sendScheduleNotification(
   schedule: Schedule,
+  connection: DbConnection,
   level: NotificationLevel,
   title: string,
   message: string
@@ -40,6 +41,27 @@ export async function sendScheduleNotification(
         }
       },
       {
+        type: 'section',
+        fields: [
+          {
+            type: 'mrkdwn',
+            text: '*Database:*\n' + connection.name
+          },
+          {
+            type: 'mrkdwn',
+            text: '*Playbook:*\n' + schedule.playbook
+          },
+          {
+            type: 'mrkdwn',
+            text: '*Model:*\n' + schedule.model
+          },
+          {
+            type: 'mrkdwn',
+            text: '*Schedule:*\n' + (schedule.scheduleType === 'cron' ? schedule.cronExpression : 'Automatic')
+          }
+        ]
+      },
+      {
         type: 'divider'
       },
       {
@@ -47,6 +69,16 @@ export async function sendScheduleNotification(
         text: {
           type: 'mrkdwn',
           text: message
+        }
+      },
+      {
+        type: 'divider'
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `I'll do the next check at *${schedule.nextRun}*`
         }
       },
       {
