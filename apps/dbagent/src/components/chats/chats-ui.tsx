@@ -15,7 +15,7 @@ import {
 import { useChat } from 'ai/react';
 import { Bot, Clock, Lightbulb, Send, User, Wrench } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { DbConnection } from '~/lib/db/connections';
 import { ChatSidebar } from './chat-sidebar';
@@ -24,6 +24,14 @@ import { mockChats } from './mock-data';
 import { ModelSelector } from './model-selector';
 
 export function ChatsUI({ connections }: { connections: DbConnection[] }) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ChatsUIContent connections={connections} />
+    </Suspense>
+  );
+}
+
+function ChatsUIContent({ connections }: { connections: DbConnection[] }) {
   const searchParams = useSearchParams();
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [chats, setChats] = useState(mockChats);

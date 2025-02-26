@@ -6,8 +6,13 @@ export type AwsIntegration = {
   region: string;
 };
 
+export type SlackIntegration = {
+  webhookUrl: string;
+};
+
 type IntegrationModules = {
   aws: AwsIntegration;
+  slack: SlackIntegration;
 };
 
 export async function saveIntegration<T extends keyof IntegrationModules>(name: T, data: IntegrationModules[T]) {
@@ -23,7 +28,7 @@ export async function saveIntegration<T extends keyof IntegrationModules>(name: 
 }
 
 export async function getIntegration<T extends keyof IntegrationModules>(
-  name: string
+  name: T
 ): Promise<IntegrationModules[T] | null> {
   const client = await pool.connect();
   try {
