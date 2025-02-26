@@ -137,7 +137,7 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
           ) : (
             schedules.map((schedule) => (
               <TableRow key={schedule.id}>
-                <TableCell>{connections.find((c) => c.id === Number(schedule.connectionId))?.name}</TableCell>
+                <TableCell>{connections.find((c) => c.id === schedule.connectionId)?.name}</TableCell>
                 <TableCell>{schedule.playbook}</TableCell>
                 <TableCell className="font-medium">
                   {schedule.scheduleType === 'cron' ? schedule.cronExpression : 'Automatic'}

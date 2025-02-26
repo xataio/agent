@@ -32,12 +32,12 @@ export function ConnectionsList() {
     void loadConnections();
   }, [router]);
 
-  const handleMakeDefault = async (id: number) => {
+  const handleMakeDefault = async (id: string) => {
     await actionMakeConnectionDefault(id);
     setConnections(
       connections.map((conn) => ({
         ...conn,
-        is_default: conn.id === id
+        isDefault: conn.id === id
       }))
     );
   };
@@ -70,7 +70,7 @@ export function ConnectionsList() {
                 </Button>
               </TableCell>
               <TableCell>
-                {connection.is_default ? (
+                {connection.isDefault ? (
                   <div className="flex items-center justify-center">
                     <CheckIcon className="h-5 w-5 text-green-500" />
                   </div>

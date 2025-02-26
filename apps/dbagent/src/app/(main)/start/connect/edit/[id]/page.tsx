@@ -1,6 +1,6 @@
 import { ConnectionForm } from '~/components/connections/connection-form';
 
-export default async function EditConnection({ params }: { params: Promise<{ id: number }> }) {
+export default async function EditConnection({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   return (
     <div className="container mx-auto p-4">

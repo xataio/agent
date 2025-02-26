@@ -35,8 +35,8 @@ function ChatsUIContent({ connections }: { connections: DbConnection[] }) {
   const searchParams = useSearchParams();
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [chats, setChats] = useState(mockChats);
-  const defaultConnection = connections.find((c) => c.is_default);
-  const [connectionId, setConnectionId] = useState<number>(defaultConnection?.id || 0);
+  const defaultConnection = connections.find((c) => c.isDefault);
+  const [connectionId, setConnectionId] = useState<string>(defaultConnection?.id || '');
   const [model, setModel] = useState('openai-gpt-4o');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -109,7 +109,7 @@ function ChatsUIContent({ connections }: { connections: DbConnection[] }) {
     });
   };
 
-  const handleContextSelect = (connectionId: number) => {
+  const handleContextSelect = (connectionId: string) => {
     setConnectionId(connectionId);
     // In a real application, you might want to update the chat or reload data based on the new context
   };

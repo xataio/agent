@@ -26,7 +26,7 @@ export async function generateCronExpression(description: string): Promise<strin
   return text.trim();
 }
 
-export async function actionCreateSchedule(schedule: Schedule): Promise<Schedule> {
+export async function actionCreateSchedule(schedule: Omit<Schedule, 'id'>): Promise<Schedule> {
   if (schedule.enabled) {
     schedule.status = 'scheduled';
     schedule.nextRun = scheduleGetNextRun(schedule, new Date()).toISOString();

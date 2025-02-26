@@ -1,4 +1,6 @@
-import { pool } from './db';
+import { eq } from 'drizzle-orm';
+import { db } from './db';
+import { integrations } from './schema';
 
 export type AwsIntegration = {
   accessKeyId: string;
@@ -10,31 +12,38 @@ export type SlackIntegration = {
   webhookUrl: string;
 };
 
-type IntegrationModules = {
-  aws: AwsIntegration;
-  slack: SlackIntegration;
-};
+type IntegrationModules =
+  | {
+      module: 'aws';
+      data: AwsIntegration;
+    }
+  | {
+      module: 'slack';
+      data: SlackIntegration;
+    };
 
-export async function saveIntegration<T extends keyof IntegrationModules>(name: T, data: IntegrationModules[T]) {
-  const client = await pool.connect();
-  try {
-    await client.query(
-      'INSERT INTO integrations(name, data) VALUES($1, $2) ON CONFLICT (name) DO UPDATE SET data = $2',
-      [name, data]
-    );
-  } finally {
-    client.release();
-  }
+export async function saveIntegration<
+  Key extends IntegrationModules['module'],
+  Value extends IntegrationModules & { module: Key }
+>(name: Key, data: Value['data']) {
+  await db
+    .insert(integrations)
+    .values({
+      name: name,
+      data: data
+    })
+    .onConflictDoUpdate({
+      target: integrations.name,
+      set: {
+        data: data
+      }
+    });
 }
 
-export async function getIntegration<T extends keyof IntegrationModules>(
-  name: T
-): Promise<IntegrationModules[T] | null> {
-  const client = await pool.connect();
-  try {
-    const result = await client.query('SELECT * FROM integrations WHERE name = $1', [name]);
-    return result.rows[0]?.data;
-  } finally {
-    client.release();
-  }
+export async function getIntegration<
+  Key extends IntegrationModules['module'],
+  Value extends IntegrationModules & { module: Key }
+>(name: Key): Promise<Value['data'] | null> {
+  const result = await db.select().from(integrations).where(eq(integrations.name, name));
+  return (result[0]?.data as Value['data']) || null;
 }

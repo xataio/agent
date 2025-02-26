@@ -15,7 +15,7 @@ export function DatabaseConnectionSelector({
   region,
   connections
 }: DatabaseConnectionSelectorProps) {
-  const defaultConnection = connections.find((c) => c.is_default);
+  const defaultConnection = connections.find((c) => c.isDefault);
   const [selectedConnection, setSelectedConnection] = useState<DbConnection | undefined>(defaultConnection);
 
   const handleAssociate = async () => {
@@ -42,7 +42,7 @@ export function DatabaseConnectionSelector({
             const conn = connections.find((c) => c.name === name);
             setSelectedConnection(conn);
           }}
-          defaultValue={connections.find((c) => c.is_default)?.name}
+          defaultValue={connections.find((c) => c.isDefault)?.name}
         >
           <SelectTrigger className="w-[250px]">
             <SelectValue placeholder="Select a database connection" />

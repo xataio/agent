@@ -16,7 +16,7 @@ interface CollectInfoProps {
 export function CollectInfo({ connections }: CollectInfoProps) {
   const [isCollecting] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
-  const defaultConnection = connections.find((c) => c.is_default);
+  const defaultConnection = connections.find((c) => c.isDefault);
   const [selectedConnection, setSelectedConnection] = useState<DbConnection | undefined>(defaultConnection);
   const [refreshKey, setRefreshKey] = useState(0);
   const [collectData, setCollectData] = useState<CollectInfoType | null>(null);
@@ -67,7 +67,7 @@ export function CollectInfo({ connections }: CollectInfoProps) {
             const conn = connections.find((c) => c.id.toString() === id);
             setSelectedConnection(conn);
           }}
-          defaultValue={connections.find((c) => c.is_default)?.id.toString()}
+          defaultValue={connections.find((c) => c.isDefault)?.id.toString()}
         >
           <SelectTrigger className="w-[280px]">
             <SelectValue placeholder="Select a connection" />

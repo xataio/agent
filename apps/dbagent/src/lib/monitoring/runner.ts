@@ -9,7 +9,7 @@ import { getTargetDbConnection } from '../targetdb/db';
 export async function runSchedule(schedule: Schedule) {
   console.log(`Running schedule ${schedule.id}`);
 
-  const connection = await getConnection(Number(schedule.connectionId));
+  const connection = await getConnection(schedule.connectionId);
   if (!connection) {
     throw new Error(`Connection ${schedule.connectionId} not found`);
   }
