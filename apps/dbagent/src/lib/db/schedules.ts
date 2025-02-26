@@ -1,5 +1,6 @@
 import { CronExpressionParser } from 'cron-parser';
 import { eq, sql } from 'drizzle-orm';
+import { PartialBy } from '~/utils/types';
 import { db } from './db';
 import { schedules } from './schema';
 
@@ -20,7 +21,7 @@ export type Schedule = {
   enabled: boolean;
 };
 
-export function scheduleGetNextRun(schedule: Schedule, now: Date): Date {
+export function scheduleGetNextRun(schedule: PartialBy<Schedule, 'id'>, now: Date): Date {
   if (schedule.scheduleType === 'cron' && schedule.cronExpression) {
     const interval = CronExpressionParser.parse(schedule.cronExpression);
     return interval.next().toDate();

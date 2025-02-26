@@ -47,16 +47,23 @@ const formSchema = z.object({
   enabled: z.boolean()
 });
 
-export function ScheduleForm({
-  scheduleId,
-  playbooks,
-  connections
-}: {
-  scheduleId: string;
+type ScheduleFormEditParams =
+  | {
+      isEditMode: true;
+      scheduleId: string;
+    }
+  | {
+      isEditMode: false;
+      scheduleId?: never;
+    };
+
+type ScheduleFormParams = {
   playbooks: string[];
   connections: DbConnection[];
   connection?: string;
-}) {
+} & ScheduleFormEditParams;
+
+export function ScheduleForm({ isEditMode, scheduleId, playbooks, connections }: ScheduleFormParams) {
   const router = useRouter();
   const [showCronModal, setShowCronModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -74,7 +81,6 @@ export function ScheduleForm({
       enabled: true
     }
   });
-  const isEditMode = scheduleId !== 'add';
 
   useEffect(() => {
     if (isEditMode) {
@@ -97,8 +103,7 @@ export function ScheduleForm({
   }, [isEditMode, form.reset, scheduleId]);
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    const schedule: Schedule = {
-      id: scheduleId,
+    const schedule: Omit<Schedule, 'id'> = {
       connectionId: connections.find((c) => c.name === data.connection)?.id.toString() || '',
       model: data.model,
       playbook: data.playbook,
@@ -111,7 +116,7 @@ export function ScheduleForm({
       status: data.enabled ? 'scheduled' : 'disabled'
     };
     if (isEditMode) {
-      await actionUpdateSchedule(schedule);
+      await actionUpdateSchedule({ ...schedule, id: scheduleId });
     } else {
       await actionCreateSchedule(schedule);
     }
@@ -120,6 +125,8 @@ export function ScheduleForm({
   };
 
   const handleDelete = async () => {
+    if (!scheduleId) return;
+
     await actionDeleteSchedule(scheduleId);
     router.push('/monitoring');
   };

@@ -1,7 +1,7 @@
 'use server';
-import { BelowHeaderBar, HeaderBar } from '~/app/components/ui/header-bar';
 import { getCompletedTaskPercentage } from '~/components/onboarding/actions';
-import { SideNav } from '../components/ui/side-nav';
+import { BelowHeaderBar, HeaderBar } from '~/components/ui/header-bar';
+import { SideNav } from '~/components/ui/side-nav';
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const onboardingComplete = await getCompletedTaskPercentage();
