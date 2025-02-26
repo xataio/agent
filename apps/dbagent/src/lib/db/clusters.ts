@@ -10,7 +10,7 @@ export type Cluster = {
   data: RDSClusterDetailedInfo;
 };
 
-export async function saveCluster(cluster: Cluster): Promise<number> {
+export async function saveCluster(cluster: Cluster): Promise<string> {
   const result = await db
     .insert(clusters)
     .values(cluster)
@@ -30,11 +30,11 @@ export async function saveCluster(cluster: Cluster): Promise<number> {
   return result[0].id;
 }
 
-export async function associateClusterConnection(clusterId: number, connectionId: number): Promise<void> {
+export async function associateClusterConnection(clusterId: string, connectionId: string): Promise<void> {
   await db.insert(assoc_cluster_connections).values({ clusterId, connectionId });
 }
 
-export async function getClusterByConnection(connectionId: number): Promise<Cluster | null> {
+export async function getClusterByConnection(connectionId: string): Promise<Cluster | null> {
   const result = await db
     .select()
     .from(clusters)

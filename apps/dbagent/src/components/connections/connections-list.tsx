@@ -32,7 +32,7 @@ export function ConnectionsList() {
     void loadConnections();
   }, [router]);
 
-  const handleMakeDefault = async (id: number) => {
+  const handleMakeDefault = async (id: string) => {
     await actionMakeConnectionDefault(id);
     setConnections(
       connections.map((conn) => ({

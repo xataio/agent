@@ -22,28 +22,28 @@ type DbInfoModules =
     };
 
 type DbInfo = {
-  connid: number;
+  connectionId: string;
 } & DbInfoModules;
 
-export async function saveDbInfo({ connid, module, data }: DbInfo) {
+export async function saveDbInfo({ connectionId, module, data }: DbInfo) {
   await db
     .insert(dbinfo)
-    .values({ connid, module, data })
+    .values({ connectionId, module, data })
     .onConflictDoUpdate({
-      target: [dbinfo.connid, dbinfo.module],
+      target: [dbinfo.connectionId, dbinfo.module],
       set: { data }
     })
     .execute();
 }
 
 export async function getDbInfo<Key extends DbInfoModules['module'], Value extends DbInfoModules & { module: Key }>(
-  connid: number,
+  connectionId: string,
   key: Key
 ): Promise<Value['data'] | null> {
   const result = await db
     .select({ data: dbinfo.data })
     .from(dbinfo)
-    .where(and(eq(dbinfo.connid, connid), eq(dbinfo.module, key)))
+    .where(and(eq(dbinfo.connectionId, connectionId), eq(dbinfo.module, key)))
     .execute();
 
   return (result[0]?.data as Value['data']) ?? null;

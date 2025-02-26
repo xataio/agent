@@ -3,7 +3,7 @@ import { db } from './db';
 import { connections } from './schema';
 
 export type DbConnection = {
-  id: number;
+  id: string;
   name: string;
   connstring: string;
   isDefault: boolean;
@@ -18,19 +18,19 @@ export async function getDefaultConnection(): Promise<DbConnection | null> {
   return result[0] ?? null;
 }
 
-export async function getConnection(id: number): Promise<DbConnection | null> {
+export async function getConnection(id: string): Promise<DbConnection | null> {
   const result = await db.select().from(connections).where(eq(connections.id, id));
   return result[0] ?? null;
 }
 
-export async function makeConnectionDefault(id: number): Promise<void> {
+export async function makeConnectionDefault(id: string): Promise<void> {
   await db.transaction(async (trx) => {
     await trx.update(connections).set({ isDefault: false }).where(eq(connections.isDefault, true));
     await trx.update(connections).set({ isDefault: true }).where(eq(connections.id, id));
   });
 }
 
-export async function deleteConnection(id: number): Promise<void> {
+export async function deleteConnection(id: string): Promise<void> {
   await db.transaction(async (trx) => {
     const wasDefault = await trx
       .select({ isDefault: connections.isDefault })
@@ -63,7 +63,7 @@ export async function updateConnection({
   name,
   connstring
 }: {
-  id: number;
+  id: string;
   name: string;
   connstring: string;
 }): Promise<DbConnection> {

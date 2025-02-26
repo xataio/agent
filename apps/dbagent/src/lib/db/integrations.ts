@@ -8,10 +8,19 @@ export type AwsIntegration = {
   region: string;
 };
 
-type IntegrationModules = {
-  module: 'aws';
-  data: AwsIntegration;
+export type SlackIntegration = {
+  webhookUrl: string;
 };
+
+type IntegrationModules =
+  | {
+      module: 'aws';
+      data: AwsIntegration;
+    }
+  | {
+      module: 'slack';
+      data: SlackIntegration;
+    };
 
 export async function saveIntegration<
   Key extends IntegrationModules['module'],

@@ -15,7 +15,7 @@ import {
 import { useChat } from 'ai/react';
 import { Bot, Clock, Lightbulb, Send, User, Wrench } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { DbConnection } from '~/lib/db/connections';
 import { ChatSidebar } from './chat-sidebar';
@@ -24,11 +24,19 @@ import { mockChats } from './mock-data';
 import { ModelSelector } from './model-selector';
 
 export function ChatsUI({ connections }: { connections: DbConnection[] }) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ChatsUIContent connections={connections} />
+    </Suspense>
+  );
+}
+
+function ChatsUIContent({ connections }: { connections: DbConnection[] }) {
   const searchParams = useSearchParams();
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [chats, setChats] = useState(mockChats);
   const defaultConnection = connections.find((c) => c.isDefault);
-  const [connectionId, setConnectionId] = useState<number>(defaultConnection?.id || 0);
+  const [connectionId, setConnectionId] = useState<string>(defaultConnection?.id || '');
   const [model, setModel] = useState('openai-gpt-4o');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -101,7 +109,7 @@ export function ChatsUI({ connections }: { connections: DbConnection[] }) {
     });
   };
 
-  const handleContextSelect = (connectionId: number) => {
+  const handleContextSelect = (connectionId: string) => {
     setConnectionId(connectionId);
     // In a real application, you might want to update the chat or reload data based on the new context
   };

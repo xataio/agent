@@ -25,7 +25,7 @@ function translateError(error: string) {
   return error;
 }
 
-export async function actionSaveConnection(id: number | null, name: string, connstring: string) {
+export async function actionSaveConnection(id: string | null, name: string, connstring: string) {
   try {
     const validateResult = await validateConnection(connstring);
     if (!validateResult.success) {
@@ -33,7 +33,7 @@ export async function actionSaveConnection(id: number | null, name: string, conn
     }
 
     if (id) {
-      await updateConnection({ id: id, name: name, connstring: connstring });
+      await updateConnection({ id, name, connstring: connstring });
       return { success: true, message: 'Connection updated successfully' };
     } else {
       await addConnection({ name: name, connstring: connstring });
@@ -45,7 +45,7 @@ export async function actionSaveConnection(id: number | null, name: string, conn
   }
 }
 
-export async function actionMakeConnectionDefault(id: number) {
+export async function actionMakeConnectionDefault(id: string) {
   try {
     const result = await makeConnectionDefault(id);
     revalidatePath('/connections');
@@ -56,11 +56,11 @@ export async function actionMakeConnectionDefault(id: number) {
   }
 }
 
-export async function actionGetConnection(id: number) {
+export async function actionGetConnection(id: string) {
   return await getConnection(id);
 }
 
-export async function actionDeleteConnection(id: number) {
+export async function actionDeleteConnection(id: string) {
   return await deleteConnection(id);
 }
 

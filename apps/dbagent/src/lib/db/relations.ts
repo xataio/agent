@@ -15,7 +15,7 @@ export const integrationsRelations = relations(integrations, ({ many }) => ({
 
 export const dbinfoRelations = relations(dbinfo, ({ one }) => ({
   connection: one(connections, {
-    fields: [dbinfo.connid],
+    fields: [dbinfo.connectionId],
     references: [connections.id]
   })
 }));

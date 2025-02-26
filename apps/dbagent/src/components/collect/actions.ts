@@ -41,7 +41,7 @@ export async function collectTables(
     return { success: false, message: `Error collecting tables: ${error}`, data: [] };
   }
   try {
-    await saveDbInfo({ connid: conn.id, module: 'tables', data });
+    await saveDbInfo({ connectionId: conn.id, module: 'tables', data });
   } catch (error) {
     return { success: false, message: `Error saving tables: ${error}`, data: [] };
   }
@@ -65,7 +65,7 @@ export async function collectExtensions(
     return { success: false, message: `Error collecting extensions: ${error}`, data: [] };
   }
   try {
-    await saveDbInfo({ connid: conn.id, module: 'extensions', data });
+    await saveDbInfo({ connectionId: conn.id, module: 'extensions', data });
   } catch (error) {
     return { success: false, message: `Error saving extensions: ${error}`, data: [] };
   }
@@ -85,7 +85,7 @@ export async function collectPerformanceSettings(
     return { success: false, message: `Error collecting performance settings: ${error}`, data: [] };
   }
   try {
-    await saveDbInfo({ connid: conn.id, module: 'performance_settings', data });
+    await saveDbInfo({ connectionId: conn.id, module: 'performance_settings', data });
   } catch (error) {
     return { success: false, message: `Error saving performance settings: ${error}`, data: [] };
   }
@@ -93,19 +93,19 @@ export async function collectPerformanceSettings(
 }
 
 export async function collectVacuumData(
-  conn: DbConnection | undefined
+  connection: DbConnection | undefined
 ): Promise<{ success: boolean; message?: string; data: PerformanceSetting[] }> {
-  if (!conn) {
+  if (!connection) {
     return { success: false, message: 'No connection selected', data: [] };
   }
   let data: PerformanceSetting[] = [];
   try {
-    data = await getVacuumSettings(conn.connstring);
+    data = await getVacuumSettings(connection.connstring);
   } catch (error) {
     return { success: false, message: `Error collecting vacuum data: ${error}`, data: [] };
   }
   try {
-    await saveDbInfo({ connid: conn.id, module: 'vacuum_settings', data });
+    await saveDbInfo({ connectionId: connection.id, module: 'vacuum_settings', data });
   } catch (error) {
     return { success: false, message: `Error saving vacuum data: ${error}`, data: [] };
   }

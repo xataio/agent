@@ -37,7 +37,7 @@ import { CronExpressionModal } from './cron-expression-modal';
 
 const formSchema = z.object({
   playbook: z.string().min(1, { message: 'Please select a playbook' }),
-  connection: z.number().positive({ message: 'Please select a connection' }),
+  connection: z.string().min(1, { message: 'Please select a connection' }),
   model: z.string().min(1, { message: 'Please select a model' }),
   scheduleType: z.enum(['automatic', 'cron']),
   minInterval: z.string().optional(),
@@ -48,13 +48,11 @@ const formSchema = z.object({
 });
 
 export function ScheduleForm({
-  isEditMode,
   scheduleId,
   playbooks,
   connections
 }: {
-  isEditMode: boolean;
-  scheduleId: number;
+  scheduleId: string;
   playbooks: string[];
   connections: DbConnection[];
   connection?: string;
@@ -66,7 +64,7 @@ export function ScheduleForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       playbook: playbooks[0] || '',
-      connection: connections.find((c) => c.isDefault)?.id || -1,
+      connection: connections.find((c) => c.isDefault)?.name || '',
       model: 'openai-gpt-4o',
       scheduleType: 'cron',
       minInterval: '5',
@@ -76,6 +74,7 @@ export function ScheduleForm({
       enabled: true
     }
   });
+  const isEditMode = scheduleId !== 'add';
 
   useEffect(() => {
     if (isEditMode) {
@@ -83,7 +82,7 @@ export function ScheduleForm({
         const schedule = await actionGetSchedule(scheduleId);
         form.reset({
           playbook: schedule.playbook,
-          connection: connections.find((c) => c.id === Number(schedule.connectionId))?.id || -1,
+          connection: connections.find((c) => c.id === schedule.connectionId)?.name || '',
           model: schedule.model || 'openai-gpt-4o',
           scheduleType: schedule.scheduleType as 'automatic' | 'cron',
           cronExpression: schedule.cronExpression ?? undefined,
@@ -100,7 +99,7 @@ export function ScheduleForm({
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     const schedule: Schedule = {
       id: scheduleId,
-      connectionId: connections.find((c) => c.id === data.connection)?.id || -1,
+      connectionId: connections.find((c) => c.name === data.connection)?.id.toString() || '',
       model: data.model,
       playbook: data.playbook,
       scheduleType: data.scheduleType,
@@ -140,7 +139,7 @@ export function ScheduleForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Database</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a database" />
@@ -148,7 +147,7 @@ export function ScheduleForm({
                       </FormControl>
                       <SelectContent>
                         {connections.map((connection) => (
-                          <SelectItem key={connection.id} value={String(connection.id)}>
+                          <SelectItem key={connection.name} value={connection.name}>
                             {connection.name}
                           </SelectItem>
                         ))}

@@ -1,11 +1,44 @@
 'use client';
 
-import { Activity, Database, GitBranch, Server, TowerControlIcon } from 'lucide-react';
+import { Button } from '@internal/components';
+import confetti from 'canvas-confetti';
+import { Activity, Check, Database, GitBranch, Server } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getCompletedTasks } from './actions';
 import { OnboardingProgress } from './onboarding-progress';
 import { OnboardingTask } from './onboarding-task';
+
+export const onboardingTasks = [
+  {
+    id: 'connect',
+    title: 'Connect to Database',
+    description: `Add at least a database connection. You'd normally configure your production database connection here. Don't worry, I won't run any destructive queries.`,
+    icon: <Database className="text-primary h-5 w-5" />,
+    navigateTo: '/start/connect'
+  },
+  {
+    id: 'collect',
+    title: 'Collect Database Info',
+    description: `Let's check that I have proper access and that I can collect some basic information about your database.`,
+    icon: <Server className="text-primary h-5 w-5" />,
+    navigateTo: '/start/collect'
+  },
+  {
+    id: 'cloud',
+    title: 'Connect cloud management',
+    description: `Use an integration to allow me to read your relevant instance and observability data.`,
+    icon: <Activity className="text-primary h-5 w-5" />,
+    navigateTo: '/start/cloud'
+  },
+  {
+    id: 'notifications',
+    title: 'Setup Slack notifications',
+    description: 'Configure a Slack integration so I can notify you if I find any issues with your database.',
+    icon: <GitBranch className="text-primary h-5 w-5" />,
+    navigateTo: '/start/notifications'
+  }
+];
 
 export function Onboarding() {
   const router = useRouter();
@@ -14,53 +47,25 @@ export function Onboarding() {
   useEffect(() => {
     getCompletedTasks()
       .then((tasks) => {
+        if (tasks.length === onboardingTasks.length && completedTasks.length < onboardingTasks.length) {
+          void confetti({
+            particleCount: 200,
+            spread: 2000,
+            origin: { y: 0.3 }
+          });
+        }
         setCompletedTasks(tasks);
+        // Dispatch a custom event when tasks are loaded
+        window.dispatchEvent(
+          new CustomEvent('onboardingStatusChanged', {
+            detail: { completed: Math.round((tasks.length / onboardingTasks.length) * 100) }
+          })
+        );
       })
       .catch((error) => {
         console.error('Failed to load completed tasks:', error);
       });
   }, []);
-
-  const tasks = [
-    {
-      id: 'connect',
-      title: 'Connect to Database',
-      description: `Add at least a database connection. You'd normally configure your production database connection here. Don't worry, I won't run any destructive queries.`,
-      icon: <Database className="text-primary h-5 w-5" />,
-      navigateTo: '/start/connect'
-    },
-    {
-      id: 'collect',
-      title: 'Collect Database Info',
-      description: `Let's check that I have proper access and that I can collect some basic information about your database.`,
-      icon: <Server className="text-primary h-5 w-5" />,
-      navigateTo: '/start/collect'
-    },
-    {
-      id: 'cloud',
-      title: 'Connect cloud management',
-      description: `Use an integration to allow me to read your relevant instance and observability data.`,
-      icon: <Activity className="text-primary h-5 w-5" />,
-      navigateTo: '/start/cloud'
-    },
-    {
-      id: 'report',
-      title: 'Get an initial assessment',
-      description:
-        'I will get an initial assessment of your database, instance/cluster type, main settings and activity and provide you with an initial report.',
-      icon: <TowerControlIcon className="text-primary h-5 w-5" />,
-      buttonText: 'Get initial assessment',
-      navigateTo: '/chats?start=report'
-    },
-    {
-      id: 'environments',
-      title: 'Setup staging and dev environments',
-      description:
-        'If I can use a staging environment that supports copy-on-write branches, I will be able to test changes in a safe environment on my own.',
-      icon: <GitBranch className="text-primary h-5 w-5" />,
-      navigateTo: '/start/environments'
-    }
-  ];
 
   const handleTaskAction = async (navigateTo: string) => {
     router.push(navigateTo);
@@ -78,21 +83,45 @@ export function Onboarding() {
           </p>
         </div>
 
-        <OnboardingProgress completedSteps={completedTasks.length} totalSteps={tasks.length} />
+        <OnboardingProgress completedSteps={completedTasks.length} totalSteps={onboardingTasks.length} />
 
         <div className="space-y-4">
-          {tasks.map((task) => (
+          {onboardingTasks.map((task) => (
             <OnboardingTask
               key={task.id}
               title={task.title}
               description={task.description}
               icon={task.icon}
-              buttonText={task.buttonText || 'Setup'}
+              buttonText="Setup"
               isCompleted={completedTasks.includes(task.id)}
               onAction={() => handleTaskAction(task.navigateTo)}
             />
           ))}
         </div>
+        {completedTasks.length === onboardingTasks.length && (
+          <div className="mt-8 space-y-4 rounded-lg border border-green-200 p-6">
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
+                <Check className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="flex-1 space-y-4">
+                <div>
+                  <h3 className="font-medium">Congratulations! All tasks completed</h3>
+                  <p className="text-muted-foreground mt-2 text-sm">
+                    Great job! You&apos;ve completed all the setup tasks. I&apos;m now ready to help you monitor and
+                    optimize your database.
+                  </p>
+                </div>
+                <div className="flex gap-4">
+                  <Button onClick={() => router.push('/chats?start=report')}>Get Initial Assessment</Button>
+                  <Button onClick={() => router.push('/monitoring')} variant="outline">
+                    Setup Periodic Monitoring
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -5,10 +5,10 @@ import {
   jsonb,
   pgEnum,
   pgTable,
-  serial,
   text,
   timestamp,
   unique,
+  uuid,
   varchar
 } from 'drizzle-orm/pg-core';
 import { RDSClusterDetailedInfo } from '../aws/rds';
@@ -18,7 +18,7 @@ export const schedule_status = pgEnum('schedule_status', ['disabled', 'scheduled
 export const clusters = pgTable(
   'clusters',
   {
-    id: serial('id').primaryKey().notNull(),
+    id: uuid('id').primaryKey().default('gen_random_uuid()').notNull(),
     clusterIdentifier: text('cluster_identifier').notNull(),
     integration: text('integration').notNull(),
     data: jsonb('data').$type<RDSClusterDetailedInfo>().notNull(),
@@ -37,7 +37,7 @@ export const clusters = pgTable(
 export const connections = pgTable(
   'connections',
   {
-    id: serial('id').primaryKey().notNull(),
+    id: uuid('id').primaryKey().default('gen_random_uuid()').notNull(),
     name: text('name').notNull(),
     isDefault: boolean('is_default').default(false).notNull(),
     connstring: text('connstring').notNull(),
@@ -52,25 +52,25 @@ export const connections = pgTable(
 export const dbinfo = pgTable(
   'dbinfo',
   {
-    id: serial('id').primaryKey().notNull(),
-    connid: integer('connid'),
+    id: uuid('id').primaryKey().default('gen_random_uuid()').notNull(),
+    connectionId: uuid('connection_id'),
     module: text('module'),
     data: jsonb('data')
   },
   (table) => [
     foreignKey({
-      columns: [table.connid],
+      columns: [table.connectionId],
       foreignColumns: [connections.id],
       name: 'dbinfo_connid_fkey'
     }),
-    unique('dbinfo_module_unique').on(table.connid, table.module)
+    unique('dbinfo_module_unique').on(table.connectionId, table.module)
   ]
 );
 
 export const integrations = pgTable(
   'integrations',
   {
-    id: serial('id').primaryKey().notNull(),
+    id: uuid('id').primaryKey().default('gen_random_uuid()').notNull(),
     name: text('name'),
     data: jsonb('data')
   },
@@ -80,9 +80,9 @@ export const integrations = pgTable(
 export const assoc_cluster_connections = pgTable(
   'assoc_cluster_connections',
   {
-    id: serial('id').primaryKey().notNull(),
-    clusterId: integer('cluster_id'),
-    connectionId: integer('connection_id')
+    id: uuid('id').primaryKey().default('gen_random_uuid()').notNull(),
+    clusterId: uuid('cluster_id'),
+    connectionId: uuid('connection_id')
   },
   (table) => [
     foreignKey({
@@ -101,8 +101,8 @@ export const assoc_cluster_connections = pgTable(
 export const schedules = pgTable(
   'schedules',
   {
-    id: serial('id').primaryKey().notNull(),
-    connectionId: integer('connection_id').notNull(),
+    id: uuid('id').primaryKey().default('gen_random_uuid()').notNull(),
+    connectionId: uuid('connection_id').notNull(),
     playbook: varchar('playbook', { length: 255 }).notNull(),
     scheduleType: varchar('schedule_type', { length: 255 }).notNull(),
     cronExpression: varchar('cron_expression', { length: 255 }),

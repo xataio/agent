@@ -4,8 +4,8 @@ import { db } from './db';
 import { schedules } from './schema';
 
 export type Schedule = {
-  id: number;
-  connectionId: number;
+  id: string;
+  connectionId: string;
   playbook: string;
   model: string;
   scheduleType: string;
@@ -57,7 +57,7 @@ export async function getSchedules(): Promise<Schedule[]> {
   return await db.select().from(schedules);
 }
 
-export async function getSchedule(id: number): Promise<Schedule> {
+export async function getSchedule(id: string): Promise<Schedule> {
   const result = await db.select().from(schedules).where(eq(schedules.id, id));
 
   if (!result[0]) {
@@ -67,18 +67,18 @@ export async function getSchedule(id: number): Promise<Schedule> {
   return result[0];
 }
 
-export async function deleteSchedule(id: number): Promise<void> {
+export async function deleteSchedule(id: string): Promise<void> {
   await db.delete(schedules).where(eq(schedules.id, id));
 }
 
-export async function incrementScheduleFailures(id: number): Promise<void> {
+export async function incrementScheduleFailures(id: string): Promise<void> {
   await db
     .update(schedules)
     .set({ failures: sql`${schedules.failures} + 1` })
     .where(eq(schedules.id, id));
 }
 
-export async function setScheduleStatusRunning(id: number): Promise<void> {
+export async function setScheduleStatusRunning(id: string): Promise<void> {
   await db.transaction(async (trx) => {
     const result = await trx
       .select({ status: schedules.status })

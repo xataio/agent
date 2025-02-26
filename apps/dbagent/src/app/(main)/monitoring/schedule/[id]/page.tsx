@@ -2,18 +2,18 @@ import { actionListConnections } from '~/components/connections/actions';
 import { actionListPlaybooks } from '~/components/monitoring/actions';
 import { ScheduleForm } from '~/components/monitoring/schedule-form';
 
-export default async function Page({ params }: { params: { id: string; connection?: string; add: string } }) {
+interface PageParams {
+  id: string;
+  connection?: string;
+}
+
+export default async function Page({ params }: { params: Promise<PageParams> }) {
   const playbooks = await actionListPlaybooks();
   const connections = await actionListConnections();
+  const { id, connection } = await params;
   return (
     <div className="container">
-      <ScheduleForm
-        isEditMode={!!params.add}
-        scheduleId={parseInt(params.id, 10)}
-        playbooks={playbooks}
-        connections={connections}
-        connection={params.connection}
-      />
+      <ScheduleForm scheduleId={id} playbooks={playbooks} connections={connections} connection={connection} />
     </div>
   );
 }

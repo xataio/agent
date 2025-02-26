@@ -52,11 +52,11 @@ export async function actionGetSchedules(): Promise<Schedule[]> {
   return schedules;
 }
 
-export async function actionGetSchedule(id: number): Promise<Schedule> {
+export async function actionGetSchedule(id: string): Promise<Schedule> {
   return getSchedule(id);
 }
 
-export async function actionDeleteSchedule(id: number): Promise<void> {
+export async function actionDeleteSchedule(id: string): Promise<void> {
   return deleteSchedule(id);
 }
 
@@ -64,7 +64,7 @@ export async function actionListPlaybooks(): Promise<string[]> {
   return listPlaybooks();
 }
 
-export async function actionUpdateScheduleEnabled(scheduleId: number, enabled: boolean) {
+export async function actionUpdateScheduleEnabled(scheduleId: string, enabled: boolean) {
   if (enabled) {
     const schedule = await getSchedule(scheduleId);
     schedule.enabled = true;

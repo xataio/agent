@@ -12,7 +12,7 @@ type FormData = {
 };
 
 type ConnectionFormProps = {
-  id?: number;
+  id?: string;
 };
 
 export function ConnectionForm({ id }: ConnectionFormProps) {

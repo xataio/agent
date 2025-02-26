@@ -8,7 +8,7 @@ export function ConnectionSelector({
   onSelect
 }: {
   connections: DbConnection[];
-  onSelect: (connectionId: number) => void;
+  onSelect: (connectionId: string) => void;
 }) {
   const defaultConnection = connections.find((c) => c.isDefault);
   const [selectedConnection, setSelectedConnection] = React.useState<DbConnection | undefined>(defaultConnection);
