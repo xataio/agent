@@ -1,36 +1,88 @@
 {
-  "id": "00000000-0000-0000-0000-000000000000",
-  "prevId": "",
+  "id": "8a69bb6c-0c56-4acc-ba84-f708a2f48a51",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.assoc_cluster_connections": {
+      "name": "assoc_cluster_connections",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "cluster_id": {
+          "name": "cluster_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "assoc_instance_connections_instance_id_fkey": {
+          "name": "assoc_instance_connections_instance_id_fkey",
+          "tableFrom": "assoc_cluster_connections",
+          "tableTo": "clusters",
+          "columnsFrom": ["cluster_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "assoc_instance_connections_connection_id_fkey": {
+          "name": "assoc_instance_connections_connection_id_fkey",
+          "tableFrom": "assoc_cluster_connections",
+          "tableTo": "connections",
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.clusters": {
       "name": "clusters",
       "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "cluster_identifier": {
           "name": "cluster_identifier",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "integration": {
           "name": "integration",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "data": {
           "name": "data",
           "type": "jsonb",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "region": {
           "name": "region",
@@ -46,7 +98,6 @@
           "name": "instances_integration_fkey",
           "tableFrom": "clusters",
           "tableTo": "integrations",
-          "schemaTo": "public",
           "columnsFrom": ["integration"],
           "columnsTo": ["name"],
           "onDelete": "no action",
@@ -56,13 +107,13 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "instances_integration_identifier_unique": {
-          "columns": ["cluster_identifier", "integration"],
+          "name": "instances_integration_identifier_unique",
           "nullsNotDistinct": false,
-          "name": "instances_integration_identifier_unique"
+          "columns": ["cluster_identifier", "integration"]
         }
       },
-      "checkConstraints": {},
       "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.connections": {
@@ -71,27 +122,29 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "is_default": {
           "name": "is_default",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": false
         },
         "connstring": {
           "name": "connstring",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "params": {
           "name": "params",
@@ -105,18 +158,18 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "connections_name_unique": {
-          "columns": ["name"],
+          "name": "connections_name_unique",
           "nullsNotDistinct": false,
-          "name": "connections_name_unique"
+          "columns": ["name"]
         },
         "connections_connstring_unique": {
-          "columns": ["connstring"],
+          "name": "connections_connstring_unique",
           "nullsNotDistinct": false,
-          "name": "connections_connstring_unique"
+          "columns": ["connstring"]
         }
       },
-      "checkConstraints": {},
       "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.dbinfo": {
@@ -125,13 +178,14 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
-        "connid": {
-          "name": "connid",
-          "type": "integer",
+        "connection_id": {
+          "name": "connection_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -154,8 +208,7 @@
           "name": "dbinfo_connid_fkey",
           "tableFrom": "dbinfo",
           "tableTo": "connections",
-          "schemaTo": "public",
-          "columnsFrom": ["connid"],
+          "columnsFrom": ["connection_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -164,13 +217,13 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "dbinfo_module_unique": {
-          "columns": ["connid", "module"],
+          "name": "dbinfo_module_unique",
           "nullsNotDistinct": false,
-          "name": "dbinfo_module_unique"
+          "columns": ["connection_id", "module"]
         }
       },
-      "checkConstraints": {},
       "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.integrations": {
@@ -179,9 +232,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",
@@ -201,65 +255,13 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "integrations_name_unique": {
-          "columns": ["name"],
+          "name": "integrations_name_unique",
           "nullsNotDistinct": false,
-          "name": "integrations_name_unique"
+          "columns": ["name"]
         }
       },
-      "checkConstraints": {},
       "policies": {},
-      "isRLSEnabled": false
-    },
-    "public.assoc_cluster_connections": {
-      "name": "assoc_cluster_connections",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "cluster_id": {
-          "name": "cluster_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "connection_id": {
-          "name": "connection_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "assoc_instance_connections_instance_id_fkey": {
-          "name": "assoc_instance_connections_instance_id_fkey",
-          "tableFrom": "assoc_cluster_connections",
-          "tableTo": "clusters",
-          "schemaTo": "public",
-          "columnsFrom": ["cluster_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "assoc_instance_connections_connection_id_fkey": {
-          "name": "assoc_instance_connections_connection_id_fkey",
-          "tableFrom": "assoc_cluster_connections",
-          "tableTo": "connections",
-          "schemaTo": "public",
-          "columnsFrom": ["connection_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
       "checkConstraints": {},
-      "policies": {},
       "isRLSEnabled": false
     },
     "public.schedules": {
@@ -268,13 +270,14 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "connection_id": {
           "name": "connection_id",
-          "type": "integer",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -337,7 +340,7 @@
           "type": "schedule_status",
           "typeSchema": "public",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": "'disabled'"
         },
         "failures": {
@@ -351,7 +354,7 @@
           "name": "model",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": "'openai-gpt-4o'"
         }
       },
@@ -361,7 +364,6 @@
           "name": "schedules_connection_id_fkey",
           "tableFrom": "schedules",
           "tableTo": "connections",
-          "schemaTo": "public",
           "columnsFrom": ["connection_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
@@ -370,16 +372,16 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {},
       "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     }
   },
   "enums": {
     "public.schedule_status": {
       "name": "schedule_status",
-      "values": ["disabled", "scheduled", "running"],
-      "schema": "public"
+      "schema": "public",
+      "values": ["disabled", "scheduled", "running"]
     }
   },
   "schemas": {},
@@ -388,11 +390,8 @@
   "policies": {},
   "views": {},
   "_meta": {
+    "columns": {},
     "schemas": {},
-    "tables": {},
-    "columns": {}
-  },
-  "internal": {
     "tables": {}
   }
 }

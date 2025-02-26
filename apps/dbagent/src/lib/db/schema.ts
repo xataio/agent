@@ -18,7 +18,7 @@ export const schedule_status = pgEnum('schedule_status', ['disabled', 'scheduled
 export const clusters = pgTable(
   'clusters',
   {
-    id: uuid('id').primaryKey().default('gen_random_uuid()').notNull(),
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
     clusterIdentifier: text('cluster_identifier').notNull(),
     integration: text('integration').notNull(),
     data: jsonb('data').$type<RDSClusterDetailedInfo>().notNull(),
@@ -37,7 +37,7 @@ export const clusters = pgTable(
 export const connections = pgTable(
   'connections',
   {
-    id: uuid('id').primaryKey().default('gen_random_uuid()').notNull(),
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
     name: text('name').notNull(),
     isDefault: boolean('is_default').default(false).notNull(),
     connstring: text('connstring').notNull(),
@@ -52,7 +52,7 @@ export const connections = pgTable(
 export const dbinfo = pgTable(
   'dbinfo',
   {
-    id: uuid('id').primaryKey().default('gen_random_uuid()').notNull(),
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
     connectionId: uuid('connection_id'),
     module: text('module'),
     data: jsonb('data')
@@ -70,7 +70,7 @@ export const dbinfo = pgTable(
 export const integrations = pgTable(
   'integrations',
   {
-    id: uuid('id').primaryKey().default('gen_random_uuid()').notNull(),
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
     name: text('name'),
     data: jsonb('data')
   },
@@ -80,7 +80,7 @@ export const integrations = pgTable(
 export const assoc_cluster_connections = pgTable(
   'assoc_cluster_connections',
   {
-    id: uuid('id').primaryKey().default('gen_random_uuid()').notNull(),
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
     clusterId: uuid('cluster_id'),
     connectionId: uuid('connection_id')
   },
@@ -101,7 +101,7 @@ export const assoc_cluster_connections = pgTable(
 export const schedules = pgTable(
   'schedules',
   {
-    id: uuid('id').primaryKey().default('gen_random_uuid()').notNull(),
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
     connectionId: uuid('connection_id').notNull(),
     playbook: varchar('playbook', { length: 255 }).notNull(),
     scheduleType: varchar('schedule_type', { length: 255 }).notNull(),
