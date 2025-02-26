@@ -12,7 +12,7 @@ export async function sendScheduleNotification(
   title: string,
   message: string
 ) {
-  const slack = await getIntegration<'slack'>('slack');
+  const slack = await getIntegration('slack');
   if (!slack) {
     console.error('No Slack integration configured.');
     return;

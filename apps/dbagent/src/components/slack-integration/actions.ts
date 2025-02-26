@@ -24,5 +24,5 @@ export async function saveWebhookUrl(webhookUrl: string): Promise<{ success: boo
 }
 
 export async function getWebhookUrl(): Promise<SlackIntegration | null> {
-  return await getIntegration<'slack'>('slack');
+  return await getIntegration('slack');
 }

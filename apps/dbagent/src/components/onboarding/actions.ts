@@ -25,7 +25,7 @@ export async function getCompletedTasks(): Promise<string[]> {
     completedTasks.push('cloud');
   }
 
-  const slack = await getIntegration<'slack'>('slack');
+  const slack = await getIntegration('slack');
   if (slack) {
     completedTasks.push('notifications');
   }

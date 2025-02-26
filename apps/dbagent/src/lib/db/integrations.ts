@@ -28,7 +28,7 @@ export async function saveIntegration<T extends keyof IntegrationModules>(name: 
 }
 
 export async function getIntegration<T extends keyof IntegrationModules>(
-  name: string
+  name: T
 ): Promise<IntegrationModules[T] | null> {
   const client = await pool.connect();
   try {
