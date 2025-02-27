@@ -1,5 +1,4 @@
 /* eslint-disable no-process-env */
-
 import { z } from 'zod';
 
 const schema = z.object({
