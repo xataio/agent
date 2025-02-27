@@ -16,8 +16,7 @@ import {
   MakiLogoSymbol,
   useIsMobile
 } from '@internal/components';
-import { LogOut } from 'lucide-react';
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { PropsWithChildren } from 'react';
@@ -104,15 +103,6 @@ function UserAvatar({ user }: { user?: User }) {
             {theme === 'dark' ? 'Light' : 'Dark'} theme
           </DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => {
-            void signOut();
-          }}
-        >
-          <LogOut />
-          Sign out
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
