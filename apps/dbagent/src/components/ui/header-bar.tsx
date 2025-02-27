@@ -1,6 +1,7 @@
 'use client';
 
-import { Button, MakiLogoSymbol } from '@internal/components';
+import { Avatar, AvatarImage, AvatarInitials, Button, MakiLogoSymbol } from '@internal/components';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { PropsWithChildren } from 'react';
 
@@ -36,6 +37,7 @@ export const HeaderBar = ({ children }: PropsWithChildren<{ user?: User }>) => {
           <Button variant="ghost" size="sm">
             Docs
           </Button>
+          <UserAvatar />
         </div>
       </div>
     </header>
@@ -44,4 +46,18 @@ export const HeaderBar = ({ children }: PropsWithChildren<{ user?: User }>) => {
 
 export const BelowHeaderBar = ({ children }: PropsWithChildren) => {
   return <div className="h-[calc(100vh-53px)]">{children}</div>;
+};
+
+const UserAvatar = () => {
+  const { data: session } = useSession();
+  if (!session) {
+    return null;
+  }
+
+  return (
+    <Avatar className="h-8 w-8 cursor-pointer">
+      <AvatarImage src={session.user?.image ?? ''} alt={session.user?.name ?? 'User'} />
+      <AvatarInitials className="rounded-lg">{session.user?.name}</AvatarInitials>
+    </Avatar>
+  );
 };
