@@ -1,8 +1,26 @@
 'use client';
 
-import { Avatar, AvatarImage, AvatarInitials, Button, MakiLogoSymbol } from '@internal/components';
-import { useSession } from 'next-auth/react';
+import { DarkTheme20Filled } from '@fluentui/react-icons';
+import {
+  Avatar,
+  AvatarImage,
+  AvatarInitials,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  MakiLogoSymbol,
+  useIsMobile
+} from '@internal/components';
+import { LogOut } from 'lucide-react';
+import { signOut, useSession } from 'next-auth/react';
+import { useTheme } from 'next-themes';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { PropsWithChildren } from 'react';
 
 export type User = {
@@ -12,6 +30,8 @@ export type User = {
 };
 
 export const HeaderBar = ({ children }: PropsWithChildren<{ user?: User }>) => {
+  const { data: session } = useSession();
+
   return (
     <header className="bg-background fixed left-0 right-0 top-0 z-50 border-b">
       <div className="flex h-14 items-center gap-4 px-4">
@@ -37,7 +57,7 @@ export const HeaderBar = ({ children }: PropsWithChildren<{ user?: User }>) => {
           <Button variant="ghost" size="sm">
             Docs
           </Button>
-          <UserAvatar />
+          <UserAvatar user={session?.user} />
         </div>
       </div>
     </header>
@@ -48,16 +68,54 @@ export const BelowHeaderBar = ({ children }: PropsWithChildren) => {
   return <div className="h-[calc(100vh-53px)]">{children}</div>;
 };
 
-const UserAvatar = () => {
-  const { data: session } = useSession();
-  if (!session) {
-    return null;
-  }
+function UserAvatar({ user }: { user?: User }) {
+  const { theme, setTheme } = useTheme();
+  const isMobile = useIsMobile();
+  const router = useRouter();
 
   return (
-    <Avatar className="h-8 w-8 cursor-pointer">
-      <AvatarImage src={session.user?.image ?? ''} alt={session.user?.name ?? 'User'} />
-      <AvatarInitials className="rounded-lg">{session.user?.name}</AvatarInitials>
-    </Avatar>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Avatar className="h-8 w-8 cursor-pointer">
+          <AvatarImage src={user?.image ?? ''} alt={user?.name ?? 'User'} />
+          <AvatarInitials className="rounded-lg">{user?.name}</AvatarInitials>
+        </Avatar>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="-mr-8 mt-12 w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+        side={isMobile ? 'bottom' : 'right'}
+        align="end"
+        sideOffset={4}
+      >
+        <DropdownMenuLabel className="p-0 font-normal">
+          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            <Avatar className="h-8 w-8 rounded-lg">
+              <AvatarImage src={user?.image ?? ''} alt={user?.name ?? 'User'} />
+              <AvatarInitials className="rounded-lg">{user?.name}</AvatarInitials>
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-semibold">{user?.name}</span>
+              <span className="truncate text-xs">{user?.email}</span>
+            </div>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+          <DropdownMenuItem>
+            <DarkTheme20Filled />
+            {theme === 'dark' ? 'Light' : 'Dark'} theme
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => {
+            void signOut();
+          }}
+        >
+          <LogOut />
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
-};
+}
