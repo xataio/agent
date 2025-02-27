@@ -13,7 +13,7 @@ export default function Page() {
 
   useEffect(() => {
     if (session.status === 'unauthenticated') {
-      signIn('default').then(() => {
+      void signIn('default').then(() => {
         if (callbackUrl) {
           router.push(callbackUrl);
         }
