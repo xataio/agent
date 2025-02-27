@@ -18,11 +18,9 @@ const schema = z.object({
   DEEPSEEK_API_KEY: z.string(),
   ANTHROPIC_API_KEY: z.string(),
 
-  // How many schedules can run in parallel
-  MAX_PARALLEL_RUNS: z.number().default(20),
-
-  // How long to wait for a schedule to finish before assuming it's dead and running it again
-  TIMEOUT_FOR_RUNNING_SCHEDULE_SECS: z.number().default(15 * 60)
+  // Scheduler
+  MAX_PARALLEL_RUNS: z.number().default(20), // How many schedules can be run in parallel
+  TIMEOUT_FOR_RUNNING_SCHEDULE_SECS: z.number().default(15 * 60) // How long to wait before assuming it's dead and restart
 });
 
 const serverEnv = schema.parse(process.env);
