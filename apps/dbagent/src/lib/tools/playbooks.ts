@@ -66,12 +66,49 @@ Record any issues found and actions taken.
 Note any recurring patterns or areas for improvement.
 `;
 
+const TUNING_PLAYBOOK = `
+Objective: Recommend performance and vacuum settings for the database.
+
+Step 1:
+Use the getTablesAndInstanceInfo tool to gather what you know about the database and the cluster/instance type
+
+Step 2:
+Think about what CPU/memory does that AWS instance class have?
+
+Step 3:
+Given the information you collected above, think about the ideal settings for the following parameters: 
+- max_connections 
+- shared_buffers 
+- effective_cache_size
+- maintenance_work_mem
+- checkpoint_completion_target
+- wal_buffers
+- default_statistics_target
+- random_page_cost
+- effective_io_concurrency
+- work_mem
+- huge_pages
+- min_wal_size
+- max_wal_size
+- max_worker_processes
+- max_parallel_workers_per_gather
+- max_parallel_workers
+- max_parallel_maintenance_workers.
+
+Step 4:
+Now compare with the value you read via the tool getPerformanceAndVacuumSettings and see if there's anything you'd change.
+
+Report your findings in a structured way, with the settings you'd change, and the reason for the change. Highlight the most important changes first.
+`;
+
 export function getPlaybook(name: string): string {
   switch (name) {
     case 'investigateSlowQueries':
       return SLOW_QUERIES_PLAYBOOK;
     case 'generalMonitoring':
       return GENERAL_MONITORING_PLAYBOOK;
+    case 'tuneSettings':
+      return TUNING_PLAYBOOK;
     default:
       return `Error:Playbook ${name} not found`;
   }
