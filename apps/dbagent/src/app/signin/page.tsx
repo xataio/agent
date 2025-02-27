@@ -13,11 +13,15 @@ export default function Page() {
 
   useEffect(() => {
     if (session.status === 'unauthenticated') {
-      signIn('default');
+      signIn('default').then(() => {
+        if (callbackUrl) {
+          router.push(callbackUrl);
+        }
+      });
     } else if (session.status === 'authenticated' && callbackUrl) {
       router.push(callbackUrl);
     }
-  }, [session]);
+  }, [session, router, callbackUrl]);
 
   return null;
 }
