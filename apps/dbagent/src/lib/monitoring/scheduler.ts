@@ -6,7 +6,7 @@ import {
   setScheduleStatusRunning,
   updateScheduleRunData
 } from '~/lib/db/schedules';
-import { env } from '../env/scheduler';
+import { env } from '../env/server';
 import { runSchedule } from './runner';
 
 export function shouldRunSchedule(schedule: Schedule, now: Date): boolean {

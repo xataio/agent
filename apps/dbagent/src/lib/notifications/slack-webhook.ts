@@ -1,7 +1,7 @@
 import { DbConnection } from '../db/connections';
 import { getIntegration } from '../db/integrations';
 import { Schedule } from '../db/schedules';
-import { env } from '../env/general';
+import { env } from '../env/client';
 
 export type NotificationLevel = 'info' | 'warning' | 'alert';
 
