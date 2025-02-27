@@ -101,6 +101,39 @@ Now compare with the value you read via the tool getPerformanceAndVacuumSettings
 Report your findings in a structured way, with the settings you'd change, and the reason for the change. Highlight the most important changes first.
 `;
 
+const INVESTIGATE_HIGH_CPU_USAGE_PLAYBOOK = `
+Objective:
+ To investigate and resolve high CPU usage in the PostgreSQL database.
+
+Step 1:
+Use the tool getCurrentActiveQueries to get the currently active queries. Consider the state and the duration of the queries,
+to see if there is any particular query that is causing the high CPU usage. If it is, report that to the user.
+
+Step 2:
+Check if there are any queries that are blocked waiting on locks. Use the tool getQueriesWaitingOnLocks to get the queries that are blocked waiting on locks.
+If there are, report that to the user.
+
+Step 3:
+Check IOPS and disk queue depth. Use the tool getInstanceMetric to get the IOPS and disk queue depth.
+If there are any unusual spikes or bottlenecks, report that to the user.
+
+Step 4:
+Get the vacuum stats for the top tables in the database. Use the tool getVacuumStats to get the vacuum stats.
+If there are any tables with a high number of dead tuples, report that to the user.
+
+Step 5:
+Check the slow queries. Use the tool getSlowQueries to get the slow queries.
+If there are any slow queries, report that to the user.
+
+Step 6:
+Check the logs. Use the tool getLogs to get the logs.
+If there are any unusual logs, report that to the user.
+
+Step 7:
+Based on all the information you have gathered, make a summary of your findings and report them to the user.
+Be very specific about the queries you found and the reason for which they are slow.
+`;
+
 export function getPlaybook(name: string): string {
   switch (name) {
     case 'investigateSlowQueries':
@@ -109,6 +142,8 @@ export function getPlaybook(name: string): string {
       return GENERAL_MONITORING_PLAYBOOK;
     case 'tuneSettings':
       return TUNING_PLAYBOOK;
+    case 'investigateHighCpuUsage':
+      return INVESTIGATE_HIGH_CPU_USAGE_PLAYBOOK;
     default:
       return `Error:Playbook ${name} not found`;
   }
