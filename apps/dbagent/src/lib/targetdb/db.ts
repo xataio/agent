@@ -140,7 +140,8 @@ export async function getPerformanceSettings(connString: string): Promise<Perfor
         'wal_buffers',
         'effective_io_concurrency',
         'random_page_cost',
-        'seq_page_cost'
+        'seq_page_cost',
+        'huge_pages'
       )
     `);
     return result.rows;
