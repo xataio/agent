@@ -1,8 +1,8 @@
 'use client';
 
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { signIn, useSession } from '~/components/auth/react';
 
 export default function Page() {
   const session = useSession();
