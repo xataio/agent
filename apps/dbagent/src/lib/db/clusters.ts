@@ -5,6 +5,7 @@ import { assoc_cluster_connections, clusters } from './schema';
 
 export type Cluster = {
   clusterIdentifier: string;
+  projectId: string;
   integration: string;
   region: string;
   data: RDSClusterDetailedInfo;

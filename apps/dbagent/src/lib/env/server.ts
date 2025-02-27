@@ -8,10 +8,10 @@ const schema = z.object({
   DATABASE_URL: z.string(),
 
   // The OpenID client settings
-  AUTH_SECRET: z.string(),
-  AUTH_OPENID_ID: z.string(),
-  AUTH_OPENID_SECRET: z.string(),
-  AUTH_OPENID_ISSUER: z.string(),
+  AUTH_SECRET: z.string().optional(),
+  AUTH_OPENID_ID: z.string().optional(),
+  AUTH_OPENID_SECRET: z.string().optional(),
+  AUTH_OPENID_ISSUER: z.string().optional(),
 
   // LLM API credentials
   OPENAI_API_KEY: z.string(),

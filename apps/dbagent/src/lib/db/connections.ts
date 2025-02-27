@@ -4,6 +4,7 @@ import { connections } from './schema';
 
 export type DbConnection = {
   id: string;
+  projectId: string;
   name: string;
   connstring: string;
   isDefault: boolean;
@@ -47,9 +48,17 @@ export async function deleteConnection(id: string): Promise<void> {
   });
 }
 
-export async function addConnection({ name, connstring }: { name: string; connstring: string }): Promise<DbConnection> {
+export async function addConnection({
+  projectId,
+  name,
+  connstring
+}: {
+  projectId: string;
+  name: string;
+  connstring: string;
+}): Promise<DbConnection> {
   const isFirst = (await db.select().from(connections)).length === 0;
-  const result = await db.insert(connections).values({ name, connstring, isDefault: isFirst }).returning();
+  const result = await db.insert(connections).values({ projectId, name, connstring, isDefault: isFirst }).returning();
 
   if (!result[0]) {
     throw new Error('Error adding connection');

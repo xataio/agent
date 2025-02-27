@@ -25,7 +25,17 @@ function translateError(error: string) {
   return error;
 }
 
-export async function actionSaveConnection(id: string | null, name: string, connstring: string) {
+export async function actionSaveConnection({
+  projectId,
+  id,
+  name,
+  connstring
+}: {
+  projectId: string;
+  id: string | null;
+  name: string;
+  connstring: string;
+}) {
   try {
     const validateResult = await validateConnection(connstring);
     if (!validateResult.success) {
@@ -36,7 +46,7 @@ export async function actionSaveConnection(id: string | null, name: string, conn
       await updateConnection({ id, name, connstring: connstring });
       return { success: true, message: 'Connection updated successfully' };
     } else {
-      await addConnection({ name: name, connstring: connstring });
+      await addConnection({ projectId, name, connstring });
       return { success: true, message: 'Connection added successfully' };
     }
   } catch (error) {
