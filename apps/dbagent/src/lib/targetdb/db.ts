@@ -130,6 +130,7 @@ export async function getPerformanceSettings(connString: string): Promise<Perfor
         'maintenance_work_mem', 
         'lock_timeout',
         'idle_in_transaction_session_timeout',
+        'checkpoint_completion_target',
         'idle_session_timeout',
         'default_transaction_isolation',
         'max_wal_size',

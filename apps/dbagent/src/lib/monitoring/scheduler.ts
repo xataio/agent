@@ -9,9 +9,15 @@ import {
 import { env } from '../env/server';
 import { runSchedule } from './runner';
 
+export function utcToLocalDate(utcString: string): Date {
+  const date = new Date(utcString);
+  const offset = date.getTimezoneOffset() * 60000; // Convert offset to milliseconds
+  return new Date(date.getTime() - offset);
+}
+
 export function shouldRunSchedule(schedule: Schedule, now: Date): boolean {
   if (schedule.enabled === false || !schedule.nextRun) return false;
-  const nextRun = new Date(schedule.nextRun);
+  const nextRun = utcToLocalDate(schedule.nextRun);
 
   if (schedule.status !== 'scheduled') {
     if (

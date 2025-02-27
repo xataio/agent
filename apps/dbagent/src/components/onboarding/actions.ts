@@ -8,7 +8,6 @@ import { getIntegration } from '~/lib/db/integrations';
 // Server action to get completed tasks
 export async function getCompletedTasks(): Promise<string[]> {
   const completedTasks: string[] = [];
-  // TODO: Implement getting completed tasks from database
   const connection = await getDefaultConnection();
   if (!connection) {
     return [];

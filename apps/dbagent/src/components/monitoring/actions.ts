@@ -12,6 +12,7 @@ import {
   updateSchedule,
   updateScheduleRunData
 } from '~/lib/db/schedules';
+import { utcToLocalDate } from '~/lib/monitoring/scheduler';
 import { listPlaybooks } from '~/lib/tools/playbooks';
 
 export async function generateCronExpression(description: string): Promise<string> {
@@ -43,10 +44,10 @@ export async function actionGetSchedules(): Promise<Schedule[]> {
   // Ensure last_run is serialized as string
   schedules.forEach((schedule) => {
     if (schedule.lastRun) {
-      schedule.lastRun = schedule.lastRun.toString();
+      schedule.lastRun = utcToLocalDate(schedule.lastRun).toString();
     }
     if (schedule.nextRun) {
-      schedule.nextRun = schedule.nextRun.toString();
+      schedule.nextRun = utcToLocalDate(schedule.nextRun).toString();
     }
   });
   return schedules;
