@@ -1,6 +1,6 @@
 'use client';
 
-import { cn, Input } from '@internal/components';
+import { cn } from '@internal/components';
 import {
   ActivityIcon,
   AlarmClock,
@@ -46,7 +46,6 @@ export function SideNav({ className, onboardingComplete }: SideNavProps) {
   return (
     <div className={cn('bg-background fixed h-lvh w-64 border-r', className)}>
       <div className="space-y-4 p-4">
-        <Input placeholder="Search..." className="bg-background" />
         <nav className="space-y-2">
           <Link
             href="/start"

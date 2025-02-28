@@ -5,7 +5,6 @@ import {
   Avatar,
   AvatarImage,
   AvatarInitials,
-  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -49,12 +48,6 @@ export const HeaderBar = ({ children }: PropsWithChildren<{ user?: User }>) => {
           </div>
         </nav>
         <div className="ml-auto flex items-center gap-4">
-          <Button variant="ghost" size="sm">
-            Feedback
-          </Button>
-          <Button variant="ghost" size="sm">
-            Docs
-          </Button>
           <UserAvatar user={session?.user} />
         </div>
       </div>
