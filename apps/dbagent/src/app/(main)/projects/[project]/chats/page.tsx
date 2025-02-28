@@ -1,5 +1,3 @@
-'use server';
-
 import { ChatsUI } from '~/components/chats/chats-ui';
 import { listConnections } from '~/lib/db/connections';
 

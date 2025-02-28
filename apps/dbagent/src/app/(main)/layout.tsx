@@ -1,4 +1,3 @@
-'use server';
 import { getCompletedTaskPercentage } from '~/components/onboarding/actions';
 import { BelowHeaderBar, HeaderBar } from '~/components/ui/header-bar';
 import { SideNav } from '~/components/ui/side-nav';

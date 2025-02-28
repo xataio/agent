@@ -1,4 +1,3 @@
-'use server';
 import { AWSIntegration } from '~/components/aws-integration/aws-integration';
 import { listConnections } from '~/lib/db/connections';
 

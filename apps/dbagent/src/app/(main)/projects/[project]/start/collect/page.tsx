@@ -1,4 +1,3 @@
-'use server';
 import { CollectInfo } from '~/components/collect/collect';
 import { listConnections } from '~/lib/db/connections';
 

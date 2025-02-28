@@ -1,5 +1,3 @@
-'use server';
-
 import { SlackIntegration } from '~/components/slack-integration/slack-integration';
 
 type PageParams = {
