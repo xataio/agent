@@ -44,11 +44,17 @@ DATABASE_URL=postgresql://dbagent:changeme@localhost:5432/dbagent
 Initialize the database:
 
 ```bash
-pnpm run dbmigrate
+pnpm run db:migrate
 ```
 
 Run the app:
 
 ```bash
 pnpm run dev
+```
+
+In a separate terminal, run the scheduler:
+
+```bash
+pnpm run dev-scheduler
 ```
