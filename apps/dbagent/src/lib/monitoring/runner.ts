@@ -14,7 +14,7 @@ export async function runSchedule(schedule: Schedule) {
     throw new Error(`Connection ${schedule.connectionId} not found`);
   }
 
-  const targetClient = await getTargetDbConnection(connection.connstring);
+  const targetClient = await getTargetDbConnection(connection.connectionString);
 
   const modelInstance = getModelInstance(schedule.model);
 

@@ -58,12 +58,13 @@ type ScheduleFormEditParams =
     };
 
 type ScheduleFormParams = {
+  projectId: string;
   playbooks: string[];
   connections: DbConnection[];
   connection?: string;
 } & ScheduleFormEditParams;
 
-export function ScheduleForm({ isEditMode, scheduleId, playbooks, connections }: ScheduleFormParams) {
+export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, connections }: ScheduleFormParams) {
   const router = useRouter();
   const [showCronModal, setShowCronModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -104,6 +105,7 @@ export function ScheduleForm({ isEditMode, scheduleId, playbooks, connections }:
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     const schedule: Omit<Schedule, 'id'> = {
+      projectId,
       connectionId: connections.find((c) => c.name === data.connection)?.id.toString() || '',
       model: data.model,
       playbook: data.playbook,

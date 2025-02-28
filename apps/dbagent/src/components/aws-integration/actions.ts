@@ -7,11 +7,12 @@ import {
   RDSClusterDetailedInfo,
   RDSClusterInfo
 } from '~/lib/aws/rds';
-import { associateClusterConnection, saveCluster } from '~/lib/db/clusters';
 import { DbConnection } from '~/lib/db/connections';
 import { AwsIntegration, getIntegration, saveIntegration } from '~/lib/db/integrations';
+import { saveProject } from '~/lib/db/projects';
 
 export async function fetchRDSClusters(
+  projectId: string,
   accessKeyId: string,
   secretAccessKey: string,
   region: string
@@ -20,7 +21,7 @@ export async function fetchRDSClusters(
 
   try {
     const clusters = await listRDSClusters(client);
-    await saveIntegration('aws', { accessKeyId, secretAccessKey, region });
+    await saveIntegration(projectId, 'aws', { accessKeyId, secretAccessKey, region });
     return { success: true, message: 'RDS instances fetched successfully', data: clusters };
   } catch (error) {
     console.error('Error fetching RDS instances:', error);
@@ -60,11 +61,19 @@ export async function getAWSIntegration(): Promise<{ success: boolean; message: 
   }
 }
 
-export async function saveClusterDetails(
-  clusterIdentifier: string,
-  region: string,
-  connection: DbConnection
-): Promise<{ success: boolean; message: string }> {
+export async function saveProjectDetails({
+  name,
+  ownerId,
+  clusterIdentifier,
+  region,
+  connection
+}: {
+  name: string;
+  ownerId: string;
+  clusterIdentifier: string;
+  region: string;
+  connection: DbConnection;
+}): Promise<{ success: boolean; message: string }> {
   const aws = await getIntegration('aws');
   if (!aws) {
     return { success: false, message: 'AWS integration not found' };
@@ -78,12 +87,16 @@ export async function saveClusterDetails(
   if (!instance) {
     return { success: false, message: 'RDS instance not found' };
   }
-  const instanceId = await saveCluster({
-    clusterIdentifier,
-    integration: 'aws',
-    region,
-    data: instance
+  const instanceId = await saveProject({
+    name,
+    ownerId,
+    type: 'rds',
+    info: {
+      clusterIdentifier,
+      region,
+      details: instance
+    }
   });
-  await associateClusterConnection(instanceId, connection.id);
+
   return { success: true, message: 'Instance details saved successfully' };
 }

@@ -20,7 +20,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { getWebhookUrl, saveWebhookUrl } from './actions';
 
-export function SlackIntegration() {
+export function SlackIntegration({ projectId }: { projectId: string }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const {
@@ -53,7 +53,7 @@ export function SlackIntegration() {
 
   const onSubmit = async (data: { webhookUrl: string }) => {
     try {
-      const response = await saveWebhookUrl(data.webhookUrl);
+      const response = await saveWebhookUrl(projectId, data.webhookUrl);
       if (response.success) {
         toast('Slack webhook URL saved successfully');
       } else {

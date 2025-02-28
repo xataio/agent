@@ -2,7 +2,7 @@ import { CronExpressionParser } from 'cron-parser';
 import { eq, sql } from 'drizzle-orm';
 import { PartialBy } from '~/utils/types';
 import { db } from './db';
-import { schedules } from './schema';
+import { projectSchedules } from './schema';
 
 export type Schedule = {
   id: string;
@@ -36,7 +36,7 @@ export function scheduleGetNextRun(schedule: PartialBy<Schedule, 'id'>, now: Dat
 }
 
 export async function insertSchedule(schedule: Omit<Schedule, 'id'>): Promise<Schedule> {
-  const result = await db.insert(schedules).values(schedule).returning();
+  const result = await db.insert(projectSchedules).values(schedule).returning();
 
   if (!result[0]) {
     throw new Error('Failed to insert schedule');
@@ -46,7 +46,11 @@ export async function insertSchedule(schedule: Omit<Schedule, 'id'>): Promise<Sc
 }
 
 export async function updateSchedule(schedule: Schedule): Promise<Schedule> {
-  const result = await db.update(schedules).set(schedule).where(eq(schedules.id, schedule.id)).returning();
+  const result = await db
+    .update(projectSchedules)
+    .set(schedule)
+    .where(eq(projectSchedules.id, schedule.id))
+    .returning();
 
   if (!result[0]) {
     throw new Error(`Schedule with id ${schedule.id} not found`);
@@ -56,11 +60,11 @@ export async function updateSchedule(schedule: Schedule): Promise<Schedule> {
 }
 
 export async function getSchedules(): Promise<Schedule[]> {
-  return await db.select().from(schedules);
+  return await db.select().from(projectSchedules);
 }
 
 export async function getSchedule(id: string): Promise<Schedule> {
-  const result = await db.select().from(schedules).where(eq(schedules.id, id));
+  const result = await db.select().from(projectSchedules).where(eq(projectSchedules.id, id));
 
   if (!result[0]) {
     throw new Error(`Schedule with id ${id} not found`);
@@ -70,40 +74,40 @@ export async function getSchedule(id: string): Promise<Schedule> {
 }
 
 export async function deleteSchedule(id: string): Promise<void> {
-  await db.delete(schedules).where(eq(schedules.id, id));
+  await db.delete(projectSchedules).where(eq(projectSchedules.id, id));
 }
 
 export async function incrementScheduleFailures(id: string): Promise<void> {
   await db
-    .update(schedules)
-    .set({ failures: sql`${schedules.failures} + 1` })
-    .where(eq(schedules.id, id));
+    .update(projectSchedules)
+    .set({ failures: sql`${projectSchedules.failures} + 1` })
+    .where(eq(projectSchedules.id, id));
 }
 
 export async function setScheduleStatusRunning(id: string): Promise<void> {
   await db.transaction(async (trx) => {
     const result = await trx
-      .select({ status: schedules.status })
-      .from(schedules)
+      .select({ status: projectSchedules.status })
+      .from(projectSchedules)
       .for('update')
-      .where(eq(schedules.id, id));
+      .where(eq(projectSchedules.id, id));
 
     if (result[0]?.status === 'running') {
       throw new Error(`Schedule ${id} is already running`);
     }
 
-    await trx.update(schedules).set({ status: 'running' }).where(eq(schedules.id, id));
+    await trx.update(projectSchedules).set({ status: 'running' }).where(eq(projectSchedules.id, id));
   });
 }
 
 export async function updateScheduleRunData(schedule: Schedule): Promise<void> {
   await db
-    .update(schedules)
+    .update(projectSchedules)
     .set({
       nextRun: schedule.nextRun || null,
       lastRun: schedule.lastRun || null,
       status: schedule.status,
       enabled: schedule.enabled
     })
-    .where(eq(schedules.id, schedule.id));
+    .where(eq(projectSchedules.id, schedule.id));
 }

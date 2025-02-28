@@ -36,7 +36,7 @@ const regions = [
   'ap-northeast-1'
 ];
 
-export function AWSIntegration({ connections }: { connections: DbConnection[] }) {
+export function AWSIntegration({ projectId, connections }: { projectId: string; connections: DbConnection[] }) {
   const [accessKeyId, setAccessKeyId] = useState('');
   const [secretAccessKey, setSecretAccessKey] = useState('');
   const [region, setRegion] = useState('');
@@ -61,7 +61,7 @@ export function AWSIntegration({ connections }: { connections: DbConnection[] })
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetchRDSClusters(accessKeyId, secretAccessKey, region);
+      const response = await fetchRDSClusters(projectId, accessKeyId, secretAccessKey, region);
       if (response.success) {
         if (response.data.length === 0) {
           toast('No RDS clusters found in the selected region');
@@ -161,6 +161,7 @@ export function AWSIntegration({ connections }: { connections: DbConnection[] })
             <div className="mt-8">
               <RDSClusterCard clusterInfo={clusterDetails} />
               <DatabaseConnectionSelector
+                projectId={projectId}
                 clusterIdentifier={clusterDetails.identifier}
                 region={region}
                 connections={connections}

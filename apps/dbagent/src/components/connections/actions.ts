@@ -29,24 +29,24 @@ export async function actionSaveConnection({
   projectId,
   id,
   name,
-  connstring
+  connectionString
 }: {
   projectId: string;
   id: string | null;
   name: string;
-  connstring: string;
+  connectionString: string;
 }) {
   try {
-    const validateResult = await validateConnection(connstring);
+    const validateResult = await validateConnection(connectionString);
     if (!validateResult.success) {
       return validateResult;
     }
 
     if (id) {
-      await updateConnection({ id, name, connstring: connstring });
+      await updateConnection({ id, name, connectionString });
       return { success: true, message: 'Connection updated successfully' };
     } else {
-      await addConnection({ projectId, name, connstring });
+      await addConnection({ projectId, name, connectionString });
       return { success: true, message: 'Connection added successfully' };
     }
   } catch (error) {
@@ -74,9 +74,9 @@ export async function actionDeleteConnection(id: string) {
   return await deleteConnection(id);
 }
 
-export async function validateConnection(connstring: string) {
+export async function validateConnection(connectionString: string) {
   try {
-    const client = await getTargetDbConnection(connstring);
+    const client = await getTargetDbConnection(connectionString);
 
     const versionResult = await client.query('SELECT version()');
     const version = versionResult.rows[0].version;

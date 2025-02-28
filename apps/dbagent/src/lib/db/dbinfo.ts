@@ -1,49 +1,49 @@
 import { and, eq } from 'drizzle-orm';
 import { PerformanceSetting, PgExtension, TableStat } from '../targetdb/db';
 import { db } from './db';
-import { dbinfo } from './schema';
+import { projectConnectionsInfo } from './schema';
 
-type DbInfoModules =
+type ConnectionInfoTypes =
   | {
-      module: 'tables';
+      type: 'tables';
       data: TableStat[];
     }
   | {
-      module: 'extensions';
+      type: 'extensions';
       data: PgExtension[];
     }
   | {
-      module: 'performance_settings';
+      type: 'performance_settings';
       data: PerformanceSetting[];
     }
   | {
-      module: 'vacuum_settings';
+      type: 'vacuum_settings';
       data: PerformanceSetting[];
     };
 
-type DbInfo = {
+type ConnectionInfo = {
   connectionId: string;
-} & DbInfoModules;
+} & ConnectionInfoTypes;
 
-export async function saveDbInfo({ connectionId, module, data }: DbInfo) {
+export async function saveDbInfo({ connectionId, type, data }: ConnectionInfo) {
   await db
-    .insert(dbinfo)
-    .values({ connectionId, module, data })
+    .insert(projectConnectionsInfo)
+    .values({ connectionId, type, data })
     .onConflictDoUpdate({
-      target: [dbinfo.connectionId, dbinfo.module],
+      target: [projectConnectionsInfo.connectionId, projectConnectionsInfo.type],
       set: { data }
     })
     .execute();
 }
 
-export async function getDbInfo<Key extends DbInfoModules['module'], Value extends DbInfoModules & { module: Key }>(
-  connectionId: string,
-  key: Key
-): Promise<Value['data'] | null> {
+export async function getDbInfo<
+  Key extends ConnectionInfoTypes['type'],
+  Value extends ConnectionInfoTypes & { type: Key }
+>(connectionId: string, key: Key): Promise<Value['data'] | null> {
   const result = await db
-    .select({ data: dbinfo.data })
-    .from(dbinfo)
-    .where(and(eq(dbinfo.connectionId, connectionId), eq(dbinfo.module, key)))
+    .select({ data: projectConnectionsInfo.data })
+    .from(projectConnectionsInfo)
+    .where(and(eq(projectConnectionsInfo.connectionId, connectionId), eq(projectConnectionsInfo.type, key)))
     .execute();
 
   return (result[0]?.data as Value['data']) ?? null;

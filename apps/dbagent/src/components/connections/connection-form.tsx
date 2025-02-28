@@ -8,14 +8,15 @@ import { actionDeleteConnection, actionGetConnection, actionSaveConnection, vali
 
 type FormData = {
   name: string;
-  connstring: string;
+  connectionString: string;
 };
 
 type ConnectionFormProps = {
+  projectId: string;
   id?: string;
 };
 
-export function ConnectionForm({ id }: ConnectionFormProps) {
+export function ConnectionForm({ projectId, id }: ConnectionFormProps) {
   const {
     register,
     handleSubmit,
@@ -39,7 +40,7 @@ export function ConnectionForm({ id }: ConnectionFormProps) {
         if (connection) {
           reset({
             name: connection.name,
-            connstring: connection.connstring
+            connectionString: connection.connectionString
           });
         }
       }
@@ -49,7 +50,12 @@ export function ConnectionForm({ id }: ConnectionFormProps) {
 
   const onSubmit = async (data: FormData) => {
     setIsSaving(true);
-    const result = await actionSaveConnection(id ?? null, data.name, data.connstring);
+    const result = await actionSaveConnection({
+      projectId,
+      id: id ?? null,
+      name: data.name,
+      connectionString: data.connectionString
+    });
     setIsSaving(false);
     if (result.success) {
       toast(result.message);
@@ -59,9 +65,9 @@ export function ConnectionForm({ id }: ConnectionFormProps) {
     }
   };
 
-  const handleValidate = async (connstring: string) => {
+  const handleValidate = async (connectionString: string) => {
     setIsValidating(true);
-    const result = await validateConnection(connstring);
+    const result = await validateConnection(connectionString);
     setIsValidating(false);
     if (result.success) {
       toast(result.message);
@@ -95,14 +101,14 @@ export function ConnectionForm({ id }: ConnectionFormProps) {
           {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>}
         </div>
         <div>
-          <Label htmlFor="connstring">Connection String</Label>
+          <Label htmlFor="connectionString">Connection String</Label>
           <Input
-            id="connstring"
-            {...register('connstring', { required: 'Connection string is required' })}
+            id="connectionString"
+            {...register('connectionString', { required: 'Connection string is required' })}
             placeholder="postgres://user:pass@host:5432/dbname"
             className="mt-1"
           />
-          {errors.connstring && <p className="mt-1 text-sm text-red-500">{errors.connstring.message}</p>}
+          {errors.connectionString && <p className="mt-1 text-sm text-red-500">{errors.connectionString.message}</p>}
         </div>
         <div className="flex space-x-4">
           {id && !showDeleteConfirm && (
@@ -121,7 +127,7 @@ export function ConnectionForm({ id }: ConnectionFormProps) {
             </>
           )}
 
-          <Button type="button" onClick={() => handleValidate(watch('connstring'))} disabled={isValidating}>
+          <Button type="button" onClick={() => handleValidate(watch('connectionString'))} disabled={isValidating}>
             {isValidating ? 'Validating...' : 'Validate Connection'}
           </Button>
           <Button type="submit" disabled={isSaving}>

@@ -1,7 +1,7 @@
 import { getRDSClusterMetric } from '../aws/rds';
-import { getClusterByConnection } from '../db/clusters';
 import { DbConnection } from '../db/connections';
 import { getIntegration } from '../db/integrations';
+import { getProjectById } from '../db/projects';
 
 export async function getClusterMetric(
   connection: DbConnection,
@@ -13,19 +13,18 @@ export async function getClusterMetric(
     return 'AWS credentials not configured';
   }
 
-  const cluster = await getClusterByConnection(connection.id);
-  if (!cluster) {
-    return 'Cluster not found';
+  const project = await getProjectById(connection.projectId);
+  if (project?.type !== 'rds') {
+    return 'Project is not an RDS cluster';
   }
-  console.log('cluster', cluster);
 
   const startTime = new Date(Date.now() - periodInSeconds * 1000);
   const endTime = new Date();
 
   try {
     const datapoints = await getRDSClusterMetric(
-      cluster.clusterIdentifier,
-      cluster.region,
+      project.info.clusterIdentifier,
+      project.info.region,
       awsCredentials,
       metricName,
       startTime,

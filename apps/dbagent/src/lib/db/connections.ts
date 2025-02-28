@@ -1,48 +1,52 @@
 import { eq } from 'drizzle-orm';
 import { db } from './db';
-import { connections } from './schema';
+import { projectConnections } from './schema';
 
 export type DbConnection = {
   id: string;
   projectId: string;
   name: string;
-  connstring: string;
   isDefault: boolean;
+  connectionString: string;
+  info?: unknown;
 };
 
 export async function listConnections(): Promise<DbConnection[]> {
-  return await db.select().from(connections);
+  return await db.select().from(projectConnections);
 }
 
 export async function getDefaultConnection(): Promise<DbConnection | null> {
-  const result = await db.select().from(connections).where(eq(connections.isDefault, true));
+  const result = await db.select().from(projectConnections).where(eq(projectConnections.isDefault, true));
   return result[0] ?? null;
 }
 
 export async function getConnection(id: string): Promise<DbConnection | null> {
-  const result = await db.select().from(connections).where(eq(connections.id, id));
+  const result = await db.select().from(projectConnections).where(eq(projectConnections.id, id));
   return result[0] ?? null;
 }
 
 export async function makeConnectionDefault(id: string): Promise<void> {
   await db.transaction(async (trx) => {
-    await trx.update(connections).set({ isDefault: false }).where(eq(connections.isDefault, true));
-    await trx.update(connections).set({ isDefault: true }).where(eq(connections.id, id));
+    await trx.update(projectConnections).set({ isDefault: false }).where(eq(projectConnections.isDefault, true));
+    await trx.update(projectConnections).set({ isDefault: true }).where(eq(projectConnections.id, id));
   });
 }
 
 export async function deleteConnection(id: string): Promise<void> {
   await db.transaction(async (trx) => {
     const wasDefault = await trx
-      .select({ isDefault: connections.isDefault })
-      .from(connections)
-      .where(eq(connections.id, id));
-    await trx.delete(connections).where(eq(connections.id, id));
+      .select({ isDefault: projectConnections.isDefault })
+      .from(projectConnections)
+      .where(eq(projectConnections.id, id));
+    await trx.delete(projectConnections).where(eq(projectConnections.id, id));
 
     if (wasDefault[0]?.isDefault) {
-      const nextConnection = await trx.select({ id: connections.id }).from(connections).limit(1);
+      const nextConnection = await trx.select({ id: projectConnections.id }).from(projectConnections).limit(1);
       if (nextConnection[0]) {
-        await trx.update(connections).set({ isDefault: true }).where(eq(connections.id, nextConnection[0].id));
+        await trx
+          .update(projectConnections)
+          .set({ isDefault: true })
+          .where(eq(projectConnections.id, nextConnection[0].id));
       }
     }
   });
@@ -51,14 +55,22 @@ export async function deleteConnection(id: string): Promise<void> {
 export async function addConnection({
   projectId,
   name,
-  connstring
+  connectionString
 }: {
   projectId: string;
   name: string;
-  connstring: string;
+  connectionString: string;
 }): Promise<DbConnection> {
-  const isFirst = (await db.select().from(connections)).length === 0;
-  const result = await db.insert(connections).values({ projectId, name, connstring, isDefault: isFirst }).returning();
+  const existingConnections = await db.select().from(projectConnections);
+  const result = await db
+    .insert(projectConnections)
+    .values({
+      projectId,
+      name,
+      connectionString,
+      isDefault: existingConnections.length === 0
+    })
+    .returning();
 
   if (!result[0]) {
     throw new Error('Error adding connection');
@@ -70,13 +82,17 @@ export async function addConnection({
 export async function updateConnection({
   id,
   name,
-  connstring
+  connectionString
 }: {
   id: string;
   name: string;
-  connstring: string;
+  connectionString: string;
 }): Promise<DbConnection> {
-  const result = await db.update(connections).set({ name, connstring }).where(eq(connections.id, id)).returning();
+  const result = await db
+    .update(projectConnections)
+    .set({ name, connectionString })
+    .where(eq(projectConnections.id, id))
+    .returning();
   if (!result[0]) {
     throw new Error('Connection not found');
   }
