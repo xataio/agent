@@ -5,6 +5,7 @@ import { SideNav } from '~/components/ui/side-nav';
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const onboardingComplete = await getCompletedTaskPercentage();
+
   return (
     <>
       <div className="flex h-full overflow-hidden">

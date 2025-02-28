@@ -6,7 +6,7 @@ function getProviders() {
   if (env.AUTH_OPENID_ID && env.AUTH_OPENID_SECRET && env.AUTH_OPENID_ISSUER) {
     return [
       {
-        id: 'openid',
+        id: 'default',
         name: 'OpenID',
         type: 'oidc',
         options: {
@@ -20,18 +20,30 @@ function getProviders() {
 
   return [
     Credentials({
+      id: 'default',
       name: 'Local auth',
       async authorize() {
-        return { id: '1', name: 'User', email: 'user@example.com' };
+        return { name: 'User', email: 'user@localhost' };
       }
     })
   ];
 }
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+const { handlers, signIn, signOut, auth } = NextAuth({
+  pages: {
+    signIn: '/signin'
+  },
   providers: getProviders(),
   secret: env.AUTH_SECRET,
   session: {
     strategy: 'jwt'
+  },
+  callbacks: {
+    authorized: async ({ auth }) => {
+      // Logged in users are authenticated, otherwise redirect to login page
+      return !!auth;
+    }
   }
 });
+
+export { auth, handlers, signIn, signOut };

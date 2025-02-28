@@ -16,11 +16,9 @@ import {
   MakiLogoSymbol,
   useIsMobile
 } from '@internal/components';
-import { LogOut } from 'lucide-react';
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { PropsWithChildren } from 'react';
 
 export type User = {
@@ -71,7 +69,6 @@ export const BelowHeaderBar = ({ children }: PropsWithChildren) => {
 function UserAvatar({ user }: { user?: User }) {
   const { theme, setTheme } = useTheme();
   const isMobile = useIsMobile();
-  const router = useRouter();
 
   return (
     <DropdownMenu>
@@ -106,15 +103,6 @@ function UserAvatar({ user }: { user?: User }) {
             {theme === 'dark' ? 'Light' : 'Dark'} theme
           </DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => {
-            void signOut();
-          }}
-        >
-          <LogOut />
-          Sign out
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
