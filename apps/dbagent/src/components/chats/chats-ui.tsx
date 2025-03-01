@@ -69,6 +69,25 @@ function ChatsUIContent({ connections }: { connections: DbConnection[] }) {
     }
   }, [searchParams, defaultConnection?.id]);
 
+  useEffect(() => {
+    const playbookParam = searchParams.get('playbook');
+    if (playbookParam && defaultConnection?.id) {
+      const newChat = {
+        id: `new-${Date.now()}`,
+        title: `Playbook: ${playbookParam}`,
+        lastMessage: '',
+        timestamp: new Date().toISOString()
+      };
+      setChats((prev) => [newChat, ...prev]);
+      setSelectedChatId(newChat.id);
+      setConnectionId(defaultConnection.id);
+      setMessages([]);
+
+      const initialMessage = `Run playbook ${playbookParam}`;
+      setInput(initialMessage);
+    }
+  }, [searchParams, defaultConnection?.id]);
+
   const handleNewChat = () => {
     const newChat = {
       id: `new-${Date.now()}`,
