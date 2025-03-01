@@ -3,10 +3,11 @@ import { z } from 'zod';
 import { Schedule } from '~/lib/db/schedules';
 import { getModelInstance, getTools, monitoringSystemPrompt } from '../ai/aidba';
 import { getConnection } from '../db/connections';
+import { insertScheduleRunLimitHistory, ScheduleRun } from '../db/runs';
 import { sendScheduleNotification } from '../notifications/slack-webhook';
 import { getTargetDbConnection } from '../targetdb/db';
 
-export async function runSchedule(schedule: Schedule) {
+export async function runSchedule(schedule: Schedule, now: Date) {
   console.log(`Running schedule ${schedule.id}`);
 
   const connection = await getConnection(schedule.connectionId);
@@ -70,4 +71,14 @@ export async function runSchedule(schedule: Schedule) {
     notificationResult.object.summary,
     result.text
   );
+
+  const scheduleRun: Omit<ScheduleRun, 'id'> = {
+    scheduleId: schedule.id,
+    result: result.text,
+    summary: notificationResult.object.summary,
+    notificationLevel: notificationResult.object.notificationLevel,
+    messages: messages,
+    createdAt: now.toISOString()
+  };
+  await insertScheduleRunLimitHistory(scheduleRun, schedule.keepHistory);
 }

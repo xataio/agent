@@ -18,6 +18,7 @@ export type Schedule = {
   nextRun?: string | null;
   failures?: number | null;
   status: 'disabled' | 'scheduled' | 'running';
+  keepHistory: number;
   enabled: boolean;
 };
 

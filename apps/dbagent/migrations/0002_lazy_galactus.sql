@@ -1,0 +1,1 @@
+ALTER TABLE "schedules" ALTER COLUMN "keep_history" SET NOT NULL;
