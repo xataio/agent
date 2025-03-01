@@ -2,6 +2,7 @@
 
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
+import { getScheduleRuns, ScheduleRun } from '~/lib/db/runs';
 import {
   deleteSchedule,
   getSchedule,
@@ -80,4 +81,8 @@ export async function actionUpdateScheduleEnabled(scheduleId: string, enabled: b
     schedule.nextRun = undefined;
     await updateScheduleRunData(schedule);
   }
+}
+
+export async function actionGetScheduleRuns(scheduleId: string): Promise<ScheduleRun[]> {
+  return getScheduleRuns(scheduleId);
 }

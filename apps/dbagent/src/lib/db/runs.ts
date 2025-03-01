@@ -8,7 +8,7 @@ export type ScheduleRun = {
   scheduleId: string;
   createdAt: string;
   result: string;
-  summary: string;
+  summary: string | null;
   notificationLevel: 'info' | 'warning' | 'alert';
   messages: CoreMessage[];
 };
@@ -59,6 +59,6 @@ export async function insertScheduleRun(scheduleRun: Omit<ScheduleRun, 'id'>) {
   return result[0];
 }
 
-export async function getScheduleRuns(scheduleId: string) {
+export async function getScheduleRuns(scheduleId: string): Promise<ScheduleRun[]> {
   return await db.select().from(schedule_runs).where(eq(schedule_runs.scheduleId, scheduleId));
 }

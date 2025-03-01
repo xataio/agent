@@ -43,7 +43,8 @@ Run the app:
 pnpm run dev
 ```
 
-In a separate terminal, run the scheduler:
+In a separate terminal, run the scheduler. This is a simple script that calls the
+`/api/priv/schedule-tick` endpoint every 10s. This is only required if you want to schedule tasks.
 
 ```bash
 pnpm run dev-scheduler

@@ -135,7 +135,7 @@ export const schedule_runs = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     scheduleId: uuid('schedule_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow(),
+    createdAt: timestamp('created_at', { mode: 'string' }).notNull().defaultNow(),
     result: text('result').notNull(),
     summary: text('summary'),
     notificationLevel: notification_level('notification_level').default('info').notNull(),

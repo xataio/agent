@@ -177,7 +177,7 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
                         <PencilIcon className="h-4 w-4" />
                       </Button>
                     </Link>
-                    <Link href={`/monitoring/runs/${schedule.playbook}`}>
+                    <Link href={`/monitoring/runs/${schedule.id}`}>
                       <Button variant="outline" size="icon" title="View runs" className="cursor-pointer">
                         <ListIcon className="h-4 w-4" />
                       </Button>

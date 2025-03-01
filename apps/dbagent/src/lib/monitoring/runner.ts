@@ -64,13 +64,15 @@ export async function runSchedule(schedule: Schedule, now: Date) {
 
   console.log(JSON.stringify(notificationResult.object, null, 2));
 
-  await sendScheduleNotification(
-    schedule,
-    connection,
-    notificationResult.object.notificationLevel,
-    notificationResult.object.summary,
-    result.text
-  );
+  if (notificationResult.object.notificationLevel === 'alert') {
+    await sendScheduleNotification(
+      schedule,
+      connection,
+      notificationResult.object.notificationLevel,
+      notificationResult.object.summary,
+      result.text
+    );
+  }
 
   const scheduleRun: Omit<ScheduleRun, 'id'> = {
     scheduleId: schedule.id,
