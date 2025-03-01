@@ -1,4 +1,4 @@
-import { CoreMessage } from 'ai';
+import { Message } from '@ai-sdk/ui-utils';
 import { desc, eq, lt } from 'drizzle-orm';
 import { db } from './db';
 import { schedule_runs } from './schema';
@@ -10,7 +10,7 @@ export type ScheduleRun = {
   result: string;
   summary: string | null;
   notificationLevel: 'info' | 'warning' | 'alert';
-  messages: CoreMessage[];
+  messages: Message[];
 };
 
 export async function insertScheduleRunLimitHistory(scheduleRun: Omit<ScheduleRun, 'id'>, keepHistory: number) {
@@ -60,5 +60,17 @@ export async function insertScheduleRun(scheduleRun: Omit<ScheduleRun, 'id'>) {
 }
 
 export async function getScheduleRuns(scheduleId: string): Promise<ScheduleRun[]> {
-  return await db.select().from(schedule_runs).where(eq(schedule_runs.scheduleId, scheduleId));
+  return await db
+    .select()
+    .from(schedule_runs)
+    .where(eq(schedule_runs.scheduleId, scheduleId))
+    .orderBy(desc(schedule_runs.createdAt));
+}
+
+export async function getScheduleRun(runId: string): Promise<ScheduleRun> {
+  const result = await db.select().from(schedule_runs).where(eq(schedule_runs.id, runId));
+  if (!result[0]) {
+    throw new Error('Schedule run not found');
+  }
+  return result[0];
 }

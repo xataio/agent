@@ -1,4 +1,4 @@
-import { CoreMessage } from 'ai';
+import { Message } from '@ai-sdk/ui-utils';
 import {
   boolean,
   foreignKey,
@@ -139,7 +139,7 @@ export const schedule_runs = pgTable(
     result: text('result').notNull(),
     summary: text('summary'),
     notificationLevel: notification_level('notification_level').default('info').notNull(),
-    messages: jsonb('messages').$type<CoreMessage[]>().notNull()
+    messages: jsonb('messages').$type<Message[]>().notNull()
   },
   (table) => [
     foreignKey({

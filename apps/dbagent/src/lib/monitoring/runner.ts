@@ -1,4 +1,5 @@
-import { CoreMessage, generateObject, generateText } from 'ai';
+import { Message } from '@ai-sdk/ui-utils';
+import { CoreMessage, generateId, generateObject, generateText } from 'ai';
 import { z } from 'zod';
 import { Schedule } from '~/lib/db/schedules';
 import { getModelInstance, getTools, monitoringSystemPrompt } from '../ai/aidba';
@@ -74,12 +75,27 @@ export async function runSchedule(schedule: Schedule, now: Date) {
     );
   }
 
+  const msgs = messages.map((m) => {
+    return {
+      id: generateId(),
+      role: m.role,
+      content: m.content,
+      createdAt: now
+    } as Message;
+  });
+  msgs.push({
+    id: generateId(),
+    role: 'assistant',
+    content: result.text,
+    createdAt: new Date()
+  } as Message);
+
   const scheduleRun: Omit<ScheduleRun, 'id'> = {
     scheduleId: schedule.id,
     result: result.text,
     summary: notificationResult.object.summary,
     notificationLevel: notificationResult.object.notificationLevel,
-    messages: messages,
+    messages: msgs,
     createdAt: now.toISOString()
   };
   await insertScheduleRunLimitHistory(scheduleRun, schedule.keepHistory);
