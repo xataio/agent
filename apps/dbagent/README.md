@@ -1,6 +1,6 @@
 # Aida
 
-Aida is primarily a Next.js + Verceal AI SDK app.
+Aida is primarily a Next.js + Vercel AI SDK app.
 
 ## Development
 
