@@ -15,8 +15,8 @@ import {
 } from 'drizzle-orm/pg-core';
 
 export const projectType = pgEnum('project_type', ['postgres', 'rds']);
-
-export const scheduleStatusEnum = pgEnum('schedule_status', ['disabled', 'scheduled', 'running']);
+export const scheduleStatus = pgEnum('schedule_status', ['disabled', 'scheduled', 'running']);
+export const notificationLevel = pgEnum('notification_level', ['info', 'warning', 'alert']);
 
 export const users = pgTable('users', {
   id: text('id').primaryKey().notNull(),
@@ -31,7 +31,7 @@ export const projects = pgTable(
     name: text('name').notNull(),
     ownerId: text('owner_id').notNull(),
     type: projectType('type').notNull(),
-    info: jsonb('info').$type<any>().notNull().default({})
+    info: jsonb('info').default({}).notNull().$type<any>()
   },
   (table) => [
     foreignKey({
@@ -43,8 +43,8 @@ export const projects = pgTable(
   ]
 );
 
-export const projectConnections = pgTable(
-  'project_connections',
+export const connections = pgTable(
+  'connections',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     projectId: uuid('project_id').notNull(),
@@ -56,32 +56,32 @@ export const projectConnections = pgTable(
     foreignKey({
       columns: [table.projectId],
       foreignColumns: [projects.id],
-      name: 'fk_project_connections_project'
+      name: 'fk_connections_project'
     }),
-    unique('uq_project_connections_name').on(table.projectId, table.name)
+    unique('uq_connections_name').on(table.projectId, table.name)
   ]
 );
 
-export const projectConnectionsInfo = pgTable(
-  'project_connections_info',
+export const connectionsInfo = pgTable(
+  'connections_info',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
-    connectionId: uuid('connection_id'),
+    connectionId: uuid('connection_id').notNull(),
     type: text('type').notNull(),
     data: jsonb('data').notNull()
   },
   (table) => [
     foreignKey({
       columns: [table.connectionId],
-      foreignColumns: [projectConnections.id],
-      name: 'fk_project_connections_info_conn'
+      foreignColumns: [connections.id],
+      name: 'fk_connections_info_connection'
     }),
-    unique('uq_project_connections_info').on(table.connectionId, table.type)
+    unique('uq_connections_info').on(table.connectionId, table.type)
   ]
 );
 
-export const projectIntegrations = pgTable(
-  'project_integrations',
+export const integrations = pgTable(
+  'integrations',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     projectId: uuid('project_id').notNull(),
@@ -92,14 +92,14 @@ export const projectIntegrations = pgTable(
     foreignKey({
       columns: [table.projectId],
       foreignColumns: [projects.id],
-      name: 'fk_project_integrations_project'
+      name: 'fk_integrations_project'
     }),
-    unique('uq_project_integrations_name').on(table.projectId, table.name)
+    unique('uq_integrations_name').on(table.projectId, table.name)
   ]
 );
 
-export const projectSchedules = pgTable(
-  'project_schedules',
+export const schedules = pgTable(
+  'schedules',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     projectId: uuid('project_id').notNull(),
@@ -113,44 +113,42 @@ export const projectSchedules = pgTable(
     enabled: boolean('enabled').default(true).notNull(),
     lastRun: timestamp('last_run', { mode: 'string' }),
     nextRun: timestamp('next_run', { mode: 'string' }),
-    status: scheduleStatusEnum('status').default('disabled').notNull(),
+    status: scheduleStatus('status').default('disabled').notNull(),
     failures: integer('failures').default(0),
-    keepHistory: integer('keep_history').notNull().default(300),
+    keepHistory: integer('keep_history').default(300).notNull(),
     model: text('model').default('openai-gpt-4o').notNull()
   },
   (table) => [
     foreignKey({
       columns: [table.projectId],
       foreignColumns: [projects.id],
-      name: 'fk_project_schedules_project'
+      name: 'fk_schedules_project'
     }),
     foreignKey({
       columns: [table.connectionId],
-      foreignColumns: [projectConnections.id],
-      name: 'fk_project_schedules_connection'
+      foreignColumns: [connections.id],
+      name: 'fk_schedules_connection'
     })
   ]
 );
 
-export const notification_level = pgEnum('notification_level', ['info', 'warning', 'alert']);
-
-export const schedule_runs = pgTable(
+export const scheduleRuns = pgTable(
   'schedule_runs',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     scheduleId: uuid('schedule_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).notNull().defaultNow(),
+    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     result: text('result').notNull(),
     summary: text('summary'),
-    notificationLevel: notification_level('notification_level').default('info').notNull(),
+    notificationLevel: notificationLevel('notification_level').default('info').notNull(),
     messages: jsonb('messages').$type<Message[]>().notNull()
   },
   (table) => [
     foreignKey({
       columns: [table.scheduleId],
       foreignColumns: [schedules.id],
-      name: 'schedule_runs_schedule_id_fkey'
+      name: 'fk_schedule_runs_schedule'
     }),
-    index('schedule_runs_created_at_idx').on(table.scheduleId, table.createdAt)
+    index('idx_schedule_runs_created_at').on(table.scheduleId, table.createdAt)
   ]
 );

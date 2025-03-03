@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { db } from './db';
-import { projectIntegrations } from './schema';
+import { integrations } from './schema';
 
 export type AwsIntegration = {
   accessKeyId: string;
@@ -27,14 +27,14 @@ export async function saveIntegration<
   Value extends IntegrationTypes & { type: Key }
 >(projectId: string, name: Key, data: Value['data']) {
   await db
-    .insert(projectIntegrations)
+    .insert(integrations)
     .values({
       projectId,
       name: name,
       data: data
     })
     .onConflictDoUpdate({
-      target: projectIntegrations.name,
+      target: integrations.name,
       set: {
         data: data
       }
@@ -45,6 +45,6 @@ export async function getIntegration<
   Key extends IntegrationTypes['type'],
   Value extends IntegrationTypes & { type: Key }
 >(name: Key): Promise<Value['data'] | null> {
-  const result = await db.select().from(projectIntegrations).where(eq(projectIntegrations.name, name));
+  const result = await db.select().from(integrations).where(eq(integrations.name, name));
   return (result[0]?.data as Value['data']) || null;
 }

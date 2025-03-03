@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 import { PerformanceSetting, PgExtension, TableStat } from '../targetdb/db';
 import { db } from './db';
-import { projectConnectionsInfo } from './schema';
+import { connectionsInfo } from './schema';
 
 type ConnectionInfoTypes =
   | {
@@ -27,10 +27,10 @@ type ConnectionInfo = {
 
 export async function saveDbInfo({ connectionId, type, data }: ConnectionInfo) {
   await db
-    .insert(projectConnectionsInfo)
+    .insert(connectionsInfo)
     .values({ connectionId, type, data })
     .onConflictDoUpdate({
-      target: [projectConnectionsInfo.connectionId, projectConnectionsInfo.type],
+      target: [connectionsInfo.connectionId, connectionsInfo.type],
       set: { data }
     })
     .execute();
@@ -41,9 +41,9 @@ export async function getDbInfo<
   Value extends ConnectionInfoTypes & { type: Key }
 >(connectionId: string, key: Key): Promise<Value['data'] | null> {
   const result = await db
-    .select({ data: projectConnectionsInfo.data })
-    .from(projectConnectionsInfo)
-    .where(and(eq(projectConnectionsInfo.connectionId, connectionId), eq(projectConnectionsInfo.type, key)))
+    .select({ data: connectionsInfo.data })
+    .from(connectionsInfo)
+    .where(and(eq(connectionsInfo.connectionId, connectionId), eq(connectionsInfo.type, key)))
     .execute();
 
   return (result[0]?.data as Value['data']) ?? null;
