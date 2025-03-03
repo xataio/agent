@@ -10,10 +10,10 @@ export function PlaybookView({ playbook }: { playbook: Playbook }) {
     <main className="container mx-auto max-w-4xl px-4 py-8">
       <div className="items-left mb-6 flex justify-between">
         <Button variant="ghost" className="flex items-center pl-0" asChild>
-          <a href="/playbooks">
+          <Link href="/playbooks">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Playbooks
-          </a>
+          </Link>
         </Button>
       </div>
       <Card>
