@@ -5,12 +5,19 @@ import { DbConnection } from '~/lib/db/connections';
 
 export function ConnectionSelector({
   connections,
-  onSelect
+  onSelect,
+  connectionId
 }: {
   connections: DbConnection[];
   onSelect: (connectionId: string) => void;
+  connectionId?: string;
 }) {
-  const defaultConnection = connections.find((c) => c.isDefault);
+  let defaultConnection: DbConnection | undefined;
+  if (connectionId) {
+    defaultConnection = connections.find((c) => c.id === connectionId);
+  } else {
+    defaultConnection = connections.find((c) => c.isDefault);
+  }
   const [selectedConnection, setSelectedConnection] = React.useState<DbConnection | undefined>(defaultConnection);
 
   return (

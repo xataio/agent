@@ -1,12 +1,14 @@
-import { CoreMessage, generateObject, generateText } from 'ai';
+import { Message } from '@ai-sdk/ui-utils';
+import { CoreMessage, generateId, generateObject, generateText } from 'ai';
 import { z } from 'zod';
 import { Schedule } from '~/lib/db/schedules';
 import { getModelInstance, getTools, monitoringSystemPrompt } from '../ai/aidba';
 import { getConnection } from '../db/connections';
+import { insertScheduleRunLimitHistory, ScheduleRun } from '../db/runs';
 import { sendScheduleNotification } from '../notifications/slack-webhook';
 import { getTargetDbConnection } from '../targetdb/db';
 
-export async function runSchedule(schedule: Schedule) {
+export async function runSchedule(schedule: Schedule, now: Date) {
   console.log(`Running schedule ${schedule.id}`);
 
   const connection = await getConnection(schedule.connectionId);
@@ -63,11 +65,38 @@ export async function runSchedule(schedule: Schedule) {
 
   console.log(JSON.stringify(notificationResult.object, null, 2));
 
-  await sendScheduleNotification(
-    schedule,
-    connection,
-    notificationResult.object.notificationLevel,
-    notificationResult.object.summary,
-    result.text
-  );
+  if (notificationResult.object.notificationLevel === 'alert') {
+    await sendScheduleNotification(
+      schedule,
+      connection,
+      notificationResult.object.notificationLevel,
+      notificationResult.object.summary,
+      result.text
+    );
+  }
+
+  const msgs = messages.map((m) => {
+    return {
+      id: generateId(),
+      role: m.role,
+      content: m.content,
+      createdAt: now
+    } as Message;
+  });
+  msgs.push({
+    id: generateId(),
+    role: 'assistant',
+    content: result.text,
+    createdAt: new Date()
+  } as Message);
+
+  const scheduleRun: Omit<ScheduleRun, 'id'> = {
+    scheduleId: schedule.id,
+    result: result.text,
+    summary: notificationResult.object.summary,
+    notificationLevel: notificationResult.object.notificationLevel,
+    messages: msgs,
+    createdAt: now.toISOString()
+  };
+  await insertScheduleRunLimitHistory(scheduleRun, schedule.keepHistory);
 }

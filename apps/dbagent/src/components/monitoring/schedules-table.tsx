@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, Switch, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@internal/components';
-import { PencilIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
+import { ListIcon, PencilIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { DbConnection } from '~/lib/db/connections';
@@ -171,10 +171,15 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
                   />
                 </TableCell>
                 <TableCell>
-                  <div className="flex space-x-2">
+                  <div className="flex gap-2">
                     <Link href={`/monitoring/schedule/${schedule.id}`}>
-                      <Button variant="outline" size="icon" className="cursor-pointer">
+                      <Button variant="outline" size="icon" title="Edit schedule" className="cursor-pointer">
                         <PencilIcon className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Link href={`/monitoring/runs/${schedule.id}`}>
+                      <Button variant="outline" size="icon" title="View runs" className="cursor-pointer">
+                        <ListIcon className="h-4 w-4" />
                       </Button>
                     </Link>
                   </div>

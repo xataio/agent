@@ -116,6 +116,7 @@ export function ScheduleForm({ isEditMode, scheduleId, playbooks, connections }:
       minInterval: Number(data.minInterval),
       maxInterval: Number(data.maxInterval),
       enabled: data.enabled,
+      keepHistory: 300,
       status: data.enabled ? 'scheduled' : 'disabled'
     };
     if (isEditMode) {

@@ -16,7 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Maki'
+  title: 'Aida, your AI expert in PostgreSQL'
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
