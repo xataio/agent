@@ -1,6 +1,8 @@
+import { Message } from '@ai-sdk/ui-utils';
 import {
   boolean,
   foreignKey,
+  index,
   integer,
   jsonb,
   pgEnum,
@@ -113,6 +115,7 @@ export const projectSchedules = pgTable(
     nextRun: timestamp('next_run', { mode: 'string' }),
     status: scheduleStatusEnum('status').default('disabled').notNull(),
     failures: integer('failures').default(0),
+    keepHistory: integer('keep_history').notNull().default(300),
     model: text('model').default('openai-gpt-4o').notNull()
   },
   (table) => [
@@ -126,5 +129,28 @@ export const projectSchedules = pgTable(
       foreignColumns: [projectConnections.id],
       name: 'fk_project_schedules_connection'
     })
+  ]
+);
+
+export const notification_level = pgEnum('notification_level', ['info', 'warning', 'alert']);
+
+export const schedule_runs = pgTable(
+  'schedule_runs',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    scheduleId: uuid('schedule_id').notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' }).notNull().defaultNow(),
+    result: text('result').notNull(),
+    summary: text('summary'),
+    notificationLevel: notification_level('notification_level').default('info').notNull(),
+    messages: jsonb('messages').$type<Message[]>().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.scheduleId],
+      foreignColumns: [schedules.id],
+      name: 'schedule_runs_schedule_id_fkey'
+    }),
+    index('schedule_runs_created_at_idx').on(table.scheduleId, table.createdAt)
   ]
 );

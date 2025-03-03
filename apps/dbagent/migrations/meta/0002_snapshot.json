@@ -1,6 +1,6 @@
 {
-  "id": "58d029f6-2a5a-478d-bd5b-624372925bd0",
-  "prevId": "8a69bb6c-0c56-4acc-ba84-f708a2f48a51",
+  "id": "3118fcc8-7d5c-4790-bd35-65b2242ee0d5",
+  "prevId": "58d029f6-2a5a-478d-bd5b-624372925bd0",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -445,7 +445,7 @@
           "name": "keep_history",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": 300
         },
         "model": {

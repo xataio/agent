@@ -81,7 +81,7 @@ async function runJob(schedule: Schedule, now: Date) {
   }
 
   try {
-    await runSchedule(schedule);
+    await runSchedule(schedule, now);
   } catch (error) {
     console.error(`Error running playbook ${schedule.playbook}:`, error);
     await incrementScheduleFailures(schedule.id);

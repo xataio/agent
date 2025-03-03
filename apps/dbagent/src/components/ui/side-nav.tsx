@@ -7,7 +7,7 @@ import {
   BotMessageSquare,
   CloudIcon,
   DatabaseIcon,
-  PlugIcon,
+  NotebookPen,
   Server,
   ZapIcon
 } from 'lucide-react';
@@ -105,21 +105,21 @@ export function SideNav({ className, onboardingComplete }: SideNavProps) {
 
         <nav className="space-y-2">
           <Link
-            href="/monitoring"
-            className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-sm', isActive(`/monitoring`))}
+            href="/playbooks"
+            className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-sm', isActive(`/integrations`))}
           >
-            <ActivityIcon className="h-4 w-4" />
-            Monitoring
+            <NotebookPen className="h-4 w-4" />
+            Playbooks
           </Link>
         </nav>
 
         <nav className="space-y-2">
           <Link
-            href="/integrations"
-            className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-sm', isActive(`/integrations`))}
+            href="/monitoring"
+            className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-sm', isActive(`/monitoring`))}
           >
-            <PlugIcon className="h-4 w-4" />
-            Integrations
+            <ActivityIcon className="h-4 w-4" />
+            Monitoring
           </Link>
         </nav>
       </div>

@@ -12,8 +12,15 @@
     {
       "idx": 1,
       "version": "7",
-      "when": 1740731796540,
-      "tag": "0001_projects",
+      "when": 1740839458915,
+      "tag": "0001_lumpy_black_tarantula",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1740840546323,
+      "tag": "0002_lazy_galactus",
       "breakpoints": true
     }
   ]

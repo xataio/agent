@@ -1,3 +1,10 @@
+export interface Playbook {
+  name: string;
+  description: string;
+  content: string;
+  isBuiltIn: boolean;
+}
+
 const SLOW_QUERIES_PLAYBOOK = `
 Follow the following steps to find and troubleshoot slow queries:
 
@@ -150,5 +157,38 @@ export function getPlaybook(name: string): string {
 }
 
 export function listPlaybooks(): string[] {
-  return ['investigateSlowQueries', 'generalMonitoring'];
+  return ['investigateSlowQueries', 'generalMonitoring', 'tuneSettings', 'investigateHighCpuUsage'];
+}
+
+export function getBuiltInPlaybooks(): Playbook[] {
+  return [
+    {
+      name: 'investigateSlowQueries',
+      description: 'Investigate slow queries using pg_stat_statements and EXPLAIN calls.',
+      content: SLOW_QUERIES_PLAYBOOK,
+      isBuiltIn: true
+    },
+    {
+      name: 'generalMonitoring',
+      description: 'General monitoring of the database, checking logs, slow queries, main metrics, etc.',
+      content: GENERAL_MONITORING_PLAYBOOK,
+      isBuiltIn: true
+    },
+    {
+      name: 'tuneSettings',
+      description: 'Tune configuration settings for the database, based on the instance type, the database schema. ',
+      content: TUNING_PLAYBOOK,
+      isBuiltIn: true
+    },
+    {
+      name: 'investigateHighCpuUsage',
+      description: 'Investigate high CPU usage. This playbook should be execute while the CPU usage is elevated.',
+      content: INVESTIGATE_HIGH_CPU_USAGE_PLAYBOOK,
+      isBuiltIn: true
+    }
+  ];
+}
+
+export function getPlaybookDetails(name: string): Playbook | undefined {
+  return getBuiltInPlaybooks().find((playbook) => playbook.name === name);
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useChat } from '@ai-sdk/react';
 import {
   Avatar,
   AvatarFallback,
@@ -12,39 +13,55 @@ import {
   ScrollArea,
   Textarea
 } from '@internal/components';
-import { useChat } from 'ai/react';
 import { Bot, Clock, Lightbulb, Send, User, Wrench } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { DbConnection } from '~/lib/db/connections';
+import { ScheduleRun } from '~/lib/db/runs';
+import { Schedule } from '~/lib/db/schedules';
 import { ChatSidebar } from './chat-sidebar';
 import { ConnectionSelector } from './conn-selector';
 import { mockChats } from './mock-data';
 import { ModelSelector } from './model-selector';
 
-export function ChatsUI({ connections }: { connections: DbConnection[] }) {
+export function ChatsUI({
+  connections,
+  scheduleRun
+}: {
+  connections: DbConnection[];
+  scheduleRun?: { schedule: Schedule; run: ScheduleRun } | null;
+}) {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <ChatsUIContent connections={connections} />
+      <ChatsUIContent connections={connections} scheduleRun={scheduleRun} />
     </Suspense>
   );
 }
 
-function ChatsUIContent({ connections }: { connections: DbConnection[] }) {
+function ChatsUIContent({
+  connections,
+  scheduleRun
+}: {
+  connections: DbConnection[];
+  scheduleRun?: { schedule: Schedule; run: ScheduleRun } | null;
+}) {
   const searchParams = useSearchParams();
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [chats, setChats] = useState(mockChats);
   const defaultConnection = connections.find((c) => c.isDefault);
-  const [connectionId, setConnectionId] = useState<string>(defaultConnection?.id || '');
-  const [model, setModel] = useState('openai-gpt-4o');
+  const [connectionId, setConnectionId] = useState<string>(
+    scheduleRun?.schedule.connectionId || defaultConnection?.id || ''
+  );
+  const [model, setModel] = useState(scheduleRun?.schedule.model || 'openai-gpt-4o');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { messages, input, handleInputChange, handleSubmit, setInput, isLoading, setMessages } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, setInput, status, setMessages } = useChat({
     id: selectedChatId || undefined,
     body: {
       model
-    }
+    },
+    initialMessages: scheduleRun?.run.messages
   });
 
   useEffect(() => {
@@ -68,6 +85,45 @@ function ChatsUIContent({ connections }: { connections: DbConnection[] }) {
       setInput(initialMessage);
     }
   }, [searchParams, defaultConnection?.id]);
+
+  useEffect(() => {
+    const playbookParam = searchParams.get('playbook');
+    if (playbookParam && defaultConnection?.id) {
+      const newChat = {
+        id: `new-${Date.now()}`,
+        title: `Playbook: ${playbookParam}`,
+        lastMessage: '',
+        timestamp: new Date().toISOString()
+      };
+      setChats((prev) => [newChat, ...prev]);
+      setSelectedChatId(newChat.id);
+      setConnectionId(defaultConnection.id);
+      setMessages([]);
+
+      const initialMessage = `Run playbook ${playbookParam}`;
+      setInput(initialMessage);
+    }
+  }, [searchParams, defaultConnection?.id]);
+
+  /*useEffect(() => {
+    const fetchScheduleRun = async (runId: string) => {
+      const { schedule, run } = await actionGetScheduleRun(runId)      
+      const newChat = {
+        id: `new-${Date.now()}`,
+        title: `Scheduled run followup`,
+        lastMessage: run.summary || '',
+        timestamp: new Date().toISOString()
+      };
+      setChats((prev) => [newChat, ...prev]);
+      setSelectedChatId(newChat.id);
+      setConnectionId(schedule.connectionId);
+      setMessages(run.messages);
+    };
+    const runId = searchParams.get('runId');
+    if (runId) {
+      void fetchScheduleRun(runId);
+    }
+  }, [searchParams, defaultConnection?.id]);*/
 
   const handleNewChat = () => {
     const newChat = {
@@ -140,7 +196,11 @@ function ChatsUIContent({ connections }: { connections: DbConnection[] }) {
               </CardTitle>
               <div className="flex items-center gap-2">
                 <ModelSelector value={model} onValueChange={setModel} />
-                <ConnectionSelector connections={connections} onSelect={handleContextSelect} />
+                <ConnectionSelector
+                  connections={connections}
+                  onSelect={handleContextSelect}
+                  connectionId={connectionId}
+                />
               </div>
             </div>
           </CardHeader>
@@ -215,7 +275,7 @@ function ChatsUIContent({ connections }: { connections: DbConnection[] }) {
                   ))}
                 </div>
               ))}
-              {isLoading && (
+              {status !== 'ready' && (
                 <div className="flex gap-3">
                   <Avatar>
                     <AvatarFallback>
@@ -246,15 +306,15 @@ function ChatsUIContent({ connections }: { connections: DbConnection[] }) {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    if (!isLoading && input.trim() && selectedChatId && connectionId) {
+                    if (input.trim() && selectedChatId && connectionId) {
                       e.currentTarget.form?.requestSubmit();
                     }
                   }
                 }}
-                disabled={isLoading || !connectionId}
+                disabled={status != 'ready' || !connectionId}
                 className="min-h-[100px] flex-1 resize-none"
               />
-              <Button type="submit" disabled={isLoading || !input.trim() || !connectionId}>
+              <Button type="submit" disabled={status != 'ready' || !input.trim() || !connectionId}>
                 <Send className="h-4 w-4" />
                 <span className="sr-only">Send message</span>
               </Button>
