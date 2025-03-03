@@ -13,7 +13,14 @@ import {
 import { getInstanceLogs } from '~/lib/tools/logs';
 import { getClusterMetric } from '~/lib/tools/metrics';
 import { getPlaybook, listPlaybooks } from '~/lib/tools/playbooks';
-import { describeTable, explainQuery, getSlowQueries } from '~/lib/tools/slow-queries';
+import {
+  describeTable,
+  explainQuery,
+  getSlowQueries,
+  toolCurrentActiveQueries,
+  toolGetQueriesWaitingOnLocks,
+  toolGetVacuumStats
+} from '~/lib/tools/slow-queries';
 import { DbConnection } from '../db/connections';
 
 export const commonSystemPrompt = `
@@ -142,6 +149,27 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
       execute: async ({ metricName, periodInSeconds }) => {
         console.log('getClusterMetric', metricName, periodInSeconds);
         return await getClusterMetric(connection, metricName, periodInSeconds);
+      }
+    },
+    getCurrentActiveQueries: {
+      description: `Get the currently active queries.`,
+      parameters: z.object({}),
+      execute: async () => {
+        return await toolCurrentActiveQueries(connection.connstring);
+      }
+    },
+    getQueriesWaitingOnLocks: {
+      description: `Get the queries that are currently blocked waiting on locks.`,
+      parameters: z.object({}),
+      execute: async () => {
+        return await toolGetQueriesWaitingOnLocks(connection.connstring);
+      }
+    },
+    getVacuumStats: {
+      description: `Get the vacuum stats for the top tables in the database. They are sorted by the number of dead tuples descending.`,
+      parameters: z.object({}),
+      execute: async () => {
+        return await toolGetVacuumStats(connection.connstring);
       }
     },
     getPlaybook: {

@@ -20,6 +20,21 @@ export interface RDSInstanceInfo {
   };
   allocatedStorage: number;
   multiAZ: boolean;
+  dbClusterIdentifier?: string;
+}
+
+export interface RDSClusterInfo {
+  identifier: string;
+  engine: string;
+  engineVersion: string;
+  status: string;
+  endpoint?: string;
+  readerEndpoint?: string;
+  port?: number;
+  multiAZ: boolean;
+  instanceCount: number;
+  allocatedStorage?: number;
+  isStandaloneInstance: boolean;
 }
 
 export interface AWSCredentials {
@@ -54,18 +69,6 @@ export function initializeCloudWatchClient(credentials: AWSCredentials, region: 
   });
 }
 
-export interface RDSClusterInfo {
-  identifier: string;
-  engine: string;
-  engineVersion: string;
-  status: string;
-  endpoint?: string;
-  readerEndpoint?: string;
-  port?: number;
-  multiAZ: boolean;
-  instanceCount: number;
-}
-
 export async function listRDSClusters(client: RDSClient): Promise<RDSClusterInfo[]> {
   // Get all DB clusters
   const command = new DescribeDBClustersCommand({});
@@ -84,7 +87,8 @@ export async function listRDSClusters(client: RDSClient): Promise<RDSClusterInfo
     readerEndpoint: cluster.ReaderEndpoint,
     port: cluster.Port,
     multiAZ: cluster.MultiAZ || false,
-    instanceCount: cluster.DBClusterMembers?.length || 0
+    instanceCount: cluster.DBClusterMembers?.length || 0,
+    isStandaloneInstance: false
   }));
 }
 
@@ -131,6 +135,7 @@ export async function getRDSClusterInfo(
       port: cluster.Port,
       multiAZ: cluster.MultiAZ || false,
       instanceCount: cluster.DBClusterMembers?.length || 0,
+      isStandaloneInstance: false,
       instances: instances.map((instance) => ({
         identifier: instance.DBInstanceIdentifier || '',
         engine: instance.Engine || '',
@@ -178,7 +183,8 @@ export async function listRDSInstances(client: RDSClient): Promise<RDSInstanceIn
         }
       : undefined,
     allocatedStorage: instance.AllocatedStorage || 0,
-    multiAZ: instance.MultiAZ || false
+    multiAZ: instance.MultiAZ || false,
+    dbClusterIdentifier: instance.DBClusterIdentifier || undefined
   }));
 }
 
@@ -216,7 +222,8 @@ export async function getRDSInstanceInfo(
           }
         : undefined,
       allocatedStorage: instance.AllocatedStorage || 0,
-      multiAZ: instance.MultiAZ || false
+      multiAZ: instance.MultiAZ || false,
+      dbClusterIdentifier: instance.DBClusterIdentifier || undefined
     };
   } catch (error) {
     console.error('Error fetching RDS instance info:', error);

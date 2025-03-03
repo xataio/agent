@@ -1,3 +1,10 @@
+export interface Playbook {
+  name: string;
+  description: string;
+  content: string;
+  isBuiltIn: boolean;
+}
+
 const SLOW_QUERIES_PLAYBOOK = `
 Follow the following steps to find and troubleshoot slow queries:
 
@@ -66,17 +73,122 @@ Record any issues found and actions taken.
 Note any recurring patterns or areas for improvement.
 `;
 
+const TUNING_PLAYBOOK = `
+Objective: Recommend performance and vacuum settings for the database.
+
+Step 1:
+Use the getTablesAndInstanceInfo tool to gather what you know about the database and the cluster/instance type
+
+Step 2:
+Think about what CPU/memory does that AWS instance class have?
+
+Step 3:
+Given the information you collected above, think about the ideal settings for the following parameters: 
+- max_connections 
+- shared_buffers 
+- effective_cache_size
+- maintenance_work_mem
+- checkpoint_completion_target
+- wal_buffers
+- default_statistics_target
+- random_page_cost
+- effective_io_concurrency
+- work_mem
+- huge_pages
+- min_wal_size
+- max_wal_size
+- max_worker_processes
+- max_parallel_workers_per_gather
+- max_parallel_workers
+- max_parallel_maintenance_workers.
+
+Step 4:
+Now compare with the value you read via the tool getPerformanceAndVacuumSettings and see if there's anything you'd change.
+
+Report your findings in a structured way, with the settings you'd change, and the reason for the change. Highlight the most important changes first.
+`;
+
+const INVESTIGATE_HIGH_CPU_USAGE_PLAYBOOK = `
+Objective:
+ To investigate and resolve high CPU usage in the PostgreSQL database.
+
+Step 1:
+Use the tool getCurrentActiveQueries to get the currently active queries. Consider the state and the duration of the queries,
+to see if there is any particular query that is causing the high CPU usage. If it is, report that to the user.
+
+Step 2:
+Check if there are any queries that are blocked waiting on locks. Use the tool getQueriesWaitingOnLocks to get the queries that are blocked waiting on locks.
+If there are, report that to the user.
+
+Step 3:
+Check IOPS and disk queue depth. Use the tool getInstanceMetric to get the IOPS and disk queue depth.
+If there are any unusual spikes or bottlenecks, report that to the user.
+
+Step 4:
+Get the vacuum stats for the top tables in the database. Use the tool getVacuumStats to get the vacuum stats.
+If there are any tables with a high number of dead tuples, report that to the user.
+
+Step 5:
+Check the slow queries. Use the tool getSlowQueries to get the slow queries.
+If there are any slow queries, report that to the user.
+
+Step 6:
+Check the logs. Use the tool getLogs to get the logs.
+If there are any unusual logs, report that to the user.
+
+Step 7:
+Based on all the information you have gathered, make a summary of your findings and report them to the user.
+Be very specific about the queries you found and the reason for which they are slow.
+`;
+
 export function getPlaybook(name: string): string {
   switch (name) {
     case 'investigateSlowQueries':
       return SLOW_QUERIES_PLAYBOOK;
     case 'generalMonitoring':
       return GENERAL_MONITORING_PLAYBOOK;
+    case 'tuneSettings':
+      return TUNING_PLAYBOOK;
+    case 'investigateHighCpuUsage':
+      return INVESTIGATE_HIGH_CPU_USAGE_PLAYBOOK;
     default:
       return `Error:Playbook ${name} not found`;
   }
 }
 
 export function listPlaybooks(): string[] {
-  return ['investigateSlowQueries', 'generalMonitoring'];
+  return ['investigateSlowQueries', 'generalMonitoring', 'tuneSettings', 'investigateHighCpuUsage'];
+}
+
+export function getBuiltInPlaybooks(): Playbook[] {
+  return [
+    {
+      name: 'investigateSlowQueries',
+      description: 'Investigate slow queries using pg_stat_statements and EXPLAIN calls.',
+      content: SLOW_QUERIES_PLAYBOOK,
+      isBuiltIn: true
+    },
+    {
+      name: 'generalMonitoring',
+      description: 'General monitoring of the database, checking logs, slow queries, main metrics, etc.',
+      content: GENERAL_MONITORING_PLAYBOOK,
+      isBuiltIn: true
+    },
+    {
+      name: 'tuneSettings',
+      description: 'Tune configuration settings for the database, based on the instance type, the database schema. ',
+      content: TUNING_PLAYBOOK,
+      isBuiltIn: true
+    },
+    {
+      name: 'investigateHighCpuUsage',
+      description: 'Investigate high CPU usage. This playbook should be execute while the CPU usage is elevated.',
+      content: INVESTIGATE_HIGH_CPU_USAGE_PLAYBOOK,
+      isBuiltIn: true
+    }
+  ];
+}
+
+export function getPlaybookDetails(name: string): Playbook | undefined {
+  return getBuiltInPlaybooks().find((playbook) => playbook.name === name);
 }

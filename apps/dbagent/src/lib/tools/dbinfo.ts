@@ -2,6 +2,7 @@ import { getClusterByConnection } from '../db/clusters';
 
 import { DbConnection } from '../db/connections';
 import { getDbInfo } from '../db/dbinfo';
+import { getPerformanceSettings, getVacuumSettings } from '../targetdb/db';
 
 export async function getTablesAndInstanceInfo(connection: DbConnection): Promise<string> {
   try {
@@ -24,8 +25,8 @@ ${JSON.stringify(cluster)}
 }
 
 export async function getPerformanceAndVacuumSettings(connection: DbConnection): Promise<string> {
-  const performanceSettings = await getDbInfo(connection.id, 'performance_settings');
-  const vacuumSettings = await getDbInfo(connection.id, 'vacuum_settings');
+  const performanceSettings = await getPerformanceSettings(connection.connstring);
+  const vacuumSettings = await getVacuumSettings(connection.connstring);
 
   return `
 Performance settings: ${JSON.stringify(performanceSettings)}

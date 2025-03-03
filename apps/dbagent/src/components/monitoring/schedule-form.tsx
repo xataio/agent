@@ -25,7 +25,7 @@ import {
   zodResolver
 } from '@internal/components';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -65,12 +65,15 @@ type ScheduleFormParams = {
 
 export function ScheduleForm({ isEditMode, scheduleId, playbooks, connections }: ScheduleFormParams) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showCronModal, setShowCronModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const playbook = searchParams.get('playbook');
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      playbook: playbooks[0] || '',
+      playbook: playbook || playbooks[0] || '',
       connection: connections.find((c) => c.isDefault)?.name || '',
       model: 'openai-gpt-4o',
       scheduleType: 'cron',
@@ -113,6 +116,7 @@ export function ScheduleForm({ isEditMode, scheduleId, playbooks, connections }:
       minInterval: Number(data.minInterval),
       maxInterval: Number(data.maxInterval),
       enabled: data.enabled,
+      keepHistory: 300,
       status: data.enabled ? 'scheduled' : 'disabled'
     };
     if (isEditMode) {
