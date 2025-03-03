@@ -22,6 +22,7 @@
     "@aws-sdk/client-cloudwatch": "^3.758.0",
     "@aws-sdk/client-rds": "^3.758.0",
     "@fluentui/react-icons": "^2.0.274",
+    "@hookform/resolvers": "^4.1.2",
     "@internal/components": "workspace:*",
     "@internal/theme": "workspace:*",
     "@tailwindcss/postcss": "^4.0.9",

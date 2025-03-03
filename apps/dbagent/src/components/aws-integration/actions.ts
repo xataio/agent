@@ -7,7 +7,6 @@ import {
   RDSClusterDetailedInfo,
   RDSClusterInfo
 } from '~/lib/aws/rds';
-import { DbConnection } from '~/lib/db/connections';
 import { AwsIntegration, getIntegration, saveIntegration } from '~/lib/db/integrations';
 import { saveProject } from '~/lib/db/projects';
 
@@ -65,29 +64,30 @@ export async function saveProjectDetails({
   name,
   ownerId,
   clusterIdentifier,
-  region,
-  connection
+  region
 }: {
   name: string;
   ownerId: string;
   clusterIdentifier: string;
   region: string;
-  connection: DbConnection;
 }): Promise<{ success: boolean; message: string }> {
   const aws = await getIntegration('aws');
   if (!aws) {
     return { success: false, message: 'AWS integration not found' };
   }
+
   const client = initializeRDSClient({
     accessKeyId: aws.accessKeyId,
     secretAccessKey: aws.secretAccessKey,
     region: region
   });
+
   const instance = await getRDSClusterInfo(clusterIdentifier, client);
   if (!instance) {
     return { success: false, message: 'RDS instance not found' };
   }
-  const instanceId = await saveProject({
+
+  await saveProject({
     name,
     ownerId,
     type: 'rds',

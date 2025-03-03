@@ -280,4 +280,8 @@
     -webkit-text-stroke: 1px currentColor;
     text-stroke: 1px currentColor;
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
 }

@@ -39,8 +39,8 @@ export const HeaderBar = ({ children }: PropsWithChildren<{ user?: User }>) => {
           <div className="bg-contrastEmpty flex h-[52px] w-full items-center justify-between p-0" id="main-navbar">
             <div className="flex flex-grow items-center justify-start gap-2">
               <Link href="/" className="flex items-center transition-transform duration-100 ease-out hover:scale-105">
-                <MakiLogoSymbol />
-                <span className="pl-2 text-lg font-bold">Maki AI DBA</span>
+                <MakiLogoSymbol className="h-6 w-auto" />
+                <span className="pl-2 text-lg font-bold">AIDA</span>
               </Link>
 
               {children}

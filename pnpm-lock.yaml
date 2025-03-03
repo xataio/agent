@@ -68,6 +68,9 @@ importers:
       '@fluentui/react-icons':
         specifier: ^2.0.274
         version: 2.0.274(react@19.0.0)
+      '@hookform/resolvers':
+        specifier: ^4.1.2
+        version: 4.1.2(react-hook-form@7.54.2(react@19.0.0))
       '@internal/components':
         specifier: workspace:*
         version: link:../../packages/components

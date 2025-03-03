@@ -1,4 +1,4 @@
-# Maki AI DBA for PostgreSQL
+# AIDA: AI DB Agent for PostgreSQL
 
 Hire me (for free, I'm open source) as your agentic AI DBA. I can:
 

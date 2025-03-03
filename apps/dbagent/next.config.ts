@@ -4,7 +4,13 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@internal/components'],
   async redirects() {
-    return [];
+    return [
+      {
+        source: '/',
+        destination: '/projects',
+        permanent: false
+      }
+    ];
   },
   async rewrites() {
     return [];
