@@ -9,7 +9,8 @@
     "start": "next start --port ${PORT-4001}",
     "lint": "eslint .",
     "tsc": "tsc --noEmit",
-    "test": "vitest --passWithNoTests",
+    "test": "vitest",
+    "eval": "vitest --config vitesteval.config.ts",
     "db:migrate": "drizzle-kit migrate",
     "db:generate": "drizzle-kit generate",
     "load-test": "tsx scripts/load-testing/musicbrainz-loader.ts",
@@ -54,6 +55,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@dotenvx/dotenvx": "^1.38.3",
     "@internal/eslint-config": "workspace:*",
     "@internal/tsconfig": "workspace:*",
     "@types/bytes": "^3.1.5",
