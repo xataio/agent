@@ -65,16 +65,6 @@ export async function runSchedule(schedule: Schedule, now: Date) {
 
   console.log(JSON.stringify(notificationResult.object, null, 2));
 
-  if (notificationResult.object.notificationLevel === 'alert') {
-    await sendScheduleNotification(
-      schedule,
-      connection,
-      notificationResult.object.notificationLevel,
-      notificationResult.object.summary,
-      result.text
-    );
-  }
-
   const msgs = messages.map((m) => {
     return {
       id: generateId(),
@@ -98,5 +88,16 @@ export async function runSchedule(schedule: Schedule, now: Date) {
     messages: msgs,
     createdAt: now.toISOString()
   };
-  await insertScheduleRunLimitHistory(scheduleRun, schedule.keepHistory);
+  const run = await insertScheduleRunLimitHistory(scheduleRun, schedule.keepHistory);
+
+  if (notificationResult.object.notificationLevel === 'alert') {
+    await sendScheduleNotification(
+      run,
+      schedule,
+      connection,
+      notificationResult.object.notificationLevel,
+      notificationResult.object.summary,
+      result.text
+    );
+  }
 }
