@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { chatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
 import { DbConnection } from '~/lib/db/connections';
 import { getTargetDbConnection } from '~/lib/targetdb/db';
+import { traceVercelAiResponse } from './trace';
 
 // const dbConnection = 'postgresql://username:password@localhost:9876/limit?sslmode=require';
 const dbConnection =
@@ -24,5 +25,6 @@ export const evalChat = async ({ messages }: { messages: CoreMessage[] | Omit<Me
     messages,
     maxSteps: 20
   });
+  traceVercelAiResponse(response);
   return response;
 };

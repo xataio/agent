@@ -1,6 +1,6 @@
 import { describe, expect } from 'vitest';
 import { evalChat } from '~/evals/lib/chatRunner';
-import { runTests, TestCase } from '../lib/vitestHelpers';
+import { EvalCase, runEvals } from '../lib/vitestHelpers';
 
 // vi.spyOn(dbinfoExports, 'getDbInfo').mockImplementation(async (connectionId, key) => {
 //   if (key === 'tables') {
@@ -21,26 +21,29 @@ import { runTests, TestCase } from '../lib/vitestHelpers';
 //   return null;
 // });
 
-type ToolChoiceTest = TestCase & { prompt: string; toolCalls: string[] };
+type ToolChoiceEval = EvalCase & { prompt: string; toolCalls: string[] };
 
 describe('tool choice', () => {
-  const testCases: ToolChoiceTest[] = [
+  const testCases: ToolChoiceEval[] = [
     {
+      id: 'tables_in_db',
       prompt: 'What tables do I have in my db?',
       toolCalls: ['getTablesAndInstanceInfo']
     },
     {
+      id: 'how_many_tables',
       prompt: 'How many tables in my database?',
       toolCalls: ['getTablesAndInstanceInfo']
     }
   ];
-  runTests(
+  runEvals(
     testCases,
     ({ prompt, toolCalls }) => `${prompt}, calls: ${JSON.stringify(toolCalls)}`,
     async ({ prompt, toolCalls }) => {
       const result = await evalChat({
         messages: [{ role: 'user', content: prompt }]
       });
+
       const allToolCalls = result.steps.flatMap((step) => step.toolCalls);
       const toolCallNames = allToolCalls.map((toolCall) => toolCall.toolName);
       expect(toolCallNames).toEqual(toolCalls);

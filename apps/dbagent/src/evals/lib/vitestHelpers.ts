@@ -1,4 +1,5 @@
 import { it } from 'vitest';
+import { setEvalId } from './testId';
 
 export type TestCase = {
   focus?: boolean;
@@ -25,5 +26,30 @@ export const runTests = <T extends TestCase>(
 ) => {
   testCases.forEach((testCase) => {
     createTest(Boolean(testCase.focus), nameFunc(testCase), () => runTest(testCase));
+  });
+};
+
+export type EvalCase = TestCase & { id: string };
+
+export type NamedEvalCase = NamedTestCase & { id: string };
+
+export const runEvals = <T extends EvalCase>(
+  testCases: T[],
+  nameFunc: (testCase: T) => string,
+  runTest: (testCase: T) => void | Promise<void>
+) => {
+  runTests(testCases, nameFunc, async (evalCase) => {
+    setEvalId(evalCase.id);
+    await runTest(evalCase);
+  });
+};
+
+export const runNamedEvals = <T extends NamedEvalCase>(
+  testCases: T[],
+  runTest: (testCase: T) => void | Promise<void>
+) => {
+  runNamedTests(testCases, async (evalCase) => {
+    setEvalId(evalCase.id);
+    await runTest(evalCase);
   });
 };

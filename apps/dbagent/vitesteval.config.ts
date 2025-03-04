@@ -11,6 +11,8 @@ export default defineConfig({
     maxConcurrency: 1,
     env: { EVAL: '1', ...env },
     testTimeout: 30000,
+    globalSetup: './src/evals/globalSetup.ts',
+    setupFiles: './src/evals/setup.ts',
     alias: {
       '~/': new URL('./src/', import.meta.url).pathname
     }
