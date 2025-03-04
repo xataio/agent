@@ -25,8 +25,8 @@ ${JSON.stringify(cluster)}
 }
 
 export async function getPerformanceAndVacuumSettings(connection: DbConnection): Promise<string> {
-  const performanceSettings = await getPerformanceSettings(connection.connstring);
-  const vacuumSettings = await getVacuumSettings(connection.connstring);
+  const performanceSettings = await getPerformanceSettings(connection.connectionString);
+  const vacuumSettings = await getVacuumSettings(connection.connectionString);
 
   return `
 Performance settings: ${JSON.stringify(performanceSettings)}

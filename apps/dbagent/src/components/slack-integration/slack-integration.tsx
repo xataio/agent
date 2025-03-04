@@ -12,12 +12,12 @@ import {
   CardTitle,
   Input,
   Label,
-  toast
+  toast,
+  useForm
 } from '@internal/components';
 import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { getWebhookUrl, saveWebhookUrl } from './actions';
 
 export function SlackIntegration() {

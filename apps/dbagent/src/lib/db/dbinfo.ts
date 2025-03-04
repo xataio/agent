@@ -1,49 +1,49 @@
 import { and, eq } from 'drizzle-orm';
 import { PerformanceSetting, PgExtension, TableStat } from '../targetdb/db';
 import { db } from './db';
-import { dbinfo } from './schema';
+import { connectionInfo } from './schema';
 
-type DbInfoModules =
+type DbInfoTypes =
   | {
-      module: 'tables';
+      type: 'tables';
       data: TableStat[];
     }
   | {
-      module: 'extensions';
+      type: 'extensions';
       data: PgExtension[];
     }
   | {
-      module: 'performance_settings';
+      type: 'performance_settings';
       data: PerformanceSetting[];
     }
   | {
-      module: 'vacuum_settings';
+      type: 'vacuum_settings';
       data: PerformanceSetting[];
     };
 
 type DbInfo = {
   connectionId: string;
-} & DbInfoModules;
+} & DbInfoTypes;
 
-export async function saveDbInfo({ connectionId, module, data }: DbInfo) {
+export async function saveDbInfo({ connectionId, type, data }: DbInfo) {
   await db
-    .insert(dbinfo)
-    .values({ connectionId, module, data })
+    .insert(connectionInfo)
+    .values({ connectionId, type, data })
     .onConflictDoUpdate({
-      target: [dbinfo.connectionId, dbinfo.module],
+      target: [connectionInfo.connectionId, connectionInfo.type],
       set: { data }
     })
     .execute();
 }
 
-export async function getDbInfo<Key extends DbInfoModules['module'], Value extends DbInfoModules & { module: Key }>(
+export async function getDbInfo<Key extends DbInfoTypes['type'], Value extends DbInfoTypes & { type: Key }>(
   connectionId: string,
   key: Key
 ): Promise<Value['data'] | null> {
   const result = await db
-    .select({ data: dbinfo.data })
-    .from(dbinfo)
-    .where(and(eq(dbinfo.connectionId, connectionId), eq(dbinfo.module, key)))
+    .select({ data: connectionInfo.data })
+    .from(connectionInfo)
+    .where(and(eq(connectionInfo.connectionId, connectionId), eq(connectionInfo.type, key)))
     .execute();
 
   return (result[0]?.data as Value['data']) ?? null;

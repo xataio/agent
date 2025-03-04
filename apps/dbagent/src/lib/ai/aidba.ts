@@ -155,21 +155,21 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
       description: `Get the currently active queries.`,
       parameters: z.object({}),
       execute: async () => {
-        return await toolCurrentActiveQueries(connection.connstring);
+        return await toolCurrentActiveQueries(connection.connectionString);
       }
     },
     getQueriesWaitingOnLocks: {
       description: `Get the queries that are currently blocked waiting on locks.`,
       parameters: z.object({}),
       execute: async () => {
-        return await toolGetQueriesWaitingOnLocks(connection.connstring);
+        return await toolGetQueriesWaitingOnLocks(connection.connectionString);
       }
     },
     getVacuumStats: {
       description: `Get the vacuum stats for the top tables in the database. They are sorted by the number of dead tuples descending.`,
       parameters: z.object({}),
       execute: async () => {
-        return await toolGetVacuumStats(connection.connstring);
+        return await toolGetVacuumStats(connection.connectionString);
       }
     },
     getPlaybook: {

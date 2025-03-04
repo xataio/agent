@@ -5,7 +5,7 @@ import { connections } from './schema';
 export type DbConnection = {
   id: string;
   name: string;
-  connstring: string;
+  connectionString: string;
   isDefault: boolean;
 };
 
@@ -47,9 +47,15 @@ export async function deleteConnection(id: string): Promise<void> {
   });
 }
 
-export async function addConnection({ name, connstring }: { name: string; connstring: string }): Promise<DbConnection> {
+export async function addConnection({
+  name,
+  connectionString
+}: {
+  name: string;
+  connectionString: string;
+}): Promise<DbConnection> {
   const isFirst = (await db.select().from(connections)).length === 0;
-  const result = await db.insert(connections).values({ name, connstring, isDefault: isFirst }).returning();
+  const result = await db.insert(connections).values({ name, connectionString, isDefault: isFirst }).returning();
 
   if (!result[0]) {
     throw new Error('Error adding connection');
@@ -61,13 +67,13 @@ export async function addConnection({ name, connstring }: { name: string; connst
 export async function updateConnection({
   id,
   name,
-  connstring
+  connectionString
 }: {
   id: string;
   name: string;
-  connstring: string;
+  connectionString: string;
 }): Promise<DbConnection> {
-  const result = await db.update(connections).set({ name, connstring }).where(eq(connections.id, id)).returning();
+  const result = await db.update(connections).set({ name, connectionString }).where(eq(connections.id, id)).returning();
   if (!result[0]) {
     throw new Error('Connection not found');
   }

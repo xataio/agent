@@ -1,9 +1,8 @@
 'use client';
 
-import { Button, Input, Label, toast } from '@internal/components';
+import { Button, Input, Label, toast, useForm } from '@internal/components';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { actionDeleteConnection, actionGetConnection, actionSaveConnection, validateConnection } from './actions';
 
 type FormData = {
@@ -39,7 +38,7 @@ export function ConnectionForm({ id }: ConnectionFormProps) {
         if (connection) {
           reset({
             name: connection.name,
-            connstring: connection.connstring
+            connstring: connection.connectionString
           });
         }
       }
