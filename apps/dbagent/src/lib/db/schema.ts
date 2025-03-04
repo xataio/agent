@@ -13,6 +13,7 @@ import {
   uuid,
   varchar
 } from 'drizzle-orm/pg-core';
+import { RDSClusterDetailedInfo } from '../aws/rds';
 
 export const projectType = pgEnum('project_type', ['postgres', 'rds']);
 export const scheduleStatus = pgEnum('schedule_status', ['disabled', 'scheduled', 'running']);
@@ -47,8 +48,8 @@ export const connections = pgTable(
   ]
 );
 
-export const connectionsInfo = pgTable(
-  'connections_info',
+export const connectionInfo = pgTable(
+  'connection_info',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     connectionId: uuid('connection_id').notNull(),
@@ -113,7 +114,8 @@ export const schedules = pgTable(
       columns: [table.connectionId],
       foreignColumns: [connections.id],
       name: 'fk_schedules_connection'
-    })
+    }),
+    index('idx_schedules_next_run_status').on(table.nextRun, table.status)
   ]
 );
 
@@ -135,5 +137,24 @@ export const scheduleRuns = pgTable(
       name: 'fk_schedule_runs_schedule'
     }),
     index('idx_schedule_runs_created_at').on(table.scheduleId, table.createdAt)
+  ]
+);
+
+export const awsClusters = pgTable(
+  'aws_clusters',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    clusterIdentifier: text('cluster_identifier').notNull(),
+    integrationId: uuid('integration_id').notNull(),
+    data: jsonb('data').$type<RDSClusterDetailedInfo>().notNull(),
+    region: text('region').default('us-east-1').notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.integrationId],
+      foreignColumns: [integrations.id],
+      name: 'fk_aws_clusters_integration'
+    }),
+    unique('uq_aws_clusters_integration_identifier').on(table.clusterIdentifier, table.integrationId)
   ]
 );
