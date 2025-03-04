@@ -3,7 +3,7 @@
 import { Button } from '@internal/components';
 import confetti from 'canvas-confetti';
 import { Activity, Check, Database, GitBranch, Server } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getCompletedTasks } from './actions';
 import { OnboardingProgress } from './onboarding-progress';
@@ -43,6 +43,7 @@ export const onboardingTasks = [
 export function Onboarding() {
   const router = useRouter();
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
+  const { projectId } = useParams<{ projectId: string }>();
 
   useEffect(() => {
     getCompletedTasks()
@@ -68,7 +69,7 @@ export function Onboarding() {
   }, []);
 
   const handleTaskAction = async (navigateTo: string) => {
-    router.push(navigateTo);
+    router.push(`/projects/${projectId}/${navigateTo}`);
   };
 
   return (

@@ -3,7 +3,7 @@
 import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@internal/components';
 import { CheckIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Connection } from '~/lib/db/connections';
 import { actionListConnections, actionMakeConnectionDefault } from './actions';
@@ -19,12 +19,13 @@ function maskConnectionString(connString: string): string {
 export function ConnectionsList() {
   const [connections, setConnections] = useState<Connection[]>([]);
   const router = useRouter();
+  const { projectId } = useParams<{ projectId: string }>();
 
   useEffect(() => {
     const loadConnections = async () => {
       const connections = await actionListConnections();
       if (connections.length === 0) {
-        router.push('/start/connect/add');
+        router.push(`/projects/${projectId}/start/connect/add`);
         return;
       }
       setConnections(connections);
@@ -47,7 +48,7 @@ export function ConnectionsList() {
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Database Connections</h1>
         <Button asChild>
-          <Link href="/start/connect/add">Add New Connection</Link>
+          <Link href={`/projects/${projectId}/start/connect/add`}>Add New Connection</Link>
         </Button>
       </div>
       <Table>
