@@ -23,7 +23,7 @@ function getProviders() {
       id: 'default',
       name: 'Local auth',
       async authorize() {
-        return { name: 'User', email: 'user@localhost' };
+        return { id: 'local', name: 'User', email: 'user@localhost' };
       }
     })
   ];
