@@ -22,18 +22,10 @@ export const awsClusters = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     clusterIdentifier: text('cluster_identifier').notNull(),
-    integration: text('integration').notNull(),
     region: text('region').default('us-east-1').notNull(),
     data: jsonb('data').$type<RDSClusterDetailedInfo>().notNull()
   },
-  (table) => [
-    foreignKey({
-      columns: [table.integration],
-      foreignColumns: [integrations.name],
-      name: 'fk_aws_clusters_integration_name'
-    }),
-    unique('uq_aws_clusters_integration_identifier').on(table.clusterIdentifier, table.integration)
-  ]
+  (table) => [unique('uq_aws_clusters_integration_identifier').on(table.clusterIdentifier)]
 );
 
 export const connections = pgTable(
@@ -78,8 +70,8 @@ export const integrations = pgTable(
   (table) => [unique('uq_integrations_name').on(table.name)]
 );
 
-export const assoc_cluster_connections = pgTable(
-  'assoc_cluster_connections',
+export const awsClusterConnections = pgTable(
+  'aws_cluster_connections',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     clusterId: uuid('cluster_id'),
@@ -89,12 +81,12 @@ export const assoc_cluster_connections = pgTable(
     foreignKey({
       columns: [table.clusterId],
       foreignColumns: [awsClusters.id],
-      name: 'assoc_instance_connections_instance_id_fkey'
+      name: 'fk_aws_cluster_connections_cluster'
     }),
     foreignKey({
       columns: [table.connectionId],
       foreignColumns: [connections.id],
-      name: 'assoc_instance_connections_connection_id_fkey'
+      name: 'fk_aws_cluster_connections_connection'
     })
   ]
 );

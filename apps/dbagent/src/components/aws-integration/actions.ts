@@ -111,7 +111,6 @@ export async function saveClusterDetails(
   if (cluster) {
     const instanceId = await saveCluster({
       clusterIdentifier,
-      integration: 'aws',
       region,
       data: cluster
     });
@@ -124,7 +123,6 @@ export async function saveClusterDetails(
     }
     const instanceId = await saveCluster({
       clusterIdentifier,
-      integration: 'aws',
       region,
       data: {
         instances: [instance],
