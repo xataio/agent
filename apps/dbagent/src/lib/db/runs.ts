@@ -13,7 +13,10 @@ export type ScheduleRun = {
   messages: Message[];
 };
 
-export async function insertScheduleRunLimitHistory(scheduleRun: Omit<ScheduleRun, 'id'>, keepHistory: number) {
+export async function insertScheduleRunLimitHistory(
+  scheduleRun: Omit<ScheduleRun, 'id'>,
+  keepHistory: number
+): Promise<ScheduleRun> {
   // Insert the new run first
   const newRun = await insertScheduleRun(scheduleRun);
 

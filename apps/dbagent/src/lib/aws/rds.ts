@@ -364,3 +364,62 @@ export async function getRDSClusterMetric(
     return [];
   }
 }
+
+export async function getRDSInstanceMetric(
+  instanceIdentifier: string,
+  region: string,
+  credentials: AWSCredentials,
+  metricName: string,
+  startTime: Date,
+  endTime: Date
+): Promise<{ timestamp: Date; value: number }[]> {
+  try {
+    // Calculate time difference in seconds
+    const timeDiffSeconds = Math.floor((endTime.getTime() - startTime.getTime()) / 1000);
+
+    // Target around 50 data points
+    let period = 3600; // Default to 1 hour
+    if (timeDiffSeconds <= 500) {
+      // Up to ~8 minutes
+      period = 10; // 10 second intervals
+    } else if (timeDiffSeconds <= 3000) {
+      // Up to ~50 minutes
+      period = 60; // 1 minute intervals
+    } else if (timeDiffSeconds <= 43200) {
+      // Up to ~12 hours
+      period = 300; // 5 minute intervals
+    }
+
+    const client = initializeCloudWatchClient(credentials, region);
+    const command = new GetMetricStatisticsCommand({
+      Namespace: 'AWS/RDS',
+      MetricName: metricName,
+      Dimensions: [
+        {
+          Name: 'DBInstanceIdentifier',
+          Value: instanceIdentifier
+        }
+      ],
+      StartTime: startTime,
+      EndTime: endTime,
+      Period: period,
+      Statistics: ['Average']
+    });
+
+    console.log('command', JSON.stringify(command, null, 2));
+
+    const response = await client.send(command);
+
+    if (!response.Datapoints?.length) {
+      return [];
+    }
+
+    return response.Datapoints.map((point) => ({
+      timestamp: point.Timestamp || new Date(),
+      value: point.Average || 0
+    })).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  } catch (error) {
+    console.error(`Error fetching RDS instance metric ${metricName}:`, error);
+    return [];
+  }
+}

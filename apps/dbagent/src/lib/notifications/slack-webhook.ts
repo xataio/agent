@@ -1,11 +1,13 @@
 import { DbConnection } from '../db/connections';
 import { getIntegration } from '../db/integrations';
+import { ScheduleRun } from '../db/runs';
 import { Schedule } from '../db/schedules';
 import { env } from '../env/client';
 
 export type NotificationLevel = 'info' | 'warning' | 'alert';
 
 export async function sendScheduleNotification(
+  run: ScheduleRun,
   schedule: Schedule,
   connection: DbConnection,
   level: NotificationLevel,
@@ -85,6 +87,23 @@ export async function sendScheduleNotification(
       {
         type: 'actions',
         elements: [
+          {
+            type: 'button',
+            style: 'primary',
+            text: {
+              type: 'plain_text',
+              text: 'Open in chat'
+            },
+            url: `${env.PUBLIC_URL}/chats?runId=${run.id}`
+          },
+          {
+            type: 'button',
+            text: {
+              type: 'plain_text',
+              text: 'Run History'
+            },
+            url: `${env.PUBLIC_URL}/monitoring/runs/${schedule.id}`
+          },
           {
             type: 'button',
             text: {

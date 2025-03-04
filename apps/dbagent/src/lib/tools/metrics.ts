@@ -1,4 +1,4 @@
-import { getRDSClusterMetric } from '../aws/rds';
+import { getRDSClusterMetric, getRDSInstanceMetric } from '../aws/rds';
 import { getClusterByConnection } from '../db/clusters';
 import { DbConnection } from '../db/connections';
 import { getIntegration } from '../db/integrations';
@@ -23,15 +23,26 @@ export async function getClusterMetric(
   const endTime = new Date();
 
   try {
-    const datapoints = await getRDSClusterMetric(
-      cluster.clusterIdentifier,
-      cluster.region,
-      awsCredentials,
-      metricName,
-      startTime,
-      endTime
-    );
-
+    let datapoints = [];
+    if (!cluster.data.isStandaloneInstance) {
+      datapoints = await getRDSClusterMetric(
+        cluster.clusterIdentifier,
+        cluster.region,
+        awsCredentials,
+        metricName,
+        startTime,
+        endTime
+      );
+    } else {
+      datapoints = await getRDSInstanceMetric(
+        cluster.clusterIdentifier,
+        cluster.region,
+        awsCredentials,
+        metricName,
+        startTime,
+        endTime
+      );
+    }
     const toReturn = datapoints
       .map((datapoint) => `${datapoint.timestamp.toISOString()}: ${datapoint.value}`)
       .join('\n');
