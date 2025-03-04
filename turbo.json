@@ -16,6 +16,17 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "dbagent#build": {
+      "env": [
+        "DATABASE_URL",
+        "AUTH_SECRET",
+        "AUTH_OPENID_ID",
+        "AUTH_OPENID_SECRET",
+        "AUTH_OPENID_ISSUER",
+        "OPENAI_API_KEY",
+        "ENABLE_EXPERIMENTAL_COREPACK"
+      ]
     }
   }
 }
