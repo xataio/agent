@@ -39,6 +39,33 @@ const { handlers, signIn, signOut, auth } = NextAuth({
     strategy: 'jwt'
   },
   callbacks: {
+    async jwt({ token, account, user }) {
+      // Initial sign-in
+      if (account && user) {
+        return {
+          accessToken: account.access_token,
+          refreshToken: account.refresh_token,
+          expiresAt: Date.now() + (account.expires_in ?? 100) * 1000,
+          user
+        };
+      }
+
+      return token;
+    },
+    async session({ session, token }) {
+      // @ts-expect-error Types don't match
+      session.user = token.user;
+      // @ts-expect-error Types don't match
+      session.token = {
+        accessToken: token.accessToken,
+        expiresAt: token.expiresAt,
+        refreshToken: token.refreshToken
+      };
+      // @ts-expect-error Types don't match
+      session.error = token.error;
+
+      return session;
+    },
     authorized: async ({ auth }) => {
       // Logged in users are authenticated, otherwise redirect to login page
       return !!auth;

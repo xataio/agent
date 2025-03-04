@@ -18,29 +18,14 @@ export const projectType = pgEnum('project_type', ['postgres', 'rds']);
 export const scheduleStatus = pgEnum('schedule_status', ['disabled', 'scheduled', 'running']);
 export const notificationLevel = pgEnum('notification_level', ['info', 'warning', 'alert']);
 
-export const users = pgTable('users', {
-  id: text('id').primaryKey().notNull(),
-  email: text('email').unique().notNull(),
-  name: text('name').notNull()
-});
-
 export const projects = pgTable(
   'projects',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     name: text('name').notNull(),
-    ownerId: text('owner_id').notNull(),
-    type: projectType('type').notNull(),
-    info: jsonb('info').default({}).notNull().$type<any>()
+    ownerId: text('owner_id').notNull()
   },
-  (table) => [
-    foreignKey({
-      columns: [table.ownerId],
-      foreignColumns: [users.id],
-      name: 'fk_projects_owner'
-    }),
-    unique('uq_projects_name').on(table.ownerId, table.name)
-  ]
+  (table) => [unique('uq_projects_name').on(table.ownerId, table.name)]
 );
 
 export const connections = pgTable(

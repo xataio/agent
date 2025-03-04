@@ -1,27 +1,12 @@
 import { eq } from 'drizzle-orm';
-import { RDSClusterDetailedInfo } from '../aws/rds';
 import { db } from './db';
 import { projects } from './schema';
-
-type ProjectTypes =
-  | {
-      type: 'postgres';
-      info: {};
-    }
-  | {
-      type: 'rds';
-      info: {
-        clusterIdentifier: string;
-        region: string;
-        details: RDSClusterDetailedInfo;
-      };
-    };
 
 export type Project = {
   id: string;
   name: string;
   ownerId: string;
-} & ProjectTypes;
+};
 
 export async function saveProject(cluster: Omit<Project, 'id'>): Promise<string> {
   const result = await db.insert(projects).values(cluster).returning({ id: projects.id });

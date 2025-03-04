@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Badge,
   Button,
   Card,
   CardContent,
@@ -9,73 +8,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  ScrollArea,
-  ScrollBar,
   Skeleton
 } from '@internal/components';
-import { Database, PlusCircle, Server } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Suspense } from 'react';
 import { Project } from '~/lib/db/projects';
-import { RDSIcon } from '../ui/aws-rds-icon';
-import { AzureIcon } from '../ui/azure-icon';
-import { GoogleCloudSQLIcon } from '../ui/google-cloud-sql-icon';
-import { PostgresIcon } from '../ui/postgres-icon';
-import { DatabaseProviderCard } from './database-provider-card';
-
-const databaseProviders = [
-  {
-    value: 'postgres',
-    label: 'PostgreSQL',
-    icon: <PostgresIcon className="text-primary mb-2 h-12 w-12" />,
-    comingSoon: false
-  },
-  { value: 'rds', label: 'AWS RDS', icon: <RDSIcon className="text-primary mb-2 h-12 w-12" />, comingSoon: false },
-  {
-    value: 'azure',
-    label: 'Azure Database',
-    icon: <AzureIcon className="text-primary mb-2 h-12 w-12" />,
-    comingSoon: true
-  },
-  {
-    value: 'gcp',
-    label: 'Google Cloud SQL',
-    icon: <GoogleCloudSQLIcon className="text-primary mb-2 h-12 w-12" />,
-    comingSoon: true
-  }
-];
-
-interface OnboardingSectionProps {
-  createProject: (provider: string) => void;
-}
-
-export function OnboardingSection({ createProject }: OnboardingSectionProps) {
-  return (
-    <div className="space-y-6 py-10 text-center">
-      <h2 className="text-2xl font-semibold">Welcome to AIDA</h2>
-      <p className="text-muted-foreground mx-auto max-w-md">
-        Get started by creating your first project. Please connect to an existing database.
-      </p>
-      <div className="mx-auto max-w-3xl">
-        <ScrollArea className="w-full whitespace-nowrap rounded-md border">
-          <div className="flex space-x-4 justify-self-center p-4">
-            {databaseProviders.map((provider) => (
-              <DatabaseProviderCard
-                key={provider.value}
-                name={provider.label}
-                icon={provider.icon}
-                isSelected={false}
-                onClick={provider.comingSoon ? undefined : () => createProject(provider.value)}
-                comingSoon={provider.comingSoon}
-              />
-            ))}
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
-      </div>
-    </div>
-  );
-}
+import CreateProjectOnboarding from './create-project-onboarding';
 
 interface ProjectListProps {
   projects: Project[];
@@ -89,9 +28,9 @@ export function ProjectsList({ projects }: ProjectListProps) {
   };
 
   return (
-    <div className="container mx-auto space-y-8 py-10">
+    <div className="h-full w-full">
       {projects.length === 0 ? (
-        <OnboardingSection createProject={createProject} />
+        <CreateProjectOnboarding />
       ) : (
         <div>
           <div className="flex items-center justify-between">
@@ -157,14 +96,11 @@ function ProjectCard({ project }: { project: Project }) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl">{project.name}</CardTitle>
-          <Badge variant={project.type === 'postgres' ? 'default' : 'secondary'}>
-            {project.type === 'postgres' ? 'Postgres' : 'RDS'}
-          </Badge>
         </div>
         <CardDescription>ID: {project.id}</CardDescription>
       </CardHeader>
       <CardContent>
-        {project.type === 'postgres' ? (
+        {/* {project.type === 'postgres' ? (
           <div className="text-muted-foreground flex items-center text-sm">
             <Database className="mr-2 h-4 w-4" />
             <span>PostgreSQL Database</span>
@@ -183,7 +119,7 @@ function ProjectCard({ project }: { project: Project }) {
               Engine: {project.info.details.engine} v{project.info.details.engineVersion}
             </div>
           </div>
-        )}
+        )} */}
       </CardContent>
       <CardFooter>
         <Button

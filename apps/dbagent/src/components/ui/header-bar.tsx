@@ -12,13 +12,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  MakiLogoSymbol,
   useIsMobile
 } from '@internal/components';
 import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { PropsWithChildren } from 'react';
+import RobotAvatar from './robot-avatar';
 
 export type User = {
   name?: string | null;
@@ -39,7 +39,7 @@ export const HeaderBar = ({ children }: PropsWithChildren<{ user?: User }>) => {
           <div className="bg-contrastEmpty flex h-[52px] w-full items-center justify-between p-0" id="main-navbar">
             <div className="flex flex-grow items-center justify-start gap-2">
               <Link href="/" className="flex items-center transition-transform duration-100 ease-out hover:scale-105">
-                <MakiLogoSymbol />
+                <RobotAvatar className="h-8 w-8" />
                 <span className="pl-2 text-lg font-bold">Aida</span>
               </Link>
 
@@ -56,7 +56,7 @@ export const HeaderBar = ({ children }: PropsWithChildren<{ user?: User }>) => {
 };
 
 export const BelowHeaderBar = ({ children }: PropsWithChildren) => {
-  return <div className="h-[calc(100vh-53px)]">{children}</div>;
+  return <div className="mt-[53px] h-[calc(100vh-53px)]">{children}</div>;
 };
 
 function UserAvatar({ user }: { user?: User }) {
