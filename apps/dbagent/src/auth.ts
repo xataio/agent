@@ -40,8 +40,6 @@ const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async jwt({ token, account, user }) {
-      console.log('jwt', { token, account, user });
-
       // Initial sign-in
       if (account && user) {
         return {
