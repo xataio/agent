@@ -16,10 +16,10 @@ export async function actionListConnections() {
 }
 
 function translateError(error: string) {
-  if (error.includes('connections_connstring_unique')) {
+  if (error.includes('uq_connections_connection_string')) {
     return 'A connection with this connection string already exists.';
   }
-  if (error.includes('connections_name_unique')) {
+  if (error.includes('uq_connections_name')) {
     return 'A connection with this name already exists.';
   }
   return error;

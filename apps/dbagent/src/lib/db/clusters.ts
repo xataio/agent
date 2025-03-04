@@ -1,12 +1,11 @@
 import { eq } from 'drizzle-orm';
 import { RDSClusterDetailedInfo } from '../aws/rds';
 import { db } from './db';
-import { awsClusters } from './schema';
+import { awsClusterConnections, awsClusters } from './schema';
 
 export type AWSCluster = {
   id: string;
   clusterIdentifier: string;
-  connectionId: string;
   region: string;
   data: RDSClusterDetailedInfo;
 };
@@ -31,10 +30,19 @@ export async function saveCluster(cluster: Omit<AWSCluster, 'id'>): Promise<stri
   return result[0].id;
 }
 
-export async function getClusterByConnection(connectionId: string): Promise<AWSCluster | null> {
-  const result = await db.select().from(awsClusters).where(eq(awsClusters.connectionId, connectionId)).limit(1);
+export async function associateClusterConnection(clusterId: string, connectionId: string): Promise<void> {
+  await db.insert(awsClusterConnections).values({ clusterId, connectionId });
+}
 
-  return result[0] ?? null;
+export async function getClusterByConnection(connectionId: string): Promise<AWSCluster | null> {
+  const result = await db
+    .select()
+    .from(awsClusters)
+    .innerJoin(awsClusterConnections, eq(awsClusterConnections.clusterId, awsClusters.id))
+    .where(eq(awsClusterConnections.connectionId, connectionId))
+    .limit(1);
+
+  return result[0]?.aws_clusters ?? null;
 }
 
 export async function getClusters(): Promise<AWSCluster[]> {

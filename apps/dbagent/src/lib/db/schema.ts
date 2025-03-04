@@ -22,18 +22,10 @@ export const awsClusters = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     clusterIdentifier: text('cluster_identifier').notNull(),
-    connectionId: uuid('connection_id').notNull(),
     region: text('region').default('us-east-1').notNull(),
     data: jsonb('data').$type<RDSClusterDetailedInfo>().notNull()
   },
-  (table) => [
-    foreignKey({
-      columns: [table.connectionId],
-      foreignColumns: [connections.id],
-      name: 'fk_aws_clusters_connection'
-    }),
-    unique('uq_aws_clusters_integration_identifier').on(table.clusterIdentifier)
-  ]
+  (table) => [unique('uq_aws_clusters_integration_identifier').on(table.clusterIdentifier)]
 );
 
 export const connections = pgTable(
@@ -51,7 +43,8 @@ export const connections = pgTable(
       foreignColumns: [projects.id],
       name: 'fk_connections_project'
     }),
-    unique('uq_connections_name').on(table.projectId, table.name)
+    unique('uq_connections_name').on(table.projectId, table.name),
+    unique('uq_connections_connection_string').on(table.projectId, table.connectionString)
   ]
 );
 
@@ -91,6 +84,27 @@ export const integrations = pgTable(
   ]
 );
 
+export const awsClusterConnections = pgTable(
+  'aws_cluster_connections',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    clusterId: uuid('cluster_id').notNull(),
+    connectionId: uuid('connection_id').notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.clusterId],
+      foreignColumns: [awsClusters.id],
+      name: 'fk_aws_cluster_connections_cluster'
+    }),
+    foreignKey({
+      columns: [table.connectionId],
+      foreignColumns: [connections.id],
+      name: 'fk_aws_cluster_connections_connection'
+    })
+  ]
+);
+
 export const schedules = pgTable(
   'schedules',
   {
@@ -121,8 +135,7 @@ export const schedules = pgTable(
       columns: [table.connectionId],
       foreignColumns: [connections.id],
       name: 'fk_schedules_connection'
-    }),
-    index('idx_schedules_next_run_status').on(table.nextRun, table.status)
+    })
   ]
 );
 

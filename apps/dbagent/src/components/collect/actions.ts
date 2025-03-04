@@ -1,6 +1,6 @@
 'use server';
 
-import { DbConnection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/connections';
 import { getDbInfo, saveDbInfo } from '~/lib/db/dbinfo';
 import {
   getExtensions,
@@ -13,7 +13,7 @@ import {
   TableStat
 } from '~/lib/targetdb/db';
 
-export async function collectInfo(conn: DbConnection | undefined) {
+export async function collectInfo(conn: Connection | undefined) {
   if (!conn) {
     return { success: false, message: 'No connection selected' };
   }
@@ -29,7 +29,7 @@ export async function collectInfo(conn: DbConnection | undefined) {
 }
 
 export async function collectTables(
-  conn: DbConnection | undefined
+  conn: Connection | undefined
 ): Promise<{ success: boolean; message?: string; data: TableStat[] }> {
   if (!conn) {
     return { success: false, message: 'No connection selected', data: [] };
@@ -53,7 +53,7 @@ export async function collectTables(
 }
 
 export async function collectExtensions(
-  conn: DbConnection | undefined
+  conn: Connection | undefined
 ): Promise<{ success: boolean; message?: string; data: PgExtension[] }> {
   if (!conn) {
     return { success: false, message: 'No connection selected', data: [] };
@@ -73,7 +73,7 @@ export async function collectExtensions(
 }
 
 export async function collectPerformanceSettings(
-  conn: DbConnection | undefined
+  conn: Connection | undefined
 ): Promise<{ success: boolean; message?: string; data: PerformanceSetting[] }> {
   if (!conn) {
     return { success: false, message: 'No connection selected', data: [] };
@@ -93,7 +93,7 @@ export async function collectPerformanceSettings(
 }
 
 export async function collectVacuumData(
-  connection: DbConnection | undefined
+  connection: Connection | undefined
 ): Promise<{ success: boolean; message?: string; data: PerformanceSetting[] }> {
   if (!connection) {
     return { success: false, message: 'No connection selected', data: [] };
@@ -120,7 +120,7 @@ export interface CollectInfo {
 }
 
 export async function getCollectInfo(
-  conn: DbConnection | undefined
+  conn: Connection | undefined
 ): Promise<{ success: boolean; message?: string; data: CollectInfo | null }> {
   if (!conn) {
     return { success: false, message: 'No connection selected', data: null };

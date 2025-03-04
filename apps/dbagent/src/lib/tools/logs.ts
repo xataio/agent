@@ -1,9 +1,9 @@
 import { getRDSClusterLogs, getRDSInstanceLogs, initializeRDSClient } from '../aws/rds';
 import { getClusterByConnection } from '../db/clusters';
-import { DbConnection } from '../db/connections';
+import { Connection } from '../db/connections';
 import { getIntegration } from '../db/integrations';
 
-export async function getInstanceLogs(connection: DbConnection): Promise<string> {
+export async function getInstanceLogs(connection: Connection): Promise<string> {
   // Get AWS credentials from integrations
   const awsCredentials = await getIntegration('aws');
   if (!awsCredentials) {
