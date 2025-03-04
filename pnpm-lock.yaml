@@ -10,11 +10,10 @@ overrides:
 importers:
 
   .:
-    dependencies:
-      eslint:
-        specifier: ^9.21.0
-        version: 9.21.0(jiti@2.4.2)
     devDependencies:
+      '@eslint/compat':
+        specifier: ^1.2.7
+        version: 1.2.7(eslint@9.21.0(jiti@2.4.2))
       '@internal/tsconfig':
         specifier: workspace:*
         version: link:configs/tsconfig
@@ -24,6 +23,9 @@ importers:
       '@types/react':
         specifier: ^19.0.10
         version: 19.0.10
+      eslint:
+        specifier: ^9.21.0
+        version: 9.21.0(jiti@2.4.2)
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -5801,6 +5803,10 @@ snapshots:
   '@eslint/compat@1.2.7(eslint@9.14.0(jiti@2.4.2))':
     optionalDependencies:
       eslint: 9.14.0(jiti@2.4.2)
+
+  '@eslint/compat@1.2.7(eslint@9.21.0(jiti@2.4.2))':
+    optionalDependencies:
+      eslint: 9.21.0(jiti@2.4.2)
 
   '@eslint/config-array@0.18.0':
     dependencies:
