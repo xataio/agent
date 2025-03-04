@@ -20,7 +20,7 @@
   "license": "ISC",
   "devDependencies": {
     "@internal/tsconfig": "workspace:*",
-    "@types/node": "^22.13.8",
+    "@types/node": "^22.13.9",
     "@types/react": "^19.0.10",
     "husky": "^9.1.7",
     "lint-staged": "^15.4.3",
