@@ -2,8 +2,13 @@ import { notFound } from 'next/navigation';
 import { PlaybookView } from '~/components/playbooks/playbook-view';
 import { getPlaybookDetails } from '~/lib/tools/playbooks';
 
-export default function PlaybookPage({ params }: { params: { name: string } }) {
-  const playbook = getPlaybookDetails(params.name);
+type PageParams = {
+  name: string;
+};
+
+export default async function PlaybookPage({ params }: { params: Promise<PageParams> }) {
+  const { name } = await params;
+  const playbook = getPlaybookDetails(name);
 
   if (!playbook) {
     notFound();
