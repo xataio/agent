@@ -9,7 +9,7 @@ import {
   RDSClusterDetailedInfo,
   RDSClusterInfo
 } from '~/lib/aws/rds';
-import { saveCluster } from '~/lib/db/aws-clusters';
+import { associateClusterConnection, saveCluster } from '~/lib/db/aws-clusters';
 import { DbConnection } from '~/lib/db/connections';
 import { AwsIntegration, getIntegration, saveIntegration } from '~/lib/db/integrations';
 
@@ -109,20 +109,19 @@ export async function saveClusterDetails(
   });
   const cluster = await getRDSClusterInfo(clusterIdentifier, client);
   if (cluster) {
-    await saveCluster({
+    const instanceId = await saveCluster({
       clusterIdentifier,
       region,
       data: cluster
     });
-
+    await associateClusterConnection(instanceId, connection.id);
     return { success: true, message: 'Cluster details saved successfully' };
   } else {
     const instance = await getRDSInstanceInfo(clusterIdentifier, client);
     if (!instance) {
       return { success: false, message: 'RDS instance not found' };
     }
-
-    await saveCluster({
+    const instanceId = await saveCluster({
       clusterIdentifier,
       region,
       data: {
@@ -139,7 +138,7 @@ export async function saveClusterDetails(
         isStandaloneInstance: true
       }
     });
-
+    await associateClusterConnection(instanceId, connection.id);
     return { success: true, message: 'Instance details saved successfully' };
   }
 }
