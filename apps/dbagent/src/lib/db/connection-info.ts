@@ -25,7 +25,7 @@ type ConnectionInfo = {
   connectionId: string;
 } & ConnectionInfoTypes;
 
-export async function saveDbInfo({ connectionId, type, data }: ConnectionInfo) {
+export async function saveConnectionInfo({ connectionId, type, data }: ConnectionInfo) {
   await db
     .insert(connectionInfo)
     .values({ connectionId, type, data })
@@ -36,7 +36,7 @@ export async function saveDbInfo({ connectionId, type, data }: ConnectionInfo) {
     .execute();
 }
 
-export async function getDbInfo<
+export async function getConnectionInfo<
   Key extends ConnectionInfoTypes['type'],
   Value extends ConnectionInfoTypes & { type: Key }
 >(connectionId: string, key: Key): Promise<Value['data'] | null> {

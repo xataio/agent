@@ -9,7 +9,7 @@ import {
   RDSClusterDetailedInfo,
   RDSClusterInfo
 } from '~/lib/aws/rds';
-import { saveCluster } from '~/lib/db/clusters';
+import { saveCluster } from '~/lib/db/aws-clusters';
 import { Connection } from '~/lib/db/connections';
 import { AwsIntegration, getIntegration, saveIntegration } from '~/lib/db/integrations';
 

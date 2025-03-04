@@ -1,11 +1,11 @@
+import { getConnectionInfo } from '../db/connection-info';
 import { Connection } from '../db/connections';
-import { getDbInfo } from '../db/dbinfo';
 import { getProjectById } from '../db/projects';
 import { getPerformanceSettings, getVacuumSettings } from '../targetdb/db';
 
 export async function getTablesAndInstanceInfo(connection: Connection): Promise<string> {
   try {
-    const tables = await getDbInfo(connection.id, 'tables');
+    const tables = await getConnectionInfo(connection.id, 'tables');
     const project = await getProjectById(connection.projectId);
 
     return `
@@ -34,7 +34,7 @@ Vacuum settings: ${JSON.stringify(vacuumSettings)}
 }
 
 export async function getPostgresExtensions(connection: Connection): Promise<string> {
-  const extensions = await getDbInfo(connection.id, 'extensions');
+  const extensions = await getConnectionInfo(connection.id, 'extensions');
   return `Extensions: ${JSON.stringify(extensions)}`;
 }
 

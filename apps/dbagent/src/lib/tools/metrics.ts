@@ -1,5 +1,5 @@
 import { getRDSClusterMetric, getRDSInstanceMetric } from '../aws/rds';
-import { getClusterByConnection } from '../db/clusters';
+import { getClusterByConnection } from '../db/aws-clusters';
 import { Connection } from '../db/connections';
 import { getIntegration } from '../db/integrations';
 

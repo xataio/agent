@@ -18,7 +18,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Connection } from '~/lib/db/connections';
-import { ScheduleRun } from '~/lib/db/runs';
+import { ScheduleRun } from '~/lib/db/schedule-runs';
 import { Schedule } from '~/lib/db/schedules';
 import { ChatSidebar } from './chat-sidebar';
 import { ConnectionSelector } from './conn-selector';

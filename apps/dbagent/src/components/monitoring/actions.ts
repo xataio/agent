@@ -2,7 +2,7 @@
 
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
-import { getScheduleRuns, ScheduleRun } from '~/lib/db/runs';
+import { getScheduleRuns, ScheduleRun } from '~/lib/db/schedule-runs';
 import {
   deleteSchedule,
   getSchedule,

@@ -1,6 +1,6 @@
 'use server';
 
-import { getScheduleRun } from '~/lib/db/runs';
+import { getScheduleRun } from '~/lib/db/schedule-runs';
 import { getSchedule } from '~/lib/db/schedules';
 
 export async function actionGetScheduleRun(runId?: string) {

@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { Schedule } from '~/lib/db/schedules';
 import { getModelInstance, getTools, monitoringSystemPrompt } from '../ai/aidba';
 import { getConnection } from '../db/connections';
-import { insertScheduleRunLimitHistory, ScheduleRun } from '../db/runs';
+import { insertScheduleRunLimitHistory, ScheduleRun } from '../db/schedule-runs';
 import { sendScheduleNotification } from '../notifications/slack-webhook';
 import { getTargetDbConnection } from '../targetdb/db';
 

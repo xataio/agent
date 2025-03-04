@@ -33,7 +33,7 @@ import {
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { ScheduleRun } from '~/lib/db/runs';
+import { ScheduleRun } from '~/lib/db/schedule-runs';
 import { Schedule } from '~/lib/db/schedules';
 import { actionGetScheduleRuns } from './actions';
 

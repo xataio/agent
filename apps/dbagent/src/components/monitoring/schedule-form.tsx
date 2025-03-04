@@ -61,7 +61,6 @@ type ScheduleFormParams = {
   projectId: string;
   playbooks: string[];
   connections: Connection[];
-  connection?: string;
 } & ScheduleFormEditParams;
 
 export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, connections }: ScheduleFormParams) {

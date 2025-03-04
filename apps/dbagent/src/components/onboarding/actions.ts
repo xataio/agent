@@ -1,7 +1,7 @@
 'use server';
 
+import { getConnectionInfo } from '~/lib/db/connection-info';
 import { getDefaultConnection } from '~/lib/db/connections';
-import { getDbInfo } from '~/lib/db/dbinfo';
 import { getIntegration } from '~/lib/db/integrations';
 import { getProjects } from '~/lib/db/projects';
 
@@ -14,7 +14,7 @@ export async function getCompletedTasks(): Promise<string[]> {
   }
   completedTasks.push('connect');
 
-  const tables = await getDbInfo(connection.id, 'tables');
+  const tables = await getConnectionInfo(connection.id, 'tables');
   if (tables) {
     completedTasks.push('collect');
   }

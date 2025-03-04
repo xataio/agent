@@ -1,6 +1,6 @@
 import { Connection } from '../db/connections';
 import { getIntegration } from '../db/integrations';
-import { ScheduleRun } from '../db/runs';
+import { ScheduleRun } from '../db/schedule-runs';
 import { Schedule } from '../db/schedules';
 import { env } from '../env/client';
 
