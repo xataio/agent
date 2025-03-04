@@ -102,7 +102,7 @@ export async function sendScheduleNotification(
               type: 'plain_text',
               text: 'Open in chat'
             },
-            url: `${env.PUBLIC_URL}/chats?runId=${run.id}`
+            url: `${env.PUBLIC_URL}/projects/${schedule.projectId}/chats?runId=${run.id}`
           },
           {
             type: 'button',
@@ -110,7 +110,7 @@ export async function sendScheduleNotification(
               type: 'plain_text',
               text: 'Run History'
             },
-            url: `${env.PUBLIC_URL}/monitoring/runs/${schedule.id}`
+            url: `${env.PUBLIC_URL}/projects/${schedule.projectId}/monitoring/runs/${schedule.id}`
           },
           {
             type: 'button',
@@ -118,7 +118,7 @@ export async function sendScheduleNotification(
               type: 'plain_text',
               text: 'View Schedule Settings'
             },
-            url: `${env.PUBLIC_URL}/monitoring/schedule/${schedule.id}`
+            url: `${env.PUBLIC_URL}/projects/${schedule.projectId}/monitoring/schedule/${schedule.id}`
           }
         ]
       }
