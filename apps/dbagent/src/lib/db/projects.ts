@@ -26,3 +26,11 @@ export async function getProjectById(id: string): Promise<Project | null> {
 export async function getProjects(): Promise<Project[]> {
   return await db.select().from(projects);
 }
+
+export async function removeProject(id: string): Promise<void> {
+  await db.delete(projects).where(eq(projects.id, id));
+}
+
+export async function updateProjectName(id: string, name: string): Promise<void> {
+  await db.update(projects).set({ name }).where(eq(projects.id, id));
+}

@@ -7,16 +7,26 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   Input,
   Label,
   Skeleton,
   toast
 } from '@internal/components';
-import { PlusCircle } from 'lucide-react';
+import { Database, MoreVertical, PlusCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import { Project } from '~/lib/db/projects';
-import { createProject } from './actions';
+import { createProject, deleteProject, renameProject } from './actions';
 
 interface ProjectListProps {
   projects: Project[];
@@ -81,20 +91,111 @@ function ProjectListView({ projects }: ProjectListProps) {
 
 function ProjectCard({ project }: { project: Project }) {
   const router = useRouter();
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
+
+  const handleRename = async () => {
+    if (newProjectName.trim() !== '') {
+      const result = await renameProject({ id: project.id, name: newProjectName });
+      if (result.success) {
+        toast.success('Project renamed successfully');
+        router.refresh();
+      } else {
+        toast.error(result.error);
+      }
+      setShowRenameModal(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    const result = await deleteProject({ id: project.id });
+    if (result.success) {
+      toast.success('Project deleted successfully');
+      router.refresh();
+    } else {
+      toast.error(result.error);
+    }
+    setShowDeleteModal(false);
+  };
 
   return (
-    <Card
-      className="cursor-pointer transition-all hover:shadow-md"
-      onClick={() => {
-        router.push(`/projects/${project.id}/start`);
-      }}
-    >
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-xl">{project.name}</CardTitle>
+    <>
+      <Card
+        className="cursor-pointer transition-all hover:shadow-md"
+        onClick={() => {
+          router.push(`/projects/${project.id}/start`);
+        }}
+      >
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center">
+            <Database className="mr-2 h-5 w-5" />
+            <CardTitle className="text-xl">{project.name}</CardTitle>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              <MoreVertical className="cursor-pointer" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowRenameModal(true);
+                }}
+              >
+                Rename
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteModal(true);
+                }}
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      </CardHeader>
-    </Card>
+      </Card>
+
+      <Dialog open={showRenameModal} onOpenChange={(open) => setShowRenameModal(open)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename Project</DialogTitle>
+          </DialogHeader>
+          <Input
+            value={newProjectName}
+            onChange={(e) => setNewProjectName(e.target.value)}
+            placeholder="Enter new project name"
+          />
+          <DialogFooter>
+            <Button onClick={handleRename}>Rename</Button>
+            <Button variant="secondary" onClick={() => setShowRenameModal(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDeleteModal} onOpenChange={(open) => setShowDeleteModal(open)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Project</DialogTitle>
+          </DialogHeader>
+          <DialogDescription>Are you sure you want to delete this project?</DialogDescription>
+          <DialogFooter>
+            <Button onClick={handleDelete}>Delete</Button>
+            <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
