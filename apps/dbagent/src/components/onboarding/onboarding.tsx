@@ -43,7 +43,7 @@ export const onboardingTasks = [
 export function Onboarding() {
   const router = useRouter();
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
-  const { projectId } = useParams<{ projectId: string }>();
+  const { project } = useParams<{ project: string }>();
 
   useEffect(() => {
     getCompletedTasks()
@@ -69,7 +69,7 @@ export function Onboarding() {
   }, []);
 
   const handleTaskAction = async (navigateTo: string) => {
-    router.push(`/projects/${projectId}/${navigateTo}`);
+    router.push(`/projects/${project}/${navigateTo}`);
   };
 
   return (

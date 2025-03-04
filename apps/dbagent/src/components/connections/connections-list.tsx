@@ -19,13 +19,13 @@ function maskConnectionString(connString: string): string {
 export function ConnectionsList() {
   const [connections, setConnections] = useState<Connection[]>([]);
   const router = useRouter();
-  const { projectId } = useParams<{ projectId: string }>();
+  const { project } = useParams<{ project: string }>();
 
   useEffect(() => {
     const loadConnections = async () => {
       const connections = await actionListConnections();
       if (connections.length === 0) {
-        router.push(`/projects/${projectId}/start/connect/add`);
+        router.push(`/projects/${project}/start/connect/add`);
         return;
       }
       setConnections(connections);
@@ -48,7 +48,7 @@ export function ConnectionsList() {
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Database Connections</h1>
         <Button asChild>
-          <Link href={`/projects/${projectId}/start/connect/add`}>Add New Connection</Link>
+          <Link href={`/projects/${project}/start/connect/add`}>Add New Connection</Link>
         </Button>
       </div>
       <Table>

@@ -58,7 +58,7 @@ export function ConnectionForm({ projectId, id }: ConnectionFormProps) {
     setIsSaving(false);
     if (result.success) {
       toast(result.message);
-      router.push('/start/connect');
+      router.push(`/projects/${projectId}/start/connect`);
     } else {
       toast(result.message);
     }
@@ -80,7 +80,7 @@ export function ConnectionForm({ projectId, id }: ConnectionFormProps) {
     try {
       await actionDeleteConnection(id);
       toast('Connection deleted successfully');
-      router.push('/start/connect');
+      router.push(`/projects/${projectId}/start/connect`);
     } catch (error) {
       toast('Failed to delete connection');
     }

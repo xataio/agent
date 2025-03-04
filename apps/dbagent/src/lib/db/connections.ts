@@ -57,7 +57,7 @@ export async function addConnection({
   name: string;
   connectionString: string;
 }): Promise<Connection> {
-  const existingConnections = await db.select().from(connections);
+  const existingConnections = await db.select().from(connections).where(eq(connections.projectId, projectId));
   const result = await db
     .insert(connections)
     .values({
