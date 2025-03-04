@@ -438,6 +438,9 @@ importers:
         specifier: ^5.8.2
         version: 5.8.2
     devDependencies:
+      '@internal/eslint-config':
+        specifier: workspace:*
+        version: link:../../configs/eslint-config
       '@internal/tsconfig':
         specifier: workspace:*
         version: link:../../configs/tsconfig
