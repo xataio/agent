@@ -116,6 +116,39 @@ Return:
   return recommendPlaybookResult.object;
 }
 
+async function summarizeResult(messages: Message[], modelInstance: LanguageModelV1) {
+  const prompt = `Summarize the results above and highlight what made you investigate, the root cause, and the recommended actions. 
+Be as specific as possible, like including the DDL to run. Use the following headers:
+
+Trigger
+Root Cause Analysis
+Actions to take
+
+In the Root cause analysis section, mention which playbooks you run.`;
+
+  messages.push({
+    id: generateId(),
+    role: 'user',
+    content: prompt,
+    createdAt: new Date()
+  });
+
+  const summaryResult = await generateText({
+    model: modelInstance,
+    system: monitoringSystemPrompt,
+    messages: messages
+  });
+
+  messages.push({
+    id: generateId(),
+    role: 'assistant',
+    content: summaryResult.text,
+    createdAt: new Date()
+  });
+
+  return summaryResult.text;
+}
+
 function shouldNotify(notifyLevel: 'alert' | 'warning' | 'info', notificationLevel: 'alert' | 'warning' | 'info') {
   const levelMap = {
     info: 1,
@@ -150,7 +183,6 @@ export async function runSchedule(schedule: Schedule, now: Date) {
     content: result.text,
     createdAt: new Date()
   });
-  let resultText = result.text;
 
   const notificationResult = await decideNotificationLevel(messages, modelInstance);
 
@@ -163,25 +195,12 @@ export async function runSchedule(schedule: Schedule, now: Date) {
         break;
       }
       const nextPlaybook = recommendPlaybookResult.recommendedPlaybook;
-      const resultNewPlaybook = await runModelPlaybook(
-        messages,
-        modelInstance,
-        connection,
-        targetClient,
-        nextPlaybook,
-        ''
-      );
-      resultText = `${resultText}
-      -------
-      To investigate the issue further, I've ran the following playbook: ${nextPlaybook}
-
-      With these results:
-      ${resultNewPlaybook.text}`;
+      await runModelPlaybook(messages, modelInstance, connection, targetClient, nextPlaybook, '');
       step++;
     }
   }
 
-  // TODO: summarize the result
+  const resultText = await summarizeResult(messages, modelInstance);
 
   // save the result in the database with all messages
   const scheduleRun: Omit<ScheduleRun, 'id'> = {
