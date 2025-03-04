@@ -115,13 +115,7 @@ SET
 ALTER TABLE
 	"aws_clusters"
 ADD
-	COLUMN "integration_id" uuid NOT NULL;
-
---> statement-breakpoint
-ALTER TABLE
-	"aws_clusters"
-ADD
-	COLUMN "connection_id" uuid;
+	COLUMN "connection_id" uuid NOT NULL;
 
 --> statement-breakpoint
 ALTER TABLE
@@ -140,12 +134,6 @@ ALTER TABLE
 	"schedules"
 ADD
 	COLUMN "project_id" uuid NOT NULL;
-
---> statement-breakpoint
-ALTER TABLE
-	"aws_clusters"
-ADD
-	CONSTRAINT "fk_aws_clusters_integration" FOREIGN KEY ("integration_id") REFERENCES "public"."integrations"("id") ON DELETE no action ON UPDATE no action;
 
 --> statement-breakpoint
 ALTER TABLE
@@ -207,7 +195,7 @@ ALTER TABLE
 ALTER TABLE
 	"aws_clusters"
 ADD
-	CONSTRAINT "uq_aws_clusters_integration_identifier" UNIQUE("cluster_identifier", "integration_id");
+	CONSTRAINT "uq_aws_clusters_integration_identifier" UNIQUE("cluster_identifier");
 
 --> statement-breakpoint
 ALTER TABLE

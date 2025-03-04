@@ -1,5 +1,5 @@
 {
-  "id": "988ae36e-57d2-402f-a99e-b5dfe4aafa7b",
+  "id": "c7e70cca-893e-450a-bce3-ecb2204b654c",
   "prevId": "3118fcc8-7d5c-4790-bd35-65b2242ee0d5",
   "version": "7",
   "dialect": "postgresql",
@@ -21,21 +21,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "integration_id": {
-          "name": "integration_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
         "connection_id": {
           "name": "connection_id",
           "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "data": {
-          "name": "data",
-          "type": "jsonb",
           "primaryKey": false,
           "notNull": true
         },
@@ -45,19 +33,16 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'us-east-1'"
+        },
+        "data": {
+          "name": "data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "fk_aws_clusters_integration": {
-          "name": "fk_aws_clusters_integration",
-          "tableFrom": "aws_clusters",
-          "tableTo": "integrations",
-          "columnsFrom": ["integration_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
         "fk_aws_clusters_connection": {
           "name": "fk_aws_clusters_connection",
           "tableFrom": "aws_clusters",
@@ -73,7 +58,7 @@
         "uq_aws_clusters_integration_identifier": {
           "name": "uq_aws_clusters_integration_identifier",
           "nullsNotDistinct": false,
-          "columns": ["cluster_identifier", "integration_id"]
+          "columns": ["cluster_identifier"]
         }
       },
       "policies": {},
