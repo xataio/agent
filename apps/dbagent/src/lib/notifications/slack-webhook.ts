@@ -12,7 +12,8 @@ export async function sendScheduleNotification(
   connection: DbConnection,
   level: NotificationLevel,
   title: string,
-  message: string
+  message: string,
+  extraNotificationText?: string
 ) {
   const slack = await getIntegration('slack');
   if (!slack) {
@@ -41,6 +42,13 @@ export async function sendScheduleNotification(
           type: 'plain_text',
           emoji: true,
           text: slackEmoji + ' ' + title
+        }
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: extraNotificationText ?? ''
         }
       },
       {

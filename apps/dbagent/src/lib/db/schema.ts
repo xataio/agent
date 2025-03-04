@@ -100,6 +100,8 @@ export const assoc_cluster_connections = pgTable(
   ]
 );
 
+export const notification_level = pgEnum('notification_level', ['info', 'warning', 'alert']);
+
 export const schedules = pgTable(
   'schedules',
   {
@@ -117,7 +119,10 @@ export const schedules = pgTable(
     status: schedule_status('status').default('disabled').notNull(),
     failures: integer('failures').default(0),
     keepHistory: integer('keep_history').notNull().default(300),
-    model: text('model').default('openai-gpt-4o').notNull()
+    model: text('model').default('openai-gpt-4o').notNull(),
+    maxSteps: integer('max_steps'),
+    notifyLevel: notification_level('notify_level').default('alert').notNull(),
+    extraNotificationText: text('extra_notification_text')
   },
   (table) => [
     foreignKey({
@@ -127,8 +132,6 @@ export const schedules = pgTable(
     })
   ]
 );
-
-export const notification_level = pgEnum('notification_level', ['info', 'warning', 'alert']);
 
 export const schedule_runs = pgTable(
   'schedule_runs',
