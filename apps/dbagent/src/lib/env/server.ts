@@ -1,5 +1,4 @@
 /* eslint-disable no-process-env */
-import 'server-only';
 import { z } from 'zod';
 import { env as clientEnv } from './client';
 

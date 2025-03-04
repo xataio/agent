@@ -9,6 +9,10 @@ export default defineConfig({
     exclude: ['**/node_modules/**'],
     watch: false,
     maxConcurrency: 1,
-    env: { EVAL: '1', ...env }
+    env: { EVAL: '1', ...env },
+    testTimeout: 30000,
+    alias: {
+      '~/': new URL('./src/', import.meta.url).pathname
+    }
   }
 });
