@@ -22,34 +22,6 @@
       "when": 1740840546323,
       "tag": "0002_lazy_galactus",
       "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1740985659586,
-      "tag": "0003_projects",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1740999790022,
-      "tag": "0004_moaning_the_liberteens",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1741000328248,
-      "tag": "0005_clean_odin",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1741078605740,
-      "tag": "0006_common_may_parker",
-      "breakpoints": true
     }
   ]
 }
