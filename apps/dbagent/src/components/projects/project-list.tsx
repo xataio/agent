@@ -19,6 +19,9 @@ import {
   DropdownMenuTrigger,
   Input,
   Label,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Skeleton,
   toast
 } from '@internal/components';
@@ -30,6 +33,63 @@ import { createProject, deleteProject, renameProject } from './actions';
 
 interface ProjectListProps {
   projects: Project[];
+}
+
+function CreateProjectButton() {
+  const [projectName, setProjectName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!projectName.trim()) return;
+
+    setIsLoading(true);
+
+    const result = await createProject({ name: projectName });
+    if (result.success) {
+      router.push(`/projects/${result.id}/start`);
+    } else {
+      toast.error(result.error);
+    }
+
+    setIsLoading(false);
+  };
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Create Project
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent>
+        <form onSubmit={handleSubmit}>
+          <div className="grid w-full items-center gap-4">
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="projectName" className="text-sm font-medium">
+                Project Name
+              </Label>
+              <Input
+                id="projectName"
+                placeholder="My Project"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                required
+                className="border-primary/20 focus-visible:ring-primary/30"
+              />
+            </div>
+          </div>
+          <div className="mt-4 flex justify-end space-x-2">
+            <Button type="submit" disabled={isLoading || !projectName.trim()}>
+              {isLoading ? 'Creating...' : 'Create'}
+            </Button>
+          </div>
+        </form>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 export function ProjectsList({ projects }: ProjectListProps) {
@@ -44,10 +104,7 @@ export function ProjectsList({ projects }: ProjectListProps) {
               <h1 className="text-3xl font-bold tracking-tight">Database Projects</h1>
               <p className="text-muted-foreground mt-1">Manage your postgres database projects</p>
             </div>
-            <Button onClick={() => {}}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Create Project
-            </Button>
+            <CreateProjectButton />
           </div>
 
           <ProjectListView projects={projects} />
@@ -222,7 +279,7 @@ function CreateProjectOnboarding() {
   };
 
   return (
-    <div className="from-background via-primary/5 to-secondary/5 flex h-full w-full items-center justify-center bg-gradient-to-br">
+    <div className="flex h-full w-full items-center justify-center">
       <div className="pointer-events-none absolute left-0 top-0 overflow-hidden">
         {[...Array(20)].map((_, i) => (
           <div
