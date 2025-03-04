@@ -15,18 +15,31 @@ import {
 } from 'drizzle-orm/pg-core';
 import { RDSClusterDetailedInfo } from '../aws/rds';
 
-export const projectType = pgEnum('project_type', ['postgres', 'rds']);
 export const scheduleStatus = pgEnum('schedule_status', ['disabled', 'scheduled', 'running']);
-export const notificationLevel = pgEnum('notification_level', ['info', 'warning', 'alert']);
 
-export const projects = pgTable(
-  'projects',
+export const awsClusters = pgTable(
+  'aws_clusters',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
-    name: text('name').notNull(),
-    ownerId: text('owner_id').notNull()
+    clusterIdentifier: text('cluster_identifier').notNull(),
+    integrationId: uuid('integration_id').notNull(),
+    connectionId: uuid('connection_id'),
+    data: jsonb('data').$type<RDSClusterDetailedInfo>().notNull(),
+    region: text('region').default('us-east-1').notNull()
   },
-  (table) => [unique('uq_projects_name').on(table.ownerId, table.name)]
+  (table) => [
+    foreignKey({
+      columns: [table.integrationId],
+      foreignColumns: [integrations.id],
+      name: 'fk_aws_clusters_integration'
+    }),
+    foreignKey({
+      columns: [table.connectionId],
+      foreignColumns: [connections.id],
+      name: 'fk_aws_clusters_connection'
+    }),
+    unique('uq_aws_clusters_integration_identifier').on(table.clusterIdentifier, table.integrationId)
+  ]
 );
 
 export const connections = pgTable(
@@ -119,6 +132,8 @@ export const schedules = pgTable(
   ]
 );
 
+export const notificationLevel = pgEnum('notification_level', ['info', 'warning', 'alert']);
+
 export const scheduleRuns = pgTable(
   'schedule_runs',
   {
@@ -140,21 +155,12 @@ export const scheduleRuns = pgTable(
   ]
 );
 
-export const awsClusters = pgTable(
-  'aws_clusters',
+export const projects = pgTable(
+  'projects',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
-    clusterIdentifier: text('cluster_identifier').notNull(),
-    integrationId: uuid('integration_id').notNull(),
-    data: jsonb('data').$type<RDSClusterDetailedInfo>().notNull(),
-    region: text('region').default('us-east-1').notNull()
+    name: text('name').notNull(),
+    ownerId: text('owner_id').notNull()
   },
-  (table) => [
-    foreignKey({
-      columns: [table.integrationId],
-      foreignColumns: [integrations.id],
-      name: 'fk_aws_clusters_integration'
-    }),
-    unique('uq_aws_clusters_integration_identifier').on(table.clusterIdentifier, table.integrationId)
-  ]
+  (table) => [unique('uq_projects_name').on(table.ownerId, table.name)]
 );
