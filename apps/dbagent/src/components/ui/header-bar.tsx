@@ -18,7 +18,6 @@ import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { PropsWithChildren } from 'react';
-import RobotAvatar from './robot-avatar';
 
 export type User = {
   name?: string | null;
@@ -39,7 +38,6 @@ export const HeaderBar = ({ children }: PropsWithChildren<{ user?: User }>) => {
           <div className="bg-contrastEmpty flex h-[52px] w-full items-center justify-between p-0" id="main-navbar">
             <div className="flex flex-grow items-center justify-start gap-2">
               <Link href="/" className="flex items-center transition-transform duration-100 ease-out hover:scale-105">
-                <RobotAvatar className="h-8 w-8" />
                 <span className="pl-2 text-lg font-bold">Aida</span>
               </Link>
 
