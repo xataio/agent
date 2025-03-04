@@ -1,15 +1,15 @@
 'use client';
 
 import { signIn, useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function Page() {
   const session = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const params = new URLSearchParams(window.location.search);
-  const callbackUrl = params.get('callbackUrl');
+  const callbackUrl = searchParams.get('callbackUrl');
 
   useEffect(() => {
     if (session.status === 'unauthenticated') {
