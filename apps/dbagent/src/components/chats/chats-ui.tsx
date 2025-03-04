@@ -17,7 +17,7 @@ import { Bot, Clock, Lightbulb, Send, User, Wrench } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Connection } from '~/lib/db/connections';
+import { DbConnection } from '~/lib/db/connections';
 import { ScheduleRun } from '~/lib/db/schedule-runs';
 import { Schedule } from '~/lib/db/schedules';
 import { ChatSidebar } from './chat-sidebar';
@@ -29,7 +29,7 @@ export function ChatsUI({
   connections,
   scheduleRun
 }: {
-  connections: Connection[];
+  connections: DbConnection[];
   scheduleRun?: { schedule: Schedule; run: ScheduleRun } | null;
 }) {
   return (
@@ -43,7 +43,7 @@ function ChatsUIContent({
   connections,
   scheduleRun
 }: {
-  connections: Connection[];
+  connections: DbConnection[];
   scheduleRun?: { schedule: Schedule; run: ScheduleRun } | null;
 }) {
   const searchParams = useSearchParams();

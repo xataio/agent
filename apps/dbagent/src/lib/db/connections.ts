@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { db } from './db';
 import { connections } from './schema';
 
-export type Connection = {
+export type DbConnection = {
   id: string;
   projectId: string;
   name: string;
@@ -10,16 +10,16 @@ export type Connection = {
   connectionString: string;
 };
 
-export async function listConnections(): Promise<Connection[]> {
+export async function listConnections(): Promise<DbConnection[]> {
   return await db.select().from(connections);
 }
 
-export async function getDefaultConnection(): Promise<Connection | null> {
+export async function getDefaultConnection(): Promise<DbConnection | null> {
   const result = await db.select().from(connections).where(eq(connections.isDefault, true));
   return result[0] ?? null;
 }
 
-export async function getConnection(id: string): Promise<Connection | null> {
+export async function getConnection(id: string): Promise<DbConnection | null> {
   const result = await db.select().from(connections).where(eq(connections.id, id));
   return result[0] ?? null;
 }
@@ -56,7 +56,7 @@ export async function addConnection({
   projectId: string;
   name: string;
   connectionString: string;
-}): Promise<Connection> {
+}): Promise<DbConnection> {
   const existingConnections = await db.select().from(connections);
   const result = await db
     .insert(connections)
@@ -83,7 +83,7 @@ export async function updateConnection({
   id: string;
   name: string;
   connectionString: string;
-}): Promise<Connection> {
+}): Promise<DbConnection> {
   const result = await db.update(connections).set({ name, connectionString }).where(eq(connections.id, id)).returning();
   if (!result[0]) {
     throw new Error('Connection not found');

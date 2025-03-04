@@ -1,9 +1,9 @@
 import { getConnectionInfo } from '../db/connection-info';
-import { Connection } from '../db/connections';
+import { DbConnection } from '../db/connections';
 import { getProjectById } from '../db/projects';
 import { getPerformanceSettings, getVacuumSettings } from '../targetdb/db';
 
-export async function getTablesAndInstanceInfo(connection: Connection): Promise<string> {
+export async function getTablesAndInstanceInfo(connection: DbConnection): Promise<string> {
   try {
     const tables = await getConnectionInfo(connection.id, 'tables');
     const project = await getProjectById(connection.projectId);
@@ -23,7 +23,7 @@ ${JSON.stringify(project)}
   }
 }
 
-export async function getPerformanceAndVacuumSettings(connection: Connection): Promise<string> {
+export async function getPerformanceAndVacuumSettings(connection: DbConnection): Promise<string> {
   const performanceSettings = await getPerformanceSettings(connection.connectionString);
   const vacuumSettings = await getVacuumSettings(connection.connectionString);
 
@@ -33,7 +33,7 @@ Vacuum settings: ${JSON.stringify(vacuumSettings)}
 `;
 }
 
-export async function getPostgresExtensions(connection: Connection): Promise<string> {
+export async function getPostgresExtensions(connection: DbConnection): Promise<string> {
   const extensions = await getConnectionInfo(connection.id, 'extensions');
   return `Extensions: ${JSON.stringify(extensions)}`;
 }

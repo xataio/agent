@@ -14,7 +14,7 @@ import {
   toast
 } from '@internal/components';
 import { useEffect, useState } from 'react';
-import { Connection } from '~/lib/db/connections';
+import { DbConnection } from '~/lib/db/connections';
 import { PerformanceSetting } from '~/lib/targetdb/db';
 import { collectVacuumData } from './actions';
 import { Skeleton } from './skeleton';
@@ -23,7 +23,7 @@ export function VacuumSettingsCard({
   selectedConnection,
   initialData
 }: {
-  selectedConnection: Connection | undefined;
+  selectedConnection: DbConnection | undefined;
   initialData: PerformanceSetting[] | undefined;
 }) {
   const [vacuumSettings, setVacuumSettings] = useState<PerformanceSetting[]>(initialData || []);

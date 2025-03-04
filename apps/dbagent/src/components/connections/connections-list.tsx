@@ -5,7 +5,7 @@ import { CheckIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Connection } from '~/lib/db/connections';
+import { DbConnection } from '~/lib/db/connections';
 import { actionListConnections, actionMakeConnectionDefault } from './actions';
 
 function maskConnectionString(connString: string): string {
@@ -17,7 +17,7 @@ function maskConnectionString(connString: string): string {
 }
 
 export function ConnectionsList() {
-  const [connections, setConnections] = useState<Connection[]>([]);
+  const [connections, setConnections] = useState<DbConnection[]>([]);
   const router = useRouter();
 
   useEffect(() => {

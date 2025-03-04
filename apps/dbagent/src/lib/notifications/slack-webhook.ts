@@ -1,4 +1,4 @@
-import { Connection } from '../db/connections';
+import { DbConnection } from '../db/connections';
 import { getIntegration } from '../db/integrations';
 import { ScheduleRun } from '../db/schedule-runs';
 import { Schedule } from '../db/schedules';
@@ -9,7 +9,7 @@ export type NotificationLevel = 'info' | 'warning' | 'alert';
 export async function sendScheduleNotification(
   run: ScheduleRun,
   schedule: Schedule,
-  connection: Connection,
+  connection: DbConnection,
   level: NotificationLevel,
   title: string,
   message: string

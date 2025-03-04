@@ -2,7 +2,7 @@
 
 import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, toast } from '@internal/components';
 import { useEffect, useState } from 'react';
-import { Connection } from '~/lib/db/connections';
+import { DbConnection } from '~/lib/db/connections';
 import { CollectInfo as CollectInfoType, getCollectInfo } from './actions';
 import { ExtensionsCard } from './extensions-card';
 import { PerformanceSettingsCard } from './settings-card';
@@ -10,14 +10,14 @@ import { TablesCard } from './tables-card';
 import { VacuumSettingsCard } from './vacuum-card';
 
 interface CollectInfoProps {
-  connections: Connection[];
+  connections: DbConnection[];
 }
 
 export function CollectInfo({ connections }: CollectInfoProps) {
   const [isCollecting] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const defaultConnection = connections.find((c) => c.isDefault);
-  const [selectedConnection, setSelectedConnection] = useState<Connection | undefined>(defaultConnection);
+  const [selectedConnection, setSelectedConnection] = useState<DbConnection | undefined>(defaultConnection);
   const [refreshKey, setRefreshKey] = useState(0);
   const [collectData, setCollectData] = useState<CollectInfoType | null>(null);
 

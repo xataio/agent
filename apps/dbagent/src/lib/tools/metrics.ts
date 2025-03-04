@@ -1,10 +1,10 @@
 import { getRDSClusterMetric, getRDSInstanceMetric } from '../aws/rds';
 import { getClusterByConnection } from '../db/aws-clusters';
-import { Connection } from '../db/connections';
+import { DbConnection } from '../db/connections';
 import { getIntegration } from '../db/integrations';
 
 export async function getClusterMetric(
-  connection: Connection,
+  connection: DbConnection,
   metricName: string,
   periodInSeconds: number
 ): Promise<string> {

@@ -4,7 +4,7 @@ import { Button, Switch, Table, TableBody, TableCell, TableHead, TableHeader, Ta
 import { ListIcon, PencilIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Connection } from '~/lib/db/connections';
+import { DbConnection } from '~/lib/db/connections';
 import { Schedule } from '~/lib/db/schedules';
 import { actionGetSchedules, actionUpdateScheduleEnabled } from './actions';
 
@@ -24,7 +24,7 @@ function displayRelativeTime(date1: Date, date2: Date): string {
   return `${Math.floor(diffMinutes / 1440)}d`;
 }
 
-export function MonitoringScheduleTable({ connections }: { connections: Connection[] }) {
+export function MonitoringScheduleTable({ connections }: { connections: DbConnection[] }) {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

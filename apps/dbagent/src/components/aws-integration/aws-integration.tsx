@@ -19,7 +19,7 @@ import {
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { RDSClusterDetailedInfo, RDSClusterInfo } from '~/lib/aws/rds';
-import { Connection } from '~/lib/db/connections';
+import { DbConnection } from '~/lib/db/connections';
 import { fetchRDSClusterDetails, fetchRDSClusters, getAWSIntegration } from './actions';
 import { DatabaseConnectionSelector } from './db-instance-connector';
 import { RDSClusterCard } from './rds-instance-card';
@@ -36,7 +36,7 @@ const regions = [
   'ap-northeast-1'
 ];
 
-export function AWSIntegration({ projectId, connections }: { projectId: string; connections: Connection[] }) {
+export function AWSIntegration({ projectId, connections }: { projectId: string; connections: DbConnection[] }) {
   const [accessKeyId, setAccessKeyId] = useState('');
   const [secretAccessKey, setSecretAccessKey] = useState('');
   const [region, setRegion] = useState('');

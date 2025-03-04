@@ -15,7 +15,7 @@ import {
 } from '@internal/components';
 import bytes from 'bytes';
 import { useEffect, useState } from 'react';
-import { Connection } from '~/lib/db/connections';
+import { DbConnection } from '~/lib/db/connections';
 import { TableStat } from '~/lib/targetdb/db';
 import { collectTables } from './actions';
 import { Skeleton } from './skeleton';
@@ -24,7 +24,7 @@ export function TablesCard({
   selectedConnection,
   initialData
 }: {
-  selectedConnection: Connection | undefined;
+  selectedConnection: DbConnection | undefined;
   initialData: TableStat[] | undefined;
 }) {
   const [tables, setTables] = useState<TableStat[]>(initialData || []);
