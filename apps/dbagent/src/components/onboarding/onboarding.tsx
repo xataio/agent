@@ -114,8 +114,10 @@ export function Onboarding() {
                   </p>
                 </div>
                 <div className="flex gap-4">
-                  <Button onClick={() => router.push('/chats?start=report')}>Get Initial Assessment</Button>
-                  <Button onClick={() => router.push('/monitoring')} variant="outline">
+                  <Button onClick={() => router.push(`/projects/${project}/chats?start=report`)}>
+                    Get Initial Assessment
+                  </Button>
+                  <Button onClick={() => router.push(`/projects/${project}/monitoring`)} variant="outline">
                     Setup Periodic Monitoring
                   </Button>
                 </div>

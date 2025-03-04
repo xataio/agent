@@ -34,7 +34,7 @@ export async function saveIntegration<
       data: data
     })
     .onConflictDoUpdate({
-      target: integrations.name,
+      target: [integrations.projectId, integrations.name],
       set: {
         data: data
       }

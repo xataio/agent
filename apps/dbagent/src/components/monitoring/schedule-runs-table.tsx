@@ -41,6 +41,7 @@ export function ScheduleRunsTable({ schedule }: { schedule: Schedule }) {
   const [isLoading, setIsLoading] = useState(true);
   const [runs, setRuns] = useState<ScheduleRun[]>([]);
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
+  const { project } = useParams<{ project: string }>();
 
   useEffect(() => {
     const fetchRuns = async () => {
@@ -208,7 +209,7 @@ export function ScheduleRunsTable({ schedule }: { schedule: Schedule }) {
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Link href={`/chats?runId=${run.id}`}>
+                                    <Link href={`/projects/${project}/chats?runId=${run.id}`}>
                                       <Button variant="outline" size="icon" onClick={() => {}}>
                                         <MessageSquare className="h-4 w-4" />
                                         <span className="sr-only">Load in chat</span>

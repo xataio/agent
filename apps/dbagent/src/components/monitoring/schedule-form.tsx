@@ -126,14 +126,14 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
       await actionCreateSchedule(schedule);
     }
     console.log(data);
-    router.push('/monitoring');
+    router.push(`/projects/${projectId}/monitoring`);
   };
 
   const handleDelete = async () => {
     if (!scheduleId) return;
 
     await actionDeleteSchedule(scheduleId);
-    router.push('/monitoring');
+    router.push(`/projects/${projectId}/monitoring`);
   };
 
   return (
@@ -346,7 +346,7 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
                   )}
                 </>
               )}
-              <Link href="/monitoring">
+              <Link href={`/projects/${projectId}/monitoring`}>
                 <Button variant="outline">Cancel</Button>
               </Link>
             </form>
