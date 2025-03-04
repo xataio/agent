@@ -18,7 +18,7 @@ import {
 } from '@internal/components';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { RDSClusterDetailedInfo } from '~/lib/aws/rds';
+import { RDSClusterDetailedInfo, RDSClusterInfo } from '~/lib/aws/rds';
 import { DbConnection } from '~/lib/db/connections';
 import { fetchRDSClusterDetails, fetchRDSClusters, getAWSIntegration } from './actions';
 import { DatabaseConnectionSelector } from './db-instance-connector';
@@ -40,7 +40,7 @@ export function AWSIntegration({ projectId, connections }: { projectId: string; 
   const [accessKeyId, setAccessKeyId] = useState('');
   const [secretAccessKey, setSecretAccessKey] = useState('');
   const [region, setRegion] = useState('');
-  const [rdsClusters, setRdsClusters] = useState<string[]>([]);
+  const [rdsClusters, setRdsClusters] = useState<RDSClusterInfo[]>([]);
   const [selectedCluster, setSelectedCluster] = useState('');
   const [clusterDetails, setClusterDetails] = useState<RDSClusterDetailedInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -66,7 +66,7 @@ export function AWSIntegration({ projectId, connections }: { projectId: string; 
         if (response.data.length === 0) {
           toast('No RDS clusters found in the selected region');
         } else {
-          setRdsClusters(response.data.map((cluster) => cluster.identifier));
+          setRdsClusters(response.data);
           toast('RDS clusters fetched successfully');
         }
       } else {
@@ -79,10 +79,15 @@ export function AWSIntegration({ projectId, connections }: { projectId: string; 
     }
   };
 
-  const handleClusterSelect = async (instanceId: string) => {
-    setSelectedCluster(instanceId);
+  const handleClusterSelect = async (identifier: string) => {
+    const cluster = rdsClusters.find((cluster) => cluster.identifier === identifier);
+    if (!cluster) {
+      toast('Error: Selected cluster not found');
+      return;
+    }
+    setSelectedCluster(cluster.identifier);
     try {
-      const details = await fetchRDSClusterDetails(instanceId);
+      const details = await fetchRDSClusterDetails(cluster);
       setClusterDetails(details.data);
     } catch (error) {
       toast('Error: Failed to fetch RDS instance details.');
@@ -141,15 +146,15 @@ export function AWSIntegration({ projectId, connections }: { projectId: string; 
 
           {rdsClusters.length > 0 && (
             <div className="mt-8">
-              <h3 className="mb-2 text-lg font-semibold">Select an RDS Cluster</h3>
+              <h3 className="mb-2 text-lg font-semibold">Select an RDS Cluster/Instance</h3>
               <Select value={selectedCluster} onValueChange={handleClusterSelect}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select an RDS cluster" />
+                  <SelectValue placeholder="Select an RDS cluster/instance" />
                 </SelectTrigger>
                 <SelectContent>
-                  {rdsClusters.map((instance) => (
-                    <SelectItem key={instance} value={instance}>
-                      {instance}
+                  {rdsClusters.map((cluster) => (
+                    <SelectItem key={cluster.identifier} value={cluster.identifier}>
+                      {cluster.identifier}
                     </SelectItem>
                   ))}
                 </SelectContent>

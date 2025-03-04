@@ -20,6 +20,21 @@ export interface RDSInstanceInfo {
   };
   allocatedStorage: number;
   multiAZ: boolean;
+  dbClusterIdentifier?: string;
+}
+
+export interface RDSClusterInfo {
+  identifier: string;
+  engine: string;
+  engineVersion: string;
+  status: string;
+  endpoint?: string;
+  readerEndpoint?: string;
+  port?: number;
+  multiAZ: boolean;
+  instanceCount: number;
+  allocatedStorage?: number;
+  isStandaloneInstance: boolean;
 }
 
 export interface AWSCredentials {
@@ -54,18 +69,6 @@ export function initializeCloudWatchClient(credentials: AWSCredentials, region: 
   });
 }
 
-export interface RDSClusterInfo {
-  identifier: string;
-  engine: string;
-  engineVersion: string;
-  status: string;
-  endpoint?: string;
-  readerEndpoint?: string;
-  port?: number;
-  multiAZ: boolean;
-  instanceCount: number;
-}
-
 export async function listRDSClusters(client: RDSClient): Promise<RDSClusterInfo[]> {
   // Get all DB clusters
   const command = new DescribeDBClustersCommand({});
@@ -84,7 +87,8 @@ export async function listRDSClusters(client: RDSClient): Promise<RDSClusterInfo
     readerEndpoint: cluster.ReaderEndpoint,
     port: cluster.Port,
     multiAZ: cluster.MultiAZ || false,
-    instanceCount: cluster.DBClusterMembers?.length || 0
+    instanceCount: cluster.DBClusterMembers?.length || 0,
+    isStandaloneInstance: false
   }));
 }
 
@@ -131,6 +135,7 @@ export async function getRDSClusterInfo(
       port: cluster.Port,
       multiAZ: cluster.MultiAZ || false,
       instanceCount: cluster.DBClusterMembers?.length || 0,
+      isStandaloneInstance: false,
       instances: instances.map((instance) => ({
         identifier: instance.DBInstanceIdentifier || '',
         engine: instance.Engine || '',
@@ -178,7 +183,8 @@ export async function listRDSInstances(client: RDSClient): Promise<RDSInstanceIn
         }
       : undefined,
     allocatedStorage: instance.AllocatedStorage || 0,
-    multiAZ: instance.MultiAZ || false
+    multiAZ: instance.MultiAZ || false,
+    dbClusterIdentifier: instance.DBClusterIdentifier || undefined
   }));
 }
 
@@ -216,7 +222,8 @@ export async function getRDSInstanceInfo(
           }
         : undefined,
       allocatedStorage: instance.AllocatedStorage || 0,
-      multiAZ: instance.MultiAZ || false
+      multiAZ: instance.MultiAZ || false,
+      dbClusterIdentifier: instance.DBClusterIdentifier || undefined
     };
   } catch (error) {
     console.error('Error fetching RDS instance info:', error);
@@ -354,6 +361,65 @@ export async function getRDSClusterMetric(
     })).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   } catch (error) {
     console.error(`Error fetching RDS cluster metric ${metricName}:`, error);
+    return [];
+  }
+}
+
+export async function getRDSInstanceMetric(
+  instanceIdentifier: string,
+  region: string,
+  credentials: AWSCredentials,
+  metricName: string,
+  startTime: Date,
+  endTime: Date
+): Promise<{ timestamp: Date; value: number }[]> {
+  try {
+    // Calculate time difference in seconds
+    const timeDiffSeconds = Math.floor((endTime.getTime() - startTime.getTime()) / 1000);
+
+    // Target around 50 data points
+    let period = 3600; // Default to 1 hour
+    if (timeDiffSeconds <= 500) {
+      // Up to ~8 minutes
+      period = 10; // 10 second intervals
+    } else if (timeDiffSeconds <= 3000) {
+      // Up to ~50 minutes
+      period = 60; // 1 minute intervals
+    } else if (timeDiffSeconds <= 43200) {
+      // Up to ~12 hours
+      period = 300; // 5 minute intervals
+    }
+
+    const client = initializeCloudWatchClient(credentials, region);
+    const command = new GetMetricStatisticsCommand({
+      Namespace: 'AWS/RDS',
+      MetricName: metricName,
+      Dimensions: [
+        {
+          Name: 'DBInstanceIdentifier',
+          Value: instanceIdentifier
+        }
+      ],
+      StartTime: startTime,
+      EndTime: endTime,
+      Period: period,
+      Statistics: ['Average']
+    });
+
+    console.log('command', JSON.stringify(command, null, 2));
+
+    const response = await client.send(command);
+
+    if (!response.Datapoints?.length) {
+      return [];
+    }
+
+    return response.Datapoints.map((point) => ({
+      timestamp: point.Timestamp || new Date(),
+      value: point.Average || 0
+    })).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  } catch (error) {
+    console.error(`Error fetching RDS instance metric ${metricName}:`, error);
     return [];
   }
 }

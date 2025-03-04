@@ -1,14 +1,17 @@
 'use server';
 
+import { connection } from 'next/server';
 import {
   getRDSClusterInfo,
+  getRDSInstanceInfo,
   initializeRDSClient,
   listRDSClusters,
+  listRDSInstances,
   RDSClusterDetailedInfo,
   RDSClusterInfo
 } from '~/lib/aws/rds';
+import { associateClusterConnection, saveCluster } from '~/lib/db/clusters';
 import { AwsIntegration, getIntegration, saveIntegration } from '~/lib/db/integrations';
-import { saveProject } from '~/lib/db/projects';
 
 export async function fetchRDSClusters(
   projectId: string,
@@ -20,7 +23,25 @@ export async function fetchRDSClusters(
 
   try {
     const clusters = await listRDSClusters(client);
-    await saveIntegration(projectId, 'aws', { accessKeyId, secretAccessKey, region });
+    const instances = await listRDSInstances(client);
+    // Add standalone instances as "clusters" with single instance
+    const standaloneInstances = instances.filter((instance) => !instance.dbClusterIdentifier);
+    console.log('standaloneInstances', standaloneInstances);
+    const standaloneAsClusters: RDSClusterInfo[] = standaloneInstances.map((instance) => ({
+      identifier: instance.identifier,
+      engine: instance.engine,
+      engineVersion: instance.engineVersion,
+      status: instance.status,
+      endpoint: instance.endpoint?.address,
+      port: instance.endpoint?.port,
+      multiAZ: instance.multiAZ,
+      instanceCount: 1,
+      allocatedStorage: instance.allocatedStorage,
+      isStandaloneInstance: true
+    }));
+    clusters.push(...standaloneAsClusters);
+
+    await saveIntegration('aws', { accessKeyId, secretAccessKey, region });
     return { success: true, message: 'RDS instances fetched successfully', data: clusters };
   } catch (error) {
     console.error('Error fetching RDS instances:', error);
@@ -29,7 +50,7 @@ export async function fetchRDSClusters(
 }
 
 export async function fetchRDSClusterDetails(
-  clusterIdentifier: string
+  clusterInfo: RDSClusterInfo
 ): Promise<{ success: boolean; message: string; data: RDSClusterDetailedInfo | null }> {
   const aws = await getIntegration('aws');
   if (!aws) {
@@ -40,11 +61,24 @@ export async function fetchRDSClusterDetails(
     secretAccessKey: aws.secretAccessKey,
     region: aws.region
   });
-  const cluster = await getRDSClusterInfo(clusterIdentifier, client);
-  if (!cluster) {
-    return { success: false, message: 'RDS cluster not found', data: null };
+
+  if (clusterInfo.isStandaloneInstance) {
+    const instance = await getRDSInstanceInfo(clusterInfo.identifier, client);
+    if (!instance) {
+      return { success: false, message: 'RDS instance not found', data: null };
+    }
+    const cluster = {
+      ...clusterInfo,
+      instances: [instance]
+    };
+    return { success: true, message: 'RDS instance details fetched successfully', data: cluster };
+  } else {
+    const cluster = await getRDSClusterInfo(clusterInfo.identifier, client);
+    if (!cluster) {
+      return { success: false, message: 'RDS cluster not found', data: null };
+    }
+    return { success: true, message: 'RDS cluster details fetched successfully', data: cluster };
   }
-  return { success: true, message: 'RDS cluster details fetched successfully', data: cluster };
 }
 
 export async function getAWSIntegration(): Promise<{ success: boolean; message: string; data: AwsIntegration | null }> {
@@ -81,22 +115,40 @@ export async function saveProjectDetails({
     secretAccessKey: aws.secretAccessKey,
     region: region
   });
-
-  const instance = await getRDSClusterInfo(clusterIdentifier, client);
-  if (!instance) {
-    return { success: false, message: 'RDS instance not found' };
-  }
-
-  await saveProject({
-    name,
-    ownerId,
-    type: 'rds',
-    info: {
+  const cluster = await getRDSClusterInfo(clusterIdentifier, client);
+  if (cluster) {
+    const instanceId = await saveCluster({
       clusterIdentifier,
+      integration: 'aws',
       region,
-      details: instance
+      data: cluster
+    });
+    await associateClusterConnection(instanceId, connection.id);
+    return { success: true, message: 'Cluster details saved successfully' };
+  } else {
+    const instance = await getRDSInstanceInfo(clusterIdentifier, client);
+    if (!instance) {
+      return { success: false, message: 'RDS instance not found' };
     }
-  });
-
-  return { success: true, message: 'Instance details saved successfully' };
+    const instanceId = await saveCluster({
+      clusterIdentifier,
+      integration: 'aws',
+      region,
+      data: {
+        instances: [instance],
+        identifier: instance.identifier,
+        engine: instance.engine,
+        engineVersion: instance.engineVersion,
+        status: instance.status,
+        endpoint: instance.endpoint?.address,
+        port: instance.endpoint?.port,
+        multiAZ: instance.multiAZ,
+        instanceCount: 1,
+        allocatedStorage: instance.allocatedStorage,
+        isStandaloneInstance: true
+      }
+    });
+    await associateClusterConnection(instanceId, connection.id);
+    return { success: true, message: 'Instance details saved successfully' };
+  }
 }
