@@ -1,7 +1,7 @@
 import { Message } from '@ai-sdk/ui-utils';
 import { desc, eq, lt } from 'drizzle-orm';
 import { db } from './db';
-import { schedule_runs } from './schema';
+import { scheduleRuns } from './schema';
 
 export type ScheduleRun = {
   id: string;
@@ -22,9 +22,9 @@ export async function insertScheduleRunLimitHistory(
 
   // Count total runs for this schedule
   const totalRuns = await db
-    .select({ count: schedule_runs.id })
-    .from(schedule_runs)
-    .where(eq(schedule_runs.scheduleId, scheduleRun.scheduleId));
+    .select({ count: scheduleRuns.id })
+    .from(scheduleRuns)
+    .where(eq(scheduleRuns.scheduleId, scheduleRun.scheduleId));
   const count = Number(totalRuns[0]?.count) || 0;
 
   // If we haven't exceeded keepHistory limit yet, no need to delete anything
@@ -35,9 +35,9 @@ export async function insertScheduleRunLimitHistory(
   // Find the last schedule to keep based on keepHistory
   const lastScheduleToKeep = await db
     .select()
-    .from(schedule_runs)
-    .where(eq(schedule_runs.scheduleId, scheduleRun.scheduleId))
-    .orderBy(desc(schedule_runs.createdAt))
+    .from(scheduleRuns)
+    .where(eq(scheduleRuns.scheduleId, scheduleRun.scheduleId))
+    .orderBy(desc(scheduleRuns.createdAt))
     .offset(keepHistory - 1)
     .limit(1);
   const cutoffTimestamp = lastScheduleToKeep[0]?.createdAt;
@@ -47,13 +47,13 @@ export async function insertScheduleRunLimitHistory(
   }
 
   // Delete older runs beyond the history limit
-  await db.delete(schedule_runs).where(lt(schedule_runs.createdAt, cutoffTimestamp));
+  await db.delete(scheduleRuns).where(lt(scheduleRuns.createdAt, cutoffTimestamp));
 
   return newRun;
 }
 
 export async function insertScheduleRun(scheduleRun: Omit<ScheduleRun, 'id'>) {
-  const result = await db.insert(schedule_runs).values(scheduleRun).returning();
+  const result = await db.insert(scheduleRuns).values(scheduleRun).returning();
 
   if (!result[0]) {
     throw new Error('Failed to insert schedule run');
@@ -65,13 +65,13 @@ export async function insertScheduleRun(scheduleRun: Omit<ScheduleRun, 'id'>) {
 export async function getScheduleRuns(scheduleId: string): Promise<ScheduleRun[]> {
   return await db
     .select()
-    .from(schedule_runs)
-    .where(eq(schedule_runs.scheduleId, scheduleId))
-    .orderBy(desc(schedule_runs.createdAt));
+    .from(scheduleRuns)
+    .where(eq(scheduleRuns.scheduleId, scheduleId))
+    .orderBy(desc(scheduleRuns.createdAt));
 }
 
 export async function getScheduleRun(runId: string): Promise<ScheduleRun> {
-  const result = await db.select().from(schedule_runs).where(eq(schedule_runs.id, runId));
+  const result = await db.select().from(scheduleRuns).where(eq(scheduleRuns.id, runId));
   if (!result[0]) {
     throw new Error('Schedule run not found');
   }

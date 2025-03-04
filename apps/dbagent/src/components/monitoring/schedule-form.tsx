@@ -22,12 +22,12 @@ import {
   SelectValue,
   Switch,
   Textarea,
+  useForm,
   zodResolver
 } from '@internal/components';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { DbConnection } from '~/lib/db/connections';
 import { Schedule } from '~/lib/db/schedules';

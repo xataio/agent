@@ -63,7 +63,7 @@ export function ConnectionsList() {
           {connections.map((connection) => (
             <TableRow key={connection.id}>
               <TableCell>{connection.name}</TableCell>
-              <TableCell className="font-mono text-sm">{maskConnectionString(connection.connstring)}</TableCell>
+              <TableCell className="font-mono text-sm">{maskConnectionString(connection.connectionString)}</TableCell>
               <TableCell>
                 <Button asChild variant="outline" size="sm">
                   <Link href={`/start/connect/edit/${connection.id}`}>Edit</Link>

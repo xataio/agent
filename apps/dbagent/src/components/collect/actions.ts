@@ -17,7 +17,7 @@ export async function collectInfo(conn: DbConnection | undefined) {
   if (!conn) {
     return { success: false, message: 'No connection selected' };
   }
-  const client = await getTargetDbConnection(conn.connstring);
+  const client = await getTargetDbConnection(conn.connectionString);
   try {
     const result = await client.query('SELECT * FROM public.test');
     return { success: true, message: 'Info collected successfully', data: result.rows };
@@ -36,12 +36,12 @@ export async function collectTables(
   }
   let data: TableStat[] = [];
   try {
-    data = await getTableStats(conn.connstring);
+    data = await getTableStats(conn.connectionString);
   } catch (error) {
     return { success: false, message: `Error collecting tables: ${error}`, data: [] };
   }
   try {
-    await saveDbInfo({ connectionId: conn.id, module: 'tables', data });
+    await saveDbInfo({ connectionId: conn.id, type: 'tables', data });
   } catch (error) {
     return { success: false, message: `Error saving tables: ${error}`, data: [] };
   }
@@ -60,12 +60,12 @@ export async function collectExtensions(
   }
   let data: PgExtension[] = [];
   try {
-    data = await getExtensions(conn.connstring);
+    data = await getExtensions(conn.connectionString);
   } catch (error) {
     return { success: false, message: `Error collecting extensions: ${error}`, data: [] };
   }
   try {
-    await saveDbInfo({ connectionId: conn.id, module: 'extensions', data });
+    await saveDbInfo({ connectionId: conn.id, type: 'extensions', data });
   } catch (error) {
     return { success: false, message: `Error saving extensions: ${error}`, data: [] };
   }
@@ -80,12 +80,12 @@ export async function collectPerformanceSettings(
   }
   let data: PerformanceSetting[] = [];
   try {
-    data = await getPerformanceSettings(conn.connstring);
+    data = await getPerformanceSettings(conn.connectionString);
   } catch (error) {
     return { success: false, message: `Error collecting performance settings: ${error}`, data: [] };
   }
   try {
-    await saveDbInfo({ connectionId: conn.id, module: 'performance_settings', data });
+    await saveDbInfo({ connectionId: conn.id, type: 'performance_settings', data });
   } catch (error) {
     return { success: false, message: `Error saving performance settings: ${error}`, data: [] };
   }
@@ -100,12 +100,12 @@ export async function collectVacuumData(
   }
   let data: PerformanceSetting[] = [];
   try {
-    data = await getVacuumSettings(connection.connstring);
+    data = await getVacuumSettings(connection.connectionString);
   } catch (error) {
     return { success: false, message: `Error collecting vacuum data: ${error}`, data: [] };
   }
   try {
-    await saveDbInfo({ connectionId: connection.id, module: 'vacuum_settings', data });
+    await saveDbInfo({ connectionId: connection.id, type: 'vacuum_settings', data });
   } catch (error) {
     return { success: false, message: `Error saving vacuum data: ${error}`, data: [] };
   }

@@ -1,35 +1,35 @@
 import { relations } from 'drizzle-orm/relations';
-import { assoc_cluster_connections, clusters, connections, dbinfo, integrations, schedules } from './schema';
+import { assoc_cluster_connections, awsClusters, connectionInfo, connections, integrations, schedules } from './schema';
 
-export const clustersRelations = relations(clusters, ({ one, many }) => ({
+export const clustersRelations = relations(awsClusters, ({ one, many }) => ({
   integration: one(integrations, {
-    fields: [clusters.integration],
+    fields: [awsClusters.integration],
     references: [integrations.name]
   }),
   assoc_cluster_connections: many(assoc_cluster_connections)
 }));
 
 export const integrationsRelations = relations(integrations, ({ many }) => ({
-  clusters: many(clusters)
+  clusters: many(awsClusters)
 }));
 
-export const dbinfoRelations = relations(dbinfo, ({ one }) => ({
+export const dbinfoRelations = relations(connectionInfo, ({ one }) => ({
   connection: one(connections, {
-    fields: [dbinfo.connectionId],
+    fields: [connectionInfo.connectionId],
     references: [connections.id]
   })
 }));
 
 export const connectionsRelations = relations(connections, ({ many }) => ({
-  dbinfos: many(dbinfo),
+  dbinfos: many(connectionInfo),
   assoc_cluster_connections: many(assoc_cluster_connections),
   schedules: many(schedules)
 }));
 
 export const assoc_cluster_connectionsRelations = relations(assoc_cluster_connections, ({ one }) => ({
-  cluster: one(clusters, {
+  cluster: one(awsClusters, {
     fields: [assoc_cluster_connections.clusterId],
-    references: [clusters.id]
+    references: [awsClusters.id]
   }),
   connection: one(connections, {
     fields: [assoc_cluster_connections.connectionId],
