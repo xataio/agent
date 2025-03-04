@@ -22,23 +22,17 @@ export const awsClusters = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     clusterIdentifier: text('cluster_identifier').notNull(),
-    integrationId: uuid('integration_id').notNull(),
-    connectionId: uuid('connection_id'),
-    data: jsonb('data').$type<RDSClusterDetailedInfo>().notNull(),
-    region: text('region').default('us-east-1').notNull()
+    connectionId: uuid('connection_id').notNull(),
+    region: text('region').default('us-east-1').notNull(),
+    data: jsonb('data').$type<RDSClusterDetailedInfo>().notNull()
   },
   (table) => [
-    foreignKey({
-      columns: [table.integrationId],
-      foreignColumns: [integrations.id],
-      name: 'fk_aws_clusters_integration'
-    }),
     foreignKey({
       columns: [table.connectionId],
       foreignColumns: [connections.id],
       name: 'fk_aws_clusters_connection'
     }),
-    unique('uq_aws_clusters_integration_identifier').on(table.clusterIdentifier, table.integrationId)
+    unique('uq_aws_clusters_integration_identifier').on(table.clusterIdentifier)
   ]
 );
 

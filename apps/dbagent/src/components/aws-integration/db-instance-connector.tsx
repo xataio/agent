@@ -1,8 +1,8 @@
 'use client';
 import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, toast } from '@internal/components';
-import { useSession } from 'next-auth/react';
+import { useState } from 'react';
 import { DbConnection } from '~/lib/db/connections';
-import { saveProjectDetails } from './actions';
+import { saveClusterDetails } from './actions';
 
 interface DatabaseConnectionSelectorProps {
   clusterIdentifier: string;
@@ -15,20 +15,16 @@ export function DatabaseConnectionSelector({
   region,
   connections
 }: DatabaseConnectionSelectorProps) {
-  const { data: session } = useSession();
+  const defaultConnection = connections.find((c) => c.isDefault);
+  const [selectedConnection, setSelectedConnection] = useState<DbConnection | undefined>(defaultConnection);
 
   const handleAssociate = async () => {
-    if (!session?.user?.id) {
-      toast('Unauthorized to save project details.');
+    if (!selectedConnection) {
+      toast('Please select a database connection.');
       return;
     }
 
-    const result = await saveProjectDetails({
-      name: `rds-${clusterIdentifier}`,
-      ownerId: session.user.id,
-      clusterIdentifier,
-      region
-    });
+    const result = await saveClusterDetails(clusterIdentifier, region, selectedConnection);
     if (result.success) {
       toast.success(result.message);
     } else {

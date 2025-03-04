@@ -1,27 +1,28 @@
 import { eq } from 'drizzle-orm';
 import { RDSClusterDetailedInfo } from '../aws/rds';
 import { db } from './db';
-import { assoc_cluster_connections, clusters } from './schema';
+import { awsClusters } from './schema';
 
-export type Cluster = {
+export type AWSCluster = {
+  id: string;
   clusterIdentifier: string;
-  integration: string;
+  connectionId: string;
   region: string;
   data: RDSClusterDetailedInfo;
 };
 
-export async function saveCluster(cluster: Cluster): Promise<string> {
+export async function saveCluster(cluster: Omit<AWSCluster, 'id'>): Promise<string> {
   const result = await db
-    .insert(clusters)
+    .insert(awsClusters)
     .values(cluster)
     .onConflictDoUpdate({
-      target: [clusters.integration, clusters.clusterIdentifier],
+      target: [awsClusters.clusterIdentifier],
       set: {
         region: cluster.region,
         data: cluster.data
       }
     })
-    .returning({ id: clusters.id });
+    .returning({ id: awsClusters.id });
 
   if (!result[0]) {
     throw new Error('Failed to save cluster');
@@ -30,21 +31,12 @@ export async function saveCluster(cluster: Cluster): Promise<string> {
   return result[0].id;
 }
 
-export async function associateClusterConnection(clusterId: string, connectionId: string): Promise<void> {
-  await db.insert(assoc_cluster_connections).values({ clusterId, connectionId });
+export async function getClusterByConnection(connectionId: string): Promise<AWSCluster | null> {
+  const result = await db.select().from(awsClusters).where(eq(awsClusters.connectionId, connectionId)).limit(1);
+
+  return result[0] ?? null;
 }
 
-export async function getClusterByConnection(connectionId: string): Promise<Cluster | null> {
-  const result = await db
-    .select()
-    .from(clusters)
-    .innerJoin(assoc_cluster_connections, eq(assoc_cluster_connections.clusterId, clusters.id))
-    .where(eq(assoc_cluster_connections.connectionId, connectionId))
-    .limit(1);
-
-  return result[0]?.clusters ?? null;
-}
-
-export async function getClusters(): Promise<Cluster[]> {
-  return await db.select().from(clusters);
+export async function getClusters(): Promise<AWSCluster[]> {
+  return await db.select().from(awsClusters);
 }

@@ -1,7 +1,7 @@
 import { getRDSClusterLogs, getRDSInstanceLogs, initializeRDSClient } from '../aws/rds';
+import { getClusterByConnection } from '../db/clusters';
 import { DbConnection } from '../db/connections';
 import { getIntegration } from '../db/integrations';
-import { getProjectById } from '../db/projects';
 
 export async function getInstanceLogs(connection: DbConnection): Promise<string> {
   // Get AWS credentials from integrations
@@ -10,13 +10,13 @@ export async function getInstanceLogs(connection: DbConnection): Promise<string>
     return 'AWS credentials not configured';
   }
 
-  const cluster = await getProjectById(connection.projectId);
-  if (cluster?.type !== 'rds') {
-    return 'Project is not an RDS cluster';
+  const cluster = await getClusterByConnection(connection.id);
+  if (!cluster) {
+    return 'Cluster not found';
   }
 
   // Initialize RDS client
-  const rdsClient = initializeRDSClient(awsCredentials, cluster.info.region);
+  const rdsClient = initializeRDSClient(awsCredentials, cluster.region);
 
   // Get logs from the last 24 hours
   let logs = [];

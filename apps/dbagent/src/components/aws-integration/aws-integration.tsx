@@ -166,7 +166,6 @@ export function AWSIntegration({ projectId, connections }: { projectId: string; 
             <div className="mt-8">
               <RDSClusterCard clusterInfo={clusterDetails} />
               <DatabaseConnectionSelector
-                projectId={projectId}
                 clusterIdentifier={clusterDetails.identifier}
                 region={region}
                 connections={connections}
