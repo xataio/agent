@@ -8,6 +8,13 @@
       "when": 1741087439916,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1741117716570,
+      "tag": "0001_panoramic_silhouette",
+      "breakpoints": true
     }
   ]
 }
