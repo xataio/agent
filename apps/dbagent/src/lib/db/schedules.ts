@@ -6,6 +6,7 @@ import { schedules } from './schema';
 
 export type Schedule = {
   id: string;
+  projectId: string;
   connectionId: string;
   playbook: string;
   model: string;

@@ -1,22 +1,21 @@
-import { getClusterByConnection } from '../db/clusters';
-
-import { DbConnection } from '../db/connections';
-import { getDbInfo } from '../db/dbinfo';
+import { getConnectionInfo } from '../db/connection-info';
+import { Connection } from '../db/connections';
+import { getProjectById } from '../db/projects';
 import { getPerformanceSettings, getVacuumSettings } from '../targetdb/db';
 
-export async function getTablesAndInstanceInfo(connection: DbConnection): Promise<string> {
+export async function getTablesAndInstanceInfo(connection: Connection): Promise<string> {
   try {
-    const tables = await getDbInfo(connection.id, 'tables');
-    const cluster = await getClusterByConnection(connection.id);
+    const tables = await getConnectionInfo(connection.id, 'tables');
+    const project = await getProjectById(connection.projectId);
 
     return `
 Here are the tables, their sizes, and usage counts:
 
 ${JSON.stringify(tables)}
 
-Here is information about the AWS RDS cluster:
+Here is information about the Project:
 
-${JSON.stringify(cluster)}
+${JSON.stringify(project)}
 `;
   } catch (error) {
     console.error('Error getting tables and instance info', error);
@@ -24,9 +23,9 @@ ${JSON.stringify(cluster)}
   }
 }
 
-export async function getPerformanceAndVacuumSettings(connection: DbConnection): Promise<string> {
-  const performanceSettings = await getPerformanceSettings(connection.connstring);
-  const vacuumSettings = await getVacuumSettings(connection.connstring);
+export async function getPerformanceAndVacuumSettings(connection: Connection): Promise<string> {
+  const performanceSettings = await getPerformanceSettings(connection.connectionString);
+  const vacuumSettings = await getVacuumSettings(connection.connectionString);
 
   return `
 Performance settings: ${JSON.stringify(performanceSettings)}
@@ -34,8 +33,8 @@ Vacuum settings: ${JSON.stringify(vacuumSettings)}
 `;
 }
 
-export async function getPostgresExtensions(connection: DbConnection): Promise<string> {
-  const extensions = await getDbInfo(connection.id, 'extensions');
+export async function getPostgresExtensions(connection: Connection): Promise<string> {
+  const extensions = await getConnectionInfo(connection.id, 'extensions');
   return `Extensions: ${JSON.stringify(extensions)}`;
 }
 

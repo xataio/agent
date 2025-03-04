@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1740555777405,
+      "when": 1741087439916,
       "tag": "0000_init",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1740839458915,
-      "tag": "0001_lumpy_black_tarantula",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1740840546323,
-      "tag": "0002_lazy_galactus",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1741089145635,
-      "tag": "0003_loose_kulan_gath",
       "breakpoints": true
     }
   ]

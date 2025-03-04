@@ -3,8 +3,8 @@ import { generateId, generateObject, generateText, LanguageModelV1 } from 'ai';
 import { Client } from 'pg';
 import { z } from 'zod';
 import { getModelInstance, getTools, monitoringSystemPrompt } from '../ai/aidba';
-import { DbConnection, getConnection } from '../db/connections';
-import { insertScheduleRunLimitHistory, ScheduleRun } from '../db/runs';
+import { Connection, getConnection } from '../db/connections';
+import { insertScheduleRunLimitHistory, ScheduleRun } from '../db/schedule-runs';
 import { Schedule } from '../db/schedules';
 import { sendScheduleNotification } from '../notifications/slack-webhook';
 import { getTargetDbConnection } from '../targetdb/db';
@@ -13,7 +13,7 @@ import { listPlaybooks } from '../tools/playbooks';
 async function runModelPlaybook(
   messages: Message[],
   modelInstance: LanguageModelV1,
-  connection: DbConnection,
+  connection: Connection,
   targetClient: Client,
   playbook: string,
   additionalInstructions?: string
@@ -165,7 +165,7 @@ export async function runSchedule(schedule: Schedule, now: Date) {
   if (!connection) {
     throw new Error(`Connection ${schedule.connectionId} not found`);
   }
-  const targetClient = await getTargetDbConnection(connection.connstring);
+  const targetClient = await getTargetDbConnection(connection.connectionString);
   const modelInstance = getModelInstance(schedule.model);
   const messages: Message[] = [];
 

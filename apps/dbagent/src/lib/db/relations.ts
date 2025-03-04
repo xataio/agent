@@ -1,45 +1,75 @@
 import { relations } from 'drizzle-orm/relations';
-import { assoc_cluster_connections, clusters, connections, dbinfo, integrations, schedules } from './schema';
+import {
+  awsClusterConnections,
+  awsClusters,
+  connectionInfo,
+  connections,
+  integrations,
+  projects,
+  scheduleRuns,
+  schedules
+} from './schema';
 
-export const clustersRelations = relations(clusters, ({ one, many }) => ({
-  integration: one(integrations, {
-    fields: [clusters.integration],
-    references: [integrations.name]
+export const awsClusterConnectionsRelations = relations(awsClusterConnections, ({ one }) => ({
+  aws_cluster: one(awsClusters, {
+    fields: [awsClusterConnections.clusterId],
+    references: [awsClusters.id]
   }),
-  assoc_cluster_connections: many(assoc_cluster_connections)
-}));
-
-export const integrationsRelations = relations(integrations, ({ many }) => ({
-  clusters: many(clusters)
-}));
-
-export const dbinfoRelations = relations(dbinfo, ({ one }) => ({
   connection: one(connections, {
-    fields: [dbinfo.connectionId],
+    fields: [awsClusterConnections.connectionId],
     references: [connections.id]
   })
 }));
 
-export const connectionsRelations = relations(connections, ({ many }) => ({
-  dbinfos: many(dbinfo),
-  assoc_cluster_connections: many(assoc_cluster_connections),
+export const awsClustersRelations = relations(awsClusters, ({ many }) => ({
+  awsClusterConnections: many(awsClusterConnections)
+}));
+
+export const connectionsRelations = relations(connections, ({ one, many }) => ({
+  awsClusterConnections: many(awsClusterConnections),
+  project: one(projects, {
+    fields: [connections.projectId],
+    references: [projects.id]
+  }),
+  connectionInfos: many(connectionInfo),
   schedules: many(schedules)
 }));
 
-export const assoc_cluster_connectionsRelations = relations(assoc_cluster_connections, ({ one }) => ({
-  cluster: one(clusters, {
-    fields: [assoc_cluster_connections.clusterId],
-    references: [clusters.id]
-  }),
+export const projectsRelations = relations(projects, ({ many }) => ({
+  connections: many(connections),
+  integrations: many(integrations),
+  schedules: many(schedules)
+}));
+
+export const connectionInfoRelations = relations(connectionInfo, ({ one }) => ({
   connection: one(connections, {
-    fields: [assoc_cluster_connections.connectionId],
+    fields: [connectionInfo.connectionId],
     references: [connections.id]
   })
 }));
 
-export const schedulesRelations = relations(schedules, ({ one }) => ({
+export const integrationsRelations = relations(integrations, ({ one }) => ({
+  project: one(projects, {
+    fields: [integrations.projectId],
+    references: [projects.id]
+  })
+}));
+
+export const schedulesRelations = relations(schedules, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [schedules.projectId],
+    references: [projects.id]
+  }),
   connection: one(connections, {
     fields: [schedules.connectionId],
     references: [connections.id]
+  }),
+  scheduleRuns: many(scheduleRuns)
+}));
+
+export const scheduleRunsRelations = relations(scheduleRuns, ({ one }) => ({
+  schedule: one(schedules, {
+    fields: [scheduleRuns.scheduleId],
+    references: [schedules.id]
   })
 }));

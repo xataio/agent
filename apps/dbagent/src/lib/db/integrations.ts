@@ -12,28 +12,29 @@ export type SlackIntegration = {
   webhookUrl: string;
 };
 
-type IntegrationModules =
+type IntegrationTypes =
   | {
-      module: 'aws';
+      type: 'aws';
       data: AwsIntegration;
     }
   | {
-      module: 'slack';
+      type: 'slack';
       data: SlackIntegration;
     };
 
 export async function saveIntegration<
-  Key extends IntegrationModules['module'],
-  Value extends IntegrationModules & { module: Key }
->(name: Key, data: Value['data']) {
+  Key extends IntegrationTypes['type'],
+  Value extends IntegrationTypes & { type: Key }
+>(projectId: string, name: Key, data: Value['data']) {
   await db
     .insert(integrations)
     .values({
+      projectId,
       name: name,
       data: data
     })
     .onConflictDoUpdate({
-      target: integrations.name,
+      target: [integrations.projectId, integrations.name],
       set: {
         data: data
       }
@@ -41,8 +42,8 @@ export async function saveIntegration<
 }
 
 export async function getIntegration<
-  Key extends IntegrationModules['module'],
-  Value extends IntegrationModules & { module: Key }
+  Key extends IntegrationTypes['type'],
+  Value extends IntegrationTypes & { type: Key }
 >(name: Key): Promise<Value['data'] | null> {
   const result = await db.select().from(integrations).where(eq(integrations.name, name));
   return (result[0]?.data as Value['data']) || null;

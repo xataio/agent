@@ -21,11 +21,11 @@ import {
   toolGetQueriesWaitingOnLocks,
   toolGetVacuumStats
 } from '~/lib/tools/slow-queries';
-import { DbConnection } from '../db/connections';
+import { Connection } from '../db/connections';
 
 export const commonSystemPrompt = `
 You are an AI assistant expert in PostgreSQL and database administration.
-Your name is Maki DBAgent.
+Your name is Aida.
 Always answer SUCCINCTLY and to the point.
 Be CONCISE.
 `;
@@ -48,7 +48,7 @@ Then use the contents of the playbook as an action plan. Execute the plan step b
 At the end of your execution, print a summary of the results.
 `;
 
-export async function getTools(connection: DbConnection, targetClient: Client): Promise<Record<string, Tool>> {
+export async function getTools(connection: Connection, targetClient: Client): Promise<Record<string, Tool>> {
   return {
     getCurrentTime: {
       description: 'Get the current time',
@@ -155,21 +155,21 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
       description: `Get the currently active queries.`,
       parameters: z.object({}),
       execute: async () => {
-        return await toolCurrentActiveQueries(connection.connstring);
+        return await toolCurrentActiveQueries(connection.connectionString);
       }
     },
     getQueriesWaitingOnLocks: {
       description: `Get the queries that are currently blocked waiting on locks.`,
       parameters: z.object({}),
       execute: async () => {
-        return await toolGetQueriesWaitingOnLocks(connection.connstring);
+        return await toolGetQueriesWaitingOnLocks(connection.connectionString);
       }
     },
     getVacuumStats: {
       description: `Get the vacuum stats for the top tables in the database. They are sorted by the number of dead tuples descending.`,
       parameters: z.object({}),
       execute: async () => {
-        return await toolGetVacuumStats(connection.connstring);
+        return await toolGetVacuumStats(connection.connectionString);
       }
     },
     getPlaybook: {

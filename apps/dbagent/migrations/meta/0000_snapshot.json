@@ -1,11 +1,11 @@
 {
-  "id": "8a69bb6c-0c56-4acc-ba84-f708a2f48a51",
+  "id": "46570abf-9adc-4929-88fc-4aef7de485f8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.assoc_cluster_connections": {
-      "name": "assoc_cluster_connections",
+    "public.aws_cluster_connections": {
+      "name": "aws_cluster_connections",
       "schema": "",
       "columns": {
         "id": {
@@ -19,29 +19,29 @@
           "name": "cluster_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "connection_id": {
           "name": "connection_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "assoc_instance_connections_instance_id_fkey": {
-          "name": "assoc_instance_connections_instance_id_fkey",
-          "tableFrom": "assoc_cluster_connections",
-          "tableTo": "clusters",
+        "fk_aws_cluster_connections_cluster": {
+          "name": "fk_aws_cluster_connections_cluster",
+          "tableFrom": "aws_cluster_connections",
+          "tableTo": "aws_clusters",
           "columnsFrom": ["cluster_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "assoc_instance_connections_connection_id_fkey": {
-          "name": "assoc_instance_connections_connection_id_fkey",
-          "tableFrom": "assoc_cluster_connections",
+        "fk_aws_cluster_connections_connection": {
+          "name": "fk_aws_cluster_connections_connection",
+          "tableFrom": "aws_cluster_connections",
           "tableTo": "connections",
           "columnsFrom": ["connection_id"],
           "columnsTo": ["id"],
@@ -55,8 +55,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.clusters": {
-      "name": "clusters",
+    "public.aws_clusters": {
+      "name": "aws_clusters",
       "schema": "",
       "columns": {
         "id": {
@@ -72,8 +72,53 @@
           "primaryKey": false,
           "notNull": true
         },
-        "integration": {
-          "name": "integration",
+        "region": {
+          "name": "region",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'us-east-1'"
+        },
+        "data": {
+          "name": "data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uq_aws_clusters_integration_identifier": {
+          "name": "uq_aws_clusters_integration_identifier",
+          "nullsNotDistinct": false,
+          "columns": ["cluster_identifier"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.connection_info": {
+      "name": "connection_info",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -83,33 +128,26 @@
           "type": "jsonb",
           "primaryKey": false,
           "notNull": true
-        },
-        "region": {
-          "name": "region",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'us-east-1'"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "instances_integration_fkey": {
-          "name": "instances_integration_fkey",
-          "tableFrom": "clusters",
-          "tableTo": "integrations",
-          "columnsFrom": ["integration"],
-          "columnsTo": ["name"],
+        "fk_connections_info_connection": {
+          "name": "fk_connections_info_connection",
+          "tableFrom": "connection_info",
+          "tableTo": "connections",
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "instances_integration_identifier_unique": {
-          "name": "instances_integration_identifier_unique",
+        "uq_connections_info": {
+          "name": "uq_connections_info",
           "nullsNotDistinct": false,
-          "columns": ["cluster_identifier", "integration"]
+          "columns": ["connection_id", "type"]
         }
       },
       "policies": {},
@@ -127,6 +165,12 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "name": {
           "name": "name",
           "type": "text",
@@ -140,75 +184,20 @@
           "notNull": true,
           "default": false
         },
-        "connstring": {
-          "name": "connstring",
+        "connection_string": {
+          "name": "connection_string",
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "params": {
-          "name": "params",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "connections_name_unique": {
-          "name": "connections_name_unique",
-          "nullsNotDistinct": false,
-          "columns": ["name"]
-        },
-        "connections_connstring_unique": {
-          "name": "connections_connstring_unique",
-          "nullsNotDistinct": false,
-          "columns": ["connstring"]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.dbinfo": {
-      "name": "dbinfo",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "connection_id": {
-          "name": "connection_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "module": {
-          "name": "module",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "data": {
-          "name": "data",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "dbinfo_connid_fkey": {
-          "name": "dbinfo_connid_fkey",
-          "tableFrom": "dbinfo",
-          "tableTo": "connections",
-          "columnsFrom": ["connection_id"],
+        "fk_connections_project": {
+          "name": "fk_connections_project",
+          "tableFrom": "connections",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -216,10 +205,15 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "dbinfo_module_unique": {
-          "name": "dbinfo_module_unique",
+        "uq_connections_name": {
+          "name": "uq_connections_name",
           "nullsNotDistinct": false,
-          "columns": ["connection_id", "module"]
+          "columns": ["project_id", "name"]
+        },
+        "uq_connections_connection_string": {
+          "name": "uq_connections_connection_string",
+          "nullsNotDistinct": false,
+          "columns": ["project_id", "connection_string"]
         }
       },
       "policies": {},
@@ -237,29 +231,174 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "name": {
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "data": {
           "name": "data",
           "type": "jsonb",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "fk_integrations_project": {
+          "name": "fk_integrations_project",
+          "tableFrom": "integrations",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uq_integrations_name": {
+          "name": "uq_integrations_name",
+          "nullsNotDistinct": false,
+          "columns": ["project_id", "name"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.projects": {
+      "name": "projects",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "owner_id": {
+          "name": "owner_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "integrations_name_unique": {
-          "name": "integrations_name_unique",
+        "uq_projects_name": {
+          "name": "uq_projects_name",
           "nullsNotDistinct": false,
-          "columns": ["name"]
+          "columns": ["owner_id", "name"]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.schedule_runs": {
+      "name": "schedule_runs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "schedule_id": {
+          "name": "schedule_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "result": {
+          "name": "result",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notification_level": {
+          "name": "notification_level",
+          "type": "notification_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'info'"
+        },
+        "messages": {
+          "name": "messages",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_schedule_runs_created_at": {
+          "name": "idx_schedule_runs_created_at",
+          "columns": [
+            {
+              "expression": "schedule_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_schedule_runs_schedule": {
+          "name": "fk_schedule_runs_schedule",
+          "tableFrom": "schedule_runs",
+          "tableTo": "schedules",
+          "columnsFrom": ["schedule_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -274,6 +413,12 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
         },
         "connection_id": {
           "name": "connection_id",
@@ -321,7 +466,8 @@
           "name": "enabled",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": true
         },
         "last_run": {
           "name": "last_run",
@@ -350,6 +496,13 @@
           "notNull": false,
           "default": 0
         },
+        "keep_history": {
+          "name": "keep_history",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 300
+        },
         "model": {
           "name": "model",
           "type": "text",
@@ -360,8 +513,17 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "schedules_connection_id_fkey": {
-          "name": "schedules_connection_id_fkey",
+        "fk_schedules_project": {
+          "name": "fk_schedules_project",
+          "tableFrom": "schedules",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "fk_schedules_connection": {
+          "name": "fk_schedules_connection",
           "tableFrom": "schedules",
           "tableTo": "connections",
           "columnsFrom": ["connection_id"],
@@ -378,6 +540,11 @@
     }
   },
   "enums": {
+    "public.notification_level": {
+      "name": "notification_level",
+      "schema": "public",
+      "values": ["info", "warning", "alert"]
+    },
     "public.schedule_status": {
       "name": "schedule_status",
       "schema": "public",

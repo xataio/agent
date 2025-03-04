@@ -14,7 +14,7 @@ import {
   toast
 } from '@internal/components';
 import { useEffect, useState } from 'react';
-import { DbConnection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/connections';
 import { PgExtension } from '~/lib/targetdb/db';
 import { collectExtensions } from './actions';
 import { Skeleton } from './skeleton';
@@ -23,7 +23,7 @@ export function ExtensionsCard({
   selectedConnection,
   initialData
 }: {
-  selectedConnection: DbConnection | undefined;
+  selectedConnection: Connection | undefined;
   initialData: PgExtension[] | undefined;
 }) {
   const [extensions, setExtensions] = useState<PgExtension[]>(initialData || []);

@@ -1,8 +1,8 @@
 'use server';
 
-import { getClusters } from '~/lib/db/clusters';
+import { getClusters } from '~/lib/db/aws-clusters';
+import { getConnectionInfo } from '~/lib/db/connection-info';
 import { getDefaultConnection } from '~/lib/db/connections';
-import { getDbInfo } from '~/lib/db/dbinfo';
 import { getIntegration } from '~/lib/db/integrations';
 
 // Server action to get completed tasks
@@ -14,7 +14,7 @@ export async function getCompletedTasks(): Promise<string[]> {
   }
   completedTasks.push('connect');
 
-  const tables = await getDbInfo(connection.id, 'tables');
+  const tables = await getConnectionInfo(connection.id, 'tables');
   if (tables) {
     completedTasks.push('collect');
   }

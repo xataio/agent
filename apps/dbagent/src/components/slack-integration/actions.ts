@@ -2,7 +2,10 @@
 
 import { getIntegration, saveIntegration, SlackIntegration } from '~/lib/db/integrations';
 
-export async function saveWebhookUrl(webhookUrl: string): Promise<{ success: boolean; message: string }> {
+export async function saveWebhookUrl(
+  projectId: string,
+  webhookUrl: string
+): Promise<{ success: boolean; message: string }> {
   // TODO: Implement actual saving logic here
   // This is a placeholder for demonstration purposes
   const success = webhookUrl && webhookUrl.startsWith('https://hooks.slack.com/');
@@ -13,7 +16,7 @@ export async function saveWebhookUrl(webhookUrl: string): Promise<{ success: boo
   }
 
   try {
-    await saveIntegration('slack', { webhookUrl });
+    await saveIntegration(projectId, 'slack', { webhookUrl });
   } catch (error) {
     console.error('Failed to save webhook URL:', error);
     return { success: false, message: `Failed to save webhook URL.` };

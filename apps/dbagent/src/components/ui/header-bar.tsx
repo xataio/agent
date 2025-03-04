@@ -5,7 +5,6 @@ import {
   Avatar,
   AvatarImage,
   AvatarInitials,
-  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -13,7 +12,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  MakiLogoSymbol,
   useIsMobile
 } from '@internal/components';
 import { useSession } from 'next-auth/react';
@@ -40,7 +38,6 @@ export const HeaderBar = ({ children }: PropsWithChildren<{ user?: User }>) => {
           <div className="bg-contrastEmpty flex h-[52px] w-full items-center justify-between p-0" id="main-navbar">
             <div className="flex flex-grow items-center justify-start gap-2">
               <Link href="/" className="flex items-center transition-transform duration-100 ease-out hover:scale-105">
-                <MakiLogoSymbol />
                 <span className="pl-2 text-lg font-bold">Aida</span>
               </Link>
 
@@ -49,12 +46,6 @@ export const HeaderBar = ({ children }: PropsWithChildren<{ user?: User }>) => {
           </div>
         </nav>
         <div className="ml-auto flex items-center gap-4">
-          <Button variant="ghost" size="sm">
-            Feedback
-          </Button>
-          <Button variant="ghost" size="sm">
-            Docs
-          </Button>
           <UserAvatar user={session?.user} />
         </div>
       </div>
@@ -63,7 +54,7 @@ export const HeaderBar = ({ children }: PropsWithChildren<{ user?: User }>) => {
 };
 
 export const BelowHeaderBar = ({ children }: PropsWithChildren) => {
-  return <div className="h-[calc(100vh-53px)]">{children}</div>;
+  return <div className="mt-[53px] h-[calc(100vh-53px)]">{children}</div>;
 };
 
 function UserAvatar({ user }: { user?: User }) {

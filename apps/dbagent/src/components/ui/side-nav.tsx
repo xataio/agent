@@ -1,6 +1,6 @@
 'use client';
 
-import { cn, Input } from '@internal/components';
+import { cn } from '@internal/components';
 import {
   ActivityIcon,
   AlarmClock,
@@ -17,10 +17,11 @@ import { useEffect, useState } from 'react';
 
 interface SideNavProps {
   className?: string;
+  projectId: string;
   onboardingComplete: number;
 }
 
-export function SideNav({ className, onboardingComplete }: SideNavProps) {
+export function SideNav({ className, projectId, onboardingComplete }: SideNavProps) {
   const pathname = usePathname();
   const [onboardingCompleteState, setOnboardingComplete] = useState(onboardingComplete);
 
@@ -41,15 +42,14 @@ export function SideNav({ className, onboardingComplete }: SideNavProps) {
     };
   }, []);
 
-  console.log('onboardingComplete', onboardingCompleteState);
+  const basePath = `/projects/${projectId}`;
 
   return (
     <div className={cn('bg-background fixed h-lvh w-64 border-r', className)}>
       <div className="space-y-4 p-4">
-        <Input placeholder="Search..." className="bg-background" />
         <nav className="space-y-2">
           <Link
-            href="/start"
+            href={`${basePath}/start`}
             className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-sm', isActive(`/start`))}
           >
             <ZapIcon className="h-4 w-4" />
@@ -58,7 +58,7 @@ export function SideNav({ className, onboardingComplete }: SideNavProps) {
         </nav>
         <nav className="space-y-2">
           <Link
-            href="/start/connect"
+            href={`${basePath}/start/connect`}
             className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-xs', isActive(`/start/connect`))}
           >
             <DatabaseIcon className="h-4 w-4 pl-2" />
@@ -67,7 +67,7 @@ export function SideNav({ className, onboardingComplete }: SideNavProps) {
         </nav>
         <nav className="space-y-2">
           <Link
-            href="/start/collect"
+            href={`${basePath}/start/collect`}
             className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-xs', isActive(`/start/collect`))}
           >
             <Server className="h-4 w-4 pl-2" />
@@ -76,7 +76,7 @@ export function SideNav({ className, onboardingComplete }: SideNavProps) {
         </nav>
         <nav className="space-y-2">
           <Link
-            href="/start/cloud"
+            href={`${basePath}/start/cloud`}
             className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-xs', isActive(`/start/cloud`))}
           >
             <CloudIcon className="h-4 w-4 pl-2" />
@@ -86,7 +86,7 @@ export function SideNav({ className, onboardingComplete }: SideNavProps) {
 
         <nav className="space-y-2">
           <Link
-            href="/start/notifications"
+            href={`${basePath}/start/notifications`}
             className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-xs', isActive(`/start/environments`))}
           >
             <AlarmClock className="h-4 w-4 pl-2" />
@@ -96,7 +96,7 @@ export function SideNav({ className, onboardingComplete }: SideNavProps) {
 
         <nav className="space-y-2">
           <Link
-            href="/chats"
+            href={`${basePath}/chats`}
             className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-sm', isActive(`/chats`))}
           >
             <BotMessageSquare className="h-4 w-4" />
@@ -106,7 +106,7 @@ export function SideNav({ className, onboardingComplete }: SideNavProps) {
 
         <nav className="space-y-2">
           <Link
-            href="/playbooks"
+            href={`${basePath}/playbooks`}
             className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-sm', isActive(`/integrations`))}
           >
             <NotebookPen className="h-4 w-4" />
@@ -116,7 +116,7 @@ export function SideNav({ className, onboardingComplete }: SideNavProps) {
 
         <nav className="space-y-2">
           <Link
-            href="/monitoring"
+            href={`${basePath}/monitoring`}
             className={cn('flex items-center gap-2 rounded-md px-3 py-2 text-sm', isActive(`/monitoring`))}
           >
             <ActivityIcon className="h-4 w-4" />
