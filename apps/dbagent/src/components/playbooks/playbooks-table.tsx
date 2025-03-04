@@ -3,7 +3,7 @@
 import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@internal/components';
 import { BookOpenIcon, ClockIcon, PlayIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Playbook } from '~/lib/tools/playbooks';
 import { actionGetPlaybooks } from './action';
@@ -12,6 +12,7 @@ export function PlaybooksTable() {
   const router = useRouter();
   const [playbooks, setPlaybooks] = useState<Playbook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { project } = useParams<{ project: string }>();
 
   const loadPlaybooks = async () => {
     setIsLoading(true);
@@ -59,7 +60,7 @@ export function PlaybooksTable() {
           {playbooks.map((playbook) => (
             <TableRow key={playbook.name}>
               <TableCell>
-                <Link href={`/playbooks/${playbook.name}`}>{playbook.name}</Link>
+                <Link href={`/projects/${project}/playbooks/${playbook.name}`}>{playbook.name}</Link>
               </TableCell>
               <TableCell>{playbook.description}</TableCell>
               <TableCell>
@@ -68,7 +69,7 @@ export function PlaybooksTable() {
                     variant="outline"
                     size="icon"
                     title="View playbook details"
-                    onClick={() => router.push(`/playbooks/${playbook.name}`)}
+                    onClick={() => router.push(`/projects/${project}/playbooks/${playbook.name}`)}
                   >
                     <BookOpenIcon className="h-3 w-3" />
                   </Button>
@@ -76,7 +77,7 @@ export function PlaybooksTable() {
                     variant="outline"
                     size="icon"
                     title="Run playbook"
-                    onClick={() => router.push(`/chats?playbook=${playbook.name}`)}
+                    onClick={() => router.push(`/projects/${project}/chats?playbook=${playbook.name}`)}
                   >
                     <PlayIcon className="h-3 w-3" />
                   </Button>
@@ -84,7 +85,9 @@ export function PlaybooksTable() {
                     variant="outline"
                     size="icon"
                     title="Schedule playbook"
-                    onClick={() => router.push(`/monitoring/schedule/add?playbook=${playbook.name}`)}
+                    onClick={() =>
+                      router.push(`/projects/${project}/monitoring/schedule/add?playbook=${playbook.name}`)
+                    }
                   >
                     <ClockIcon className="h-3 w-3" />
                   </Button>

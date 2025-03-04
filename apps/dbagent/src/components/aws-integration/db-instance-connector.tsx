@@ -1,13 +1,13 @@
 'use client';
 import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, toast } from '@internal/components';
 import { useState } from 'react';
-import { DbConnection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/connections';
 import { saveClusterDetails } from './actions';
 
 interface DatabaseConnectionSelectorProps {
   clusterIdentifier: string;
   region: string;
-  connections: DbConnection[];
+  connections: Connection[];
 }
 
 export function DatabaseConnectionSelector({
@@ -16,7 +16,7 @@ export function DatabaseConnectionSelector({
   connections
 }: DatabaseConnectionSelectorProps) {
   const defaultConnection = connections.find((c) => c.isDefault);
-  const [selectedConnection, setSelectedConnection] = useState<DbConnection | undefined>(defaultConnection);
+  const [selectedConnection, setSelectedConnection] = useState<Connection | undefined>(defaultConnection);
 
   const handleAssociate = async () => {
     if (!selectedConnection) {

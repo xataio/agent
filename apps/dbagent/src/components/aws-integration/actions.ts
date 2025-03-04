@@ -9,11 +9,12 @@ import {
   RDSClusterDetailedInfo,
   RDSClusterInfo
 } from '~/lib/aws/rds';
-import { associateClusterConnection, saveCluster } from '~/lib/db/clusters';
-import { DbConnection } from '~/lib/db/connections';
+import { associateClusterConnection, saveCluster } from '~/lib/db/aws-clusters';
+import { Connection } from '~/lib/db/connections';
 import { AwsIntegration, getIntegration, saveIntegration } from '~/lib/db/integrations';
 
 export async function fetchRDSClusters(
+  projectId: string,
   accessKeyId: string,
   secretAccessKey: string,
   region: string
@@ -25,7 +26,6 @@ export async function fetchRDSClusters(
     const instances = await listRDSInstances(client);
     // Add standalone instances as "clusters" with single instance
     const standaloneInstances = instances.filter((instance) => !instance.dbClusterIdentifier);
-    console.log('standaloneInstances', standaloneInstances);
     const standaloneAsClusters: RDSClusterInfo[] = standaloneInstances.map((instance) => ({
       identifier: instance.identifier,
       engine: instance.engine,
@@ -40,7 +40,7 @@ export async function fetchRDSClusters(
     }));
     clusters.push(...standaloneAsClusters);
 
-    await saveIntegration('aws', { accessKeyId, secretAccessKey, region });
+    await saveIntegration(projectId, 'aws', { accessKeyId, secretAccessKey, region });
     return { success: true, message: 'RDS instances fetched successfully', data: clusters };
   } catch (error) {
     console.error('Error fetching RDS instances:', error);
@@ -96,7 +96,7 @@ export async function getAWSIntegration(): Promise<{ success: boolean; message: 
 export async function saveClusterDetails(
   clusterIdentifier: string,
   region: string,
-  connection: DbConnection
+  connection: Connection
 ): Promise<{ success: boolean; message: string }> {
   const aws = await getIntegration('aws');
   if (!aws) {

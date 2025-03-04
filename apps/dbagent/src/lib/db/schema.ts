@@ -32,13 +32,19 @@ export const connections = pgTable(
   'connections',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
+    projectId: uuid('project_id').notNull(),
     name: text('name').notNull(),
     isDefault: boolean('is_default').default(false).notNull(),
     connectionString: text('connection_string').notNull()
   },
   (table) => [
-    unique('uq_connections_name').on(table.name),
-    unique('uq_connections_connection_string').on(table.connectionString)
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_connections_project'
+    }),
+    unique('uq_connections_name').on(table.projectId, table.name),
+    unique('uq_connections_connection_string').on(table.projectId, table.connectionString)
   ]
 );
 
@@ -64,18 +70,26 @@ export const integrations = pgTable(
   'integrations',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
+    projectId: uuid('project_id').notNull(),
     name: text('name').notNull(),
     data: jsonb('data').notNull()
   },
-  (table) => [unique('uq_integrations_name').on(table.name)]
+  (table) => [
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_integrations_project'
+    }),
+    unique('uq_integrations_name').on(table.projectId, table.name)
+  ]
 );
 
 export const awsClusterConnections = pgTable(
   'aws_cluster_connections',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
-    clusterId: uuid('cluster_id'),
-    connectionId: uuid('connection_id')
+    clusterId: uuid('cluster_id').notNull(),
+    connectionId: uuid('connection_id').notNull()
   },
   (table) => [
     foreignKey({
@@ -95,6 +109,7 @@ export const schedules = pgTable(
   'schedules',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
+    projectId: uuid('project_id').notNull(),
     connectionId: uuid('connection_id').notNull(),
     playbook: varchar('playbook', { length: 255 }).notNull(),
     scheduleType: varchar('schedule_type', { length: 255 }).notNull(),
@@ -111,6 +126,11 @@ export const schedules = pgTable(
     model: text('model').default('openai-gpt-4o').notNull()
   },
   (table) => [
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_schedules_project'
+    }),
     foreignKey({
       columns: [table.connectionId],
       foreignColumns: [connections.id],
@@ -140,4 +160,14 @@ export const scheduleRuns = pgTable(
     }),
     index('idx_schedule_runs_created_at').on(table.scheduleId, table.createdAt)
   ]
+);
+
+export const projects = pgTable(
+  'projects',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    name: text('name').notNull(),
+    ownerId: text('owner_id').notNull()
+  },
+  (table) => [unique('uq_projects_name').on(table.ownerId, table.name)]
 );

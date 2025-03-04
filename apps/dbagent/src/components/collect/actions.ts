@@ -1,7 +1,7 @@
 'use server';
 
-import { DbConnection } from '~/lib/db/connections';
-import { getDbInfo, saveDbInfo } from '~/lib/db/dbinfo';
+import { getConnectionInfo, saveConnectionInfo } from '~/lib/db/connection-info';
+import { Connection } from '~/lib/db/connections';
 import {
   getExtensions,
   getPerformanceSettings,
@@ -13,7 +13,7 @@ import {
   TableStat
 } from '~/lib/targetdb/db';
 
-export async function collectInfo(conn: DbConnection | undefined) {
+export async function collectInfo(conn: Connection | undefined) {
   if (!conn) {
     return { success: false, message: 'No connection selected' };
   }
@@ -29,7 +29,7 @@ export async function collectInfo(conn: DbConnection | undefined) {
 }
 
 export async function collectTables(
-  conn: DbConnection | undefined
+  conn: Connection | undefined
 ): Promise<{ success: boolean; message?: string; data: TableStat[] }> {
   if (!conn) {
     return { success: false, message: 'No connection selected', data: [] };
@@ -41,7 +41,7 @@ export async function collectTables(
     return { success: false, message: `Error collecting tables: ${error}`, data: [] };
   }
   try {
-    await saveDbInfo({ connectionId: conn.id, type: 'tables', data });
+    await saveConnectionInfo({ connectionId: conn.id, type: 'tables', data });
   } catch (error) {
     return { success: false, message: `Error saving tables: ${error}`, data: [] };
   }
@@ -53,7 +53,7 @@ export async function collectTables(
 }
 
 export async function collectExtensions(
-  conn: DbConnection | undefined
+  conn: Connection | undefined
 ): Promise<{ success: boolean; message?: string; data: PgExtension[] }> {
   if (!conn) {
     return { success: false, message: 'No connection selected', data: [] };
@@ -65,7 +65,7 @@ export async function collectExtensions(
     return { success: false, message: `Error collecting extensions: ${error}`, data: [] };
   }
   try {
-    await saveDbInfo({ connectionId: conn.id, type: 'extensions', data });
+    await saveConnectionInfo({ connectionId: conn.id, type: 'extensions', data });
   } catch (error) {
     return { success: false, message: `Error saving extensions: ${error}`, data: [] };
   }
@@ -73,7 +73,7 @@ export async function collectExtensions(
 }
 
 export async function collectPerformanceSettings(
-  conn: DbConnection | undefined
+  conn: Connection | undefined
 ): Promise<{ success: boolean; message?: string; data: PerformanceSetting[] }> {
   if (!conn) {
     return { success: false, message: 'No connection selected', data: [] };
@@ -85,7 +85,7 @@ export async function collectPerformanceSettings(
     return { success: false, message: `Error collecting performance settings: ${error}`, data: [] };
   }
   try {
-    await saveDbInfo({ connectionId: conn.id, type: 'performance_settings', data });
+    await saveConnectionInfo({ connectionId: conn.id, type: 'performance_settings', data });
   } catch (error) {
     return { success: false, message: `Error saving performance settings: ${error}`, data: [] };
   }
@@ -93,7 +93,7 @@ export async function collectPerformanceSettings(
 }
 
 export async function collectVacuumData(
-  connection: DbConnection | undefined
+  connection: Connection | undefined
 ): Promise<{ success: boolean; message?: string; data: PerformanceSetting[] }> {
   if (!connection) {
     return { success: false, message: 'No connection selected', data: [] };
@@ -105,7 +105,7 @@ export async function collectVacuumData(
     return { success: false, message: `Error collecting vacuum data: ${error}`, data: [] };
   }
   try {
-    await saveDbInfo({ connectionId: connection.id, type: 'vacuum_settings', data });
+    await saveConnectionInfo({ connectionId: connection.id, type: 'vacuum_settings', data });
   } catch (error) {
     return { success: false, message: `Error saving vacuum data: ${error}`, data: [] };
   }
@@ -120,16 +120,16 @@ export interface CollectInfo {
 }
 
 export async function getCollectInfo(
-  conn: DbConnection | undefined
+  conn: Connection | undefined
 ): Promise<{ success: boolean; message?: string; data: CollectInfo | null }> {
   if (!conn) {
     return { success: false, message: 'No connection selected', data: null };
   }
   try {
-    const tables = await getDbInfo(conn.id, 'tables');
-    const extensions = await getDbInfo(conn.id, 'extensions');
-    const performance_settings = await getDbInfo(conn.id, 'performance_settings');
-    const vacuum_settings = await getDbInfo(conn.id, 'vacuum_settings');
+    const tables = await getConnectionInfo(conn.id, 'tables');
+    const extensions = await getConnectionInfo(conn.id, 'extensions');
+    const performance_settings = await getConnectionInfo(conn.id, 'performance_settings');
+    const vacuum_settings = await getConnectionInfo(conn.id, 'vacuum_settings');
     if (!tables || !extensions || !performance_settings || !vacuum_settings) {
       return { success: true, message: 'No data found', data: null };
     }

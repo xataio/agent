@@ -25,7 +25,17 @@ function translateError(error: string) {
   return error;
 }
 
-export async function actionSaveConnection(id: string | null, name: string, connectionString: string) {
+export async function actionSaveConnection({
+  projectId,
+  id,
+  name,
+  connectionString
+}: {
+  projectId: string;
+  id: string | null;
+  name: string;
+  connectionString: string;
+}) {
   try {
     const validateResult = await validateConnection(connectionString);
     if (!validateResult.success) {
@@ -36,7 +46,7 @@ export async function actionSaveConnection(id: string | null, name: string, conn
       await updateConnection({ id, name, connectionString });
       return { success: true, message: 'Connection updated successfully' };
     } else {
-      await addConnection({ name: name, connectionString });
+      await addConnection({ projectId, name, connectionString });
       return { success: true, message: 'Connection added successfully' };
     }
   } catch (error) {
@@ -64,9 +74,9 @@ export async function actionDeleteConnection(id: string) {
   return await deleteConnection(id);
 }
 
-export async function validateConnection(connstring: string) {
+export async function validateConnection(connectionString: string) {
   try {
-    const client = await getTargetDbConnection(connstring);
+    const client = await getTargetDbConnection(connectionString);
 
     const versionResult = await client.query('SELECT version()');
     const version = versionResult.rows[0].version;

@@ -1,10 +1,10 @@
 import { getRDSClusterMetric, getRDSInstanceMetric } from '../aws/rds';
-import { getClusterByConnection } from '../db/clusters';
-import { DbConnection } from '../db/connections';
+import { getClusterByConnection } from '../db/aws-clusters';
+import { Connection } from '../db/connections';
 import { getIntegration } from '../db/integrations';
 
 export async function getClusterMetric(
-  connection: DbConnection,
+  connection: Connection,
   metricName: string,
   periodInSeconds: number
 ): Promise<string> {
@@ -17,7 +17,6 @@ export async function getClusterMetric(
   if (!cluster) {
     return 'Cluster not found';
   }
-  console.log('cluster', cluster);
 
   const startTime = new Date(Date.now() - periodInSeconds * 1000);
   const endTime = new Date();
