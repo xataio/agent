@@ -1,9 +1,9 @@
 'use server';
 
+import { getClusters } from '~/lib/db/aws-clusters';
 import { getConnectionInfo } from '~/lib/db/connection-info';
 import { getDefaultConnection } from '~/lib/db/connections';
 import { getIntegration } from '~/lib/db/integrations';
-import { getProjects } from '~/lib/db/projects';
 
 // Server action to get completed tasks
 export async function getCompletedTasks(): Promise<string[]> {
@@ -19,7 +19,7 @@ export async function getCompletedTasks(): Promise<string[]> {
     completedTasks.push('collect');
   }
 
-  const clusters = await getProjects();
+  const clusters = await getClusters();
   if (clusters.length > 0) {
     completedTasks.push('cloud');
   }

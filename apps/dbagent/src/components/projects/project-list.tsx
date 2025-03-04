@@ -28,8 +28,7 @@ import {
 import { Database, MoreVertical, PlusCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Suspense, useState } from 'react';
-import { Project } from '~/lib/db/projects';
-import { createProject, deleteProject, renameProject } from './actions';
+import { createProject, deleteProject, Project, updateProject } from '~/lib/db/projects';
 
 interface ProjectListProps {
   projects: Project[];
@@ -154,7 +153,7 @@ function ProjectCard({ project }: { project: Project }) {
 
   const handleRename = async () => {
     if (newProjectName.trim() !== '') {
-      const result = await renameProject({ id: project.id, name: newProjectName });
+      const result = await updateProject(project.id, { name: newProjectName });
       if (result.success) {
         toast.success('Project renamed successfully');
         router.refresh();

@@ -1,4 +1,7 @@
-import { eq } from 'drizzle-orm';
+'use server';
+import { and, eq } from 'drizzle-orm';
+import 'server-only';
+import { auth } from '~/auth';
 import { db } from './db';
 import { projects } from './schema';
 
@@ -8,29 +11,73 @@ export type Project = {
   ownerId: string;
 };
 
-export async function saveProject(cluster: Omit<Project, 'id'>): Promise<string> {
-  const result = await db.insert(projects).values(cluster).returning({ id: projects.id });
-
-  if (!result[0]) {
-    throw new Error('Failed to save cluster');
+export async function createProject(cluster: Omit<Project, 'id' | 'ownerId'>) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: 'Not authenticated' };
   }
 
-  return result[0].id;
+  const result = await db
+    .insert(projects)
+    .values({
+      ...cluster,
+      ownerId: session.user.id
+    })
+    .returning({ id: projects.id });
+
+  if (!result[0]) {
+    return { success: false, error: 'Failed to create project' };
+  }
+
+  return { success: true, id: result[0].id };
 }
 
-export async function getProjectById(id: string): Promise<Project | null> {
-  const results = await db.select().from(projects).where(eq(projects.id, id));
-  return results[0] || null;
+export async function getProjectById(id: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: 'Not authenticated' };
+  }
+
+  const results = await db
+    .select()
+    .from(projects)
+    .where(and(eq(projects.id, id), eq(projects.ownerId, session.user.id)));
+
+  return { success: true, project: results[0] };
 }
 
-export async function getProjects(): Promise<Project[]> {
-  return await db.select().from(projects);
+export async function listProjects() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: 'Not authenticated' };
+  }
+
+  const result = await db.select().from(projects).where(eq(projects.ownerId, session.user.id));
+
+  return { success: true, projects: result };
 }
 
-export async function removeProject(id: string): Promise<void> {
-  await db.delete(projects).where(eq(projects.id, id));
+export async function deleteProject({ id }: { id: string }) {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: 'Not authenticated' };
+
+  await db.delete(projects).where(and(eq(projects.id, id), eq(projects.ownerId, session.user.id)));
+
+  return { success: true };
 }
 
-export async function updateProjectName(id: string, name: string): Promise<void> {
-  await db.update(projects).set({ name }).where(eq(projects.id, id));
+export async function updateProject(id: string, update: Partial<Omit<Project, 'id' | 'ownerId'>>) {
+  const session = await auth();
+  if (!session?.user?.id)
+    return {
+      success: false,
+      error: 'Not authenticated'
+    };
+
+  await db
+    .update(projects)
+    .set(update)
+    .where(and(eq(projects.id, id), eq(projects.ownerId, session.user.id)));
+
+  return { success: true };
 }
