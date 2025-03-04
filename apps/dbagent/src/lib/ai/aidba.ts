@@ -21,7 +21,7 @@ import {
   toolGetQueriesWaitingOnLocks,
   toolGetVacuumStats
 } from '~/lib/tools/slow-queries';
-import { DbConnection } from '../db/connections';
+import { Connection } from '../db/connections';
 
 export const commonSystemPrompt = `
 You are an AI assistant expert in PostgreSQL and database administration.
@@ -48,7 +48,7 @@ Then use the contents of the playbook as an action plan. Execute the plan step b
 At the end of your execution, print a summary of the results.
 `;
 
-export async function getTools(connection: DbConnection, targetClient: Client): Promise<Record<string, Tool>> {
+export async function getTools(connection: Connection, targetClient: Client): Promise<Record<string, Tool>> {
   return {
     getCurrentTime: {
       description: 'Get the current time',

@@ -1,24 +1,24 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@internal/components';
 import * as React from 'react';
 
-import { DbConnection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/connections';
 
 export function ConnectionSelector({
   connections,
   onSelect,
   connectionId
 }: {
-  connections: DbConnection[];
+  connections: Connection[];
   onSelect: (connectionId: string) => void;
   connectionId?: string;
 }) {
-  let defaultConnection: DbConnection | undefined;
+  let defaultConnection: Connection | undefined;
   if (connectionId) {
     defaultConnection = connections.find((c) => c.id === connectionId);
   } else {
     defaultConnection = connections.find((c) => c.isDefault);
   }
-  const [selectedConnection, setSelectedConnection] = React.useState<DbConnection | undefined>(defaultConnection);
+  const [selectedConnection, setSelectedConnection] = React.useState<Connection | undefined>(defaultConnection);
 
   return (
     <Select

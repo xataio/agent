@@ -10,7 +10,7 @@ import {
   RDSClusterInfo
 } from '~/lib/aws/rds';
 import { associateClusterConnection, saveCluster } from '~/lib/db/aws-clusters';
-import { DbConnection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/connections';
 import { AwsIntegration, getIntegration, saveIntegration } from '~/lib/db/integrations';
 
 export async function fetchRDSClusters(
@@ -96,7 +96,7 @@ export async function getAWSIntegration(): Promise<{ success: boolean; message: 
 export async function saveClusterDetails(
   clusterIdentifier: string,
   region: string,
-  connection: DbConnection
+  connection: Connection
 ): Promise<{ success: boolean; message: string }> {
   const aws = await getIntegration('aws');
   if (!aws) {

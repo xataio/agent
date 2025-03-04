@@ -29,7 +29,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import * as z from 'zod';
-import { DbConnection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/connections';
 import { Schedule } from '~/lib/db/schedules';
 import { ModelSelector } from '../chats/model-selector';
 import { actionCreateSchedule, actionDeleteSchedule, actionGetSchedule, actionUpdateSchedule } from './actions';
@@ -60,7 +60,7 @@ type ScheduleFormEditParams =
 type ScheduleFormParams = {
   projectId: string;
   playbooks: string[];
-  connections: DbConnection[];
+  connections: Connection[];
 } & ScheduleFormEditParams;
 
 export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, connections }: ScheduleFormParams) {
