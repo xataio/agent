@@ -286,9 +286,9 @@ function CreateProjectOnboarding() {
             key={i}
             className="bg-primary/20 absolute h-1 w-1 animate-pulse rounded-full"
             style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 2000}ms`
+              top: `${(i * 5) % 100}%`,
+              left: `${(i * 5) % 100}%`,
+              animationDelay: `${(i * 100) % 2000}ms`
             }}
           />
         ))}
