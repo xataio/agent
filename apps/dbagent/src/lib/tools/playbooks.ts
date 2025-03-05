@@ -147,8 +147,8 @@ To investigate and resolve high connection count in the PostgreSQL database.
 
 Step 1:
 Use the tool getConnectionsStats to get the connections stats. If the 
-percentage of connections utilization is very low, you can stop here. Let the user know that
-the connection count is within the expected limits.
+percentage of connections utilization is very low, you can stop here. Proceed with the next step only if the
+percentage is at least 20%.
 
 Step 2:
 If the percentage of connections utilization is high, get the instance info 
@@ -166,7 +166,9 @@ If there are many idle connections, get the oldest idle connections with the too
 Step 5:
 Based on all the information you have gathered, make a summary of your findings and report them to the user.
 Provide actionable advice to the user. If for example you recommend killing old idle connections,
-provide the query to do so. If you recommend changing the max_connections parameter, provide the new value.
+provide the query to do so. However, use judgement in selecting only the connections that are least likely to
+impact users (for example, because they are very old).
+If you recommend changing the max_connections parameter, provide the new value.
 `;
 
 export function getPlaybook(name: string): string {
