@@ -21,6 +21,9 @@ export type Schedule = {
   status: 'disabled' | 'scheduled' | 'running';
   keepHistory: number;
   enabled: boolean;
+  maxSteps?: number | null;
+  notifyLevel: 'alert' | 'warning' | 'info';
+  extraNotificationText?: string | null;
 };
 
 export function scheduleGetNextRun(schedule: PartialBy<Schedule, 'id'>, now: Date): Date {

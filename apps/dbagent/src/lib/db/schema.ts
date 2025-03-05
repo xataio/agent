@@ -105,6 +105,8 @@ export const awsClusterConnections = pgTable(
   ]
 );
 
+export const notificationLevel = pgEnum('notification_level', ['info', 'warning', 'alert']);
+
 export const schedules = pgTable(
   'schedules',
   {
@@ -123,7 +125,10 @@ export const schedules = pgTable(
     status: scheduleStatus('status').default('disabled').notNull(),
     failures: integer('failures').default(0),
     keepHistory: integer('keep_history').default(300).notNull(),
-    model: text('model').default('openai-gpt-4o').notNull()
+    model: text('model').default('openai-gpt-4o').notNull(),
+    maxSteps: integer('max_steps'),
+    notifyLevel: notificationLevel('notify_level').default('alert').notNull(),
+    extraNotificationText: text('extra_notification_text')
   },
   (table) => [
     foreignKey({
@@ -138,8 +143,6 @@ export const schedules = pgTable(
     })
   ]
 );
-
-export const notificationLevel = pgEnum('notification_level', ['info', 'warning', 'alert']);
 
 export const scheduleRuns = pgTable(
   'schedule_runs',

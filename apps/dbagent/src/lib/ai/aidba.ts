@@ -64,7 +64,7 @@ the max execution time in seconds, the mean execution time in seconds, the total
 (all calls together) in seconds, and the query itself.`,
       parameters: z.object({}),
       execute: async () => {
-        const slowQueries = await getSlowQueries(targetClient, 5000);
+        const slowQueries = await getSlowQueries(targetClient, 2000);
         return JSON.stringify(slowQueries);
       }
     },
