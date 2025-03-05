@@ -79,7 +79,6 @@ export async function validateConnection(connectionString: string) {
   try {
     const versionResult = await client.query('SELECT version()');
     const version = versionResult.rows[0].version;
-    await client.end();
     console.log('Connection validated successfully. Postgres version: ', version);
     return { success: true, message: `Connection validated successfully.` };
   } catch (error) {
