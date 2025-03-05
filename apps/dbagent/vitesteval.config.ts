@@ -15,6 +15,12 @@ export default defineConfig({
     setupFiles: './src/evals/setup.ts',
     alias: {
       '~/': new URL('./src/', import.meta.url).pathname
+    },
+    // https://github.com/nextauthjs/next-auth/discussions/9385#discussioncomment-11064988
+    server: {
+      deps: {
+        inline: ['next']
+      }
     }
   }
 });

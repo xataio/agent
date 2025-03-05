@@ -1,7 +1,7 @@
 import { CoreMessage, generateText, Message } from 'ai';
 import { randomUUID } from 'crypto';
 import { chatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
-import { DbConnection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/connections';
 import { getTargetDbConnection } from '~/lib/targetdb/db';
 import { traceVercelAiResponse } from './trace';
 
@@ -10,10 +10,11 @@ const dbConnection =
   'postgresql://neondb_owner:O2ahTeMFP0Rk@ep-small-morning-a5gsb2uq-pooler.us-east-2.aws.neon.tech/limit?sslmode=require';
 
 export const evalChat = async ({ messages }: { messages: CoreMessage[] | Omit<Message, 'id'>[] }) => {
-  const connectionDb: DbConnection = {
+  const connection: Connection = {
     id: randomUUID(),
     name: 'evaldb',
-    connstring: dbConnection,
+    connectionString: dbConnection,
+    projectId: 'projectId',
     isDefault: true
   };
   const targetClient = await getTargetDbConnection(dbConnection);
@@ -21,7 +22,7 @@ export const evalChat = async ({ messages }: { messages: CoreMessage[] | Omit<Me
   const response = await generateText({
     model: getModelInstance('anthropic-claude-3-5-haiku-20241022'),
     system: chatSystemPrompt,
-    tools: await getTools(connectionDb, targetClient),
+    tools: await getTools(connection, targetClient),
     messages,
     maxSteps: 20
   });

@@ -1,6 +1,11 @@
-import { describe, expect } from 'vitest';
+import { describe, expect, vi } from 'vitest';
 import { evalChat } from '~/evals/lib/chatRunner';
+import * as projectsExports from '~/lib/db/projects';
 import { EvalCase, runEvals } from '../lib/vitestHelpers';
+
+vi.spyOn(projectsExports, 'getProjectById').mockImplementation(async (id) => {
+  return { success: true, project: { id, ownerId: 'ownerId', name: 'project name' } };
+});
 
 // vi.spyOn(dbinfoExports, 'getDbInfo').mockImplementation(async (connectionId, key) => {
 //   if (key === 'tables') {

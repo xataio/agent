@@ -1,6 +1,6 @@
 'use server';
 import { and, eq } from 'drizzle-orm';
-import 'server-only';
+// import 'server-only';
 import { auth } from '~/auth';
 import { db } from './db';
 import { projects } from './schema';
