@@ -13,15 +13,15 @@ import {
 import { getInstanceLogs } from '~/lib/tools/logs';
 import { getClusterMetric } from '~/lib/tools/metrics';
 import { getPlaybook, listPlaybooks } from '~/lib/tools/playbooks';
+import { describeTable, explainQuery, getSlowQueries } from '~/lib/tools/slow-queries';
+import { Connection } from '../db/connections';
 import {
-  describeTable,
-  explainQuery,
-  getSlowQueries,
   toolCurrentActiveQueries,
+  toolGetConnectionsGroups,
+  toolGetConnectionsStats,
   toolGetQueriesWaitingOnLocks,
   toolGetVacuumStats
-} from '~/lib/tools/slow-queries';
-import { Connection } from '../db/connections';
+} from '../tools/stats';
 
 export const commonSystemPrompt = `
 You are an AI assistant expert in PostgreSQL and database administration.
@@ -170,6 +170,20 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
       parameters: z.object({}),
       execute: async () => {
         return await toolGetVacuumStats(connection.connectionString);
+      }
+    },
+    getConnectionsStats: {
+      description: `Get the connections stats for the database.`,
+      parameters: z.object({}),
+      execute: async () => {
+        return await toolGetConnectionsStats(connection.connectionString);
+      }
+    },
+    getConnectionsGroups: {
+      description: `Get the connections groups for the database. This is a view in the pg_stat_activity table, grouped by (state, user, application_name, client_addr, wait_event_type, wait_event).`,
+      parameters: z.object({}),
+      execute: async () => {
+        return await toolGetConnectionsGroups(connection.connectionString);
       }
     },
     getPlaybook: {
