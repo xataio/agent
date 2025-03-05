@@ -1,6 +1,7 @@
-import { describe, expect, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, vi } from 'vitest';
 import { evalChat } from '~/evals/lib/chatRunner';
 import * as projectsExports from '~/lib/db/projects';
+import { PostgresConfig, runSql, startPostgresContainer } from '../lib/evalDockerDb';
 import { EvalCase, runEvals } from '../lib/vitestHelpers';
 
 vi.spyOn(projectsExports, 'getProjectById').mockImplementation(async (id) => {
@@ -26,6 +27,30 @@ vi.spyOn(projectsExports, 'getProjectById').mockImplementation(async (id) => {
 //   return null;
 // });
 
+let dbConfig: PostgresConfig;
+beforeAll(async () => {
+  try {
+    dbConfig = await startPostgresContainer();
+    await runSql(
+      `create table dogs (
+          id serial primary key,
+          name text
+      );`,
+      dbConfig
+    );
+  } catch (error) {
+    console.error('Error starting postgres container', error);
+    throw error;
+  }
+});
+
+afterAll(async () => {
+  if (dbConfig.container) {
+    await dbConfig.container.stop();
+    await dbConfig.container.remove();
+  }
+});
+
 type ToolChoiceEval = EvalCase & { prompt: string; toolCalls: string[] };
 
 describe('tool choice', () => {
@@ -46,7 +71,8 @@ describe('tool choice', () => {
     ({ prompt, toolCalls }) => `${prompt}, calls: ${JSON.stringify(toolCalls)}`,
     async ({ prompt, toolCalls }) => {
       const result = await evalChat({
-        messages: [{ role: 'user', content: prompt }]
+        messages: [{ role: 'user', content: prompt }],
+        dbConnection: dbConfig.connectionString
       });
 
       const allToolCalls = result.steps.flatMap((step) => step.toolCalls);

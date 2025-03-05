@@ -5,11 +5,13 @@ import { Connection } from '~/lib/db/connections';
 import { getTargetDbConnection } from '~/lib/targetdb/db';
 import { traceVercelAiResponse } from './trace';
 
-// const dbConnection = 'postgresql://username:password@localhost:9876/limit?sslmode=require';
-const dbConnection =
-  'postgresql://neondb_owner:O2ahTeMFP0Rk@ep-small-morning-a5gsb2uq-pooler.us-east-2.aws.neon.tech/limit?sslmode=require';
-
-export const evalChat = async ({ messages }: { messages: CoreMessage[] | Omit<Message, 'id'>[] }) => {
+export const evalChat = async ({
+  messages,
+  dbConnection
+}: {
+  messages: CoreMessage[] | Omit<Message, 'id'>[];
+  dbConnection: string;
+}) => {
   const connection: Connection = {
     id: randomUUID(),
     name: 'evaldb',
@@ -27,5 +29,6 @@ export const evalChat = async ({ messages }: { messages: CoreMessage[] | Omit<Me
     maxSteps: 20
   });
   traceVercelAiResponse(response);
+  targetClient.end();
   return response;
 };
