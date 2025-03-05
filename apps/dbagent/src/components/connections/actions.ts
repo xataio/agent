@@ -75,9 +75,8 @@ export async function actionDeleteConnection(id: string) {
 }
 
 export async function validateConnection(connectionString: string) {
+  const client = await getTargetDbConnection(connectionString);
   try {
-    const client = await getTargetDbConnection(connectionString);
-
     const versionResult = await client.query('SELECT version()');
     const version = versionResult.rows[0].version;
     await client.end();
@@ -86,5 +85,7 @@ export async function validateConnection(connectionString: string) {
   } catch (error) {
     console.error('Error validating connection:', error);
     return { success: false, message: `Failed to validate connection. ${error}` };
+  } finally {
+    await client.end();
   }
 }
