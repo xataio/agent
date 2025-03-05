@@ -22,14 +22,14 @@ import {
   SelectValue,
   Switch,
   Textarea,
+  useForm,
   zodResolver
 } from '@internal/components';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { DbConnection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/connections';
 import { Schedule } from '~/lib/db/schedules';
 import { ModelSelector } from '../chats/model-selector';
 import { actionCreateSchedule, actionDeleteSchedule, actionGetSchedule, actionUpdateSchedule } from './actions';
@@ -58,12 +58,12 @@ type ScheduleFormEditParams =
     };
 
 type ScheduleFormParams = {
+  projectId: string;
   playbooks: string[];
-  connections: DbConnection[];
-  connection?: string;
+  connections: Connection[];
 } & ScheduleFormEditParams;
 
-export function ScheduleForm({ isEditMode, scheduleId, playbooks, connections }: ScheduleFormParams) {
+export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, connections }: ScheduleFormParams) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showCronModal, setShowCronModal] = useState(false);
@@ -107,6 +107,7 @@ export function ScheduleForm({ isEditMode, scheduleId, playbooks, connections }:
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     const schedule: Omit<Schedule, 'id'> = {
+      projectId,
       connectionId: connections.find((c) => c.name === data.connection)?.id.toString() || '',
       model: data.model,
       playbook: data.playbook,
@@ -125,14 +126,14 @@ export function ScheduleForm({ isEditMode, scheduleId, playbooks, connections }:
       await actionCreateSchedule(schedule);
     }
     console.log(data);
-    router.push('/monitoring');
+    router.push(`/projects/${projectId}/monitoring`);
   };
 
   const handleDelete = async () => {
     if (!scheduleId) return;
 
     await actionDeleteSchedule(scheduleId);
-    router.push('/monitoring');
+    router.push(`/projects/${projectId}/monitoring`);
   };
 
   return (
@@ -345,7 +346,7 @@ export function ScheduleForm({ isEditMode, scheduleId, playbooks, connections }:
                   )}
                 </>
               )}
-              <Link href="/monitoring">
+              <Link href={`/projects/${projectId}/monitoring`}>
                 <Button variant="outline">Cancel</Button>
               </Link>
             </form>

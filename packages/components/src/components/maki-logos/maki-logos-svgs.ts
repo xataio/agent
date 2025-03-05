@@ -14,28 +14,28 @@ export const makiLogosSvgs = {
 <path d="M203.336 308.241C204.25 305.509 205.564 302.911 207.068 300.512C207.201 300.312 207.391 300.112 207.458 299.912C207.915 299.179 232.647 256.627 238.016 242.424C243.375 256.627 268.116 299.179 268.573 299.912C268.64 300.112 268.84 300.312 268.963 300.512C270.468 302.911 271.772 305.509 272.695 308.241C274.066 312.106 274.789 316.304 274.789 320.645C274.789 341.046 258.568 357.648 238.482 357.648C238.32 357.648 238.177 357.6 238.016 357.6C237.854 357.6 237.711 357.648 237.549 357.648C217.463 357.648 201.242 341.046 201.242 320.645C201.242 316.304 201.965 312.106 203.336 308.241Z" fill="black"/>
 <defs>
 <linearGradient id="paint0_linear_1081_6337" x1="113.33" y1="25.5823" x2="14.9396" y2="134.133" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6940F4"/>
-<stop offset="1" stop-color="#805BEE"/>
+<stop stopColor="#6940F4"/>
+<stop offset="1" stopColor="#805BEE"/>
 </linearGradient>
 <linearGradient id="paint1_linear_1081_6337" x1="361.249" y1="24.0733" x2="461.244" y2="134.228" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6940F4"/>
-<stop offset="1" stop-color="#805BEE"/>
+<stop stopColor="#6940F4"/>
+<stop offset="1" stopColor="#805BEE"/>
 </linearGradient>
 <linearGradient id="paint2_linear_1081_6337" x1="237.989" y1="379.846" x2="237.989" y2="158.66" gradientUnits="userSpaceOnUse">
-<stop stop-color="#8A5BF6"/>
-<stop offset="1" stop-color="#FF8B0D"/>
+<stop stopColor="#8A5BF6"/>
+<stop offset="1" stopColor="#FF8B0D"/>
 </linearGradient>
 <linearGradient id="paint3_linear_1081_6337" x1="132.809" y1="45.3715" x2="132.809" y2="453.741" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6940F4"/>
-<stop offset="1" stop-color="#805BEE"/>
+<stop stopColor="#6940F4"/>
+<stop offset="1" stopColor="#805BEE"/>
 </linearGradient>
 <linearGradient id="paint4_linear_1081_6337" x1="237.989" y1="45.3715" x2="237.989" y2="453.741" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6940F4"/>
-<stop offset="1" stop-color="#805BEE"/>
+<stop stopColor="#6940F4"/>
+<stop offset="1" stopColor="#805BEE"/>
 </linearGradient>
 <linearGradient id="paint5_linear_1081_6337" x1="343.168" y1="45.3715" x2="343.168" y2="453.741" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6940F4"/>
-<stop offset="1" stop-color="#805BEE"/>
+<stop stopColor="#6940F4"/>
+<stop offset="1" stopColor="#805BEE"/>
 </linearGradient>
 </defs>
 </svg>
@@ -56,8 +56,8 @@ export const makiLogosSvgs = {
 <path d="M203.336 308.241C204.25 305.509 205.564 302.911 207.068 300.512C207.201 300.312 207.391 300.112 207.458 299.912C207.915 299.179 232.647 256.627 238.016 242.424C243.375 256.627 268.116 299.179 268.573 299.912C268.64 300.112 268.84 300.312 268.963 300.512C270.468 302.911 271.772 305.509 272.695 308.241C274.066 312.106 274.789 316.304 274.789 320.645C274.789 341.046 258.568 357.648 238.482 357.648C238.32 357.648 238.177 357.6 238.016 357.6C237.854 357.6 237.711 357.648 237.549 357.648C217.463 357.648 201.242 341.046 201.242 320.645C201.242 316.304 201.965 312.106 203.336 308.241Z" fill="black"/>
 <defs>
 <linearGradient id="paint0_linear_1081_6318" x1="237.989" y1="379.846" x2="237.989" y2="158.66" gradientUnits="userSpaceOnUse">
-<stop stop-color="#8A5BF6"/>
-<stop offset="1" stop-color="#FF8B0D"/>
+<stop stopColor="#8A5BF6"/>
+<stop offset="1" stopColor="#FF8B0D"/>
 </linearGradient>
 </defs>
 </svg>
@@ -83,8 +83,8 @@ export const makiLogosSvgs = {
 <path d="M1405.79 33.8564C1399.88 28.3574 1392.24 25.5725 1383.05 25.5725C1373.63 25.5725 1365.87 28.3574 1359.96 33.8564C1354.02 39.3837 1351.13 46.1408 1351.13 54.4953C1351.13 62.6237 1354.01 69.2677 1359.96 74.795C1365.86 80.2799 1373.62 83.0647 1383.05 83.0647C1392.25 83.0647 1399.9 80.2799 1405.79 74.795C1411.73 69.2677 1414.63 62.6237 1414.63 54.4953C1414.63 46.1408 1411.74 39.3837 1405.79 33.8564Z" fill="black"/>
 <defs>
 <linearGradient id="paint0_linear_1081_6239" x1="238.99" y1="379.845" x2="238.99" y2="158.434" gradientUnits="userSpaceOnUse">
-<stop stop-color="#8A5BF6"/>
-<stop offset="1" stop-color="#FF8B0D"/>
+<stop stopColor="#8A5BF6"/>
+<stop offset="1" stopColor="#FF8B0D"/>
 </linearGradient>
 </defs>
 </svg>
@@ -110,8 +110,8 @@ export const makiLogosSvgs = {
 <path d="M1405.79 33.8564C1399.88 28.3574 1392.24 25.5725 1383.05 25.5725C1373.63 25.5725 1365.87 28.3574 1359.96 33.8564C1354.02 39.3837 1351.13 46.1408 1351.13 54.4953C1351.13 62.6237 1354.01 69.2677 1359.96 74.795C1365.86 80.2799 1373.62 83.0647 1383.05 83.0647C1392.25 83.0647 1399.9 80.2799 1405.79 74.795C1411.73 69.2677 1414.63 62.6237 1414.63 54.4953C1414.63 46.1408 1411.74 39.3837 1405.79 33.8564Z" fill="white"/>
 <defs>
 <linearGradient id="paint0_linear_1081_6291" x1="238.99" y1="379.845" x2="238.99" y2="158.434" gradientUnits="userSpaceOnUse">
-<stop stop-color="#8A5BF6"/>
-<stop offset="1" stop-color="#FF8B0D"/>
+<stop stopColor="#8A5BF6"/>
+<stop offset="1" stopColor="#FF8B0D"/>
 </linearGradient>
 </defs>
 </svg>
@@ -137,28 +137,28 @@ export const makiLogosSvgs = {
 <path d="M1405.79 33.8564C1399.88 28.3574 1392.24 25.5725 1383.05 25.5725C1373.63 25.5725 1365.87 28.3574 1359.96 33.8564C1354.02 39.3837 1351.13 46.1408 1351.13 54.4953C1351.13 62.6237 1354.01 69.2677 1359.96 74.795C1365.86 80.2799 1373.62 83.0647 1383.05 83.0647C1392.25 83.0647 1399.9 80.2799 1405.79 74.795C1411.73 69.2677 1414.63 62.6237 1414.63 54.4953C1414.63 46.1408 1411.74 39.3837 1405.79 33.8564Z" fill="black"/>
 <defs>
 <linearGradient id="paint0_linear_1081_6213" x1="114.331" y1="25.5824" x2="15.94" y2="134.133" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6940F4"/>
-<stop offset="1" stop-color="#805BEE"/>
+<stop stopColor="#6940F4"/>
+<stop offset="1" stopColor="#805BEE"/>
 </linearGradient>
 <linearGradient id="paint1_linear_1081_6213" x1="362.251" y1="24.0734" x2="462.246" y2="134.228" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6940F4"/>
-<stop offset="1" stop-color="#805BEE"/>
+<stop stopColor="#6940F4"/>
+<stop offset="1" stopColor="#805BEE"/>
 </linearGradient>
 <linearGradient id="paint2_linear_1081_6213" x1="238.99" y1="379.845" x2="238.99" y2="158.434" gradientUnits="userSpaceOnUse">
-<stop stop-color="#8A5BF6"/>
-<stop offset="1" stop-color="#FF8B0D"/>
+<stop stopColor="#8A5BF6"/>
+<stop offset="1" stopColor="#FF8B0D"/>
 </linearGradient>
 <linearGradient id="paint3_linear_1081_6213" x1="133.81" y1="45.3717" x2="133.81" y2="453.743" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6940F4"/>
-<stop offset="1" stop-color="#805BEE"/>
+<stop stopColor="#6940F4"/>
+<stop offset="1" stopColor="#805BEE"/>
 </linearGradient>
 <linearGradient id="paint4_linear_1081_6213" x1="238.99" y1="45.3716" x2="238.99" y2="453.743" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6940F4"/>
-<stop offset="1" stop-color="#805BEE"/>
+<stop stopColor="#6940F4"/>
+<stop offset="1" stopColor="#805BEE"/>
 </linearGradient>
 <linearGradient id="paint5_linear_1081_6213" x1="344.17" y1="45.3717" x2="344.17" y2="453.743" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6940F4"/>
-<stop offset="1" stop-color="#805BEE"/>
+<stop stopColor="#6940F4"/>
+<stop offset="1" stopColor="#805BEE"/>
 </linearGradient>
 </defs>
 </svg>
@@ -184,28 +184,28 @@ export const makiLogosSvgs = {
 <path d="M1405.79 33.8564C1399.88 28.3574 1392.24 25.5725 1383.05 25.5725C1373.63 25.5725 1365.87 28.3574 1359.96 33.8564C1354.02 39.3837 1351.13 46.1408 1351.13 54.4953C1351.13 62.6237 1354.01 69.2677 1359.96 74.795C1365.86 80.2799 1373.62 83.0647 1383.05 83.0647C1392.25 83.0647 1399.9 80.2799 1405.79 74.795C1411.73 69.2677 1414.63 62.6237 1414.63 54.4953C1414.63 46.1408 1411.74 39.3837 1405.79 33.8564Z" fill="white"/>
 <defs>
 <linearGradient id="paint0_linear_1081_6265" x1="114.331" y1="25.5824" x2="15.94" y2="134.133" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6940F4"/>
-<stop offset="1" stop-color="#805BEE"/>
+<stop stopColor="#6940F4"/>
+<stop offset="1" stopColor="#805BEE"/>
 </linearGradient>
 <linearGradient id="paint1_linear_1081_6265" x1="362.251" y1="24.0734" x2="462.246" y2="134.228" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6940F4"/>
-<stop offset="1" stop-color="#805BEE"/>
+<stop stopColor="#6940F4"/>
+<stop offset="1" stopColor="#805BEE"/>
 </linearGradient>
 <linearGradient id="paint2_linear_1081_6265" x1="238.99" y1="379.845" x2="238.99" y2="158.434" gradientUnits="userSpaceOnUse">
-<stop stop-color="#8A5BF6"/>
-<stop offset="1" stop-color="#FF8B0D"/>
+<stop stopColor="#8A5BF6"/>
+<stop offset="1" stopColor="#FF8B0D"/>
 </linearGradient>
 <linearGradient id="paint3_linear_1081_6265" x1="133.81" y1="45.3717" x2="133.81" y2="453.743" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6940F4"/>
-<stop offset="1" stop-color="#805BEE"/>
+<stop stopColor="#6940F4"/>
+<stop offset="1" stopColor="#805BEE"/>
 </linearGradient>
 <linearGradient id="paint4_linear_1081_6265" x1="238.99" y1="45.3716" x2="238.99" y2="453.743" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6940F4"/>
-<stop offset="1" stop-color="#805BEE"/>
+<stop stopColor="#6940F4"/>
+<stop offset="1" stopColor="#805BEE"/>
 </linearGradient>
 <linearGradient id="paint5_linear_1081_6265" x1="344.17" y1="45.3717" x2="344.17" y2="453.743" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6940F4"/>
-<stop offset="1" stop-color="#805BEE"/>
+<stop stopColor="#6940F4"/>
+<stop offset="1" stopColor="#805BEE"/>
 </linearGradient>
 </defs>
 </svg>

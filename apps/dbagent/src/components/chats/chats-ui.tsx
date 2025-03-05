@@ -17,8 +17,8 @@ import { Bot, Clock, Lightbulb, Send, User, Wrench } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { DbConnection } from '~/lib/db/connections';
-import { ScheduleRun } from '~/lib/db/runs';
+import { Connection } from '~/lib/db/connections';
+import { ScheduleRun } from '~/lib/db/schedule-runs';
 import { Schedule } from '~/lib/db/schedules';
 import { ChatSidebar } from './chat-sidebar';
 import { ConnectionSelector } from './conn-selector';
@@ -29,8 +29,8 @@ export function ChatsUI({
   connections,
   scheduleRun
 }: {
-  connections: DbConnection[];
-  scheduleRun?: { schedule: Schedule; run: ScheduleRun };
+  connections: Connection[];
+  scheduleRun?: { schedule: Schedule; run: ScheduleRun } | null;
 }) {
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -43,8 +43,8 @@ function ChatsUIContent({
   connections,
   scheduleRun
 }: {
-  connections: DbConnection[];
-  scheduleRun?: { schedule: Schedule; run: ScheduleRun };
+  connections: Connection[];
+  scheduleRun?: { schedule: Schedule; run: ScheduleRun } | null;
 }) {
   const searchParams = useSearchParams();
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);

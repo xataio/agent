@@ -3,7 +3,7 @@
 import { Button } from '@internal/components';
 import confetti from 'canvas-confetti';
 import { Activity, Check, Database, GitBranch, Server } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getCompletedTasks } from './actions';
 import { OnboardingProgress } from './onboarding-progress';
@@ -43,6 +43,7 @@ export const onboardingTasks = [
 export function Onboarding() {
   const router = useRouter();
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
+  const { project } = useParams<{ project: string }>();
 
   useEffect(() => {
     getCompletedTasks()
@@ -68,7 +69,7 @@ export function Onboarding() {
   }, []);
 
   const handleTaskAction = async (navigateTo: string) => {
-    router.push(navigateTo);
+    router.push(`/projects/${project}/${navigateTo}`);
   };
 
   return (
@@ -113,8 +114,10 @@ export function Onboarding() {
                   </p>
                 </div>
                 <div className="flex gap-4">
-                  <Button onClick={() => router.push('/chats?start=report')}>Get Initial Assessment</Button>
-                  <Button onClick={() => router.push('/monitoring')} variant="outline">
+                  <Button onClick={() => router.push(`/projects/${project}/chats?start=report`)}>
+                    Get Initial Assessment
+                  </Button>
+                  <Button onClick={() => router.push(`/projects/${project}/monitoring`)} variant="outline">
                     Setup Periodic Monitoring
                   </Button>
                 </div>

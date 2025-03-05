@@ -16,27 +16,37 @@ export async function actionListConnections() {
 }
 
 function translateError(error: string) {
-  if (error.includes('connections_connstring_unique')) {
+  if (error.includes('uq_connections_connection_string')) {
     return 'A connection with this connection string already exists.';
   }
-  if (error.includes('connections_name_unique')) {
+  if (error.includes('uq_connections_name')) {
     return 'A connection with this name already exists.';
   }
   return error;
 }
 
-export async function actionSaveConnection(id: string | null, name: string, connstring: string) {
+export async function actionSaveConnection({
+  projectId,
+  id,
+  name,
+  connectionString
+}: {
+  projectId: string;
+  id: string | null;
+  name: string;
+  connectionString: string;
+}) {
   try {
-    const validateResult = await validateConnection(connstring);
+    const validateResult = await validateConnection(connectionString);
     if (!validateResult.success) {
       return validateResult;
     }
 
     if (id) {
-      await updateConnection({ id, name, connstring: connstring });
+      await updateConnection({ id, name, connectionString });
       return { success: true, message: 'Connection updated successfully' };
     } else {
-      await addConnection({ name: name, connstring: connstring });
+      await addConnection({ projectId, name, connectionString });
       return { success: true, message: 'Connection added successfully' };
     }
   } catch (error) {
@@ -64,9 +74,9 @@ export async function actionDeleteConnection(id: string) {
   return await deleteConnection(id);
 }
 
-export async function validateConnection(connstring: string) {
+export async function validateConnection(connectionString: string) {
   try {
-    const client = await getTargetDbConnection(connstring);
+    const client = await getTargetDbConnection(connectionString);
 
     const versionResult = await client.query('SELECT version()');
     const version = versionResult.rows[0].version;

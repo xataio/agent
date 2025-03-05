@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/',
-        destination: '/start',
+        destination: '/projects',
         permanent: false
       }
     ];
@@ -16,4 +16,5 @@ const nextConfig: NextConfig = {
     return [];
   }
 };
-module.exports = nextConfig;
+
+export default nextConfig;

@@ -14,7 +14,7 @@ import {
   toast
 } from '@internal/components';
 import { useEffect, useState } from 'react';
-import { DbConnection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/connections';
 import { PerformanceSetting } from '~/lib/targetdb/db';
 import { collectPerformanceSettings } from './actions';
 import { Skeleton } from './skeleton';
@@ -23,7 +23,7 @@ export function PerformanceSettingsCard({
   selectedConnection,
   initialData
 }: {
-  selectedConnection: DbConnection | undefined;
+  selectedConnection: Connection | undefined;
   initialData: PerformanceSetting[] | undefined;
 }) {
   const [performanceSettings, setPerformanceSettings] = useState<PerformanceSetting[]>(initialData || []);

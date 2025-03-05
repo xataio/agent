@@ -3,8 +3,9 @@
 import { Button, Switch, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@internal/components';
 import { ListIcon, PencilIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { DbConnection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/connections';
 import { Schedule } from '~/lib/db/schedules';
 import { actionGetSchedules, actionUpdateScheduleEnabled } from './actions';
 
@@ -24,9 +25,10 @@ function displayRelativeTime(date1: Date, date2: Date): string {
   return `${Math.floor(diffMinutes / 1440)}d`;
 }
 
-export function MonitoringScheduleTable({ connections }: { connections: DbConnection[] }) {
+export function MonitoringScheduleTable({ connections }: { connections: Connection[] }) {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { project } = useParams<{ project: string }>();
 
   const loadSchedules = async () => {
     setIsLoading(true);
@@ -90,7 +92,7 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
           <Button variant="outline" onClick={() => refreshSchedules()}>
             <RefreshCwIcon className="mr-2 h-4 w-4" />
           </Button>
-          <Link href="/monitoring/schedule/add">
+          <Link href={`/projects/${project}/monitoring/schedule/add`}>
             <Button>
               <PlusIcon className="mr-2 h-4 w-4" /> Add New Schedule
             </Button>
@@ -128,7 +130,7 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
               </TableRow>
               <TableRow>
                 <TableCell colSpan={6} className="text-center">
-                  <Link href="/monitoring/schedule/add">
+                  <Link href={`/projects/${project}/monitoring/schedule/add`}>
                     <Button>Add Schedule</Button>
                   </Link>
                 </TableCell>
@@ -172,12 +174,12 @@ export function MonitoringScheduleTable({ connections }: { connections: DbConnec
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Link href={`/monitoring/schedule/${schedule.id}`}>
+                    <Link href={`/projects/${project}/monitoring/schedule/${schedule.id}`}>
                       <Button variant="outline" size="icon" title="Edit schedule" className="cursor-pointer">
                         <PencilIcon className="h-4 w-4" />
                       </Button>
                     </Link>
-                    <Link href={`/monitoring/runs/${schedule.id}`}>
+                    <Link href={`/projects/${project}/monitoring/runs/${schedule.id}`}>
                       <Button variant="outline" size="icon" title="View runs" className="cursor-pointer">
                         <ListIcon className="h-4 w-4" />
                       </Button>

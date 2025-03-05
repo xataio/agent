@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { Schedule } from '~/lib/db/schedules';
 import { getModelInstance, getTools, monitoringSystemPrompt } from '../ai/aidba';
 import { getConnection } from '../db/connections';
-import { insertScheduleRunLimitHistory, ScheduleRun } from '../db/runs';
+import { insertScheduleRunLimitHistory, ScheduleRun } from '../db/schedule-runs';
 import { sendScheduleNotification } from '../notifications/slack-webhook';
 import { getTargetDbConnection } from '../targetdb/db';
 
@@ -16,7 +16,7 @@ export async function runSchedule(schedule: Schedule, now: Date) {
     throw new Error(`Connection ${schedule.connectionId} not found`);
   }
 
-  const targetClient = await getTargetDbConnection(connection.connstring);
+  const targetClient = await getTargetDbConnection(connection.connectionString);
 
   const modelInstance = getModelInstance(schedule.model);
 
@@ -65,16 +65,6 @@ export async function runSchedule(schedule: Schedule, now: Date) {
 
   console.log(JSON.stringify(notificationResult.object, null, 2));
 
-  if (notificationResult.object.notificationLevel === 'alert') {
-    await sendScheduleNotification(
-      schedule,
-      connection,
-      notificationResult.object.notificationLevel,
-      notificationResult.object.summary,
-      result.text
-    );
-  }
-
   const msgs = messages.map((m) => {
     return {
       id: generateId(),
@@ -98,5 +88,16 @@ export async function runSchedule(schedule: Schedule, now: Date) {
     messages: msgs,
     createdAt: now.toISOString()
   };
-  await insertScheduleRunLimitHistory(scheduleRun, schedule.keepHistory);
+  const run = await insertScheduleRunLimitHistory(scheduleRun, schedule.keepHistory);
+
+  if (notificationResult.object.notificationLevel === 'alert') {
+    await sendScheduleNotification(
+      run,
+      schedule,
+      connection,
+      notificationResult.object.notificationLevel,
+      notificationResult.object.summary,
+      result.text
+    );
+  }
 }
