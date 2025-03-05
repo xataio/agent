@@ -32,23 +32,26 @@ export async function POST(req: Request) {
     return new Response('Connection not found', { status: 404 });
   }
   const targetClient = await getTargetDbConnection(connection.connectionString);
+  try {
+    const context = chatSystemPrompt;
 
-  const context = chatSystemPrompt;
+    console.log(context);
 
-  console.log(context);
+    const modelInstance = getModelInstance(model);
 
-  const modelInstance = getModelInstance(model);
+    const result = streamText({
+      model: modelInstance,
+      messages,
+      system: context,
+      tools: await getTools(connection, targetClient),
+      maxSteps: 20,
+      toolCallStreaming: true
+    });
 
-  const result = streamText({
-    model: modelInstance,
-    messages,
-    system: context,
-    tools: await getTools(connection, targetClient),
-    maxSteps: 20,
-    toolCallStreaming: true
-  });
-
-  return result.toDataStreamResponse({
-    getErrorMessage: errorHandler
-  });
+    return result.toDataStreamResponse({
+      getErrorMessage: errorHandler
+    });
+  } finally {
+    await targetClient.end();
+  }
 }

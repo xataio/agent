@@ -166,62 +166,66 @@ export async function runSchedule(schedule: Schedule, now: Date) {
     throw new Error(`Connection ${schedule.connectionId} not found`);
   }
   const targetClient = await getTargetDbConnection(connection.connectionString);
-  const modelInstance = getModelInstance(schedule.model);
-  const messages: Message[] = [];
+  try {
+    const modelInstance = getModelInstance(schedule.model);
+    const messages: Message[] = [];
 
-  const result = await runModelPlaybook(
-    messages,
-    modelInstance,
-    connection,
-    targetClient,
-    schedule.playbook,
-    schedule.additionalInstructions ?? ''
-  );
-  messages.push({
-    id: generateId(),
-    role: 'assistant',
-    content: result.text,
-    createdAt: new Date()
-  });
-
-  const notificationResult = await decideNotificationLevel(messages, modelInstance);
-
-  // drilling down to more actionable playbooks
-  if (schedule.maxSteps && shouldNotify(schedule.notifyLevel, notificationResult.notificationLevel)) {
-    let step = 1;
-    while (step < schedule.maxSteps) {
-      const recommendPlaybookResult = await decideNextPlaybook(messages, schedule, modelInstance);
-      if (!recommendPlaybookResult.shouldRunPlaybook || !recommendPlaybookResult.recommendedPlaybook) {
-        break;
-      }
-      const nextPlaybook = recommendPlaybookResult.recommendedPlaybook;
-      await runModelPlaybook(messages, modelInstance, connection, targetClient, nextPlaybook, '');
-      step++;
-    }
-  }
-
-  const resultText = await summarizeResult(messages, modelInstance);
-
-  // save the result in the database with all messages
-  const scheduleRun: Omit<ScheduleRun, 'id'> = {
-    scheduleId: schedule.id,
-    result: resultText,
-    summary: notificationResult.summary,
-    notificationLevel: notificationResult.notificationLevel,
-    messages: messages,
-    createdAt: now.toISOString() // using the start time
-  };
-  const run = await insertScheduleRunLimitHistory(scheduleRun, schedule.keepHistory);
-
-  if (shouldNotify(schedule.notifyLevel, notificationResult.notificationLevel)) {
-    await sendScheduleNotification(
-      run,
-      schedule,
+    const result = await runModelPlaybook(
+      messages,
+      modelInstance,
       connection,
-      notificationResult.notificationLevel,
-      notificationResult.summary,
-      resultText,
-      schedule.extraNotificationText ?? undefined
+      targetClient,
+      schedule.playbook,
+      schedule.additionalInstructions ?? ''
     );
+    messages.push({
+      id: generateId(),
+      role: 'assistant',
+      content: result.text,
+      createdAt: new Date()
+    });
+
+    const notificationResult = await decideNotificationLevel(messages, modelInstance);
+
+    // drilling down to more actionable playbooks
+    if (schedule.maxSteps && shouldNotify(schedule.notifyLevel, notificationResult.notificationLevel)) {
+      let step = 1;
+      while (step < schedule.maxSteps) {
+        const recommendPlaybookResult = await decideNextPlaybook(messages, schedule, modelInstance);
+        if (!recommendPlaybookResult.shouldRunPlaybook || !recommendPlaybookResult.recommendedPlaybook) {
+          break;
+        }
+        const nextPlaybook = recommendPlaybookResult.recommendedPlaybook;
+        await runModelPlaybook(messages, modelInstance, connection, targetClient, nextPlaybook, '');
+        step++;
+      }
+    }
+
+    const resultText = await summarizeResult(messages, modelInstance);
+
+    // save the result in the database with all messages
+    const scheduleRun: Omit<ScheduleRun, 'id'> = {
+      scheduleId: schedule.id,
+      result: resultText,
+      summary: notificationResult.summary,
+      notificationLevel: notificationResult.notificationLevel,
+      messages: messages,
+      createdAt: now.toISOString() // using the start time
+    };
+    const run = await insertScheduleRunLimitHistory(scheduleRun, schedule.keepHistory);
+
+    if (shouldNotify(schedule.notifyLevel, notificationResult.notificationLevel)) {
+      await sendScheduleNotification(
+        run,
+        schedule,
+        connection,
+        notificationResult.notificationLevel,
+        notificationResult.summary,
+        resultText,
+        schedule.extraNotificationText ?? undefined
+      );
+    }
+  } finally {
+    await targetClient.end();
   }
 }
