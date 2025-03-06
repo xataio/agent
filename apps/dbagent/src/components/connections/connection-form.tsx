@@ -3,7 +3,8 @@
 import { Button, Input, Label, toast, useForm } from '@internal/components';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { actionDeleteConnection, actionGetConnection, actionSaveConnection, validateConnection } from './actions';
+import { deleteConnection, getConnection } from '~/lib/db/connections';
+import { actionSaveConnection, validateConnection } from './actions';
 
 type FormData = {
   name: string;
@@ -35,7 +36,7 @@ export function ConnectionForm({ projectId, id }: ConnectionFormProps) {
   useEffect(() => {
     async function initializeForm() {
       if (id) {
-        const connection = await actionGetConnection(id);
+        const connection = await getConnection(id);
         if (connection) {
           reset({
             name: connection.name,
@@ -78,7 +79,7 @@ export function ConnectionForm({ projectId, id }: ConnectionFormProps) {
   const handleDelete = async () => {
     if (!id) return;
     try {
-      await actionDeleteConnection(id);
+      await deleteConnection(id);
       toast('Connection deleted successfully');
       router.push(`/projects/${projectId}/start/connect`);
     } catch (error) {

@@ -205,6 +205,7 @@ export async function runSchedule(schedule: Schedule, now: Date) {
 
     // save the result in the database with all messages
     const scheduleRun: Omit<ScheduleRun, 'id'> = {
+      projectId: schedule.projectId,
       scheduleId: schedule.id,
       result: resultText,
       summary: notificationResult.summary,

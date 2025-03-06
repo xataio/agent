@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { db } from './db';
+import { queryDb } from './db';
 import { integrations } from './schema';
 
 export type AwsIntegration = {
@@ -26,25 +26,29 @@ export async function saveIntegration<
   Key extends IntegrationTypes['type'],
   Value extends IntegrationTypes & { type: Key }
 >(projectId: string, name: Key, data: Value['data']) {
-  await db
-    .insert(integrations)
-    .values({
-      projectId,
-      name: name,
-      data: data
-    })
-    .onConflictDoUpdate({
-      target: [integrations.projectId, integrations.name],
-      set: {
+  return queryDb(async ({ db }) => {
+    await db
+      .insert(integrations)
+      .values({
+        projectId,
+        name: name,
         data: data
-      }
-    });
+      })
+      .onConflictDoUpdate({
+        target: [integrations.projectId, integrations.name],
+        set: {
+          data: data
+        }
+      });
+  });
 }
 
 export async function getIntegration<
   Key extends IntegrationTypes['type'],
   Value extends IntegrationTypes & { type: Key }
 >(name: Key): Promise<Value['data'] | null> {
-  const result = await db.select().from(integrations).where(eq(integrations.name, name));
-  return (result[0]?.data as Value['data']) || null;
+  return queryDb(async ({ db }) => {
+    const result = await db.select().from(integrations).where(eq(integrations.name, name));
+    return (result[0]?.data as Value['data']) || null;
+  });
 }

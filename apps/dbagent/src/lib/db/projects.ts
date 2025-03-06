@@ -1,83 +1,105 @@
 'use server';
 import { and, eq } from 'drizzle-orm';
 import 'server-only';
-import { auth } from '~/auth';
-import { db } from './db';
-import { projects } from './schema';
+import { queryDb } from './db';
+import { projectMembers, projects } from './schema';
 
 export type Project = {
   id: string;
   name: string;
-  ownerId: string;
 };
 
-export async function createProject(cluster: Omit<Project, 'id' | 'ownerId'>) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: 'Not authenticated' };
-  }
+export async function createProject(project: Omit<Project, 'id'>): Promise<string> {
+  return await queryDb(async ({ db, userId }) => {
+    // Create the project
+    const result = await db
+      .insert(projects)
+      .values({
+        name: project.name
+      })
+      .returning({ id: projects.id });
 
-  const result = await db
-    .insert(projects)
-    .values({
-      ...cluster,
-      ownerId: session.user.id
-    })
-    .returning({ id: projects.id });
+    if (!result[0]) {
+      throw new Error('Failed to create project');
+    }
 
-  if (!result[0]) {
-    return { success: false, error: 'Failed to create project' };
-  }
+    // Create the project member relationship with owner role
+    await db.insert(projectMembers).values({
+      projectId: result[0].id,
+      userId: userId,
+      role: 'owner'
+    });
 
-  return { success: true, id: result[0].id };
+    return result[0].id;
+  });
 }
 
-export async function getProjectById(id: string) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: 'Not authenticated' };
-  }
+export async function getProjectById(id: string): Promise<Project | null> {
+  return await queryDb(async ({ db, userId }) => {
+    // Get project where user is a member
+    const results = await db
+      .select({
+        id: projects.id,
+        name: projects.name
+      })
+      .from(projects)
+      .innerJoin(projectMembers, eq(projectMembers.projectId, projects.id))
+      .where(and(eq(projects.id, id), eq(projectMembers.userId, userId)));
 
-  const results = await db
-    .select()
-    .from(projects)
-    .where(and(eq(projects.id, id), eq(projects.ownerId, session.user.id)));
-
-  return { success: true, project: results[0] };
+    return results[0] ?? null;
+  });
 }
 
-export async function listProjects() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: 'Not authenticated' };
-  }
+export async function listProjects(): Promise<Project[]> {
+  return await queryDb(async ({ db, userId }) => {
+    // Get all projects where user is a member
+    const results = await db
+      .select({
+        id: projects.id,
+        name: projects.name
+      })
+      .from(projects)
+      .innerJoin(projectMembers, eq(projectMembers.projectId, projects.id))
+      .where(eq(projectMembers.userId, userId));
 
-  const result = await db.select().from(projects).where(eq(projects.ownerId, session.user.id));
-
-  return { success: true, projects: result };
+    return results;
+  });
 }
 
-export async function deleteProject({ id }: { id: string }) {
-  const session = await auth();
-  if (!session?.user?.id) return { success: false, error: 'Not authenticated' };
+export async function deleteProject({ id }: { id: string }): Promise<void> {
+  await queryDb(async ({ db, userId }) => {
+    // Verify the user is an owner of this project
+    const member = await db
+      .select({ role: projectMembers.role })
+      .from(projectMembers)
+      .where(
+        and(eq(projectMembers.projectId, id), eq(projectMembers.userId, userId), eq(projectMembers.role, 'owner'))
+      );
 
-  await db.delete(projects).where(and(eq(projects.id, id), eq(projects.ownerId, session.user.id)));
+    if (!member[0]) {
+      throw new Error('Not authorized to delete this project');
+    }
 
-  return { success: true };
+    // Delete the project (cascade should handle the members)
+    await db.delete(projects).where(eq(projects.id, id));
+  });
 }
 
-export async function updateProject(id: string, update: Partial<Omit<Project, 'id' | 'ownerId'>>) {
-  const session = await auth();
-  if (!session?.user?.id)
-    return {
-      success: false,
-      error: 'Not authenticated'
-    };
+export async function updateProject(id: string, update: Partial<Omit<Project, 'id'>>): Promise<void> {
+  return await queryDb(async ({ db, userId }) => {
+    // Verify the user is an owner of this project
+    const member = await db
+      .select({ role: projectMembers.role })
+      .from(projectMembers)
+      .where(
+        and(eq(projectMembers.projectId, id), eq(projectMembers.userId, userId), eq(projectMembers.role, 'owner'))
+      );
 
-  await db
-    .update(projects)
-    .set(update)
-    .where(and(eq(projects.id, id), eq(projects.ownerId, session.user.id)));
+    if (!member[0]) {
+      throw new Error('Not authorized to update this project');
+    }
 
-  return { success: true };
+    // Update the project
+    await db.update(projects).set(update).where(eq(projects.id, id));
+  });
 }
