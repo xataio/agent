@@ -189,6 +189,9 @@ importers:
       '@types/dockerode':
         specifier: ^3.3.35
         version: 3.3.35
+      '@types/papaparse':
+        specifier: ^5.3.15
+        version: 5.3.15
       '@types/pg':
         specifier: ^8.11.11
         version: 8.11.11
@@ -213,6 +216,9 @@ importers:
       filenamify:
         specifier: ^6.0.0
         version: 6.0.0
+      papaparse:
+        specifier: ^5.5.2
+        version: 5.5.2
       pg:
         specifier: ^8.13.3
         version: 8.13.3
@@ -2382,6 +2388,9 @@ packages:
   '@types/node@22.13.9':
     resolution: {integrity: sha512-acBjXdRJ3A6Pb3tqnw9HZmyR3Fiol3aGxRCK1x3d+6CDAMjl7I649wpSd+yNURCjbOUGu9tqtLKnTGxmK6CyGw==}
 
+  '@types/papaparse@5.3.15':
+    resolution: {integrity: sha512-JHe6vF6x/8Z85nCX4yFdDslN11d+1pr12E526X8WAfhadOeaOTx5AuIkvDKIBopfvlzpzkdMx4YyvSKCM9oqtw==}
+
   '@types/pg@8.11.11':
     resolution: {integrity: sha512-kGT1qKM8wJQ5qlawUrEkXgvMSXoV213KfMGXcwfDwUIfUHXqXYXOfS1nE1LINRJVVVx5wCm70XnFlMHaIcQAfw==}
 
@@ -4291,6 +4300,9 @@ packages:
   p-try@2.2.0:
     resolution: {integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==}
     engines: {node: '>=6'}
+
+  papaparse@5.5.2:
+    resolution: {integrity: sha512-PZXg8UuAc4PcVwLosEEDYjPyfWnTEhOrUfdv+3Bx+NuAb+5NhDmXzg5fHWmdCh1mP5p7JAZfFr3IMQfcntNAdA==}
 
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
@@ -7666,6 +7678,10 @@ snapshots:
     dependencies:
       undici-types: 6.20.0
 
+  '@types/papaparse@5.3.15':
+    dependencies:
+      '@types/node': 22.13.9
+
   '@types/pg@8.11.11':
     dependencies:
       '@types/node': 22.13.9
@@ -9805,6 +9821,8 @@ snapshots:
       p-limit: 3.1.0
 
   p-try@2.2.0: {}
+
+  papaparse@5.5.2: {}
 
   parent-module@1.0.1:
     dependencies:
