@@ -45,9 +45,6 @@ CREATE INDEX "idx_schedules_status" ON "schedules" USING btree ("status");--> st
 CREATE INDEX "idx_schedules_next_run" ON "schedules" USING btree ("next_run");--> statement-breakpoint
 CREATE INDEX "idx_schedules_enabled" ON "schedules" USING btree ("enabled");--> statement-breakpoint
 ALTER TABLE "projects" DROP COLUMN "owner_id";--> statement-breakpoint
-ALTER TABLE "schedules" DROP COLUMN "max_steps";--> statement-breakpoint
-ALTER TABLE "schedules" DROP COLUMN "notify_level";--> statement-breakpoint
-ALTER TABLE "schedules" DROP COLUMN "extra_notification_text";--> statement-breakpoint
 CREATE POLICY "aws_cluster_connections_policy" ON "aws_cluster_connections" AS PERMISSIVE FOR ALL TO public USING (EXISTS (
         SELECT 1 FROM project_members
         WHERE project_id = aws_cluster_connections.project_id AND user_id = current_setting('app.current_user', true)::TEXT

@@ -1,5 +1,5 @@
 {
-  "id": "b00e736f-2cf0-4d09-92b7-9904a18f2b11",
+  "id": "e81757cc-5adf-4a1c-a3e0-dbfad4df55a4",
   "prevId": "a626c3ba-915d-43f6-a5e8-388c9b37266f",
   "version": "7",
   "dialect": "postgresql",
@@ -913,6 +913,26 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'openai-gpt-4o'"
+        },
+        "max_steps": {
+          "name": "max_steps",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notify_level": {
+          "name": "notify_level",
+          "type": "notification_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'alert'"
+        },
+        "extra_notification_text": {
+          "name": "extra_notification_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
