@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { auth } from '~/auth';
@@ -20,8 +21,8 @@ export async function queryDb<T>(
   const client = await pool.connect();
 
   try {
-    await client.query(`SET LOCAL "app.current_user" = $1`, [userId]);
     const db = drizzle(client);
+    await db.execute(sql.raw(`SET LOCAL "app.current_user" = '${userId}'`));
     return await callback({ db, userId });
   } finally {
     client.release();

@@ -1,3 +1,5 @@
+'use server';
+
 import { eq } from 'drizzle-orm';
 import { queryDb } from './db';
 import { integrations } from './schema';

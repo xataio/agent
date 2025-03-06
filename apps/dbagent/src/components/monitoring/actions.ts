@@ -9,12 +9,12 @@ import {
   getSchedules,
   insertSchedule,
   Schedule,
-  scheduleGetNextRun,
   updateSchedule,
   updateScheduleRunData
 } from '~/lib/db/schedules';
 import { utcToLocalDate } from '~/lib/monitoring/scheduler';
 import { listPlaybooks } from '~/lib/tools/playbooks';
+import { scheduleGetNextRun } from './schedule';
 
 export async function generateCronExpression(description: string): Promise<string> {
   const prompt = `Generate a cron expression for the following schedule description: "${description}". 

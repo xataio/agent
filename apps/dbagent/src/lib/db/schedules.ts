@@ -1,6 +1,6 @@
-import { CronExpressionParser } from 'cron-parser';
+'use server';
+
 import { eq, sql } from 'drizzle-orm';
-import { PartialBy } from '~/utils/types';
 import { queryDb } from './db';
 import { schedules } from './schema';
 
@@ -25,19 +25,6 @@ export type Schedule = {
   notifyLevel: 'alert' | 'warning' | 'info';
   extraNotificationText?: string | null;
 };
-
-export function scheduleGetNextRun(schedule: PartialBy<Schedule, 'id'>, now: Date): Date {
-  if (schedule.scheduleType === 'cron' && schedule.cronExpression) {
-    const interval = CronExpressionParser.parse(schedule.cronExpression);
-    return interval.next().toDate();
-  }
-  if (schedule.scheduleType === 'automatic' && schedule.minInterval) {
-    // TODO ask the model to get the interval, for now use the minInterval
-    const nextRun = new Date(now.getTime() + schedule.minInterval * 1000);
-    return nextRun;
-  }
-  return now;
-}
 
 export async function insertSchedule(schedule: Omit<Schedule, 'id'>): Promise<Schedule> {
   return await queryDb(async ({ db }) => {

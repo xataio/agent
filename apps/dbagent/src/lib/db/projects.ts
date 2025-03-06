@@ -1,6 +1,6 @@
 'use server';
+
 import { and, eq } from 'drizzle-orm';
-import 'server-only';
 import { queryDb } from './db';
 import { projectMembers, projects } from './schema';
 

@@ -1,8 +1,8 @@
+import { scheduleGetNextRun } from '~/components/monitoring/schedule';
 import {
   getSchedules,
   incrementScheduleFailures,
   Schedule,
-  scheduleGetNextRun,
   setScheduleStatusRunning,
   updateScheduleRunData
 } from '~/lib/db/schedules';

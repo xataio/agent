@@ -1,3 +1,5 @@
+'use server';
+
 import { eq } from 'drizzle-orm';
 import { RDSClusterDetailedInfo } from '../aws/rds';
 import { queryDb } from './db';

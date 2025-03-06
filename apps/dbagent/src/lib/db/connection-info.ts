@@ -1,3 +1,5 @@
+'use server';
+
 import { and, eq } from 'drizzle-orm';
 import { PerformanceSetting, PgExtension, TableStat } from '../targetdb/db';
 import { queryDb } from './db';

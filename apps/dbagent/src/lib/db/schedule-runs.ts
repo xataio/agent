@@ -1,3 +1,5 @@
+'use server';
+
 import { Message } from '@ai-sdk/ui-utils';
 import { desc, eq, lt } from 'drizzle-orm';
 import { queryDb } from './db';
