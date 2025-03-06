@@ -1,6 +1,6 @@
 'use server';
 
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { queryDb } from './db';
 import { connections } from './schema';
 
@@ -12,15 +12,18 @@ export type Connection = {
   connectionString: string;
 };
 
-export async function listConnections(): Promise<Connection[]> {
+export async function listConnections(projectId: string): Promise<Connection[]> {
   return queryDb(async ({ db }) => {
-    return await db.select().from(connections);
+    return await db.select().from(connections).where(eq(connections.projectId, projectId));
   });
 }
 
-export async function getDefaultConnection(): Promise<Connection | null> {
+export async function getDefaultConnection(projectId: string): Promise<Connection | null> {
   return queryDb(async ({ db }) => {
-    const result = await db.select().from(connections).where(eq(connections.isDefault, true));
+    const result = await db
+      .select()
+      .from(connections)
+      .where(and(eq(connections.projectId, projectId), eq(connections.isDefault, true)));
     return result[0] ?? null;
   });
 }

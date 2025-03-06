@@ -23,7 +23,7 @@ export function ConnectionsList() {
 
   useEffect(() => {
     const loadConnections = async () => {
-      const connections = await listConnections();
+      const connections = await listConnections(project);
       if (connections.length === 0) {
         router.push(`/projects/${project}/start/connect/add`);
         return;
@@ -31,7 +31,7 @@ export function ConnectionsList() {
       setConnections(connections);
     };
     void loadConnections();
-  }, [router]);
+  }, [router, project]);
 
   const handleMakeDefault = async (id: string) => {
     await actionMakeConnectionDefault(id);

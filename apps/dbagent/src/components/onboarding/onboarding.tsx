@@ -46,7 +46,7 @@ export function Onboarding() {
   const { project } = useParams<{ project: string }>();
 
   useEffect(() => {
-    getCompletedTasks()
+    getCompletedTasks(project)
       .then((tasks) => {
         if (tasks.length === onboardingTasks.length && completedTasks.length < onboardingTasks.length) {
           void confetti({
