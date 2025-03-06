@@ -33,24 +33,16 @@ export async function POST(req: Request) {
   }
   const targetClient = await getTargetDbConnection(connection.connectionString);
   try {
-    const context = chatSystemPrompt;
-
-    console.log(context);
-
-    const modelInstance = getModelInstance(model);
-
     const result = streamText({
-      model: modelInstance,
+      model: getModelInstance(model),
       messages,
-      system: context,
+      system: chatSystemPrompt,
       tools: await getTools(connection, targetClient),
       maxSteps: 20,
       toolCallStreaming: true
     });
 
-    return result.toDataStreamResponse({
-      getErrorMessage: errorHandler
-    });
+    return result.toDataStreamResponse({ getErrorMessage: errorHandler });
   } finally {
     await targetClient.end();
   }
