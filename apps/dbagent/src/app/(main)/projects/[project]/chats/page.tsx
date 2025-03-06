@@ -2,7 +2,7 @@ import { actionGetScheduleRun } from '~/components/chats/actions';
 import { ChatsUI } from '~/components/chats/chats-ui';
 import { listConnections } from '~/lib/db/connections';
 
-type Params = {
+type PageParams = {
   project: string;
 };
 
@@ -14,7 +14,7 @@ export default async function Page({
   params,
   searchParams
 }: {
-  params: Promise<Params>;
+  params: Promise<PageParams>;
   searchParams: Promise<SearchParams>;
 }) {
   const { project } = await params;
