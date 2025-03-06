@@ -1,3 +1,4 @@
+import filenamify from 'filenamify';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -20,8 +21,8 @@ export const getTestRunId = () => {
   return process.env.TEST_RUN_ID;
 };
 
-export const ensureTraceFolderExists = () => {
-  const traceFolder = path.join('/tmp/dbagenteval', getTestRunId(), getEvalId());
+export const ensureTraceFolderExists = (evalId = getEvalId()) => {
+  const traceFolder = path.join('/tmp/dbagenteval', getTestRunId(), evalId);
   fs.mkdirSync(traceFolder, { recursive: true });
   return traceFolder;
 };
@@ -30,4 +31,11 @@ export const ensureTestRunTraceFolderExists = () => {
   const traceFolder = path.join('/tmp/dbagenteval', getTestRunId());
   fs.mkdirSync(traceFolder, { recursive: true });
   return traceFolder;
+};
+
+export const testNameToEvalId = (testName: string | undefined) => {
+  if (!testName) {
+    throw new Error('Expected testName to be defined');
+  }
+  return filenamify(testName, { replacement: '_' });
 };

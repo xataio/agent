@@ -1,5 +1,6 @@
 import dotenvx from '@dotenvx/dotenvx';
 import { defineConfig } from 'vitest/config';
+import { evalReporter } from './src/evals/evalReporter';
 
 const env = dotenvx.config({ path: '.env.eval' }).parsed;
 
@@ -21,6 +22,7 @@ export default defineConfig({
       deps: {
         inline: ['next']
       }
-    }
+    },
+    reporters: ['default', evalReporter]
   }
 });

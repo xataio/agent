@@ -33,15 +33,15 @@ export type EvalCase = TestCase & { id: string };
 
 export type NamedEvalCase = NamedTestCase & { id: string };
 
-export const runEvals = <T extends EvalCase>(
-  testCases: T[],
-  nameFunc: (testCase: T) => string,
-  runTest: (testCase: T) => void | Promise<void>
-) => {
-  runTests(testCases, nameFunc, async (evalCase) => {
-    setEvalId(evalCase.id);
-    await runTest(evalCase);
-  });
+export const runEvals = <T extends EvalCase>(testCases: T[], runTest: (testCase: T) => void | Promise<void>) => {
+  runTests(
+    testCases,
+    ({ id }) => id,
+    async (evalCase) => {
+      setEvalId(evalCase.id);
+      await runTest(evalCase);
+    }
+  );
 };
 
 export const runNamedEvals = <T extends NamedEvalCase>(

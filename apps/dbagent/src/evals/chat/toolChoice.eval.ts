@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, vi } from 'vitest';
 import { evalChat } from '~/evals/lib/chatRunner';
+import * as connectionInfoExports from '~/lib/db/connection-info';
 import * as projectsExports from '~/lib/db/projects';
 import { PostgresConfig, runSql, startPostgresContainer } from '../lib/evalDockerDb';
 import { EvalCase, runEvals } from '../lib/vitestHelpers';
@@ -8,24 +9,24 @@ vi.spyOn(projectsExports, 'getProjectById').mockImplementation(async (id) => {
   return { success: true, project: { id, ownerId: 'ownerId', name: 'project name' } };
 });
 
-// vi.spyOn(dbinfoExports, 'getDbInfo').mockImplementation(async (connectionId, key) => {
-//   if (key === 'tables') {
-//     return [
-//       {
-//         name: 'dogs',
-//         schema: 'public',
-//         rows: 150,
-//         size: '24 kB',
-//         seqScans: 45,
-//         idxScans: 120,
-//         nTupIns: 200,
-//         nTupUpd: 50,
-//         nTupDel: 10
-//       }
-//     ];
-//   }
-//   return null;
-// });
+vi.spyOn(connectionInfoExports, 'getConnectionInfo').mockImplementation(async (connectionId, key) => {
+  if (key === 'tables') {
+    return [
+      {
+        name: 'dogs',
+        schema: 'public',
+        rows: 150,
+        size: '24 kB',
+        seqScans: 45,
+        idxScans: 120,
+        nTupIns: 200,
+        nTupUpd: 50,
+        nTupDel: 10
+      }
+    ];
+  }
+  return null;
+});
 
 let dbConfig: PostgresConfig;
 beforeAll(async () => {
@@ -66,18 +67,14 @@ describe('tool choice', () => {
       toolCalls: ['getTablesAndInstanceInfo']
     }
   ];
-  runEvals(
-    testCases,
-    ({ prompt, toolCalls }) => `${prompt}, calls: ${JSON.stringify(toolCalls)}`,
-    async ({ prompt, toolCalls }) => {
-      const result = await evalChat({
-        messages: [{ role: 'user', content: prompt }],
-        dbConnection: dbConfig.connectionString
-      });
+  runEvals(testCases, async ({ prompt, toolCalls }) => {
+    const result = await evalChat({
+      messages: [{ role: 'user', content: prompt }],
+      dbConnection: dbConfig.connectionString
+    });
 
-      const allToolCalls = result.steps.flatMap((step) => step.toolCalls);
-      const toolCallNames = allToolCalls.map((toolCall) => toolCall.toolName);
-      expect(toolCallNames).toEqual(toolCalls);
-    }
-  );
+    const allToolCalls = result.steps.flatMap((step) => step.toolCalls);
+    const toolCallNames = allToolCalls.map((toolCall) => toolCall.toolName);
+    expect(toolCallNames).toEqual(toolCalls);
+  });
 });
