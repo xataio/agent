@@ -151,19 +151,24 @@ percentage of connections utilization is very low, you can stop here. Proceed wi
 percentage is at least 20%.
 
 Step 2:
+Get the metric for the number of connections. Check if the trend is upwards and consider
+how much time there is until the max is reached. If it looks like the max will be reached in the 
+next hour, this should be alert level.
+
+Step 3:
 If the percentage of connections utilization is high, get the instance info 
 (with the tool getTablesAndInstanceInfo) and think about the stats you have gathered so far.
 Is the max_connections appropriate for the instance type? Are there many idle connections?
 
-Step 3:
+Step 4:
 Call the tool getConnectionsGroups to get an overview of the open connections.
 Try to figure out where are the bulk of the connections coming from. 
 Are there many many "idle in transaction" connections? Think about the wait_event as well.
 
-Step 4:
+Step 5:
 If there are many idle connections, get the oldest idle connections with the tool getOldestIdleConnections.
 
-Step 5:
+Step 6:
 Based on all the information you have gathered, make a summary of your findings and report them to the user.
 Provide actionable advice to the user. If for example you recommend killing old idle connections,
 provide the query to do so. However, use judgement in selecting only the connections that are least likely to

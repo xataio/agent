@@ -382,8 +382,8 @@ export async function getRDSInstanceMetric(
     if (timeDiffSeconds <= 500) {
       // Up to ~8 minutes
       period = 10; // 10 second intervals
-    } else if (timeDiffSeconds <= 3000) {
-      // Up to ~50 minutes
+    } else if (timeDiffSeconds <= 3600) {
+      // Up to ~60 minutes
       period = 60; // 1 minute intervals
     } else if (timeDiffSeconds <= 43200) {
       // Up to ~12 hours
