@@ -72,7 +72,7 @@ Also provide a one sentence summary of the result. It can be something like "No 
   messages.push({
     id: generateId(),
     role: 'assistant',
-    content: notificationResult.object.summary,
+    content: JSON.stringify(notificationResult.object),
     createdAt: new Date()
   });
 
@@ -186,6 +186,7 @@ export async function runSchedule(schedule: Schedule, now: Date) {
     });
 
     const notificationResult = await decideNotificationLevel(messages, modelInstance);
+    console.log('notificationResult', notificationResult);
 
     // drilling down to more actionable playbooks
     if (schedule.maxSteps && shouldNotify(schedule.notifyLevel, notificationResult.notificationLevel)) {
