@@ -1,9 +1,8 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import SlackProvider from 'next-auth/providers/slack';
-import { env } from './lib/env/server';
-import { db } from './lib/db/db';
 import { getOrCreateSlackUser, linkUserToPlatform } from './lib/db/slack';
+import { env } from './lib/env/server';
 
 function getProviders() {
   const providers = [];

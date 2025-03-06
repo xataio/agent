@@ -175,86 +175,104 @@ export const projects = pgTable(
   (table) => [unique('uq_projects_name').on(table.ownerId, table.name)]
 );
 
-export const slackUsers = pgTable('slack_users', {
-  id: uuid('id').primaryKey().defaultRandom().notNull(),
-  slackUserId: text('slack_user_id').notNull(),
-  slackTeamId: text('slack_team_id').notNull(),
-  email: text('email'),
-  displayName: text('display_name'),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow()
-}, (table) => [
-  unique('uq_slack_users_ids').on(table.slackUserId, table.slackTeamId)
-]);
+export const slackUsers = pgTable(
+  'slack_users',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    slackUserId: text('slack_user_id').notNull(),
+    slackTeamId: text('slack_team_id').notNull(),
+    email: text('email'),
+    displayName: text('display_name'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow()
+  },
+  (table) => [unique('uq_slack_users_ids').on(table.slackUserId, table.slackTeamId)]
+);
 
-export const slackConversations = pgTable('slack_conversations', {
-  id: uuid('id').primaryKey().defaultRandom().notNull(),
-  slackChannelId: text('slack_channel_id').notNull(),
-  slackTeamId: text('slack_team_id').notNull(),
-  projectId: uuid('project_id').notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow()
-}, (table) => [
-  foreignKey({
-    columns: [table.projectId],
-    foreignColumns: [projects.id],
-    name: 'fk_slack_conversations_project'
-  }),
-  unique('uq_slack_conversations_ids').on(table.slackChannelId, table.slackTeamId)
-]);
+export const slackConversations = pgTable(
+  'slack_conversations',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    slackChannelId: text('slack_channel_id').notNull(),
+    slackTeamId: text('slack_team_id').notNull(),
+    projectId: uuid('project_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_slack_conversations_project'
+    }),
+    unique('uq_slack_conversations_ids').on(table.slackChannelId, table.slackTeamId)
+  ]
+);
 
-export const slackUserProjects = pgTable('slack_user_projects', {
-  id: uuid('id').primaryKey().defaultRandom().notNull(),
-  slackUserId: uuid('slack_user_id').notNull(),
-  projectId: uuid('project_id').notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow()
-}, (table) => [
-  foreignKey({
-    columns: [table.slackUserId],
-    foreignColumns: [slackUsers.id],
-    name: 'fk_slack_user_projects_user'
-  }),
-  foreignKey({
-    columns: [table.projectId],
-    foreignColumns: [projects.id],
-    name: 'fk_slack_user_projects_project'
-  }),
-  unique('uq_slack_user_projects').on(table.slackUserId, table.projectId)
-]);
+export const slackUserProjects = pgTable(
+  'slack_user_projects',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    slackUserId: uuid('slack_user_id').notNull(),
+    projectId: uuid('project_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.slackUserId],
+      foreignColumns: [slackUsers.id],
+      name: 'fk_slack_user_projects_user'
+    }),
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_slack_user_projects_project'
+    }),
+    unique('uq_slack_user_projects').on(table.slackUserId, table.projectId)
+  ]
+);
 
-export const slackMemory = pgTable('slack_memory', {
-  id: uuid('id').primaryKey().defaultRandom().notNull(),
-  slackUserId: uuid('slack_user_id').notNull(),
-  conversationId: uuid('conversation_id').notNull(),
-  key: text('key').notNull(),
-  value: jsonb('value').notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow()
-}, (table) => [
-  foreignKey({
-    columns: [table.slackUserId],
-    foreignColumns: [slackUsers.id],
-    name: 'fk_slack_memory_user'
-  }),
-  foreignKey({
-    columns: [table.conversationId],
-    foreignColumns: [slackConversations.id],
-    name: 'fk_slack_memory_conversation'
-  }),
-  unique('uq_slack_memory').on(table.slackUserId, table.conversationId, table.key)
-]);
+export const slackMemory = pgTable(
+  'slack_memory',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    slackUserId: uuid('slack_user_id').notNull(),
+    conversationId: uuid('conversation_id').notNull(),
+    key: text('key').notNull(),
+    value: jsonb('value').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.slackUserId],
+      foreignColumns: [slackUsers.id],
+      name: 'fk_slack_memory_user'
+    }),
+    foreignKey({
+      columns: [table.conversationId],
+      foreignColumns: [slackConversations.id],
+      name: 'fk_slack_memory_conversation'
+    }),
+    unique('uq_slack_memory').on(table.slackUserId, table.conversationId, table.key)
+  ]
+);
 
-export const slackUserLinks = pgTable('slack_user_links', {
-  id: uuid('id').primaryKey().defaultRandom().notNull(),
-  slackUserId: uuid('slack_user_id').notNull(),
-  platformUserId: text('platform_user_id').notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow()
-}, (table) => [
-  foreignKey({
-    columns: [table.slackUserId],
-    foreignColumns: [slackUsers.id],
-    name: 'fk_slack_user_links_slack_user'
-  }),
-  unique('uq_slack_user_links').on(table.slackUserId, table.platformUserId)
-]);
+export const slackUserLinks = pgTable(
+  'slack_user_links',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    slackUserId: uuid('slack_user_id').notNull(),
+    platformUserId: text('platform_user_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.slackUserId],
+      foreignColumns: [slackUsers.id],
+      name: 'fk_slack_user_links_slack_user'
+    }),
+    unique('uq_slack_user_links').on(table.slackUserId, table.platformUserId)
+  ]
+);

@@ -34,12 +34,8 @@
           "name": "fk_aws_cluster_connections_cluster",
           "tableFrom": "aws_cluster_connections",
           "tableTo": "aws_clusters",
-          "columnsFrom": [
-            "cluster_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["cluster_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -47,12 +43,8 @@
           "name": "fk_aws_cluster_connections_connection",
           "tableFrom": "aws_cluster_connections",
           "tableTo": "connections",
-          "columnsFrom": [
-            "connection_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -101,9 +93,7 @@
         "uq_aws_clusters_integration_identifier": {
           "name": "uq_aws_clusters_integration_identifier",
           "nullsNotDistinct": false,
-          "columns": [
-            "cluster_identifier"
-          ]
+          "columns": ["cluster_identifier"]
         }
       },
       "policies": {},
@@ -146,12 +136,8 @@
           "name": "fk_connections_info_connection",
           "tableFrom": "connection_info",
           "tableTo": "connections",
-          "columnsFrom": [
-            "connection_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -161,10 +147,7 @@
         "uq_connections_info": {
           "name": "uq_connections_info",
           "nullsNotDistinct": false,
-          "columns": [
-            "connection_id",
-            "type"
-          ]
+          "columns": ["connection_id", "type"]
         }
       },
       "policies": {},
@@ -214,12 +197,8 @@
           "name": "fk_connections_project",
           "tableFrom": "connections",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -229,18 +208,12 @@
         "uq_connections_name": {
           "name": "uq_connections_name",
           "nullsNotDistinct": false,
-          "columns": [
-            "project_id",
-            "name"
-          ]
+          "columns": ["project_id", "name"]
         },
         "uq_connections_connection_string": {
           "name": "uq_connections_connection_string",
           "nullsNotDistinct": false,
-          "columns": [
-            "project_id",
-            "connection_string"
-          ]
+          "columns": ["project_id", "connection_string"]
         }
       },
       "policies": {},
@@ -283,12 +256,8 @@
           "name": "fk_integrations_project",
           "tableFrom": "integrations",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -298,10 +267,7 @@
         "uq_integrations_name": {
           "name": "uq_integrations_name",
           "nullsNotDistinct": false,
-          "columns": [
-            "project_id",
-            "name"
-          ]
+          "columns": ["project_id", "name"]
         }
       },
       "policies": {},
@@ -339,10 +305,7 @@
         "uq_projects_name": {
           "name": "uq_projects_name",
           "nullsNotDistinct": false,
-          "columns": [
-            "owner_id",
-            "name"
-          ]
+          "columns": ["owner_id", "name"]
         }
       },
       "policies": {},
@@ -428,12 +391,8 @@
           "name": "fk_schedule_runs_schedule",
           "tableFrom": "schedule_runs",
           "tableTo": "schedules",
-          "columnsFrom": [
-            "schedule_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["schedule_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -578,12 +537,8 @@
           "name": "fk_schedules_project",
           "tableFrom": "schedules",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -591,12 +546,8 @@
           "name": "fk_schedules_connection",
           "tableFrom": "schedules",
           "tableTo": "connections",
-          "columnsFrom": [
-            "connection_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -657,12 +608,8 @@
           "name": "fk_slack_conversations_project",
           "tableFrom": "slack_conversations",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -672,10 +619,7 @@
         "uq_slack_conversations_ids": {
           "name": "uq_slack_conversations_ids",
           "nullsNotDistinct": false,
-          "columns": [
-            "slack_channel_id",
-            "slack_team_id"
-          ]
+          "columns": ["slack_channel_id", "slack_team_id"]
         }
       },
       "policies": {},
@@ -738,12 +682,8 @@
           "name": "fk_slack_memory_user",
           "tableFrom": "slack_memory",
           "tableTo": "slack_users",
-          "columnsFrom": [
-            "slack_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["slack_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -751,12 +691,8 @@
           "name": "fk_slack_memory_conversation",
           "tableFrom": "slack_memory",
           "tableTo": "slack_conversations",
-          "columnsFrom": [
-            "conversation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -766,11 +702,7 @@
         "uq_slack_memory": {
           "name": "uq_slack_memory",
           "nullsNotDistinct": false,
-          "columns": [
-            "slack_user_id",
-            "conversation_id",
-            "key"
-          ]
+          "columns": ["slack_user_id", "conversation_id", "key"]
         }
       },
       "policies": {},
@@ -821,12 +753,8 @@
           "name": "fk_slack_user_links_slack_user",
           "tableFrom": "slack_user_links",
           "tableTo": "slack_users",
-          "columnsFrom": [
-            "slack_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["slack_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -836,10 +764,7 @@
         "uq_slack_user_links": {
           "name": "uq_slack_user_links",
           "nullsNotDistinct": false,
-          "columns": [
-            "slack_user_id",
-            "platform_user_id"
-          ]
+          "columns": ["slack_user_id", "platform_user_id"]
         }
       },
       "policies": {},
@@ -883,12 +808,8 @@
           "name": "fk_slack_user_projects_user",
           "tableFrom": "slack_user_projects",
           "tableTo": "slack_users",
-          "columnsFrom": [
-            "slack_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["slack_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -896,12 +817,8 @@
           "name": "fk_slack_user_projects_project",
           "tableFrom": "slack_user_projects",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -911,10 +828,7 @@
         "uq_slack_user_projects": {
           "name": "uq_slack_user_projects",
           "nullsNotDistinct": false,
-          "columns": [
-            "slack_user_id",
-            "project_id"
-          ]
+          "columns": ["slack_user_id", "project_id"]
         }
       },
       "policies": {},
@@ -978,10 +892,7 @@
         "uq_slack_users_ids": {
           "name": "uq_slack_users_ids",
           "nullsNotDistinct": false,
-          "columns": [
-            "slack_user_id",
-            "slack_team_id"
-          ]
+          "columns": ["slack_user_id", "slack_team_id"]
         }
       },
       "policies": {},
@@ -993,20 +904,12 @@
     "public.notification_level": {
       "name": "notification_level",
       "schema": "public",
-      "values": [
-        "info",
-        "warning",
-        "alert"
-      ]
+      "values": ["info", "warning", "alert"]
     },
     "public.schedule_status": {
       "name": "schedule_status",
       "schema": "public",
-      "values": [
-        "disabled",
-        "scheduled",
-        "running"
-      ]
+      "values": ["disabled", "scheduled", "running"]
     }
   },
   "schemas": {},

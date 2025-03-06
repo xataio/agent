@@ -1,38 +1,31 @@
-import { AppMentionEvent } from "@slack/web-api";
-import { getOrCreateSlackUser, getOrCreateSlackConversation, getMemoryValue, setMemoryValue } from "../db/slack";
-import { client, getThread } from "./utils";
-import { generateResponse } from "./generate-response";
+import { AppMentionEvent } from '@slack/web-api';
+import { getMemoryValue, getOrCreateSlackConversation, getOrCreateSlackUser } from '../db/slack';
+import { generateResponse } from './generate-response';
+import { client, getThread } from './utils';
 
-const updateStatusUtil = async (
-  initialStatus: string,
-  event: AppMentionEvent,
-) => {
+const updateStatusUtil = async (initialStatus: string, event: AppMentionEvent) => {
   const initialMessage = await client.chat.postMessage({
     channel: event.channel,
     thread_ts: event.thread_ts ?? event.ts,
-    text: initialStatus,
+    text: initialStatus
   });
 
-  if (!initialMessage || !initialMessage.ts)
-    throw new Error("Failed to post initial message");
+  if (!initialMessage || !initialMessage.ts) throw new Error('Failed to post initial message');
 
   const updateMessage = async (status: string) => {
     await client.chat.update({
       channel: event.channel,
       ts: initialMessage.ts as string,
-      text: status,
+      text: status
     });
   };
   return updateMessage;
 };
 
-export async function handleNewAppMention(
-  event: AppMentionEvent,
-  botUserId: string,
-) {
-  console.log("Handling app mention");
+export async function handleNewAppMention(event: AppMentionEvent, botUserId: string) {
+  console.log('Handling app mention');
   if (event.bot_id || event.bot_id === botUserId || event.bot_profile) {
-    console.log("Skipping app mention");
+    console.log('Skipping app mention');
     return;
   }
 
@@ -44,7 +37,7 @@ export async function handleNewAppMention(
     return await client.chat.postMessage({
       channel: channel,
       thread_ts: thread_ts ?? event.ts,
-      text: "Error: User not found"
+      text: 'Error: User not found'
     });
   }
 
@@ -64,18 +57,18 @@ export async function handleNewAppMention(
     return await client.chat.postMessage({
       channel: channel,
       thread_ts: thread_ts ?? event.ts,
-      text: "Error: Conversation not found",
+      text: 'Error: Conversation not found'
     });
   }
 
-  const updateMessage = await updateStatusUtil("is thinking...", event);
+  const updateMessage = await updateStatusUtil('is thinking...', event);
 
   if (thread_ts) {
     const messages = await getThread(channel, thread_ts, botUserId);
     const result = await generateResponse(messages, conversation.id);
     updateMessage(result);
   } else {
-    const result = await generateResponse([{ role: "user", content: event.text }], conversation.id);
+    const result = await generateResponse([{ role: 'user', content: event.text }], conversation.id);
     updateMessage(result);
   }
 }

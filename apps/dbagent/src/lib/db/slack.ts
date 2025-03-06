@@ -45,11 +45,7 @@ export async function linkUserToPlatform(slackUserId: string, platformUserId: st
 }
 
 export async function getPlatformUserId(slackUserId: string) {
-  const result = await db
-    .select()
-    .from(slackUserLinks)
-    .where(eq(slackUserLinks.slackUserId, slackUserId))
-    .limit(1);
+  const result = await db.select().from(slackUserLinks).where(eq(slackUserLinks.slackUserId, slackUserId)).limit(1);
 
   return result[0]?.platformUserId;
 }
@@ -91,10 +87,7 @@ export async function linkUserToProject(slackUserId: string, projectId: string) 
 }
 
 export async function getUserProjects(slackUserId: string) {
-  return db
-    .select()
-    .from(slackUserProjects)
-    .where(eq(slackUserProjects.slackUserId, slackUserId));
+  return db.select().from(slackUserProjects).where(eq(slackUserProjects.slackUserId, slackUserId));
 }
 
 export async function setMemoryValue(slackUserId: string, conversationId: string, key: string, value: any) {

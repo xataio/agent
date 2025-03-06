@@ -1,9 +1,9 @@
-import { CoreMessage, generateText } from "ai";
-import { chatSystemPrompt, getModelInstance, getTools } from "../ai/aidba";
-import { getConnection } from "../db/connections";
-import { getTargetDbConnection } from "../targetdb/db";
-import { getOrCreateSlackUser, getMemoryValue, setMemoryValue, getUserProjects, linkUserToProject } from "../db/slack";
-import { getProjectById } from "../db/projects";
+import { CoreMessage, generateText } from 'ai';
+import { chatSystemPrompt, getModelInstance, getTools } from '../ai/aidba';
+import { getConnection } from '../db/connections';
+import { getProjectById } from '../db/projects';
+import { getMemoryValue, getUserProjects, setMemoryValue } from '../db/slack';
+import { getTargetDbConnection } from '../targetdb/db';
 
 // Function to handle project-related commands
 async function handleProjectCommand(text: string, userId: string, conversationId: string): Promise<string> {
@@ -26,18 +26,18 @@ async function handleProjectCommand(text: string, userId: string, conversationId
     if (userProjects.length === 0) {
       return "You don't have access to any projects yet. Please ask your administrator to grant you access.";
     }
-    const projects = await Promise.all(userProjects.map(up => getProjectById(up.projectId)));
-    const projectList = projects.filter(p => p !== null).map(p => `- ${p.project?.name}`).join('\n');
+    const projects = await Promise.all(userProjects.map((up) => getProjectById(up.projectId)));
+    const projectList = projects
+      .filter((p) => p !== null)
+      .map((p) => `- ${p.project?.name}`)
+      .join('\n');
     return `Your projects:\n${projectList}\n\nUse 'use project <name>' to select a project.`;
   }
 
   return '';
 }
 
-export const generateResponse = async (
-  messages: CoreMessage[],
-  conversationId: string,
-) => {
+export const generateResponse = async (messages: CoreMessage[], conversationId: string) => {
   // Get the conversation context
   const lastMessage = messages[messages.length - 1];
   if (!lastMessage || lastMessage.role !== 'user') {
@@ -47,11 +47,15 @@ export const generateResponse = async (
   // Extract user context from the conversation ID
   const userContext = await getMemoryValue<any>('system', conversationId, 'userContext');
   if (!userContext) {
-    return "Error: User context not found.";
+    return 'Error: User context not found.';
   }
 
   // Handle project-related commands
-  const projectCommandResponse = await handleProjectCommand(lastMessage.content as string, userContext.userId, conversationId);
+  const projectCommandResponse = await handleProjectCommand(
+    lastMessage.content as string,
+    userContext.userId,
+    conversationId
+  );
   if (projectCommandResponse) {
     return projectCommandResponse;
   }
@@ -65,7 +69,7 @@ export const generateResponse = async (
   // Get the database connection for the current project
   const connection = await getConnection(projectId);
   if (!connection) {
-    return "No database connection found for this project. Please set up a connection first.";
+    return 'No database connection found for this project. Please set up a connection first.';
   }
 
   // Get the database client
@@ -73,13 +77,13 @@ export const generateResponse = async (
 
   // Generate the response using the AI model
   const { text } = await generateText({
-    model: getModelInstance("openai-gpt-4o"),
+    model: getModelInstance('openai-gpt-4o'),
     messages,
     system: chatSystemPrompt,
     tools: await getTools(connection, targetClient),
-    maxSteps: 20,
+    maxSteps: 20
   });
 
   // Convert markdown to Slack mrkdwn format
-  return text.replace(/\[(.*?)\]\((.*?)\)/g, "<$2|$1>").replace(/\*\*/g, "*");
+  return text.replace(/\[(.*?)\]\((.*?)\)/g, '<$2|$1>').replace(/\*\*/g, '*');
 };
