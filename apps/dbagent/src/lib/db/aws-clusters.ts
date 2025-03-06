@@ -63,8 +63,8 @@ export async function getClusterByConnection(connectionId: string): Promise<AWSC
   });
 }
 
-export async function getClusters(): Promise<AWSCluster[]> {
+export async function getClusters(projectId: string): Promise<AWSCluster[]> {
   return queryDb(async ({ db }) => {
-    return await db.select().from(awsClusters);
+    return await db.select().from(awsClusters).where(eq(awsClusters.projectId, projectId));
   });
 }

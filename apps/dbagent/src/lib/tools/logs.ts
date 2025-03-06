@@ -5,7 +5,7 @@ import { getIntegration } from '../db/integrations';
 
 export async function getInstanceLogs(connection: Connection): Promise<string> {
   // Get AWS credentials from integrations
-  const awsCredentials = await getIntegration('aws');
+  const awsCredentials = await getIntegration(connection.projectId, 'aws');
   if (!awsCredentials) {
     return 'AWS credentials not configured';
   }

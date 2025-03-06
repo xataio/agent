@@ -38,7 +38,7 @@ export function SlackIntegration({ projectId }: { projectId: string }) {
   useEffect(() => {
     const fetchWebhookUrl = async () => {
       try {
-        const data = await getIntegration('slack');
+        const data = await getIntegration(projectId, 'slack');
         if (data) {
           setValue('webhookUrl', data.webhookUrl);
         }

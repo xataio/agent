@@ -8,7 +8,7 @@ export async function getClusterMetric(
   metricName: string,
   periodInSeconds: number
 ): Promise<string> {
-  const awsCredentials = await getIntegration('aws');
+  const awsCredentials = await getIntegration(connection.projectId, 'aws');
   if (!awsCredentials) {
     return 'AWS credentials not configured';
   }

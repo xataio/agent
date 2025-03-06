@@ -19,12 +19,12 @@ export async function getCompletedTasks(projectId: string): Promise<string[]> {
     completedTasks.push('collect');
   }
 
-  const clusters = await getClusters();
+  const clusters = await getClusters(projectId);
   if (clusters.length > 0) {
     completedTasks.push('cloud');
   }
 
-  const slack = await getIntegration('slack');
+  const slack = await getIntegration(projectId, 'slack');
   if (slack) {
     completedTasks.push('notifications');
   }

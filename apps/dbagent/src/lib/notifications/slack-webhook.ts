@@ -15,7 +15,7 @@ export async function sendScheduleNotification(
   message: string,
   extraNotificationText?: string
 ) {
-  const slack = await getIntegration('slack');
+  const slack = await getIntegration(connection.projectId, 'slack');
   if (!slack) {
     console.error('No Slack integration configured.');
     return;

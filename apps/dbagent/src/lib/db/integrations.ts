@@ -1,6 +1,6 @@
 'use server';
 
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { queryDb } from './db';
 import { integrations } from './schema';
 
@@ -48,9 +48,13 @@ export async function saveIntegration<
 export async function getIntegration<
   Key extends IntegrationTypes['type'],
   Value extends IntegrationTypes & { type: Key }
->(name: Key): Promise<Value['data'] | null> {
+>(projectId: string, name: Key): Promise<Value['data'] | null> {
   return queryDb(async ({ db }) => {
-    const result = await db.select().from(integrations).where(eq(integrations.name, name));
+    const result = await db
+      .select()
+      .from(integrations)
+      .where(and(eq(integrations.projectId, projectId), eq(integrations.name, name)));
+
     return (result[0]?.data as Value['data']) || null;
   });
 }
