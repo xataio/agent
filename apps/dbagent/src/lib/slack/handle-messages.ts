@@ -4,6 +4,7 @@ import type {
 } from "@slack/web-api";
 import { client, getThread, updateStatusUtil } from "./utils";
 import { generateResponse } from "./generate-response";
+import { getOrCreateSlackUser, getOrCreateSlackConversation, getMemoryValue } from "../db/slack";
 
 export async function assistantThreadMessage(
   event: AssistantThreadStartedEvent,
@@ -49,12 +50,43 @@ export async function handleNewAssistantMessage(
   )
     return;
 
-  const { thread_ts, channel } = event;
+  const { thread_ts, channel, user, team } = event;
   const updateStatus = updateStatusUtil(channel, thread_ts);
   updateStatus("is thinking...");
 
+  // Get or create user record
+  const slackUser = await getOrCreateSlackUser(user!, team ?? '');
+  if (!slackUser) {
+    return await client.chat.postMessage({
+      channel: channel,
+      thread_ts: thread_ts,
+      text: "Error: User not found",
+    });
+  }
+
+  // Get conversation context
+  const projectId = await getMemoryValue<string>(slackUser.id, channel, 'currentProjectId');
+  if (!projectId) {
+    return await client.chat.postMessage({
+      channel: channel,
+      thread_ts: thread_ts,
+      text: "Please set up a project first by saying 'use project <project_name>'"
+    });
+  }
+
+  // Get or create conversation record
+  const conversation = await getOrCreateSlackConversation(channel, team ?? '', projectId);
+  if (!conversation) {
+    return await client.chat.postMessage({
+      channel: channel,
+      thread_ts: thread_ts,
+      text: "Error: Conversation not found",
+    });
+  }
+
+
   const messages = await getThread(channel, thread_ts, botUserId);
-  const result = await generateResponse(messages);
+  const result = await generateResponse(messages, conversation.id);
 
   await client.chat.postMessage({
     channel: channel,
