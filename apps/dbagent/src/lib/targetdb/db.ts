@@ -287,3 +287,78 @@ export async function getVacuumStats(connString: string): Promise<VacuumStats[]>
     await client.end();
   }
 }
+
+export interface ConnectionsStats {
+  total_connections: number;
+  non_idle_connections: number;
+  max_connections: number;
+  connections_utilization_pctg: number;
+}
+
+export async function getConnectionsStats(connString: string): Promise<ConnectionsStats[]> {
+  const client = await getTargetDbConnection(connString);
+  try {
+    const result = await client.query(`
+SELECT
+    A.total_connections,
+    A.non_idle_connections,
+    B.max_connections,
+    round((100 * A.total_connections::numeric / B.max_connections::numeric), 2) connections_utilization_pctg
+FROM
+    (select count(1) as total_connections, sum(case when state!='idle' then 1 else 0 end) as non_idle_connections from pg_stat_activity) A,
+    (select setting as max_connections from pg_settings where name='max_connections') B;
+`);
+    return result.rows;
+  } finally {
+    await client.end();
+  }
+}
+
+export interface ConnectionDetails {
+  total_connections: number;
+  state: string;
+  user: string;
+  application_name: string;
+  client_addr: string;
+  wait_event_type: string;
+  wait_event: string;
+}
+
+export async function getConnectionsGroups(connString: string): Promise<ConnectionDetails[]> {
+  const client = await getTargetDbConnection(connString);
+  try {
+    const result = await client.query(`
+SELECT 
+    count(*) AS total_connections,
+    state,
+    usename AS user,
+    application_name,
+    client_addr,
+    wait_event_type,
+    wait_event
+FROM pg_stat_activity
+GROUP BY 
+    state, 
+    usename, 
+    application_name, 
+    client_addr, 
+    wait_event_type, 
+    wait_event
+ORDER BY total_connections DESC;`);
+    return result.rows;
+  } finally {
+    await client.end();
+  }
+}
+
+export async function getOldestIdleConnections(connString: string): Promise<ConnectionDetails[]> {
+  const client = await getTargetDbConnection(connString);
+  try {
+    const result = await client.query(`
+      SELECT * FROM pg_stat_activity WHERE state = 'idle' ORDER BY query_start ASC LIMIT 10;
+    `);
+    return result.rows;
+  } finally {
+    await client.end();
+  }
+}
