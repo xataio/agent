@@ -13,6 +13,12 @@ const schema = z.object({
   AUTH_OPENID_SECRET: z.string().optional(),
   AUTH_OPENID_ISSUER: z.string().optional(),
 
+  // Slack OAuth settings
+  SLACK_CLIENT_ID: z.string().optional(),
+  SLACK_CLIENT_SECRET: z.string().optional(),
+  SLACK_SIGNING_SECRET: z.string().optional(),
+  SLACK_BOT_TOKEN: z.string().optional(),
+
   // LLM API credentials
   OPENAI_API_KEY: z.string(),
   DEEPSEEK_API_KEY: z.string().optional(),
