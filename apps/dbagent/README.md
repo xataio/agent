@@ -10,7 +10,7 @@ the Node version from `.nvrmc`.
 If you do not have `pnpm` installed run:
 
 ```sh
-npm install -g pnpm@^9
+npm install -g pnpm@^10
 ```
 
 Install dependencies:
