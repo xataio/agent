@@ -14,16 +14,17 @@ export async function queryDb<T>(
   { admin = false }: { admin?: boolean } = {}
 ): Promise<T> {
   const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) {
-    throw new Error('Not authenticated');
-  }
+  const userId = session?.user?.id ?? '';
 
   const client = await pool.connect();
 
   try {
     const db = drizzle(client);
     if (!admin) {
+      if (userId === '') {
+        throw new Error('Unable to query the database without a user');
+      }
+
       await db.execute(sql.raw(`SET ROLE "user"`));
       await db.execute(sql.raw(`SET "app.current_user" = '${userId}'`));
     }
