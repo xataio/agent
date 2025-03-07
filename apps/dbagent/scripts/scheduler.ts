@@ -3,10 +3,11 @@ const SCHEDULER_TICK_INTERVAL_SECONDS = parseInt(
   process.env.SCHEDULER_TICK_INTERVAL_SECONDS || (process.env.NODE_ENV === 'production' ? '60' : '10'),
   10
 );
+const PORT = process.env.PORT || 4001;
 
 async function tick() {
   try {
-    const response = await fetch('http://localhost:4001/api/priv/schedule-tick', {
+    const response = await fetch(`http://localhost:${PORT}/api/priv/schedule-tick`, {
       method: 'POST'
     });
 
