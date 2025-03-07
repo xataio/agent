@@ -1,5 +1,6 @@
 'use client';
 import {
+  cn,
   ScrollArea,
   Sidebar,
   SidebarContent,
@@ -44,22 +45,28 @@ const TestSidebar = ({
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {evalSummaries.map((evalSummary) => (
-                <SidebarMenuItem key={evalSummary.id}>
-                  <SidebarMenuButton
-                    onClick={() => onTestSelect(evalSummary.id)}
-                    isActive={selectedTest === evalSummary.id}
-                    className="justify-between"
-                  >
-                    <span>{evalSummary.id}</span>
-                    {evalSummary.result === 'passed' ? (
-                      <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    ) : (
-                      <CircleX className="h-4 w-4 text-red-600 dark:text-red-400" />
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {evalSummaries.map((evalSummary) => {
+                const isActive = selectedTest === evalSummary.id;
+                return (
+                  <SidebarMenuItem key={evalSummary.id}>
+                    <SidebarMenuButton
+                      onClick={() => onTestSelect(evalSummary.id)}
+                      isActive={isActive}
+                      className={cn(
+                        'cursor-pointer justify-between transition-colors',
+                        isActive ? 'bg-primary/20 dark:bg-primary/30 font-medium' : 'hover:bg-muted/50'
+                      )}
+                    >
+                      <span>{evalSummary.id}</span>
+                      {evalSummary.result === 'passed' ? (
+                        <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                      ) : (
+                        <CircleX className="h-4 w-4 text-red-600 dark:text-red-400" />
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -86,7 +93,7 @@ const TestFiles = ({ files, isLoading, error }: { files: EvalFile[] | undefined;
   }
   return (
     <Tabs defaultValue={files[0]?.fileName} className="h-full">
-      <div className="flex items-center justify-between">
+      <div className="mt-4 flex items-center justify-between">
         <TabsList>
           {files.map((file) => {
             return (
