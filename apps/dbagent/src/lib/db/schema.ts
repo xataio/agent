@@ -8,6 +8,7 @@ import {
   jsonb,
   pgEnum,
   pgPolicy,
+  pgRole,
   pgTable,
   text,
   timestamp,
@@ -16,6 +17,8 @@ import {
   varchar
 } from 'drizzle-orm/pg-core';
 import { RDSClusterDetailedInfo } from '../aws/rds';
+
+export const user = pgRole('user', { inherit: true });
 
 export const scheduleStatus = pgEnum('schedule_status', ['disabled', 'scheduled', 'running']);
 export const notificationLevel = pgEnum('notification_level', ['info', 'warning', 'alert']);
@@ -39,6 +42,7 @@ export const awsClusters = pgTable(
     unique('uq_aws_clusters_integration_identifier').on(table.clusterIdentifier),
     index('idx_aws_clusters_project_id').on(table.projectId),
     pgPolicy('aws_clusters_policy', {
+      to: user,
       for: 'all',
       using: sql`EXISTS (
         SELECT 1 FROM project_members
@@ -67,6 +71,7 @@ export const connections = pgTable(
     unique('uq_connections_connection_string').on(table.projectId, table.connectionString),
     index('idx_connections_project_id').on(table.projectId),
     pgPolicy('connections_policy', {
+      to: user,
       for: 'all',
       using: sql`EXISTS (
         SELECT 1 FROM project_members
@@ -100,6 +105,7 @@ export const connectionInfo = pgTable(
     index('idx_connection_info_connection_id').on(table.connectionId),
     index('idx_connection_info_project_id').on(table.projectId),
     pgPolicy('connection_info_policy', {
+      to: user,
       for: 'all',
       using: sql`EXISTS (
         SELECT 1 FROM project_members
@@ -126,6 +132,7 @@ export const integrations = pgTable(
     unique('uq_integrations_name').on(table.projectId, table.name),
     index('idx_integrations_project_id').on(table.projectId),
     pgPolicy('integrations_policy', {
+      to: user,
       for: 'all',
       using: sql`EXISTS (
         SELECT 1 FROM project_members
@@ -163,6 +170,7 @@ export const awsClusterConnections = pgTable(
     index('idx_aws_cluster_conn_connection_id').on(table.connectionId),
     index('idx_aws_cluster_conn_project_id').on(table.projectId),
     pgPolicy('aws_cluster_connections_policy', {
+      to: user,
       for: 'all',
       using: sql`EXISTS (
         SELECT 1 FROM project_members
@@ -212,6 +220,7 @@ export const schedules = pgTable(
     index('idx_schedules_next_run').on(table.nextRun),
     index('idx_schedules_enabled').on(table.enabled),
     pgPolicy('schedules_policy', {
+      to: user,
       for: 'all',
       using: sql`EXISTS (
         SELECT 1 FROM project_members
@@ -249,6 +258,7 @@ export const scheduleRuns = pgTable(
     index('idx_schedule_runs_project_id').on(table.projectId),
     index('idx_schedule_runs_notification_level').on(table.notificationLevel),
     pgPolicy('schedule_runs_policy', {
+      to: user,
       for: 'all',
       using: sql`EXISTS (
         SELECT 1 FROM project_members
@@ -266,6 +276,7 @@ export const projects = pgTable(
   },
   () => [
     pgPolicy('projects_view_policy', {
+      to: user,
       for: 'select',
       using: sql`EXISTS (
       SELECT 1 FROM project_members
@@ -273,10 +284,12 @@ export const projects = pgTable(
     )`
     }),
     pgPolicy('projects_create_policy', {
+      to: user,
       for: 'insert',
       withCheck: sql`true`
     }),
     pgPolicy('projects_update_policy', {
+      to: user,
       for: 'update',
       using: sql`EXISTS (
       SELECT 1 FROM project_members
@@ -284,6 +297,7 @@ export const projects = pgTable(
     )`
     }),
     pgPolicy('projects_delete_policy', {
+      to: user,
       for: 'delete',
       using: sql`EXISTS (
       SELECT 1 FROM project_members
@@ -309,31 +323,8 @@ export const projectMembers = pgTable(
       name: 'fk_project_members_project'
     }),
     unique('uq_project_members_user_project').on(table.projectId, table.userId),
-    index('idx_project_members_project_id').on(table.projectId),
-    pgPolicy('project_members_view_policy', {
-      for: 'select',
-      using: sql`EXISTS (
-        SELECT 1 FROM project_members pm
-        WHERE pm.project_id = project_id AND pm.user_id = current_setting('app.current_user', true)::TEXT
-      )`
-    }),
-    pgPolicy('project_members_insert_policy', {
-      for: 'insert',
-      withCheck: sql`EXISTS (
-        SELECT 1 FROM project_members
-        WHERE project_id = project_id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'
-      )`
-    }),
-    pgPolicy('project_members_delete_self_policy', {
-      for: 'delete',
-      using: sql`user_id = current_setting('app.current_user', true)::TEXT`
-    }),
-    pgPolicy('project_members_delete_others_policy', {
-      for: 'delete',
-      using: sql`EXISTS (
-        SELECT 1 FROM project_members
-        WHERE project_id = project_id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'
-      )`
-    })
+    index('idx_project_members_project_id').on(table.projectId)
+    // Project members don't have a policy, to avoid circular dependencies.
+    // Instead, we use the project policies to control access to project members.
   ]
 );

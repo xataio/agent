@@ -1,5 +1,5 @@
 {
-  "id": "e81757cc-5adf-4a1c-a3e0-dbfad4df55a4",
+  "id": "cc5173c5-880a-4dc6-8717-be9e545d6390",
   "prevId": "a626c3ba-915d-43f6-a5e8-388c9b37266f",
   "version": "7",
   "dialect": "postgresql",
@@ -117,7 +117,7 @@
           "name": "aws_cluster_connections_policy",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": ["public"],
+          "to": ["app_user"],
           "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = aws_cluster_connections.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
         }
       },
@@ -202,7 +202,7 @@
           "name": "aws_clusters_policy",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": ["public"],
+          "to": ["app_user"],
           "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = aws_clusters.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
         }
       },
@@ -310,7 +310,7 @@
           "name": "connection_info_policy",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": ["public"],
+          "to": ["app_user"],
           "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = connection_info.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
         }
       },
@@ -400,7 +400,7 @@
           "name": "connections_policy",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": ["public"],
+          "to": ["app_user"],
           "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = connections.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
         }
       },
@@ -478,7 +478,7 @@
           "name": "integrations_policy",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": ["public"],
+          "to": ["app_user"],
           "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = integrations.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
         }
       },
@@ -560,36 +560,7 @@
           "columns": ["project_id", "user_id"]
         }
       },
-      "policies": {
-        "project_members_view_policy": {
-          "name": "project_members_view_policy",
-          "as": "PERMISSIVE",
-          "for": "SELECT",
-          "to": ["public"],
-          "using": "EXISTS (\n        SELECT 1 FROM project_members pm\n        WHERE pm.project_id = project_id AND pm.user_id = current_setting('app.current_user', true)::TEXT\n      )"
-        },
-        "project_members_insert_policy": {
-          "name": "project_members_insert_policy",
-          "as": "PERMISSIVE",
-          "for": "INSERT",
-          "to": ["public"],
-          "withCheck": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = project_id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'\n      )"
-        },
-        "project_members_delete_self_policy": {
-          "name": "project_members_delete_self_policy",
-          "as": "PERMISSIVE",
-          "for": "DELETE",
-          "to": ["public"],
-          "using": "user_id = current_setting('app.current_user', true)::TEXT"
-        },
-        "project_members_delete_others_policy": {
-          "name": "project_members_delete_others_policy",
-          "as": "PERMISSIVE",
-          "for": "DELETE",
-          "to": ["public"],
-          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = project_id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'\n      )"
-        }
-      },
+      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -620,28 +591,28 @@
           "name": "projects_view_policy",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": ["public"],
+          "to": ["app_user"],
           "using": "EXISTS (\n      SELECT 1 FROM project_members\n      WHERE project_id = id AND user_id = current_setting('app.current_user', true)::TEXT\n    )"
         },
         "projects_create_policy": {
           "name": "projects_create_policy",
           "as": "PERMISSIVE",
           "for": "INSERT",
-          "to": ["public"],
+          "to": ["app_user"],
           "withCheck": "true"
         },
         "projects_update_policy": {
           "name": "projects_update_policy",
           "as": "PERMISSIVE",
           "for": "UPDATE",
-          "to": ["public"],
+          "to": ["app_user"],
           "using": "EXISTS (\n      SELECT 1 FROM project_members\n      WHERE project_id = id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'\n    )"
         },
         "projects_delete_policy": {
           "name": "projects_delete_policy",
           "as": "PERMISSIVE",
           "for": "DELETE",
-          "to": ["public"],
+          "to": ["app_user"],
           "using": "EXISTS (\n      SELECT 1 FROM project_members\n      WHERE project_id = id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'\n    )"
         }
       },
@@ -800,7 +771,7 @@
           "name": "schedule_runs_policy",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": ["public"],
+          "to": ["app_user"],
           "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = schedule_runs.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
         }
       },
@@ -1039,7 +1010,7 @@
           "name": "schedules_policy",
           "as": "PERMISSIVE",
           "for": "ALL",
-          "to": ["public"],
+          "to": ["app_user"],
           "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = schedules.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
         }
       },
@@ -1066,7 +1037,14 @@
   },
   "schemas": {},
   "sequences": {},
-  "roles": {},
+  "roles": {
+    "app_user": {
+      "name": "app_user",
+      "createDb": false,
+      "createRole": false,
+      "inherit": true
+    }
+  },
   "policies": {},
   "views": {},
   "_meta": {

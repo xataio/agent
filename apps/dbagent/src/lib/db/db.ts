@@ -10,7 +10,8 @@ const pool = new Pool({
 });
 
 export async function queryDb<T>(
-  callback: (params: { db: ReturnType<typeof drizzle>; userId: string }) => Promise<T>
+  callback: (params: { db: ReturnType<typeof drizzle>; userId: string }) => Promise<T>,
+  { admin = false }: { admin?: boolean } = {}
 ): Promise<T> {
   const session = await auth();
   const userId = session?.user?.id;
@@ -22,9 +23,14 @@ export async function queryDb<T>(
 
   try {
     const db = drizzle(client);
-    await db.execute(sql.raw(`SET LOCAL "app.current_user" = '${userId}'`));
+    if (!admin) {
+      await db.execute(sql.raw(`SET ROLE "user"`));
+      await db.execute(sql.raw(`SET "app.current_user" = '${userId}'`));
+    }
+
     return await callback({ db, userId });
   } finally {
-    client.release();
+    // Destroy the client to release the connection back to the pool
+    client.release(true);
   }
 }

@@ -1,11 +1,12 @@
 import { scheduleGetNextRun } from '~/components/monitoring/schedule';
 import {
-  getSchedules,
   incrementScheduleFailures,
   Schedule,
   setScheduleStatusRunning,
   updateScheduleRunData
 } from '~/lib/db/schedules';
+import { queryDb } from '../db/db';
+import { schedules as schedulesSchema } from '../db/schema';
 import { env } from '../env/server';
 import { runSchedule } from './runner';
 
@@ -35,10 +36,16 @@ export function shouldRunSchedule(schedule: Schedule, now: Date): boolean {
   return now >= nextRun;
 }
 
-export async function checkAndRunJobs() {
-  console.log('Checking and running jobs');
+export async function checkAndRunJobsAsAdmin() {
+  console.log('Checking and running jobs as admin');
   try {
-    const schedules = await getSchedules();
+    const schedules = await queryDb(
+      async ({ db }) => {
+        return await db.select().from(schedulesSchema);
+      },
+      { admin: true }
+    );
+
     const now = new Date();
 
     // Filter schedules that should run
