@@ -130,15 +130,19 @@ const fetchFiles = async (folderPath: string) => {
   return evalResponseSchema.parse(await response.json());
 };
 
-export const TestSuiteViewer: React.FC<{ evalSummaries: TestCaseSummary[]; evalFolder: string }> = ({
-  evalSummaries,
-  evalFolder
-}) => {
-  const firstEval = evalSummaries[0];
-  if (!firstEval) {
+export const TestSuiteViewer: React.FC<{
+  evalSummaries: TestCaseSummary[];
+  evalFolder: string;
+  initialEvalId: string | undefined;
+}> = ({ evalSummaries, evalFolder, initialEvalId }) => {
+  const initialEval = initialEvalId
+    ? evalSummaries.find((evalSummary) => evalSummary.id === initialEvalId)
+    : evalSummaries[0];
+
+  if (!initialEval) {
     return <div>No evals found</div>;
   }
-  const [selectedEval, setSelectedEval] = useState<string>(firstEval.id);
+  const [selectedEval, setSelectedEval] = useState<string>(initialEval.id);
 
   const {
     data: filesData,

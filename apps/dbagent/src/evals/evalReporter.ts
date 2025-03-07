@@ -28,7 +28,8 @@ export const evalReporter: Reporter = {
     const csvTestResults = testResults.map((testResult) => {
       const result: any = {
         id: testResult.id,
-        result: testResult.result
+        result: testResult.result,
+        ui: `http://localhost:4001/evals?folder=${evalTraceFolder}&evalId=${testResult.id}`
       };
       testResult.logFiles.forEach((logFile, index) => {
         result[`logfile_${index}`] = logFile;
@@ -39,7 +40,7 @@ export const evalReporter: Reporter = {
     const csvContents = Papa.unparse(csvTestResults);
     fs.writeFileSync(path.join(evalTraceFolder, EVAL_RESULTS_CSV_FILE_NAME), csvContents);
 
-    console.log(`View eval results: http://localhost:4001/evals/${encodeURIComponent(evalTraceFolder)}`);
+    console.log(`View eval results: http://localhost:4001/evals?folder=${evalTraceFolder}`);
   },
   onTestCaseResult: (testCase) => {
     if (['skipped', 'pending'].includes(testCase.result().state)) {
