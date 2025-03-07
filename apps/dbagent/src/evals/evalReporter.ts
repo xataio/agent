@@ -2,19 +2,9 @@ import fs from 'fs';
 import Papa from 'papaparse';
 import path from 'path';
 import { Reporter } from 'vitest/reporters';
-import z from 'zod';
+import { EVAL_RESULT_FILE_NAME, EVAL_RESULTS_CSV_FILE_NAME, EVAL_RESULTS_FILE_NAME } from './lib/consts';
+import { TestCaseResult, testCaseResultSchema, testCaseSummarySchema } from './lib/schemas';
 import { ensureTestRunTraceFolderExists, ensureTraceFolderExists, testNameToEvalId } from './lib/testId';
-
-const testCaseResultSchema = z.object({ id: z.string(), result: z.enum(['passed', 'failed']) }).strict();
-type TestCaseResult = z.infer<typeof testCaseResultSchema>;
-
-const testCaseSummarySchema = z
-  .object({
-    id: z.string(),
-    result: z.enum(['passed', 'failed']),
-    logFiles: z.array(z.string())
-  })
-  .strict();
 
 export const evalReporter: Reporter = {
   onTestRunEnd: () => {
@@ -23,17 +13,17 @@ export const evalReporter: Reporter = {
     const folders = fs.readdirSync(evalTraceFolder);
     const testResults = folders.map((folder) => {
       const testResult = testCaseResultSchema.parse(
-        JSON.parse(fs.readFileSync(path.join(evalTraceFolder, folder, 'testResult.json'), 'utf-8'))
+        JSON.parse(fs.readFileSync(path.join(evalTraceFolder, folder, EVAL_RESULT_FILE_NAME), 'utf-8'))
       );
       const logFiles = fs
         .readdirSync(path.join(evalTraceFolder, folder))
-        .filter((file) => file !== 'testResult.json')
+        .filter((file) => file !== EVAL_RESULT_FILE_NAME)
         .map((file) => path.join(evalTraceFolder, folder, file));
 
       const testCaseSummary = testCaseSummarySchema.parse({ ...testResult, logFiles });
       return testCaseSummary;
     });
-    fs.writeFileSync(path.join(evalTraceFolder, 'testResults.json'), JSON.stringify(testResults, null, 2));
+    fs.writeFileSync(path.join(evalTraceFolder, EVAL_RESULTS_FILE_NAME), JSON.stringify(testResults, null, 2));
 
     const csvTestResults = testResults.map((testResult) => {
       const result: any = {
@@ -47,7 +37,9 @@ export const evalReporter: Reporter = {
     });
 
     const csvContents = Papa.unparse(csvTestResults);
-    fs.writeFileSync(path.join(evalTraceFolder, 'testResults.csv'), csvContents);
+    fs.writeFileSync(path.join(evalTraceFolder, EVAL_RESULTS_CSV_FILE_NAME), csvContents);
+
+    console.log(`View eval results: http://localhost:4001/evals/${encodeURIComponent(evalTraceFolder)}`);
   },
   onTestCaseResult: (testCase) => {
     if (['skipped', 'pending'].includes(testCase.result().state)) {
@@ -63,6 +55,6 @@ export const evalReporter: Reporter = {
     const evalId = testNameToEvalId(testCase.name);
     const traceFolder = ensureTraceFolderExists(evalId);
 
-    fs.writeFileSync(path.join(traceFolder, `testResult.json`), JSON.stringify(testCaseResult, null, 2));
+    fs.writeFileSync(path.join(traceFolder, EVAL_RESULT_FILE_NAME), JSON.stringify(testCaseResult, null, 2));
   }
 };
