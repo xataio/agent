@@ -57,15 +57,8 @@ ENV PORT=4001
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy the standalone output
-COPY --from=builder /app/apps/dbagent/.next/standalone/ ./
-
-# Copy the static files to the correct location
-# For Next.js standalone mode, static files need to be in .next/static within the same directory as server.js
-COPY --from=builder /app/apps/dbagent/.next/static/ ./apps/dbagent/.next/static/
-
-# Create public directory in the final image
-RUN mkdir -p ./apps/dbagent/public
+# Copy the entire project structure to preserve module resolution
+COPY --from=builder /app ./
 
 # Set correct permissions
 RUN chown -R nextjs:nodejs /app
@@ -76,5 +69,11 @@ USER nextjs
 # Expose the port the app will run on
 EXPOSE 4001
 
-# Start the Next.js application
-CMD ["node", "./apps/dbagent/server.js"] 
+# Set the working directory to the app
+WORKDIR /app/apps/dbagent
+
+# Configure NODE_PATH to help with module resolution 
+ENV NODE_PATH=/app/node_modules
+
+# Start the Next.js application using pnpm
+CMD ["sh", "-c", "pnpm next start --port $PORT"] 

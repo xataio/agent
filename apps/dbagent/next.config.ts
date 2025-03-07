@@ -14,8 +14,7 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return [];
-  },
-  output: 'standalone'
+  }
 };
 
 export default nextConfig;
