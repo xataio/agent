@@ -51,7 +51,7 @@ WORKDIR /app
 
 # Set production environment variables
 ENV NODE_ENV=production
-ENV PORT=4001
+ENV PORT=8080
 
 # Create a non-root user
 RUN addgroup --system --gid 1001 nodejs && \
@@ -67,7 +67,7 @@ RUN chown -R nextjs:nodejs /app
 USER nextjs
 
 # Expose the port the app will run on
-EXPOSE 4001
+EXPOSE 8080
 
 # Set the working directory to the app
 WORKDIR /app/apps/dbagent
