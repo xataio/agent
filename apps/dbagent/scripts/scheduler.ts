@@ -1,3 +1,9 @@
+/* eslint-disable no-process-env */
+const SCHEDULER_TICK_INTERVAL_SECONDS = parseInt(
+  process.env.SCHEDULER_TICK_INTERVAL_SECONDS || (process.env.NODE_ENV === 'production' ? '60' : '10'),
+  10
+);
+
 async function tick() {
   try {
     const response = await fetch('http://localhost:4001/api/priv/schedule-tick', {
@@ -14,11 +20,9 @@ async function tick() {
   }
 }
 
-// Run tick every 10 seconds
-const INTERVAL_MS = 10000;
-console.log(`Starting scheduler with ${INTERVAL_MS}ms interval`);
+// Read interval from environment (in seconds), default to 10 seconds
+// Convert seconds to milliseconds for setInterval
+const intervalMs = SCHEDULER_TICK_INTERVAL_SECONDS * 1000;
+console.log(`Starting scheduler with ${SCHEDULER_TICK_INTERVAL_SECONDS}s interval (${intervalMs}ms)`);
 
-setInterval(tick, INTERVAL_MS);
-
-// Run immediately on start
-void tick();
+setInterval(tick, intervalMs);

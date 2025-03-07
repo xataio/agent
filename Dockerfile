@@ -75,5 +75,5 @@ WORKDIR /app/apps/dbagent
 # Configure NODE_PATH to help with module resolution 
 ENV NODE_PATH=/app/node_modules
 
-# Start the Next.js application using pnpm
-CMD ["sh", "-c", "pnpm next start --port $PORT"] 
+# Start both the scheduler and the Next.js application
+CMD ["sh", "-c", "pnpm tsx scripts/scheduler.ts & pnpm next start --port $PORT"] 
