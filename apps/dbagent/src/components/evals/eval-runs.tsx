@@ -97,7 +97,7 @@ const TestFiles = ({ files, isLoading, error }: { files: EvalFile[] | undefined;
         <TabsList>
           {files.map((file) => {
             return (
-              <TabsTrigger value={file.fileName} className="flex items-center gap-1" key={file.fileName}>
+              <TabsTrigger value={file.fileName} className="flex cursor-pointer items-center gap-1" key={file.fileName}>
                 <FileText className="h-4 w-4" />
                 {file.fileName}
               </TabsTrigger>
