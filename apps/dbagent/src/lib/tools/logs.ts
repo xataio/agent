@@ -26,6 +26,22 @@ export async function getInstanceLogs(connection: Connection): Promise<string> {
     logs = await getRDSInstanceLogs(cluster.clusterIdentifier, rdsClient);
   }
 
+  // Trim logs if total size exceeds 5KB
+  const maxSize = 5 * 1024; // 5KB in bytes
+  let totalSize = 0;
+  const trimmedLogs = [];
+
+  for (const log of logs) {
+    totalSize += Buffer.byteLength(log, 'utf8');
+    if (totalSize > maxSize) {
+      // Add note about truncation
+      trimmedLogs.push('\n[Log output truncated due to size limit...]');
+      break;
+    }
+    trimmedLogs.push(log);
+  }
+  logs = trimmedLogs;
+
   if (logs.length === 0) {
     return 'No logs found for the last 24 hours';
   }
