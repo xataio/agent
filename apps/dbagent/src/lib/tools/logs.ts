@@ -3,7 +3,13 @@ import { getClusterByConnection } from '../db/aws-clusters';
 import { Connection } from '../db/connections';
 import { getIntegration } from '../db/integrations';
 
-export async function getInstanceLogs(connection: Connection): Promise<string> {
+type GetInstanceLogsParams = {
+  connection: Connection;
+  periodInSeconds: number;
+  grep?: string;
+};
+
+export async function getInstanceLogs({ connection, periodInSeconds, grep }: GetInstanceLogsParams): Promise<string> {
   // Get AWS credentials from integrations
   const awsCredentials = await getIntegration('aws');
   if (!awsCredentials) {
@@ -18,12 +24,19 @@ export async function getInstanceLogs(connection: Connection): Promise<string> {
   // Initialize RDS client
   const rdsClient = initializeRDSClient(awsCredentials, cluster.region);
 
-  // Get logs from the last 24 hours
+  const startTime = new Date(Date.now() - periodInSeconds * 1000);
+
+  // Get the recent logs from the RDS instance
   let logs = [];
   if (!cluster.data.isStandaloneInstance) {
-    logs = await getRDSClusterLogs(cluster.clusterIdentifier, rdsClient);
+    logs = await getRDSClusterLogs(cluster.clusterIdentifier, rdsClient, startTime);
   } else {
-    logs = await getRDSInstanceLogs(cluster.clusterIdentifier, rdsClient);
+    logs = await getRDSInstanceLogs(cluster.clusterIdentifier, rdsClient, startTime);
+  }
+
+  // Filter logs if grep is provided
+  if (grep) {
+    logs = logs.filter((log) => log.includes(grep));
   }
 
   // Trim logs if total size exceeds 5KB

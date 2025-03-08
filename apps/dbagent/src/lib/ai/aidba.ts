@@ -2,18 +2,17 @@ import { anthropic } from '@ai-sdk/anthropic';
 import { deepseek } from '@ai-sdk/deepseek';
 import { openai } from '@ai-sdk/openai';
 import { LanguageModelV1, Tool } from 'ai';
-import { Client } from 'pg';
 import { z } from 'zod';
 import {
-  findTableSchema,
   getPerformanceAndVacuumSettings,
   getPostgresExtensions,
-  getTablesAndInstanceInfo
+  getTablesAndInstanceInfo,
+  toolFindTableSchema
 } from '~/lib/tools/dbinfo';
 import { getInstanceLogs } from '~/lib/tools/logs';
 import { getClusterMetric } from '~/lib/tools/metrics';
 import { getPlaybook, listPlaybooks } from '~/lib/tools/playbooks';
-import { describeTable, explainQuery, getSlowQueries } from '~/lib/tools/slow-queries';
+import { toolDescribeTable, toolExplainQuery, toolGetSlowQueries } from '~/lib/tools/slow-queries';
 import { Connection } from '../db/connections';
 import {
   toolCurrentActiveQueries,
@@ -48,7 +47,7 @@ Then use the contents of the playbook as an action plan. Execute the plan step b
 At the end of your execution, print a summary of the results.
 `;
 
-export async function getTools(connection: Connection, targetClient: Client): Promise<Record<string, Tool>> {
+export async function getTools(connection: Connection): Promise<Record<string, Tool>> {
   return {
     getCurrentTime: {
       description: 'Get the current time',
@@ -64,7 +63,9 @@ the max execution time in seconds, the mean execution time in seconds, the total
 (all calls together) in seconds, and the query itself.`,
       parameters: z.object({}),
       execute: async () => {
-        const slowQueries = await getSlowQueries(targetClient, 2000);
+        console.log('getSlowQueries');
+        const slowQueries = await toolGetSlowQueries(connection.connectionString, 2000);
+        console.log('slowQueries', JSON.stringify(slowQueries));
         return JSON.stringify(slowQueries);
       }
     },
@@ -81,7 +82,7 @@ If you know the schema, pass it in as well.`,
         if (!schema) {
           schema = 'public';
         }
-        const explain = await explainQuery(targetClient, schema, query);
+        const explain = await toolExplainQuery(connection.connectionString, schema, query);
         if (explain) {
           return explain;
         } else {
@@ -99,7 +100,7 @@ If you know the schema, pass it in as well.`,
         if (!schema) {
           schema = 'public';
         }
-        return await describeTable(targetClient, schema, table);
+        return await toolDescribeTable(connection.connectionString, schema, table);
       }
     },
     findTableSchema: {
@@ -108,7 +109,7 @@ If you know the schema, pass it in as well.`,
         table: z.string()
       }),
       execute: async ({ table }) => {
-        return await findTableSchema(targetClient, table);
+        return await toolFindTableSchema(connection.connectionString, table);
       }
     },
     getTablesAndInstanceInfo: {
@@ -134,14 +135,18 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
       }
     },
     getInstanceLogs: {
-      description: `Get the recent logs (last 24 hours) from the RDS instance.`,
-      parameters: z.object({}),
-      execute: async () => {
-        return await getInstanceLogs(connection);
+      description: `Get the recent logs from the RDS instance. You can specify the period in seconds and optionally grep for a substring.`,
+      parameters: z.object({
+        periodInSeconds: z.number(),
+        grep: z.string().optional()
+      }),
+      execute: async ({ periodInSeconds, grep }) => {
+        console.log('getInstanceLogs', periodInSeconds, grep);
+        return await getInstanceLogs({ connection, periodInSeconds, grep });
       }
     },
     getInstanceMetric: {
-      description: `Get the metrics for the RDS instance.`,
+      description: `Get the metrics for the RDS instance. You can specify the period in seconds.`,
       parameters: z.object({
         metricName: z.string(),
         periodInSeconds: z.number()
