@@ -1,23 +1,28 @@
 import { Message } from '@ai-sdk/ui-utils';
 import { generateId, generateObject, generateText, LanguageModelV1 } from 'ai';
-import { Client } from 'pg';
 import { z } from 'zod';
 import { getModelInstance, getTools, monitoringSystemPrompt } from '../ai/aidba';
 import { Connection, getConnection } from '../db/connections';
 import { insertScheduleRunLimitHistory, ScheduleRun } from '../db/schedule-runs';
 import { Schedule } from '../db/schedules';
 import { sendScheduleNotification } from '../notifications/slack-webhook';
-import { getTargetDbConnection } from '../targetdb/db';
 import { listPlaybooks } from '../tools/playbooks';
 
-async function runModelPlaybook(
-  messages: Message[],
-  modelInstance: LanguageModelV1,
-  connection: Connection,
-  targetClient: Client,
-  playbook: string,
-  additionalInstructions?: string
-) {
+type RunModelPlaybookParams = {
+  messages: Message[];
+  modelInstance: LanguageModelV1;
+  connection: Connection;
+  playbook: string;
+  additionalInstructions?: string;
+};
+
+async function runModelPlaybook({
+  messages,
+  modelInstance,
+  connection,
+  playbook,
+  additionalInstructions
+}: RunModelPlaybookParams) {
   messages.push({
     id: generateId(),
     role: 'user',
@@ -29,7 +34,7 @@ async function runModelPlaybook(
     model: modelInstance,
     system: monitoringSystemPrompt,
     messages: messages,
-    tools: await getTools(connection, targetClient),
+    tools: await getTools(connection),
     maxSteps: 20
   });
 
@@ -165,69 +170,69 @@ export async function runSchedule(schedule: Schedule, now: Date) {
   if (!connection) {
     throw new Error(`Connection ${schedule.connectionId} not found`);
   }
-  const targetClient = await getTargetDbConnection(connection.connectionString);
-  try {
-    const modelInstance = getModelInstance(schedule.model);
-    const messages: Message[] = [];
+  const modelInstance = getModelInstance(schedule.model);
+  const messages: Message[] = [];
 
-    const result = await runModelPlaybook(
-      messages,
-      modelInstance,
-      connection,
-      targetClient,
-      schedule.playbook,
-      schedule.additionalInstructions ?? ''
-    );
-    messages.push({
-      id: generateId(),
-      role: 'assistant',
-      content: result.text,
-      createdAt: new Date()
-    });
+  const result = await runModelPlaybook({
+    messages,
+    modelInstance,
+    connection,
+    playbook: schedule.playbook,
+    additionalInstructions: schedule.additionalInstructions ?? ''
+  });
+  messages.push({
+    id: generateId(),
+    role: 'assistant',
+    content: result.text,
+    createdAt: new Date()
+  });
 
-    const notificationResult = await decideNotificationLevel(messages, modelInstance);
-    console.log('notificationResult', notificationResult);
+  const notificationResult = await decideNotificationLevel(messages, modelInstance);
+  console.log('notificationResult', notificationResult);
 
-    // drilling down to more actionable playbooks
-    if (schedule.maxSteps && shouldNotify(schedule.notifyLevel, notificationResult.notificationLevel)) {
-      let step = 1;
-      while (step < schedule.maxSteps) {
-        const recommendPlaybookResult = await decideNextPlaybook(messages, schedule, modelInstance);
-        if (!recommendPlaybookResult.shouldRunPlaybook || !recommendPlaybookResult.recommendedPlaybook) {
-          break;
-        }
-        const nextPlaybook = recommendPlaybookResult.recommendedPlaybook;
-        await runModelPlaybook(messages, modelInstance, connection, targetClient, nextPlaybook, '');
-        step++;
+  // drilling down to more actionable playbooks
+  if (schedule.maxSteps && shouldNotify(schedule.notifyLevel, notificationResult.notificationLevel)) {
+    let step = 1;
+    while (step < schedule.maxSteps) {
+      const recommendPlaybookResult = await decideNextPlaybook(messages, schedule, modelInstance);
+      if (!recommendPlaybookResult.shouldRunPlaybook || !recommendPlaybookResult.recommendedPlaybook) {
+        break;
       }
-    }
-
-    const resultText = await summarizeResult(messages, modelInstance);
-
-    // save the result in the database with all messages
-    const scheduleRun: Omit<ScheduleRun, 'id'> = {
-      projectId: schedule.projectId,
-      scheduleId: schedule.id,
-      result: resultText,
-      summary: notificationResult.summary,
-      notificationLevel: notificationResult.notificationLevel,
-      messages: messages,
-      createdAt: now.toISOString() // using the start time
-    };
-    const run = await insertScheduleRunLimitHistory(scheduleRun, schedule.keepHistory);
-
-    if (shouldNotify(schedule.notifyLevel, notificationResult.notificationLevel)) {
-      await sendScheduleNotification(
-        run,
-        schedule,
+      const nextPlaybook = recommendPlaybookResult.recommendedPlaybook;
+      await runModelPlaybook({
+        messages,
+        modelInstance,
         connection,
-        notificationResult.notificationLevel,
-        notificationResult.summary,
-        resultText,
-        schedule.extraNotificationText ?? undefined
-      );
+        playbook: nextPlaybook,
+        additionalInstructions: ''
+      });
+      step++;
     }
-  } finally {
-    await targetClient.end();
+  }
+
+  const resultText = await summarizeResult(messages, modelInstance);
+
+  // save the result in the database with all messages
+  const scheduleRun: Omit<ScheduleRun, 'id'> = {
+    projectId: connection.projectId,
+    scheduleId: schedule.id,
+    result: resultText,
+    summary: notificationResult.summary,
+    notificationLevel: notificationResult.notificationLevel,
+    messages: messages,
+    createdAt: now.toISOString() // using the start time
+  };
+  const run = await insertScheduleRunLimitHistory(scheduleRun, schedule.keepHistory);
+
+  if (shouldNotify(schedule.notifyLevel, notificationResult.notificationLevel)) {
+    await sendScheduleNotification(
+      run,
+      schedule,
+      connection,
+      notificationResult.notificationLevel,
+      notificationResult.summary,
+      resultText,
+      schedule.extraNotificationText ?? undefined
+    );
   }
 }

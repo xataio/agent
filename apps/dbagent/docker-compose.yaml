@@ -19,6 +19,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-dbagent}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-dbagent}
       NODE_ENV: production
       AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-localhost}
+    env_file: '.env.local'
     ports:
       - '8080:8080'
     depends_on:
