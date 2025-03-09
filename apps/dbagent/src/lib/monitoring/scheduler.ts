@@ -1,10 +1,11 @@
-import { scheduleGetNextRun } from '~/components/monitoring/schedule';
+import { CronExpressionParser } from 'cron-parser';
 import {
   incrementScheduleFailures,
   Schedule,
   setScheduleStatusRunning,
   updateScheduleRunData
 } from '~/lib/db/schedules';
+import { PartialBy } from '~/utils/types';
 import { queryDb } from '../db/db';
 import { schedules as schedulesSchema } from '../db/schema';
 import { env } from '../env/server';
@@ -14,6 +15,19 @@ export function utcToLocalDate(utcString: string): Date {
   const date = new Date(utcString);
   const offset = date.getTimezoneOffset() * 60000; // Convert offset to milliseconds
   return new Date(date.getTime() - offset);
+}
+
+export function scheduleGetNextRun(schedule: PartialBy<Schedule, 'id'>, now: Date): Date {
+  if (schedule.scheduleType === 'cron' && schedule.cronExpression) {
+    const interval = CronExpressionParser.parse(schedule.cronExpression);
+    return interval.next().toDate();
+  }
+  if (schedule.scheduleType === 'automatic' && schedule.minInterval) {
+    // TODO ask the model to get the interval, for now use the minInterval
+    const nextRun = new Date(now.getTime() + schedule.minInterval * 1000);
+    return nextRun;
+  }
+  return now;
 }
 
 export function shouldRunSchedule(schedule: Schedule, now: Date): boolean {
