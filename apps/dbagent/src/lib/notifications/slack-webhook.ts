@@ -44,13 +44,17 @@ export async function sendScheduleNotification(
           text: slackEmoji + ' ' + title
         }
       },
-      {
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: extraNotificationText ?? ''
-        }
-      },
+      ...(extraNotificationText
+        ? [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: extraNotificationText
+              }
+            }
+          ]
+        : []),
       {
         type: 'section',
         fields: [

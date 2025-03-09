@@ -10,7 +10,7 @@ the Node version from `.nvrmc`.
 If you do not have `pnpm` installed run:
 
 ```sh
-npm install -g pnpm@^9
+npm install -g pnpm@^10
 ```
 
 Install dependencies:
@@ -22,7 +22,7 @@ pnpm install
 Start postgres via the docker-compose file:
 
 ```bash
-docker compose up
+docker compose up postgres
 ```
 
 add it in `.env.local`:
@@ -48,4 +48,10 @@ In a separate terminal, run the scheduler. This is a simple script that calls th
 
 ```bash
 pnpm run dev-scheduler
+```
+
+## Run via Docker
+
+```bash
+docker compose up
 ```
