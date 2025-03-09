@@ -185,6 +185,7 @@ export const schedules = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     projectId: uuid('project_id').notNull(),
+    userId: text('user_id').notNull(),
     connectionId: uuid('connection_id').notNull(),
     playbook: varchar('playbook', { length: 255 }).notNull(),
     scheduleType: varchar('schedule_type', { length: 255 }).notNull(),

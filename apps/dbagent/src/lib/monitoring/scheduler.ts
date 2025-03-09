@@ -92,7 +92,7 @@ async function runJob(schedule: Schedule, now: Date) {
 
   if (schedule.status === 'scheduled') {
     try {
-      await setScheduleStatusRunning(schedule.id);
+      await setScheduleStatusRunning(schedule);
     } catch (error) {
       // I'm going to assume that some other worker has just picked this up
       // and will do the job
@@ -105,7 +105,7 @@ async function runJob(schedule: Schedule, now: Date) {
     await runSchedule(schedule, now);
   } catch (error) {
     console.error(`Error running playbook ${schedule.playbook}:`, error);
-    await incrementScheduleFailures(schedule.id);
+    await incrementScheduleFailures(schedule);
   }
 
   // Schedule the next run (also in case of errors)

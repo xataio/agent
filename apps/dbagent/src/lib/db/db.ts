@@ -11,10 +11,10 @@ const pool = new Pool({
 
 export async function queryDb<T>(
   callback: (params: { db: ReturnType<typeof drizzle>; userId: string }) => Promise<T>,
-  { admin = false }: { admin?: boolean } = {}
+  { admin = false, asUserId }: { admin?: boolean; asUserId?: string } = {}
 ): Promise<T> {
   const session = await auth();
-  const userId = session?.user?.id ?? '';
+  const userId = asUserId ?? session?.user?.id ?? '';
 
   // We'll use userId in raw SQL, so validate that it only contains valid UUID characters
   if (userId !== '' && userId !== 'local' && !/^[0-9a-f-]*$/i.test(userId)) {

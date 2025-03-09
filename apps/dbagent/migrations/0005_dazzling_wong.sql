@@ -1,0 +1,1 @@
+ALTER TABLE "schedules" ADD COLUMN "user_id" text NOT NULL;

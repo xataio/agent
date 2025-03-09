@@ -7,6 +7,7 @@ import { schedules } from './schema';
 export type Schedule = {
   id: string;
   projectId: string;
+  userId: string;
   connectionId: string;
   playbook: string;
   model: string;
@@ -68,41 +69,56 @@ export async function deleteSchedule(id: string): Promise<void> {
   });
 }
 
-export async function incrementScheduleFailures(id: string): Promise<void> {
-  return await queryDb(async ({ db }) => {
-    await db
-      .update(schedules)
-      .set({ failures: sql`${schedules.failures} + 1` })
-      .where(eq(schedules.id, id));
-  });
+export async function incrementScheduleFailures(schedule: Schedule): Promise<void> {
+  return await queryDb(
+    async ({ db }) => {
+      await db
+        .update(schedules)
+        .set({ failures: sql`${schedules.failures} + 1` })
+        .where(eq(schedules.id, schedule.id));
+    },
+    {
+      asUserId: schedule.userId
+    }
+  );
 }
 
-export async function setScheduleStatusRunning(id: string): Promise<void> {
-  return await queryDb(async ({ db }) => {
-    await db.transaction(async (trx) => {
-      const result = await trx
-        .select({ status: schedules.status })
-        .from(schedules)
-        .for('update')
-        .where(eq(schedules.id, id));
-      if (result[0]?.status === 'running') {
-        throw new Error(`Schedule ${id} is already running`);
-      }
-      await trx.update(schedules).set({ status: 'running' }).where(eq(schedules.id, id));
-    });
-  });
+export async function setScheduleStatusRunning(schedule: Schedule): Promise<void> {
+  return await queryDb(
+    async ({ db }) => {
+      await db.transaction(async (trx) => {
+        const result = await trx
+          .select({ status: schedules.status })
+          .from(schedules)
+          .for('update')
+          .where(eq(schedules.id, schedule.id));
+        if (result[0]?.status === 'running') {
+          throw new Error(`Schedule ${schedule.id} is already running`);
+        }
+        await trx.update(schedules).set({ status: 'running' }).where(eq(schedules.id, schedule.id));
+      });
+    },
+    {
+      asUserId: schedule.userId
+    }
+  );
 }
 
 export async function updateScheduleRunData(schedule: Schedule): Promise<void> {
-  return await queryDb(async ({ db }) => {
-    await db
-      .update(schedules)
-      .set({
-        nextRun: schedule.nextRun || null,
-        lastRun: schedule.lastRun || null,
-        status: schedule.status,
-        enabled: schedule.enabled
-      })
-      .where(eq(schedules.id, schedule.id));
-  });
+  return await queryDb(
+    async ({ db }) => {
+      await db
+        .update(schedules)
+        .set({
+          nextRun: schedule.nextRun || null,
+          lastRun: schedule.lastRun || null,
+          status: schedule.status,
+          enabled: schedule.enabled
+        })
+        .where(eq(schedules.id, schedule.id));
+    },
+    {
+      asUserId: schedule.userId
+    }
+  );
 }

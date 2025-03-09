@@ -115,7 +115,7 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
   }, [isEditMode, form.reset, scheduleId]);
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    const schedule: Omit<Schedule, 'id'> = {
+    const schedule: Omit<Schedule, 'id' | 'userId'> = {
       projectId,
       connectionId: connections.find((c) => c.name === data.connection)?.id.toString() || '',
       model: data.model,
