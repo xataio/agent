@@ -280,7 +280,7 @@ export const projects = pgTable(
       for: 'select',
       using: sql`EXISTS (
       SELECT 1 FROM project_members
-      WHERE project_id = id AND user_id = current_setting('app.current_user', true)::TEXT
+      WHERE project_id = projects.id AND user_id = current_setting('app.current_user', true)::TEXT
     )`
     }),
     pgPolicy('projects_create_policy', {
@@ -293,7 +293,7 @@ export const projects = pgTable(
       for: 'update',
       using: sql`EXISTS (
       SELECT 1 FROM project_members
-      WHERE project_id = id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'
+      WHERE project_id = projects.id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'
     )`
     }),
     pgPolicy('projects_delete_policy', {
@@ -301,7 +301,7 @@ export const projects = pgTable(
       for: 'delete',
       using: sql`EXISTS (
       SELECT 1 FROM project_members
-      WHERE project_id = id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'
+      WHERE project_id = projects.id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'
     )`
     })
   ]
@@ -323,8 +323,13 @@ export const projectMembers = pgTable(
       name: 'fk_project_members_project'
     }),
     unique('uq_project_members_user_project').on(table.projectId, table.userId),
-    index('idx_project_members_project_id').on(table.projectId)
-    // Project members don't have a policy, to avoid circular dependencies.
+    index('idx_project_members_project_id').on(table.projectId),
+    // Project members has an "allow all" policy, to avoid circular dependencies.
     // Instead, we use the project policies to control access to project members.
+    pgPolicy('projects_members_policy', {
+      to: user,
+      for: 'all',
+      using: sql`true`
+    })
   ]
 );

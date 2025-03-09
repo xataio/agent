@@ -9,30 +9,30 @@ export type Project = {
   name: string;
 };
 
+export async function generateProjectId(): Promise<string> {
+  return crypto.randomUUID();
+}
+
 export async function createProject(project: Omit<Project, 'id'>): Promise<string> {
+  const projectId = await generateProjectId();
   return await queryDb(async ({ db, userId }) => {
     // Create the project
-    const result = await db.insert(projects).values(project).returning({ id: projects.id });
-
-    if (!result[0]) {
-      throw new Error('Failed to create project');
-    }
+    await db.insert(projects).values({ ...project, id: projectId });
 
     // Create the project member relationship with owner role
     await db.insert(projectMembers).values({
-      projectId: result[0].id,
+      projectId: projectId,
       userId: userId,
       role: 'owner'
     });
 
-    return result[0].id;
+    return projectId;
   });
 }
 
 export async function getProjectById(id: string): Promise<Project | null> {
   return await queryDb(async ({ db }) => {
     const results = await db.select().from(projects).where(eq(projects.id, id));
-
     return results[0] ?? null;
   });
 }

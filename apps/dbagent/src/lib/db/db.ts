@@ -16,6 +16,11 @@ export async function queryDb<T>(
   const session = await auth();
   const userId = session?.user?.id ?? '';
 
+  // We'll use userId in raw SQL, so validate that it only contains valid UUID characters
+  if (userId !== '' && userId !== 'local' && !/^[0-9a-f-]*$/i.test(userId)) {
+    throw new Error('Invalid user ID format');
+  }
+
   const client = await pool.connect();
 
   try {
