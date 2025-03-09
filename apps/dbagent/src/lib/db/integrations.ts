@@ -48,13 +48,18 @@ export async function saveIntegration<
 export async function getIntegration<
   Key extends IntegrationTypes['type'],
   Value extends IntegrationTypes & { type: Key }
->(projectId: string, name: Key): Promise<Value['data'] | null> {
-  return queryDb(async ({ db }) => {
-    const result = await db
-      .select()
-      .from(integrations)
-      .where(and(eq(integrations.projectId, projectId), eq(integrations.name, name)));
+>(projectId: string, name: Key, asUserId?: string): Promise<Value['data'] | null> {
+  return queryDb(
+    async ({ db }) => {
+      const result = await db
+        .select()
+        .from(integrations)
+        .where(and(eq(integrations.projectId, projectId), eq(integrations.name, name)));
 
-    return (result[0]?.data as Value['data']) || null;
-  });
+      return (result[0]?.data as Value['data']) || null;
+    },
+    {
+      asUserId: asUserId
+    }
+  );
 }

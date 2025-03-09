@@ -2,6 +2,7 @@
 
 import { and, eq } from 'drizzle-orm';
 import { queryDb } from './db';
+import { Schedule } from './schedules';
 import { connections } from './schema';
 
 export type Connection = {
@@ -33,6 +34,18 @@ export async function getConnection(id: string): Promise<Connection | null> {
     const result = await db.select().from(connections).where(eq(connections.id, id));
     return result[0] ?? null;
   });
+}
+
+export async function getConnectionFromSchedule(schedule: Schedule): Promise<Connection | null> {
+  return queryDb(
+    async ({ db }) => {
+      const result = await db.select().from(connections).where(eq(connections.id, schedule.connectionId));
+      return result[0] ?? null;
+    },
+    {
+      asUserId: schedule.userId
+    }
+  );
 }
 
 export async function makeConnectionDefault(id: string): Promise<void> {

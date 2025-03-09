@@ -51,16 +51,21 @@ export async function associateClusterConnection({
   });
 }
 
-export async function getClusterByConnection(connectionId: string): Promise<AWSCluster | null> {
-  return queryDb(async ({ db }) => {
-    const result = await db
-      .select()
-      .from(awsClusters)
-      .innerJoin(awsClusterConnections, eq(awsClusterConnections.clusterId, awsClusters.id))
-      .where(eq(awsClusterConnections.connectionId, connectionId))
-      .limit(1);
-    return result[0]?.aws_clusters ?? null;
-  });
+export async function getClusterByConnection(connectionId: string, asUserId?: string): Promise<AWSCluster | null> {
+  return queryDb(
+    async ({ db }) => {
+      const result = await db
+        .select()
+        .from(awsClusters)
+        .innerJoin(awsClusterConnections, eq(awsClusterConnections.clusterId, awsClusters.id))
+        .where(eq(awsClusterConnections.connectionId, connectionId))
+        .limit(1);
+      return result[0]?.aws_clusters ?? null;
+    },
+    {
+      asUserId: asUserId
+    }
+  );
 }
 
 export async function getClusters(projectId: string): Promise<AWSCluster[]> {

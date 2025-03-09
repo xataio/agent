@@ -7,16 +7,22 @@ type GetInstanceLogsParams = {
   connection: Connection;
   periodInSeconds: number;
   grep?: string;
+  asUserId?: string;
 };
 
-export async function getInstanceLogs({ connection, periodInSeconds, grep }: GetInstanceLogsParams): Promise<string> {
+export async function getInstanceLogs({
+  connection,
+  periodInSeconds,
+  grep,
+  asUserId
+}: GetInstanceLogsParams): Promise<string> {
   // Get AWS credentials from integrations
-  const awsCredentials = await getIntegration(connection.projectId, 'aws');
+  const awsCredentials = await getIntegration(connection.projectId, 'aws', asUserId);
   if (!awsCredentials) {
     return 'AWS credentials not configured';
   }
 
-  const cluster = await getClusterByConnection(connection.id);
+  const cluster = await getClusterByConnection(connection.id, asUserId);
   if (!cluster) {
     return 'Cluster not found';
   }
