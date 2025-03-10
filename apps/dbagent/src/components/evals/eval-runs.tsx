@@ -22,7 +22,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Check, CircleX, FileText } from 'lucide-react';
 import path from 'path';
 import { useState } from 'react';
-import { EvalFile, evalResponseSchema } from '~/evals/apiSchemas';
+import { EvalFile, evalResponseSchema } from '~/evals/api-schemas';
 import { EvalSummary } from '~/evals/lib/schemas';
 
 const TestSidebar = ({

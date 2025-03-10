@@ -106,7 +106,7 @@ describe('llm_judge', () => {
     const traceFolder = ensureTraceFolderExists();
     const judgeResponseFile = path.join(traceFolder, 'judgeResponse.txt');
     fs.writeFileSync(judgeResponseFile, judgeResponse.critique);
-    console.log('zzz object', judgeResponse);
+
     expect(judgeResponse.result).toEqual('passed');
   });
 });

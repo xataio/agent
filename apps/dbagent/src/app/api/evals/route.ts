@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import { NextRequest } from 'next/server';
 import path from 'path';
 import { z } from 'zod';
-import { evalResponseSchema } from '~/evals/apiSchemas';
+import { evalResponseSchema } from '~/evals/api-schemas';
 
 export async function GET(request: NextRequest) {
   try {
