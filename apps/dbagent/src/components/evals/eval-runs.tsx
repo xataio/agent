@@ -23,22 +23,33 @@ import { Check, CircleX, FileText } from 'lucide-react';
 import path from 'path';
 import { useState } from 'react';
 import { EvalFile, evalResponseSchema } from '~/evals/apiSchemas';
-import { TestCaseSummary } from '~/evals/lib/schemas';
+import { EvalSummary } from '~/evals/lib/schemas';
 
 const TestSidebar = ({
   evalSummaries,
   onTestSelect,
   selectedTest
 }: {
-  evalSummaries: TestCaseSummary[];
+  evalSummaries: EvalSummary[];
   onTestSelect: (testId: string) => void;
   selectedTest: string | null;
 }) => {
+  const testCount = evalSummaries.length;
+  const passedTests = evalSummaries.filter((es) => es.result === 'passed').length;
+  const passPercentage = Math.round((passedTests / testCount) * 100);
   return (
     <Sidebar>
       <SidebarHeader className="border-b">
-        <div className="px-2 py-1">
+        <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Eval run</h2>
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-medium text-green-600 dark:text-green-400">{passedTests}</span>
+            <span className="text-muted-foreground text-sm">/</span>
+            <span className="text-sm font-medium">{testCount}</span>
+            <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-xs font-medium dark:bg-gray-800">
+              {passPercentage}%
+            </span>
+          </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -76,7 +87,17 @@ const TestSidebar = ({
   );
 };
 
-const TestFiles = ({ files, isLoading, error }: { files: EvalFile[] | undefined; isLoading: boolean; error: any }) => {
+const CurrentEval = ({
+  evalSummary,
+  files,
+  isLoading,
+  error
+}: {
+  evalSummary: EvalSummary | undefined;
+  files: EvalFile[] | undefined;
+  isLoading: boolean;
+  error: any;
+}) => {
   if (isLoading || !files) {
     return (
       <div className="h-[calc(100vh-2.5rem)] items-center justify-center">
@@ -93,7 +114,7 @@ const TestFiles = ({ files, isLoading, error }: { files: EvalFile[] | undefined;
   }
   return (
     <Tabs defaultValue={files[0]?.fileName} className="h-full">
-      <div className="mt-4 flex items-center justify-between">
+      <div className="mr-4 mt-4 flex items-center justify-between">
         <TabsList>
           {files.map((file) => {
             return (
@@ -104,6 +125,20 @@ const TestFiles = ({ files, isLoading, error }: { files: EvalFile[] | undefined;
             );
           })}
         </TabsList>
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground text-sm">Status:</span>
+          <span
+            className={cn(
+              'flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium',
+              evalSummary?.result === 'passed'
+                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+            )}
+          >
+            {evalSummary?.result === 'passed' ? <Check className="h-3 w-3" /> : <CircleX className="h-3 w-3" />}
+            {evalSummary?.result === 'passed' ? 'Pass' : 'Fail'}
+          </span>
+        </div>
       </div>
       {files.map((file) => {
         return (
@@ -131,7 +166,7 @@ const fetchFiles = async (folderPath: string) => {
 };
 
 export const TestSuiteViewer: React.FC<{
-  evalSummaries: TestCaseSummary[];
+  evalSummaries: EvalSummary[];
   evalFolder: string;
   initialEvalId: string | undefined;
 }> = ({ evalSummaries, evalFolder, initialEvalId }) => {
@@ -142,30 +177,31 @@ export const TestSuiteViewer: React.FC<{
   if (!initialEval) {
     return <div>No evals found</div>;
   }
-  const [selectedEval, setSelectedEval] = useState<string>(initialEval.id);
+  const [selectedEvalId, setSelectedEvalId] = useState<string>(initialEval.id);
 
+  const currentEval = evalSummaries.find((evalSummary) => evalSummary.id === selectedEvalId);
   const {
     data: filesData,
     isLoading,
     error
   } = useQuery({
-    queryKey: ['evalFiles', evalFolder, selectedEval],
-    queryFn: () => fetchFiles(path.join(evalFolder, selectedEval))
+    queryKey: ['evalFiles', evalFolder, selectedEvalId],
+    queryFn: () => fetchFiles(path.join(evalFolder, selectedEvalId))
   });
 
   const handleTestClick = (testId: string) => {
-    setSelectedEval(testId);
+    setSelectedEvalId(testId);
   };
 
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full">
-        <TestSidebar evalSummaries={evalSummaries} onTestSelect={handleTestClick} selectedTest={selectedEval} />
+        <TestSidebar evalSummaries={evalSummaries} onTestSelect={handleTestClick} selectedTest={selectedEvalId} />
         <main className="flex-1 overflow-hidden">
           <div className="flex h-10 items-center border-b px-4">
             <SidebarTrigger />
           </div>
-          <TestFiles files={filesData?.files} isLoading={isLoading} error={error} />
+          <CurrentEval evalSummary={currentEval} files={filesData?.files} isLoading={isLoading} error={error} />
         </main>
       </div>
     </SidebarProvider>

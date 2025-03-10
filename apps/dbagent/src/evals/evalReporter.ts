@@ -3,7 +3,7 @@ import Papa from 'papaparse';
 import path from 'path';
 import { Reporter } from 'vitest/reporters';
 import { EVAL_RESULT_FILE_NAME, EVAL_RESULTS_CSV_FILE_NAME, EVAL_RESULTS_FILE_NAME } from './lib/consts';
-import { TestCaseResult, testCaseResultSchema, testCaseSummarySchema } from './lib/schemas';
+import { EvalResult, evalResultSchema, evalSummarySchema } from './lib/schemas';
 import { ensureTestRunTraceFolderExists, ensureTraceFolderExists, testNameToEvalId } from './lib/testId';
 
 export const evalReporter: Reporter = {
@@ -12,7 +12,7 @@ export const evalReporter: Reporter = {
 
     const folders = fs.readdirSync(evalTraceFolder);
     const testResults = folders.map((folder) => {
-      const testResult = testCaseResultSchema.parse(
+      const testResult = evalResultSchema.parse(
         JSON.parse(fs.readFileSync(path.join(evalTraceFolder, folder, EVAL_RESULT_FILE_NAME), 'utf-8'))
       );
       const logFiles = fs
@@ -20,7 +20,7 @@ export const evalReporter: Reporter = {
         .filter((file) => file !== EVAL_RESULT_FILE_NAME)
         .map((file) => path.join(evalTraceFolder, folder, file));
 
-      const testCaseSummary = testCaseSummarySchema.parse({ ...testResult, logFiles });
+      const testCaseSummary = evalSummarySchema.parse({ ...testResult, logFiles });
       return testCaseSummary;
     });
     fs.writeFileSync(path.join(evalTraceFolder, EVAL_RESULTS_FILE_NAME), JSON.stringify(testResults, null, 2));
@@ -49,9 +49,9 @@ export const evalReporter: Reporter = {
     const testCaseResult = {
       id: testCase.name,
       result: testCase.result().state as 'passed' | 'failed'
-    } satisfies TestCaseResult;
+    } satisfies EvalResult;
 
-    testCaseResultSchema.parse(testCaseResult);
+    evalResultSchema.parse(testCaseResult);
 
     const evalId = testNameToEvalId(testCase.name);
     const traceFolder = ensureTraceFolderExists(evalId);
