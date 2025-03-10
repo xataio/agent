@@ -25,10 +25,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if (dbConfig.container) {
-    await dbConfig.container.stop();
-    await dbConfig.container.remove();
-  }
+  await dbConfig.close();
 });
 
 type ToolChoiceEval = EvalCase & { prompt: string; toolCalls: string[] };

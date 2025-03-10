@@ -31,10 +31,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if (dbConfig.container) {
-    await dbConfig.container.stop();
-    await dbConfig.container.remove();
-  }
+  await dbConfig.close();
 });
 
 type LLMJudgeConfig = { prompt: (args: { input: string; output: string }) => string; model: string };

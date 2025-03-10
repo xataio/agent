@@ -9,6 +9,7 @@ export type PostgresConfig = {
   database: string;
   connectionString: string;
   container: Docker.Container;
+  close: () => Promise<void>;
 };
 
 const docker = new Docker();
@@ -43,7 +44,13 @@ export const startPostgresContainer = async (userOptions: PostgresContainerOptio
   return {
     ...dbConfig,
     container,
-    connectionString: `postgresql://${dbConfig.user}:${dbConfig.password}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}?sslmode=disable`
+    connectionString: `postgresql://${dbConfig.user}:${dbConfig.password}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}?sslmode=disable`,
+    close: async () => {
+      if (container) {
+        await container.stop();
+        await container.remove();
+      }
+    }
   };
 };
 
