@@ -2,6 +2,8 @@ import filenamify from 'filenamify';
 import * as fs from 'fs';
 import * as path from 'path';
 
+/* eslint no-process-env: 0 */
+
 let evalId: string | undefined;
 export const setEvalId = (id: string) => {
   evalId = id;

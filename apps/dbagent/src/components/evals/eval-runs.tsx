@@ -174,10 +174,7 @@ export const TestSuiteViewer: React.FC<{
     ? evalSummaries.find((evalSummary) => evalSummary.id === initialEvalId)
     : evalSummaries[0];
 
-  if (!initialEval) {
-    return <div>No evals found</div>;
-  }
-  const [selectedEvalId, setSelectedEvalId] = useState<string>(initialEval.id);
+  const [selectedEvalId, setSelectedEvalId] = useState<string>(initialEval?.id ?? '');
 
   const currentEval = evalSummaries.find((evalSummary) => evalSummary.id === selectedEvalId);
   const {
@@ -192,6 +189,9 @@ export const TestSuiteViewer: React.FC<{
   const handleTestClick = (testId: string) => {
     setSelectedEvalId(testId);
   };
+  if (!initialEval) {
+    return <div>No evals found</div>;
+  }
 
   return (
     <SidebarProvider>

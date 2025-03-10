@@ -29,6 +29,6 @@ export const evalChat = async ({
     maxSteps: 20
   });
   traceVercelAiResponse(response);
-  targetClient.end();
+  await targetClient.end();
   return response;
 };
