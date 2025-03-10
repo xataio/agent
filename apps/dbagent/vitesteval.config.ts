@@ -9,9 +9,9 @@ export default defineConfig({
     include: ['**/*.eval.ts'],
     exclude: ['**/node_modules/**'],
     watch: false,
-    maxConcurrency: 1,
+    maxConcurrency: 3,
     env: { EVAL: '1', ...env },
-    testTimeout: 30000,
+    testTimeout: 60000,
     globalSetup: './src/evals/global-setup.ts',
     setupFiles: './src/evals/setup.ts',
     alias: {

@@ -53,10 +53,10 @@ Suggest a critique of how the answer could be improved or does not match the res
 
 type LLMJudgeEval = EvalCase & { prompt: string; judge: LLMJudgeConfig };
 
-describe('llm_judge', () => {
+describe.concurrent('llm_judge', () => {
   const evalCases: LLMJudgeEval[] = [
     {
-      id: 'tables_in_db',
+      id: 'judge_tables_in_db',
       prompt: 'What tables do I have in my db?',
       only: true
     }

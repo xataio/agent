@@ -15,7 +15,8 @@ beforeAll(async () => {
       `create table dogs (
           id serial primary key,
           name text
-      );`,
+      );
+      `,
       dbConfig
     );
   } catch (error) {
@@ -28,23 +29,72 @@ afterAll(async () => {
   await dbConfig.close();
 });
 
-type ToolChoiceEval = EvalCase & { prompt: string; toolCalls: string[] };
+type ToolChoiceEval = EvalCase & { prompt: string; expectedToolCalls: string[]; allowOtherTools: boolean };
 
-describe('tool_choice', () => {
+describe.concurrent('tool_choice', () => {
   const testCases: ToolChoiceEval[] = [
     {
-      id: 'tool_choice_tables_in_db',
+      id: 'tool_choice_tables_which',
       prompt: 'What tables do I have in my db?',
-      toolCalls: ['getTablesAndInstanceInfo'],
-      only: true
+      expectedToolCalls: ['getTablesAndInstanceInfo'],
+      allowOtherTools: false
     },
     {
-      id: 'tool_choice_how_many_tables',
+      id: 'tool_choice_table_how_many',
       prompt: 'How many tables in my database?',
-      toolCalls: ['getTablesAndInstanceInfo']
+      expectedToolCalls: ['getTablesAndInstanceInfo'],
+      allowOtherTools: false
+    },
+    {
+      id: 'tool_choice_table_with_most_rows',
+      prompt: 'Which table has the most rows?',
+      expectedToolCalls: ['getTablesAndInstanceInfo'],
+      allowOtherTools: false
+    },
+    {
+      id: 'tool_choice_table_largest_size',
+      prompt: 'Which table takes up the most space?',
+      expectedToolCalls: ['getTablesAndInstanceInfo'],
+      allowOtherTools: false
+    },
+    {
+      id: 'tool_choice_table_most_seq_scans',
+      prompt: 'Which table has the most sequential scans?',
+      expectedToolCalls: ['getTablesAndInstanceInfo'],
+      allowOtherTools: false
+    },
+    {
+      id: 'tool_choice_table_most_idx_scans',
+      prompt: 'Which table has the highest number of index scans?',
+      expectedToolCalls: ['getTablesAndInstanceInfo'],
+      allowOtherTools: false
+    },
+    {
+      id: 'tool_choice_table_most_inserts',
+      prompt: 'Which table has had the most inserts?',
+      expectedToolCalls: ['getTablesAndInstanceInfo'],
+      allowOtherTools: false
+    },
+    {
+      id: 'tool_choice_table_most_updates',
+      prompt: 'Identify the table with the highest number of updated rows.',
+      expectedToolCalls: ['getTablesAndInstanceInfo'],
+      allowOtherTools: false
+    },
+    {
+      id: 'tool_choice_table_most_deletes',
+      prompt: 'Which table has the most deleted rows?',
+      expectedToolCalls: ['getTablesAndInstanceInfo'],
+      allowOtherTools: false
+    },
+    {
+      id: 'tool_choice_rows_in_specific_table',
+      prompt: 'How many rows are in the dogs table?',
+      expectedToolCalls: ['getTablesAndInstanceInfo'],
+      allowOtherTools: false
     }
   ];
-  runEvals(testCases, async ({ prompt, toolCalls }) => {
+  runEvals(testCases, async ({ prompt, expectedToolCalls: toolCalls, allowOtherTools }) => {
     const result = await evalChat({
       messages: [{ role: 'user', content: prompt }],
       dbConnection: dbConfig.connectionString
@@ -52,6 +102,11 @@ describe('tool_choice', () => {
 
     const allToolCalls = result.steps.flatMap((step) => step.toolCalls);
     const toolCallNames = allToolCalls.map((toolCall) => toolCall.toolName);
-    expect(toolCallNames).toEqual(toolCalls);
+    // @ts-ignore
+    expect(toolCallNames).toContain(...toolCalls);
+    const unexpectedToolCalls = toolCallNames.filter((toolCall) => !toolCalls.includes(toolCall));
+    if (!allowOtherTools) {
+      expect(unexpectedToolCalls).toEqual([]);
+    }
   });
 });

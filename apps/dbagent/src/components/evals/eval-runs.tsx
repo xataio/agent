@@ -194,7 +194,11 @@ export const TestSuiteViewer: React.FC<{
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider
+      style={{
+        '--sidebar-width': '20rem'
+      }}
+    >
       <div className="flex h-screen w-full">
         <TestSidebar evalSummaries={evalSummaries} onTestSelect={handleTestClick} selectedTest={selectedEvalId} />
         <main className="flex-1 overflow-hidden">
