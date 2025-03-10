@@ -3,11 +3,11 @@ import fs from 'fs';
 import path from 'path';
 import { afterAll, beforeAll, describe, expect, vi } from 'vitest';
 import { z } from 'zod';
-import { evalChat } from '~/evals/lib/chatRunner';
+import { evalChat } from '~/evals/lib/chat-runner';
 import { getModelInstance } from '~/lib/ai/aidba';
 import * as connectionInfoExports from '~/lib/db/connection-info';
 import * as projectsExports from '~/lib/db/projects';
-import { PostgresConfig, runSql, startPostgresContainer } from '../lib/evalDockerDb';
+import { PostgresConfig, runSql, startPostgresContainer } from '../lib/eval-docker-db';
 import { evalResultEnum } from '../lib/schemas';
 import { ensureTraceFolderExists } from '../lib/testId';
 import { EvalCase, runEvals } from '../lib/vitestHelpers';
@@ -59,7 +59,7 @@ afterAll(async () => {
   }
 });
 
-type LLMJudgeConfig = { prompt: ({ input: string, output: string }) => string; model: string };
+type LLMJudgeConfig = { prompt: (args: { input: string; output: string }) => string; model: string };
 
 const defaultJudge: LLMJudgeConfig = {
   prompt: ({

@@ -1,6 +1,6 @@
 import dotenvx from '@dotenvx/dotenvx';
 import { defineConfig } from 'vitest/config';
-import { evalReporter } from './src/evals/eval-reporterr';
+import { evalReporter } from './src/evals/eval-reporter';
 
 const env = dotenvx.config({ path: '.env.eval' }).parsed;
 
