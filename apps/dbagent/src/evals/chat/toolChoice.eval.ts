@@ -3,7 +3,7 @@ import { evalChat } from '~/evals/lib/chat-runner';
 import * as connectionInfoExports from '~/lib/db/connection-info';
 import * as projectsExports from '~/lib/db/projects';
 import { PostgresConfig, runSql, startPostgresContainer } from '../lib/eval-docker-db';
-import { EvalCase, runEvals } from '../lib/vitestHelpers';
+import { EvalCase, runEvals } from '../lib/vitest-helpers';
 
 vi.spyOn(projectsExports, 'getProjectById').mockImplementation(async (id) => {
   return { success: true, project: { id, ownerId: 'ownerId', name: 'project name' } };

@@ -10,7 +10,7 @@ import * as projectsExports from '~/lib/db/projects';
 import { PostgresConfig, runSql, startPostgresContainer } from '../lib/eval-docker-db';
 import { evalResultEnum } from '../lib/schemas';
 import { ensureTraceFolderExists } from '../lib/test-id';
-import { EvalCase, runEvals } from '../lib/vitestHelpers';
+import { EvalCase, runEvals } from '../lib/vitest-helpers';
 
 vi.spyOn(projectsExports, 'getProjectById').mockImplementation(async (id) => {
   return { success: true, project: { id, ownerId: 'ownerId', name: 'project name' } };
