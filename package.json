@@ -21,9 +21,9 @@
   "devDependencies": {
     "@eslint/compat": "^1.2.7",
     "@internal/tsconfig": "workspace:*",
-    "@types/node": "^22.13.9",
+    "@types/node": "^22.13.10",
     "@types/react": "^19.0.10",
-    "eslint": "^9.21.0",
+    "eslint": "^9.22.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.4.3",
     "prettier": "^3.5.3",
@@ -32,7 +32,7 @@
     "tsx": "^4.19.3",
     "turbo": "^2.4.4",
     "typescript": "^5.8.2",
-    "vitest": "^3.0.7"
+    "vitest": "^3.0.8"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
