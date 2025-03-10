@@ -13,10 +13,13 @@ export type PostgresConfig = {
 
 const docker = new Docker();
 
-export const startPostgresContainer = async (
-  image: string = 'postgres:17',
-  port: number = 9877
-): Promise<PostgresConfig> => {
+type PostgresContainerOptions = {
+  image?: string;
+  port?: number;
+};
+
+export const startPostgresContainer = async (userOptions: PostgresContainerOptions = {}): Promise<PostgresConfig> => {
+  const { image = 'postgres:17', port = 9877 } = userOptions;
   const container = await docker.createContainer({
     Image: image,
     // name: 'dbagent-eval-postgres',

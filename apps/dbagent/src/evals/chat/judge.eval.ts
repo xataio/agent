@@ -16,7 +16,7 @@ beforeAll(async () => {
   mockGetProjectsById();
   mockGetConnectionInfo();
   try {
-    dbConfig = await startPostgresContainer();
+    dbConfig = await startPostgresContainer({ port: 9888 });
     await runSql(
       `create table dogs (
           id serial primary key,
