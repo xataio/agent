@@ -1,35 +1,14 @@
-import { afterAll, beforeAll, describe, expect, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect } from 'vitest';
 import { evalChat } from '~/evals/lib/chat-runner';
-import * as connectionInfoExports from '~/lib/db/connection-info';
-import * as projectsExports from '~/lib/db/projects';
 import { PostgresConfig, runSql, startPostgresContainer } from '../lib/eval-docker-db';
+import { mockGetConnectionInfo, mockGetProjectsById } from '../lib/mocking';
 import { EvalCase, runEvals } from '../lib/vitest-helpers';
-
-vi.spyOn(projectsExports, 'getProjectById').mockImplementation(async (id) => {
-  return { success: true, project: { id, ownerId: 'ownerId', name: 'project name' } };
-});
-
-vi.spyOn(connectionInfoExports, 'getConnectionInfo').mockImplementation(async (connectionId, key) => {
-  if (key === 'tables') {
-    return [
-      {
-        name: 'dogs',
-        schema: 'public',
-        rows: 150,
-        size: '24 kB',
-        seqScans: 45,
-        idxScans: 120,
-        nTupIns: 200,
-        nTupUpd: 50,
-        nTupDel: 10
-      }
-    ];
-  }
-  return null;
-});
 
 let dbConfig: PostgresConfig;
 beforeAll(async () => {
+  mockGetProjectsById();
+  mockGetConnectionInfo();
+
   try {
     dbConfig = await startPostgresContainer();
     await runSql(
@@ -54,15 +33,15 @@ afterAll(async () => {
 
 type ToolChoiceEval = EvalCase & { prompt: string; toolCalls: string[] };
 
-describe('tool choice', () => {
+describe('tool_choice', () => {
   const testCases: ToolChoiceEval[] = [
     {
-      id: 'tables_in_db',
+      id: 'tool_choice_tables_in_db',
       prompt: 'What tables do I have in my db?',
       toolCalls: ['getTablesAndInstanceInfo']
     },
     {
-      id: 'how_many_tables',
+      id: 'tool_choice_how_many_tables',
       prompt: 'How many tables in my database?',
       toolCalls: ['getTablesAndInstanceInfo']
     }

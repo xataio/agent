@@ -14,7 +14,8 @@ export default async function globalSetup() {
   // eslint-disable-next-line no-process-env
   process.env.TEST_RUN_ID = testRunId;
 
-  const testRunTrace = ensureTestRunTraceFolderExists();
+  const testRunTraceFolder = ensureTestRunTraceFolderExists();
 
-  console.log('Eval trace folder for run', testRunTrace);
+  console.log('Eval trace folder for run', testRunTraceFolder);
+  console.log(`View eval results: http://localhost:4001/evals?folder=${testRunTraceFolder}`);
 }
