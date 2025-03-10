@@ -8,23 +8,30 @@ export const mockGetProjectsById = () => {
   });
 };
 
-export const mockGetConnectionInfo = () => {
-  vi.spyOn(connectionInfoExports, 'getConnectionInfo').mockImplementation(async (connectionId, key) => {
-    if (key === 'tables') {
-      return [
-        {
-          name: 'dogs',
-          schema: 'public',
-          rows: 150,
-          size: '24 kB',
-          seqScans: 45,
-          idxScans: 120,
-          nTupIns: 200,
-          nTupUpd: 50,
-          nTupDel: 10
-        }
-      ];
-    }
-    return null;
-  });
+type GetConnectionInfoFunc = typeof connectionInfoExports.getConnectionInfo;
+
+// @ts-expect-error
+const defaultMock: GetConnectionInfoFunc = async (_connectionId, key) => {
+  if (key === 'tables') {
+    return [
+      {
+        name: 'dogs',
+        schema: 'public',
+        rows: 150,
+        size: '24 kB',
+        seqScans: 45,
+        idxScans: 120,
+        nTupIns: 200,
+        nTupUpd: 50,
+        nTupDel: 10
+      }
+    ];
+  }
+  return null;
+};
+
+export const mockGetConnectionInfo = (
+  mockImplementation: GetConnectionInfoFunc = defaultMock as GetConnectionInfoFunc
+) => {
+  vi.spyOn(connectionInfoExports, 'getConnectionInfo').mockImplementation(mockImplementation);
 };
