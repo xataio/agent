@@ -1,5 +1,5 @@
 import { it } from 'vitest';
-import { setEvalId } from './testId';
+import { setEvalId } from './test-id';
 
 export type TestCase = {
   focus?: boolean;

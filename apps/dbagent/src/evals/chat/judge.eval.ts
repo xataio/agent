@@ -9,7 +9,7 @@ import * as connectionInfoExports from '~/lib/db/connection-info';
 import * as projectsExports from '~/lib/db/projects';
 import { PostgresConfig, runSql, startPostgresContainer } from '../lib/eval-docker-db';
 import { evalResultEnum } from '../lib/schemas';
-import { ensureTraceFolderExists } from '../lib/testId';
+import { ensureTraceFolderExists } from '../lib/test-id';
 import { EvalCase, runEvals } from '../lib/vitestHelpers';
 
 vi.spyOn(projectsExports, 'getProjectById').mockImplementation(async (id) => {
@@ -65,8 +65,8 @@ const defaultJudge: LLMJudgeConfig = {
   prompt: ({
     input,
     output
-  }) => `Please evaluate whether this response from an expert in PostgreSQL and database administration. Answers should be concise and provide no additional information that isn't needed. 
-  
+  }) => `Please evaluate whether this response from an expert in PostgreSQL and database administration. Answers should be concise and provide no additional information that isn't needed.
+
   Please evaluate whether the following question has been answered well.
   <question>${input}</question>
   <answer>${output}</question>

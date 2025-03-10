@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { expect } from 'vitest';
-import { testNameToEvalId } from './lib/testId';
+import { testNameToEvalId } from './lib/test-id';
 
 // @ts-expect-error
 globalThis.__TEST_ID__ = () => {

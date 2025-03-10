@@ -4,7 +4,7 @@ import path from 'path';
 import { Reporter } from 'vitest/reporters';
 import { EVAL_RESULT_FILE_NAME, EVAL_RESULTS_CSV_FILE_NAME, EVAL_RESULTS_FILE_NAME } from './lib/consts';
 import { EvalResult, evalResultSchema, evalSummarySchema } from './lib/schemas';
-import { ensureTestRunTraceFolderExists, ensureTraceFolderExists, testNameToEvalId } from './lib/testId';
+import { ensureTestRunTraceFolderExists, ensureTraceFolderExists, testNameToEvalId } from './lib/test-id';
 
 export const evalReporter: Reporter = {
   onTestRunEnd: () => {

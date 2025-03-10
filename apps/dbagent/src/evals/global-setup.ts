@@ -1,7 +1,7 @@
 import filenamify from 'filenamify';
 import { writeFileSync } from 'fs';
 import { resolve } from 'path';
-import { ensureTestRunTraceFolderExists } from './lib/testId';
+import { ensureTestRunTraceFolderExists } from './lib/test-id';
 
 const idFilePath = resolve(__dirname, '.eval-run-id');
 

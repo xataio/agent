@@ -1,7 +1,7 @@
 import { generateText } from 'ai';
 import fs from 'fs';
 import path from 'path';
-import { ensureTraceFolderExists } from './testId';
+import { ensureTraceFolderExists } from './test-id';
 
 type GenerateTextResponse = Awaited<ReturnType<typeof generateText>>;
 
