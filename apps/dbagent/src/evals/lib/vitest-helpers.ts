@@ -2,20 +2,20 @@ import { it } from 'vitest';
 import { setEvalId } from './test-id';
 
 export type TestCase = {
-  focus?: boolean;
+  only?: boolean;
 };
 
 export type NamedTestCase = TestCase & {
   name: string;
 };
 
-export const createTest = (shouldFocus: boolean, testName: string, testFn: () => void | Promise<void>) => {
-  return shouldFocus ? it.only(testName, testFn) : it(testName, testFn);
+export const createTest = (isOnlyTest: boolean, testName: string, testFn: () => void | Promise<void>) => {
+  return isOnlyTest ? it.only(testName, testFn) : it(testName, testFn);
 };
 
 export const runNamedTests = <T extends NamedTestCase>(testCases: T[], runTest: (testCase: T) => void) => {
   testCases.forEach((testCase) => {
-    createTest(Boolean(testCase.focus), testCase.name, () => runTest(testCase));
+    createTest(Boolean(testCase.only), testCase.name, () => runTest(testCase));
   });
 };
 
@@ -25,7 +25,7 @@ export const runTests = <T extends TestCase>(
   runTest: (testCase: T) => void
 ) => {
   testCases.forEach((testCase) => {
-    createTest(Boolean(testCase.focus), nameFunc(testCase), () => runTest(testCase));
+    createTest(Boolean(testCase.only), nameFunc(testCase), () => runTest(testCase));
   });
 };
 

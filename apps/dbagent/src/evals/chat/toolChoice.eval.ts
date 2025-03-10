@@ -38,7 +38,8 @@ describe('tool_choice', () => {
     {
       id: 'tool_choice_tables_in_db',
       prompt: 'What tables do I have in my db?',
-      toolCalls: ['getTablesAndInstanceInfo']
+      toolCalls: ['getTablesAndInstanceInfo'],
+      only: true
     },
     {
       id: 'tool_choice_how_many_tables',
