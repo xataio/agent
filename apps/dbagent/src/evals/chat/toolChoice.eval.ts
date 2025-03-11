@@ -37,61 +37,61 @@ type ToolChoiceEval = EvalCase & { prompt: string; expectedToolCalls: string[]; 
 describe.concurrent('tool_choice', () => {
   const testCases: ToolChoiceEval[] = [
     {
-      id: 'tool_choice_tables_which',
+      id: 'tables_which',
       prompt: 'What tables do I have in my db?',
       expectedToolCalls: ['getTablesAndInstanceInfo'],
       allowOtherTools: false
     },
     {
-      id: 'tool_choice_table_how_many',
+      id: 'table_how_many',
       prompt: 'How many tables in my database?',
       expectedToolCalls: ['getTablesAndInstanceInfo'],
       allowOtherTools: false
     },
     {
-      id: 'tool_choice_table_with_most_rows',
+      id: 'table_with_most_rows',
       prompt: 'Which table has the most rows?',
       expectedToolCalls: ['getTablesAndInstanceInfo'],
       allowOtherTools: false
     },
     {
-      id: 'tool_choice_table_largest_size',
+      id: 'table_largest_size',
       prompt: 'Which table takes up the most space?',
       expectedToolCalls: ['getTablesAndInstanceInfo'],
       allowOtherTools: false
     },
     {
-      id: 'tool_choice_table_most_seq_scans',
+      id: 'table_most_seq_scans',
       prompt: 'Which table has the most sequential scans?',
       expectedToolCalls: ['getTablesAndInstanceInfo'],
       allowOtherTools: false
     },
     {
-      id: 'tool_choice_table_most_idx_scans',
+      id: 'table_most_idx_scans',
       prompt: 'Which table has the highest number of index scans?',
       expectedToolCalls: ['getTablesAndInstanceInfo'],
       allowOtherTools: false
     },
     {
-      id: 'tool_choice_table_most_inserts',
+      id: 'table_most_inserts',
       prompt: 'Which table has had the most inserts?',
       expectedToolCalls: ['getTablesAndInstanceInfo'],
       allowOtherTools: false
     },
     {
-      id: 'tool_choice_table_most_updates',
+      id: 'table_most_updates',
       prompt: 'Identify the table with the highest number of updated rows.',
       expectedToolCalls: ['getTablesAndInstanceInfo'],
       allowOtherTools: false
     },
     {
-      id: 'tool_choice_table_most_deletes',
+      id: 'table_most_deletes',
       prompt: 'Which table has the most deleted rows?',
       expectedToolCalls: ['getTablesAndInstanceInfo'],
       allowOtherTools: false
     },
     {
-      id: 'tool_choice_table_rows_in_specific_table',
+      id: 'table_rows_in_specific_table',
       prompt: 'How many rows are in the dogs table?',
       expectedToolCalls: ['getTablesAndInstanceInfo'],
       allowOtherTools: false
@@ -107,8 +107,63 @@ describe.concurrent('tool_choice', () => {
       prompt: 'Which tables have slow queries',
       expectedToolCalls: ['getSlowQueries'],
       allowOtherTools: true
+    },
+    {
+      id: 'describe_table_with_schema',
+      prompt: 'Describe the public.dogs table',
+      expectedToolCalls: ['describeTable'],
+      allowOtherTools: true
+    },
+    {
+      id: 'describe_table_no_schema',
+      prompt: 'Describe the dogs table',
+      expectedToolCalls: ['describeTable'],
+      allowOtherTools: true
+    },
+    {
+      id: 'describe_table_indexes',
+      prompt: 'What indexes are on the dogs table?',
+      expectedToolCalls: ['describeTable'],
+      allowOtherTools: true
+    },
+    {
+      id: 'find_table_schema',
+      prompt: 'What is the schema is the dogs table in?',
+      expectedToolCalls: ['findTableSchema'],
+      allowOtherTools: false
+    },
+    {
+      id: 'performance_and_vacuum_settings_perf',
+      prompt: 'What are the performance settings for the database?',
+      expectedToolCalls: ['getPerformanceAndVacuumSettings'],
+      allowOtherTools: false
+    },
+    {
+      id: 'performance_and_vacuum_settings_vacuum',
+      prompt: 'What are the vacuum settings for the database?',
+      expectedToolCalls: ['getPerformanceAndVacuumSettings'],
+      allowOtherTools: false
+    },
+    {
+      id: 'postgres_extensions',
+      prompt: 'What extensions are installed in the database?',
+      expectedToolCalls: ['getPostgresExtensions'],
+      allowOtherTools: false
+    },
+    {
+      id: 'explain_query',
+      prompt: 'Explain SELECT * FROM dogs',
+      expectedToolCalls: ['explainQuery'],
+      allowOtherTools: false
+    },
+    {
+      id: 'vacuum_stats',
+      prompt: 'What are teh vacuum stats for the database?',
+      expectedToolCalls: ['getVacuumStats'],
+      allowOtherTools: false
     }
   ];
+
   runEvals(testCases, async ({ prompt, expectedToolCalls: toolCalls, allowOtherTools }, { expect }) => {
     const result = await evalChat({
       messages: [{ role: 'user', content: prompt }],

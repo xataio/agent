@@ -26,6 +26,8 @@ const defaultMock: GetConnectionInfoFunc = async (_connectionId, key) => {
         nTupDel: 10
       }
     ];
+  } else if (key === 'extensions') {
+    return [{ name: 'pgvector', default_version: '1.0.1', installed_version: '1.0.0' }];
   }
   return null;
 };
