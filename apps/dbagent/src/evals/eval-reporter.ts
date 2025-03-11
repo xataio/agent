@@ -2,9 +2,17 @@ import fs from 'fs';
 import Papa from 'papaparse';
 import path from 'path';
 import { Reporter } from 'vitest/reporters';
+import { env } from '../lib/env/eval';
 import { EVAL_RESULT_FILE_NAME, EVAL_RESULTS_CSV_FILE_NAME, EVAL_RESULTS_FILE_NAME } from './lib/consts';
 import { EvalResult, evalResultSchema, evalSummarySchema } from './lib/schemas';
 import { ensureTestRunTraceFolderExists, ensureTraceFolderExists, testNameToEvalId } from './lib/test-id';
+
+const getEnv = () => {
+  return {
+    JUDGE_MODEL: env.JUDGE_MODEL,
+    CHAT_MODEL: env.CHAT_MODEL
+  };
+};
 
 export const evalReporter: Reporter = {
   onTestRunEnd: () => {
@@ -20,7 +28,7 @@ export const evalReporter: Reporter = {
         .filter((file) => file !== EVAL_RESULT_FILE_NAME)
         .map((file) => path.join(evalTraceFolder, folder, file));
 
-      const testCaseSummary = evalSummarySchema.parse({ ...testResult, logFiles });
+      const testCaseSummary = evalSummarySchema.parse({ ...testResult, logFiles, env: getEnv() });
       return testCaseSummary;
     });
     fs.writeFileSync(path.join(evalTraceFolder, EVAL_RESULTS_FILE_NAME), JSON.stringify(testResults, null, 2));
@@ -48,7 +56,8 @@ export const evalReporter: Reporter = {
     }
     const testCaseResult = {
       id: testCase.name,
-      result: testCase.result().state as 'passed' | 'failed'
+      result: testCase.result().state as 'passed' | 'failed',
+      env: getEnv()
     } satisfies EvalResult;
 
     evalResultSchema.parse(testCaseResult);
