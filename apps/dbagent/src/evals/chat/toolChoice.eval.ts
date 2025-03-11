@@ -16,6 +16,9 @@ beforeAll(async () => {
           id serial primary key,
           name text
       );
+      CREATE EXTENSION pg_stat_statements;
+      -- slow query
+      SELECT *, pg_sleep(5) FROM generate_series(1, 2);
       `,
       dbConfig
     );
@@ -88,10 +91,24 @@ describe.concurrent('tool_choice', () => {
       allowOtherTools: false
     },
     {
-      id: 'tool_choice_rows_in_specific_table',
+      id: 'tool_choice_table_rows_in_specific_table',
       prompt: 'How many rows are in the dogs table?',
       expectedToolCalls: ['getTablesAndInstanceInfo'],
       allowOtherTools: false
+    },
+    {
+      id: 'tool_choice_slow_queries',
+      prompt: 'Which queries are running slowly?',
+      expectedToolCalls: ['getSlowQueries'],
+      allowOtherTools: true,
+      only: true
+    },
+    {
+      id: 'tool_choice_slow_queries_and_tables',
+      prompt: 'Which tables have slow queries',
+      expectedToolCalls: ['getSlowQueries'],
+      allowOtherTools: true,
+      only: true
     }
   ];
   runEvals(testCases, async ({ prompt, expectedToolCalls: toolCalls, allowOtherTools }) => {
