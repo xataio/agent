@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect } from 'vitest';
+import { afterAll, beforeAll, describe } from 'vitest';
 import { evalChat } from '~/evals/lib/chat-runner';
 import { PostgresConfig, runSql, startPostgresContainer } from '../lib/eval-docker-db';
 import { mockGetConnectionInfo, mockGetProjectsById } from '../lib/mocking';
@@ -97,24 +97,23 @@ describe.concurrent('tool_choice', () => {
       allowOtherTools: false
     },
     {
-      id: 'tool_choice_slow_queries',
+      id: 'slow_queries',
       prompt: 'Which queries are running slowly?',
       expectedToolCalls: ['getSlowQueries'],
-      allowOtherTools: true,
-      only: true
+      allowOtherTools: true
     },
     {
-      id: 'tool_choice_slow_queries_and_tables',
+      id: 'slow_queries_and_tables',
       prompt: 'Which tables have slow queries',
       expectedToolCalls: ['getSlowQueries'],
-      allowOtherTools: true,
-      only: true
+      allowOtherTools: true
     }
   ];
-  runEvals(testCases, async ({ prompt, expectedToolCalls: toolCalls, allowOtherTools }) => {
+  runEvals(testCases, async ({ prompt, expectedToolCalls: toolCalls, allowOtherTools }, { expect }) => {
     const result = await evalChat({
       messages: [{ role: 'user', content: prompt }],
-      dbConnection: dbConfig.connectionString
+      dbConnection: dbConfig.connectionString,
+      expect
     });
 
     const allToolCalls = result.steps.flatMap((step) => step.toolCalls);

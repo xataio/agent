@@ -1,7 +1,8 @@
 import { generateText } from 'ai';
 import fs from 'fs';
 import path from 'path';
-import { ensureTraceFolderExists } from './test-id';
+import { ExpectStatic } from 'vitest';
+import { ensureTraceFolderExistsExpect } from './test-id';
 
 type GenerateTextResponse = Awaited<ReturnType<typeof generateText>>;
 
@@ -38,9 +39,8 @@ const getUserPromptFromResponse = (response: GenerateTextResponse) => {
   return body.messages[0].content[0].text;
 };
 
-export const traceVercelAiResponse = (response: GenerateTextResponse) => {
-  const traceFolder = ensureTraceFolderExists();
-
+export const traceVercelAiResponse = (response: GenerateTextResponse, expect: ExpectStatic) => {
+  const traceFolder = ensureTraceFolderExistsExpect(expect);
   const humanTraceFile = path.join(traceFolder, 'human.txt');
   const humanTrace = `
 System Prompt: ${getSystemPromptFromResponse(response)}

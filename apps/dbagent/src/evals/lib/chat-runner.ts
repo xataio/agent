@@ -1,5 +1,6 @@
 import { CoreMessage, generateText, Message } from 'ai';
 import { randomUUID } from 'crypto';
+import { ExpectStatic } from 'vitest';
 import { chatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
 import { Connection } from '~/lib/db/connections';
 import { env } from '~/lib/env/eval';
@@ -8,10 +9,12 @@ import { traceVercelAiResponse } from './trace';
 
 export const evalChat = async ({
   messages,
-  dbConnection
+  dbConnection,
+  expect
 }: {
   messages: CoreMessage[] | Omit<Message, 'id'>[];
   dbConnection: string;
+  expect: ExpectStatic;
 }) => {
   const connection: Connection = {
     id: randomUUID(),
@@ -29,7 +32,7 @@ export const evalChat = async ({
     messages,
     maxSteps: 20
   });
-  traceVercelAiResponse(response);
+  traceVercelAiResponse(response, expect);
   await targetClient.end();
   return response;
 };

@@ -1,19 +1,12 @@
-import filenamify from 'filenamify';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ExpectStatic } from 'vitest';
 
 /* eslint no-process-env: 0 */
 
-let evalId: string | undefined;
-export const setEvalId = (id: string) => {
-  evalId = id;
-};
-
-export const getEvalId = () => {
-  if (!evalId) {
-    throw new Error('setEvalId must be called before getEvalId');
-  }
-  return evalId;
+export const getEvalId = (expect: ExpectStatic) => {
+  const testName = expect.getState().currentTestName;
+  return testNameToEvalId(testName);
 };
 
 export const getTestRunId = () => {
@@ -23,10 +16,15 @@ export const getTestRunId = () => {
   return process.env.TEST_RUN_ID;
 };
 
-export const ensureTraceFolderExists = (evalId = getEvalId()) => {
+export const ensureTraceFolderExists = (evalId: string) => {
   const traceFolder = path.join('/tmp/dbagenteval', getTestRunId(), evalId);
   fs.mkdirSync(traceFolder, { recursive: true });
   return traceFolder;
+};
+
+export const ensureTraceFolderExistsExpect = (expect: ExpectStatic) => {
+  const evalId = getEvalId(expect);
+  return ensureTraceFolderExists(evalId);
 };
 
 export const ensureTestRunTraceFolderExists = () => {
@@ -39,5 +37,5 @@ export const testNameToEvalId = (testName: string | undefined) => {
   if (!testName) {
     throw new Error('Expected testName to be defined');
   }
-  return filenamify(testName, { replacement: '_' });
+  return testName?.replace(' > ', '_');
 };

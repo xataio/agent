@@ -8,7 +8,7 @@ export default defineConfig({
     include: ['**/*.eval.ts'],
     exclude: ['**/node_modules/**'],
     watch: false,
-    maxConcurrency: 6,
+    maxConcurrency: 2,
     env: { EVAL: '1', ...env },
     testTimeout: 60000,
     hookTimeout: 60000,

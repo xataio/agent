@@ -50,20 +50,21 @@ export const evalReporter: Reporter = {
 
     console.log(`View eval results: http://localhost:4001/evals?folder=${evalTraceFolder}`);
   },
-  onTestCaseResult: (testCase) => {
+  onTestCaseResult: async (testCase) => {
     if (['skipped', 'pending'].includes(testCase.result().state)) {
       return;
     }
+    const evalId = testNameToEvalId(testCase.fullName);
+
     const testCaseResult = {
-      id: testCase.name,
+      id: evalId,
       result: testCase.result().state as 'passed' | 'failed',
       env: getEnv()
     } satisfies EvalResult;
 
     evalResultSchema.parse(testCaseResult);
 
-    const evalId = testNameToEvalId(testCase.name);
-    const traceFolder = ensureTraceFolderExists(evalId);
+    const traceFolder = await ensureTraceFolderExists(evalId);
 
     fs.writeFileSync(path.join(traceFolder, EVAL_RESULT_FILE_NAME), JSON.stringify(testCaseResult, null, 2));
   }

@@ -1,7 +1,7 @@
 import { generateObject } from 'ai';
 import fs from 'fs';
 import path from 'path';
-import { afterAll, beforeAll, describe, expect } from 'vitest';
+import { afterAll, beforeAll, describe } from 'vitest';
 import { z } from 'zod';
 import { evalChat } from '~/evals/lib/chat-runner';
 import { getModelInstance } from '~/lib/ai/aidba';
@@ -9,7 +9,7 @@ import { env } from '~/lib/env/eval';
 import { PostgresConfig, runSql, startPostgresContainer } from '../lib/eval-docker-db';
 import { mockGetConnectionInfo, mockGetProjectsById } from '../lib/mocking';
 import { evalResultEnum } from '../lib/schemas';
-import { ensureTraceFolderExists } from '../lib/test-id';
+import { ensureTraceFolderExistsExpect } from '../lib/test-id';
 import { EvalCase, runEvals } from '../lib/vitest-helpers';
 
 let dbConfig: PostgresConfig;
@@ -63,10 +63,11 @@ describe.concurrent('llm_judge', () => {
     }
   ].map((evalCase) => ({ ...evalCase, judge: defaultJudge }));
 
-  runEvals(evalCases, async ({ prompt, judge }) => {
+  runEvals(evalCases, async ({ prompt, judge }, { expect }) => {
     const result = await evalChat({
       messages: [{ role: 'user', content: prompt }],
-      dbConnection: dbConfig.connectionString
+      dbConnection: dbConfig.connectionString,
+      expect
     });
 
     const steps = JSON.stringify(result.steps, null, 2);
@@ -79,7 +80,7 @@ describe.concurrent('llm_judge', () => {
       }),
       prompt: judge.prompt({ input: prompt, output: steps })
     });
-    const traceFolder = ensureTraceFolderExists();
+    const traceFolder = ensureTraceFolderExistsExpect(expect);
     const judgeResponseFile = path.join(traceFolder, 'judgeResponse.txt');
     fs.writeFileSync(judgeResponseFile, judgeResponse.critique);
 
