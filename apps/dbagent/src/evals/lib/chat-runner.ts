@@ -2,6 +2,7 @@ import { CoreMessage, generateText, Message } from 'ai';
 import { randomUUID } from 'crypto';
 import { chatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
 import { Connection } from '~/lib/db/connections';
+import { env } from '~/lib/env/eval';
 import { getTargetDbConnection } from '~/lib/targetdb/db';
 import { traceVercelAiResponse } from './trace';
 
@@ -22,7 +23,7 @@ export const evalChat = async ({
   const targetClient = await getTargetDbConnection(dbConnection);
 
   const response = await generateText({
-    model: getModelInstance('anthropic-claude-3-5-haiku-20241022'),
+    model: getModelInstance(env.CHAT_MODEL),
     system: chatSystemPrompt,
     tools: await getTools(connection, targetClient),
     messages,

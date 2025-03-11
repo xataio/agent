@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect } from 'vitest';
 import { z } from 'zod';
 import { evalChat } from '~/evals/lib/chat-runner';
 import { getModelInstance } from '~/lib/ai/aidba';
+import { env } from '~/lib/env/eval';
 import { PostgresConfig, runSql, startPostgresContainer } from '../lib/eval-docker-db';
 import { mockGetConnectionInfo, mockGetProjectsById } from '../lib/mocking';
 import { evalResultEnum } from '../lib/schemas';
@@ -48,7 +49,7 @@ const defaultJudge: LLMJudgeConfig = {
 
 Suggest a critique of how the answer could be improved or does not match the response of an exper in PostgreSQl and database administration.
   `,
-  model: 'anthropic-claude-3-5-sonnet-20241022'
+  model: env.JUDGE_MODEL
 };
 
 type LLMJudgeEval = EvalCase & { prompt: string; judge: LLMJudgeConfig };

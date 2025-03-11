@@ -49,3 +49,9 @@ In a separate terminal, run the scheduler. This is a simple script that calls th
 ```bash
 pnpm run dev-scheduler
 ```
+
+# Evals
+
+Run `(cd apps/dbagent && pnpm run eval)`
+
+You can see environment variables in `env/eval.ts`
