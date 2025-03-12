@@ -18,7 +18,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { RDSClusterDetailedInfo } from '../aws/rds';
 
-export const user = pgRole('user', { inherit: true });
+export const authenticatedUser = pgRole('authenticated_user', { inherit: true });
 
 export const scheduleStatus = pgEnum('schedule_status', ['disabled', 'scheduled', 'running']);
 export const notificationLevel = pgEnum('notification_level', ['info', 'warning', 'alert']);
@@ -38,11 +38,11 @@ export const awsClusters = pgTable(
       columns: [table.projectId],
       foreignColumns: [projects.id],
       name: 'fk_aws_clusters_project'
-    }),
+    }).onDelete('cascade'),
     unique('uq_aws_clusters_integration_identifier').on(table.clusterIdentifier),
     index('idx_aws_clusters_project_id').on(table.projectId),
     pgPolicy('aws_clusters_policy', {
-      to: user,
+      to: authenticatedUser,
       for: 'all',
       using: sql`EXISTS (
         SELECT 1 FROM project_members
@@ -66,12 +66,12 @@ export const connections = pgTable(
       columns: [table.projectId],
       foreignColumns: [projects.id],
       name: 'fk_connections_project'
-    }),
+    }).onDelete('cascade'),
     unique('uq_connections_name').on(table.projectId, table.name),
     unique('uq_connections_connection_string').on(table.projectId, table.connectionString),
     index('idx_connections_project_id').on(table.projectId),
     pgPolicy('connections_policy', {
-      to: user,
+      to: authenticatedUser,
       for: 'all',
       using: sql`EXISTS (
         SELECT 1 FROM project_members
@@ -95,17 +95,17 @@ export const connectionInfo = pgTable(
       columns: [table.projectId],
       foreignColumns: [projects.id],
       name: 'fk_connection_info_project'
-    }),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.connectionId],
       foreignColumns: [connections.id],
       name: 'fk_connections_info_connection'
-    }),
+    }).onDelete('cascade'),
     unique('uq_connections_info').on(table.connectionId, table.type),
     index('idx_connection_info_connection_id').on(table.connectionId),
     index('idx_connection_info_project_id').on(table.projectId),
     pgPolicy('connection_info_policy', {
-      to: user,
+      to: authenticatedUser,
       for: 'all',
       using: sql`EXISTS (
         SELECT 1 FROM project_members
@@ -128,11 +128,11 @@ export const integrations = pgTable(
       columns: [table.projectId],
       foreignColumns: [projects.id],
       name: 'fk_integrations_project'
-    }),
+    }).onDelete('cascade'),
     unique('uq_integrations_name').on(table.projectId, table.name),
     index('idx_integrations_project_id').on(table.projectId),
     pgPolicy('integrations_policy', {
-      to: user,
+      to: authenticatedUser,
       for: 'all',
       using: sql`EXISTS (
         SELECT 1 FROM project_members
@@ -155,22 +155,22 @@ export const awsClusterConnections = pgTable(
       columns: [table.projectId],
       foreignColumns: [projects.id],
       name: 'fk_aws_cluster_connections_project'
-    }),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.clusterId],
       foreignColumns: [awsClusters.id],
       name: 'fk_aws_cluster_connections_cluster'
-    }),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.connectionId],
       foreignColumns: [connections.id],
       name: 'fk_aws_cluster_connections_connection'
-    }),
+    }).onDelete('cascade'),
     index('idx_aws_cluster_conn_cluster_id').on(table.clusterId),
     index('idx_aws_cluster_conn_connection_id').on(table.connectionId),
     index('idx_aws_cluster_conn_project_id').on(table.projectId),
     pgPolicy('aws_cluster_connections_policy', {
-      to: user,
+      to: authenticatedUser,
       for: 'all',
       using: sql`EXISTS (
         SELECT 1 FROM project_members
@@ -209,19 +209,19 @@ export const schedules = pgTable(
       columns: [table.projectId],
       foreignColumns: [projects.id],
       name: 'fk_schedules_project'
-    }),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.connectionId],
       foreignColumns: [connections.id],
       name: 'fk_schedules_connection'
-    }),
+    }).onDelete('cascade'),
     index('idx_schedules_project_id').on(table.projectId),
     index('idx_schedules_connection_id').on(table.connectionId),
     index('idx_schedules_status').on(table.status),
     index('idx_schedules_next_run').on(table.nextRun),
     index('idx_schedules_enabled').on(table.enabled),
     pgPolicy('schedules_policy', {
-      to: user,
+      to: authenticatedUser,
       for: 'all',
       using: sql`EXISTS (
         SELECT 1 FROM project_members
@@ -248,18 +248,18 @@ export const scheduleRuns = pgTable(
       columns: [table.projectId],
       foreignColumns: [projects.id],
       name: 'fk_schedule_runs_project'
-    }),
+    }).onDelete('cascade'),
     foreignKey({
       columns: [table.scheduleId],
       foreignColumns: [schedules.id],
       name: 'fk_schedule_runs_schedule'
-    }),
+    }).onDelete('cascade'),
     index('idx_schedule_runs_created_at').on(table.scheduleId, table.createdAt),
     index('idx_schedule_runs_schedule_id').on(table.scheduleId),
     index('idx_schedule_runs_project_id').on(table.projectId),
     index('idx_schedule_runs_notification_level').on(table.notificationLevel),
     pgPolicy('schedule_runs_policy', {
-      to: user,
+      to: authenticatedUser,
       for: 'all',
       using: sql`EXISTS (
         SELECT 1 FROM project_members
@@ -277,7 +277,7 @@ export const projects = pgTable(
   },
   () => [
     pgPolicy('projects_view_policy', {
-      to: user,
+      to: authenticatedUser,
       for: 'select',
       using: sql`EXISTS (
       SELECT 1 FROM project_members
@@ -285,12 +285,12 @@ export const projects = pgTable(
     )`
     }),
     pgPolicy('projects_create_policy', {
-      to: user,
+      to: authenticatedUser,
       for: 'insert',
       withCheck: sql`true`
     }),
     pgPolicy('projects_update_policy', {
-      to: user,
+      to: authenticatedUser,
       for: 'update',
       using: sql`EXISTS (
       SELECT 1 FROM project_members
@@ -298,7 +298,7 @@ export const projects = pgTable(
     )`
     }),
     pgPolicy('projects_delete_policy', {
-      to: user,
+      to: authenticatedUser,
       for: 'delete',
       using: sql`EXISTS (
       SELECT 1 FROM project_members
@@ -322,7 +322,7 @@ export const projectMembers = pgTable(
       columns: [table.projectId],
       foreignColumns: [projects.id],
       name: 'fk_project_members_project'
-    }),
+    }).onDelete('cascade'),
     unique('uq_project_members_user_project').on(table.projectId, table.userId),
     index('idx_project_members_project_id').on(table.projectId),
     // Project members has an "allow all" policy, to avoid circular dependencies.
