@@ -1,6 +1,6 @@
-# Aida
+# Xata Agent
 
-Aida is primarily a Next.js + Vercel AI SDK app.
+The Xata Agent is primarily a Next.js + Vercel AI SDK app.
 
 ## Development
 
