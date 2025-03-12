@@ -41,16 +41,16 @@ type LLMJudgeConfig = {
   name: string;
 };
 
-const finalAnswerJudge: LLMJudgeConfig = {
+const finalAnswerJudge = (expectedAnswer = ''): LLMJudgeConfig => ({
   name: 'final_answer',
   prompt: ({ input, finalAnswer }) => `
   The following question was answered by an expert in PostgreSQL and database administration:
   <question>${input}</question>
   <expertAnswer>${finalAnswer}</expertAnswer>
-   
+  ${expectedAnswer ? `<expectedAnswer>${expectedAnswer}</expectedAnswer>` : ''} 
   Please determine whether expert passed or failed at answering the question correctly and accurately. Please provied a critique of how the answer could be improved or does not match the response of an expert in PostgreSQl and database administration.
   `
-};
+});
 
 const correctToolCallsJudge: LLMJudgeConfig = {
   name: 'tool_call',
@@ -79,12 +79,12 @@ describe.concurrent('judge', () => {
     {
       id: 'tables_in_db',
       prompt: 'What tables do I have in my db?',
-      judges: [finalAnswerJudge, conciseAnswerJudge]
+      judges: [finalAnswerJudge('dogs'), conciseAnswerJudge]
     },
     {
       id: 'tables_in_db_how_many',
       prompt: 'How many tables do I have in my db?',
-      judges: [finalAnswerJudge, conciseAnswerJudge]
+      judges: [finalAnswerJudge('1'), conciseAnswerJudge]
     }
   ].flatMap((evalCase) =>
     evalCase.judges.map((judge) => ({
