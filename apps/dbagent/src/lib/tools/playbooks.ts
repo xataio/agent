@@ -176,6 +176,33 @@ impact users (for example, because they are very old).
 If you recommend changing the max_connections parameter, provide the new value.
 `;
 
+const INVESTIGATE_LOW_MEMORY_PLAYBOOK = `
+Objective:
+To investigate and resolve low freeable memory in the PostgreSQL database.
+
+Step 1:
+Get the freeable memory metric using the tool getInstanceMetric.
+
+Step 3:
+Get the instance details and compare the freeable memory with the amount of memory available.
+
+Step 4:
+Check the logs for any indications of memory pressure or out of memory errors. If there are,
+make sure to report that to the user. Also this would mean that the situation is critical.
+
+Step 4:
+Check active queries. Use the tool getConnectionsGroups to get the currently active queries.
+If a user or application stands out for doing a lot of work, record that to indicate to the user.
+
+Step 5:
+Check the work_mem setting and shared_buffers setting. Think if it would make sense to reduce these
+in order to free up memory.
+
+Step 6:
+If there is no clear root cause for using memory, suggest to the user to scale up the Postgres instance.
+Recommend a particular instance class.
+`;
+
 export function getPlaybook(name: string): string {
   switch (name) {
     case 'investigateSlowQueries':
@@ -188,6 +215,8 @@ export function getPlaybook(name: string): string {
       return INVESTIGATE_HIGH_CPU_USAGE_PLAYBOOK;
     case 'investigateHighConnectionCount':
       return INVESTIGATE_HIGH_CONNECTION_COUNT_PLAYBOOK;
+    case 'investigateLowMemory':
+      return INVESTIGATE_LOW_MEMORY_PLAYBOOK;
     default:
       return `Error:Playbook ${name} not found`;
   }
@@ -198,6 +227,7 @@ export function listPlaybooks(): string[] {
     'generalMonitoring',
     'investigateSlowQueries',
     'investigateHighCpuUsage',
+    'investigateLowMemory',
     'investigateHighConnectionCount',
     'tuneSettings'
   ];
@@ -221,6 +251,12 @@ export function getBuiltInPlaybooks(): Playbook[] {
       name: 'investigateHighCpuUsage',
       description: 'Investigate high CPU usage. This playbook should be execute while the CPU usage is elevated.',
       content: INVESTIGATE_HIGH_CPU_USAGE_PLAYBOOK,
+      isBuiltIn: true
+    },
+    {
+      name: 'investigateLowMemory',
+      description: 'Investigate low freeable memory. This playbook should be execute while the freeable memory is low.',
+      content: INVESTIGATE_LOW_MEMORY_PLAYBOOK,
       isBuiltIn: true
     },
     {
