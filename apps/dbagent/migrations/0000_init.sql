@@ -422,4 +422,4 @@ CREATE POLICY "schedules_policy" ON "schedules" AS PERMISSIVE FOR ALL TO "authen
 );
 
 --> statement-breakpoint
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "user";
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "authenticated_user";

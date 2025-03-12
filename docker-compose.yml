@@ -8,11 +8,11 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - dia_postgres_data:/var/lib/postgresql/data
+      - agent_postgres_data:/var/lib/postgresql/data
       - ./apps/dbagent/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
 
-  dia:
-    image: xataio/dia:latest
+  xata-agent:
+    image: xataio/agent:0.1.1
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-dbagent}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-dbagent}
       NODE_ENV: production
@@ -24,4 +24,4 @@ services:
       - postgres
 
 volumes:
-  dia_postgres_data:
+  agent_postgres_data:
