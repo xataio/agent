@@ -10,6 +10,7 @@ import { PostgresConfig, runSql, startPostgresContainer } from '../lib/eval-dock
 import { mockGetConnectionInfo, mockGetProjectsById } from '../lib/mocking';
 import { evalResultEnum } from '../lib/schemas';
 import { ensureTraceFolderExistsExpect } from '../lib/test-id';
+import { stepToHuman } from '../lib/trace';
 import { EvalCase, runEvals } from '../lib/vitest-helpers';
 
 let dbConfig: PostgresConfig;
@@ -35,52 +36,82 @@ afterAll(async () => {
   await dbConfig.close();
 });
 
-type LLMJudgeConfig = { prompt: (args: { input: string; output: string }) => string; model: string };
+type LLMJudgeConfig = {
+  prompt: (args: { input: string; steps: string[]; finalAnswer: string }) => string;
+  name: string;
+};
 
-const defaultJudge: LLMJudgeConfig = {
-  prompt: ({
-    input,
-    output
-  }) => `Please evaluate whether this response from an expert in PostgreSQL and database administration. Answers should be concise and provide no additional information that isn't needed.
-
-  Please evaluate whether the following question has been answered well.
+const finalAnswerJudge: LLMJudgeConfig = {
+  name: 'final_answer',
+  prompt: ({ input, finalAnswer }) => `
+  The following question was answered by an expert in PostgreSQL and database administration:
   <question>${input}</question>
-  <answer>${output}</question>
+  <expertAnswer>${finalAnswer}</expertAnswer>
+   
+  Please determine whether expert passed or failed at answering the question correctly and accurately. Please provied a critique of how the answer could be improved or does not match the response of an expert in PostgreSQl and database administration.
+  `
+};
 
-Suggest a critique of how the answer could be improved or does not match the response of an exper in PostgreSQl and database administration.
-  `,
-  model: env.JUDGE_MODEL
+const correctToolCallsJudge: LLMJudgeConfig = {
+  name: 'tool_call',
+  prompt: ({ input, steps }) => `
+  The following question was answered by an expert in PostgreSQL and database administration:
+  <question>${input}</question>
+  <intermediateSteps>${steps}</intermediateSteps>
+
+  Did the expert use the appropriate tools to answer the question correctly. Please provide a critique if `
+};
+
+const conciseAnswerJudge: LLMJudgeConfig = {
+  name: 'concise',
+  prompt: ({ input, finalAnswer }) => `
+  The following question was answered by an expert in PostgreSQL and database administration:
+    <question>${input}</question>
+    <answer>${finalAnswer}</answer>
+
+  Please determine whether expert passed or failed at answering the question concisely with no extra information offered unless it's explicitly asked for in the question or it's almost certain from the question the user would want it. Please provied a critique of how the answer could be improved or does not match the resp`
 };
 
 type LLMJudgeEval = EvalCase & { prompt: string; judge: LLMJudgeConfig };
 
-describe.concurrent('llm_judge', () => {
+describe.concurrent('judge', () => {
   const evalCases: LLMJudgeEval[] = [
     {
-      id: 'judge_tables_in_db',
+      id: 'tables_in_db',
       prompt: 'What tables do I have in my db?',
-      only: true
+      judges: [finalAnswerJudge, conciseAnswerJudge]
+    },
+    {
+      id: 'tables_in_db_how_many',
+      prompt: 'How many tables do I have in my db?',
+      judges: [finalAnswerJudge, conciseAnswerJudge]
     }
-  ].map((evalCase) => ({ ...evalCase, judge: defaultJudge }));
+  ].flatMap((evalCase) =>
+    evalCase.judges.map((judge) => ({
+      id: `${judge.name}_${evalCase.id}`,
+      prompt: evalCase.prompt,
+      judge: judge
+    }))
+  );
 
   runEvals(evalCases, async ({ prompt, judge }, { expect }) => {
+    const traceFolder = ensureTraceFolderExistsExpect(expect);
     const result = await evalChat({
       messages: [{ role: 'user', content: prompt }],
       dbConnection: dbConfig.connectionString,
       expect
     });
 
-    const steps = JSON.stringify(result.steps, null, 2);
-
+    const humanSteps = result.steps.map(stepToHuman);
+    const finalAnswer = result.text;
     const { object: judgeResponse } = await generateObject({
-      model: getModelInstance(judge.model),
+      model: getModelInstance(env.JUDGE_MODEL),
       schema: z.object({
         result: evalResultEnum,
         critique: z.string()
       }),
-      prompt: judge.prompt({ input: prompt, output: steps })
+      prompt: judge.prompt({ input: prompt, steps: humanSteps, finalAnswer })
     });
-    const traceFolder = ensureTraceFolderExistsExpect(expect);
     const judgeResponseFile = path.join(traceFolder, 'judgeResponse.txt');
     fs.writeFileSync(judgeResponseFile, judgeResponse.critique);
 
