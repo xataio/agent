@@ -59,6 +59,7 @@ CREATE TABLE "project_members" (
 	CONSTRAINT "uq_project_members_user_project" UNIQUE("project_id","user_id")
 );
 --> statement-breakpoint
+ALTER TABLE "project_members" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 CREATE TABLE "projects" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL
@@ -80,6 +81,7 @@ ALTER TABLE "schedule_runs" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 CREATE TABLE "schedules" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"project_id" uuid NOT NULL,
+	"user_id" text NOT NULL,
 	"connection_id" uuid NOT NULL,
 	"playbook" varchar(255) NOT NULL,
 	"schedule_type" varchar(255) NOT NULL,
@@ -151,18 +153,19 @@ CREATE POLICY "integrations_policy" ON "integrations" AS PERMISSIVE FOR ALL TO "
         SELECT 1 FROM project_members
         WHERE project_id = integrations.project_id AND user_id = current_setting('app.current_user', true)::TEXT
       ));--> statement-breakpoint
+CREATE POLICY "projects_members_policy" ON "project_members" AS PERMISSIVE FOR ALL TO "authenticated_user" USING (true);--> statement-breakpoint
 CREATE POLICY "projects_view_policy" ON "projects" AS PERMISSIVE FOR SELECT TO "authenticated_user" USING (EXISTS (
       SELECT 1 FROM project_members
-      WHERE project_id = id AND user_id = current_setting('app.current_user', true)::TEXT
+      WHERE project_id = projects.id AND user_id = current_setting('app.current_user', true)::TEXT
     ));--> statement-breakpoint
 CREATE POLICY "projects_create_policy" ON "projects" AS PERMISSIVE FOR INSERT TO "authenticated_user" WITH CHECK (true);--> statement-breakpoint
 CREATE POLICY "projects_update_policy" ON "projects" AS PERMISSIVE FOR UPDATE TO "authenticated_user" USING (EXISTS (
       SELECT 1 FROM project_members
-      WHERE project_id = id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'
+      WHERE project_id = projects.id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'
     ));--> statement-breakpoint
 CREATE POLICY "projects_delete_policy" ON "projects" AS PERMISSIVE FOR DELETE TO "authenticated_user" USING (EXISTS (
       SELECT 1 FROM project_members
-      WHERE project_id = id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'
+      WHERE project_id = projects.id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'
     ));--> statement-breakpoint
 CREATE POLICY "schedule_runs_policy" ON "schedule_runs" AS PERMISSIVE FOR ALL TO "authenticated_user" USING (EXISTS (
         SELECT 1 FROM project_members

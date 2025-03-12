@@ -328,7 +328,7 @@ export const projectMembers = pgTable(
     // Project members has an "allow all" policy, to avoid circular dependencies.
     // Instead, we use the project policies to control access to project members.
     pgPolicy('projects_members_policy', {
-      to: user,
+      to: authenticatedUser,
       for: 'all',
       using: sql`true`
     })

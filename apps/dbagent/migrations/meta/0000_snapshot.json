@@ -1,5 +1,5 @@
 {
-  "id": "2b2153f3-1be0-4450-980c-7ce64d2fceed",
+  "id": "41b6af1e-4438-473b-ae7f-73a9552b76b6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -560,7 +560,15 @@
           "columns": ["project_id", "user_id"]
         }
       },
-      "policies": {},
+      "policies": {
+        "projects_members_policy": {
+          "name": "projects_members_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "true"
+        }
+      },
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -592,7 +600,7 @@
           "as": "PERMISSIVE",
           "for": "SELECT",
           "to": ["authenticated_user"],
-          "using": "EXISTS (\n      SELECT 1 FROM project_members\n      WHERE project_id = id AND user_id = current_setting('app.current_user', true)::TEXT\n    )"
+          "using": "EXISTS (\n      SELECT 1 FROM project_members\n      WHERE project_id = projects.id AND user_id = current_setting('app.current_user', true)::TEXT\n    )"
         },
         "projects_create_policy": {
           "name": "projects_create_policy",
@@ -606,14 +614,14 @@
           "as": "PERMISSIVE",
           "for": "UPDATE",
           "to": ["authenticated_user"],
-          "using": "EXISTS (\n      SELECT 1 FROM project_members\n      WHERE project_id = id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'\n    )"
+          "using": "EXISTS (\n      SELECT 1 FROM project_members\n      WHERE project_id = projects.id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'\n    )"
         },
         "projects_delete_policy": {
           "name": "projects_delete_policy",
           "as": "PERMISSIVE",
           "for": "DELETE",
           "to": ["authenticated_user"],
-          "using": "EXISTS (\n      SELECT 1 FROM project_members\n      WHERE project_id = id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'\n    )"
+          "using": "EXISTS (\n      SELECT 1 FROM project_members\n      WHERE project_id = projects.id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'\n    )"
         }
       },
       "checkConstraints": {},
@@ -792,6 +800,12 @@
         "project_id": {
           "name": "project_id",
           "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
