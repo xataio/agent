@@ -1,4 +1,4 @@
-# Aida, your AI expert in PostgreSQL
+# Xata Agent, your AI expert in PostgreSQL
 
 Hire me (for free, I'm open source) as your agentic AI PostgreSQL expert. I can:
 
