@@ -1,11 +1,13 @@
+import { CronExpressionParser } from 'cron-parser';
 import {
-  getSchedules,
   incrementScheduleFailures,
   Schedule,
-  scheduleGetNextRun,
   setScheduleStatusRunning,
   updateScheduleRunData
 } from '~/lib/db/schedules';
+import { PartialBy } from '~/utils/types';
+import { queryDb } from '../db/db';
+import { schedules as schedulesSchema } from '../db/schema';
 import { env } from '../env/server';
 import { runSchedule } from './runner';
 
@@ -13,6 +15,19 @@ export function utcToLocalDate(utcString: string): Date {
   const date = new Date(utcString);
   const offset = date.getTimezoneOffset() * 60000; // Convert offset to milliseconds
   return new Date(date.getTime() - offset);
+}
+
+export function scheduleGetNextRun(schedule: PartialBy<Schedule, 'id'>, now: Date): Date {
+  if (schedule.scheduleType === 'cron' && schedule.cronExpression) {
+    const interval = CronExpressionParser.parse(schedule.cronExpression);
+    return interval.next().toDate();
+  }
+  if (schedule.scheduleType === 'automatic' && schedule.minInterval) {
+    // TODO ask the model to get the interval, for now use the minInterval
+    const nextRun = new Date(now.getTime() + schedule.minInterval * 1000);
+    return nextRun;
+  }
+  return now;
 }
 
 export function shouldRunSchedule(schedule: Schedule, now: Date): boolean {
@@ -35,10 +50,16 @@ export function shouldRunSchedule(schedule: Schedule, now: Date): boolean {
   return now >= nextRun;
 }
 
-export async function checkAndRunJobs() {
-  console.log('Checking and running jobs');
+export async function checkAndRunJobsAsAdmin() {
+  console.log('Checking and running jobs as admin');
   try {
-    const schedules = await getSchedules();
+    const schedules = await queryDb(
+      async ({ db }) => {
+        return await db.select().from(schedulesSchema);
+      },
+      { admin: true }
+    );
+
     const now = new Date();
 
     // Filter schedules that should run
@@ -71,7 +92,7 @@ async function runJob(schedule: Schedule, now: Date) {
 
   if (schedule.status === 'scheduled') {
     try {
-      await setScheduleStatusRunning(schedule.id);
+      await setScheduleStatusRunning(schedule);
     } catch (error) {
       // I'm going to assume that some other worker has just picked this up
       // and will do the job
@@ -84,7 +105,7 @@ async function runJob(schedule: Schedule, now: Date) {
     await runSchedule(schedule, now);
   } catch (error) {
     console.error(`Error running playbook ${schedule.playbook}:`, error);
-    await incrementScheduleFailures(schedule.id);
+    await incrementScheduleFailures(schedule);
   }
 
   // Schedule the next run (also in case of errors)

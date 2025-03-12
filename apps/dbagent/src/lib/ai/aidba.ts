@@ -47,7 +47,7 @@ Then use the contents of the playbook as an action plan. Execute the plan step b
 At the end of your execution, print a summary of the results.
 `;
 
-export async function getTools(connection: Connection): Promise<Record<string, Tool>> {
+export async function getTools(connection: Connection, asUserId?: string): Promise<Record<string, Tool>> {
   return {
     getCurrentTime: {
       description: 'Get the current time',
@@ -117,7 +117,7 @@ If you know the schema, pass it in as well.`,
 instance/cluster on which the DB is running. Useful during the initial assessment.`,
       parameters: z.object({}),
       execute: async () => {
-        return await getTablesAndInstanceInfo(connection);
+        return await getTablesAndInstanceInfo(connection, asUserId);
       }
     },
     getPerformanceAndVacuumSettings: {
@@ -131,7 +131,7 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
       description: `Get the available and installed PostgreSQL extensions for the database.`,
       parameters: z.object({}),
       execute: async () => {
-        return await getPostgresExtensions(connection);
+        return await getPostgresExtensions(connection, asUserId);
       }
     },
     getInstanceLogs: {
@@ -142,7 +142,7 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
       }),
       execute: async ({ periodInSeconds, grep }) => {
         console.log('getInstanceLogs', periodInSeconds, grep);
-        return await getInstanceLogs({ connection, periodInSeconds, grep });
+        return await getInstanceLogs({ connection, periodInSeconds, grep, asUserId });
       }
     },
     getInstanceMetric: {
@@ -153,7 +153,7 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
       }),
       execute: async ({ metricName, periodInSeconds }) => {
         console.log('getClusterMetric', metricName, periodInSeconds);
-        return await getClusterMetric(connection, metricName, periodInSeconds);
+        return await getClusterMetric({ connection, metricName, periodInSeconds, asUserId });
       }
     },
     getCurrentActiveQueries: {

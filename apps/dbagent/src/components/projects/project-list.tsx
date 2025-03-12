@@ -45,11 +45,11 @@ function CreateProjectButton() {
 
     setIsLoading(true);
 
-    const result = await createProject({ name: projectName });
-    if (result.success) {
-      router.push(`/projects/${result.id}/start`);
-    } else {
-      toast.error(result.error);
+    try {
+      const projectId = await createProject({ name: projectName });
+      router.push(`/projects/${projectId}/start`);
+    } catch (error: any) {
+      toast.error(error.message);
     }
 
     setIsLoading(false);
@@ -153,26 +153,27 @@ function ProjectCard({ project }: { project: Project }) {
 
   const handleRename = async () => {
     if (newProjectName.trim() !== '') {
-      const result = await updateProject(project.id, { name: newProjectName });
-      if (result.success) {
+      try {
+        await updateProject(project.id, { name: newProjectName });
         toast.success('Project renamed successfully');
         router.refresh();
-      } else {
-        toast.error(result.error);
+      } catch (error: any) {
+        toast.error(error.message);
       }
       setShowRenameModal(false);
     }
   };
 
   const handleDelete = async () => {
-    const result = await deleteProject({ id: project.id });
-    if (result.success) {
+    try {
+      await deleteProject({ id: project.id });
       toast.success('Project deleted successfully');
       router.refresh();
-    } else {
-      toast.error(result.error);
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setShowDeleteModal(false);
     }
-    setShowDeleteModal(false);
   };
 
   return (
@@ -267,11 +268,11 @@ function CreateProjectOnboarding() {
 
     setIsLoading(true);
 
-    const result = await createProject({ name: projectName });
-    if (result.success) {
-      router.push(`/projects/${result.id}/start`);
-    } else {
-      toast.error(result.error);
+    try {
+      const projectId = await createProject({ name: projectName });
+      router.push(`/projects/${projectId}/start`);
+    } catch (error: any) {
+      toast.error(error.message);
     }
 
     setIsLoading(false);

@@ -2,7 +2,7 @@ import { Message } from '@ai-sdk/ui-utils';
 import { generateId, generateObject, generateText, LanguageModelV1 } from 'ai';
 import { z } from 'zod';
 import { getModelInstance, getTools, monitoringSystemPrompt } from '../ai/aidba';
-import { Connection, getConnection } from '../db/connections';
+import { Connection, getConnectionFromSchedule } from '../db/connections';
 import { insertScheduleRunLimitHistory, ScheduleRun } from '../db/schedule-runs';
 import { Schedule } from '../db/schedules';
 import { sendScheduleNotification } from '../notifications/slack-webhook';
@@ -12,6 +12,7 @@ type RunModelPlaybookParams = {
   messages: Message[];
   modelInstance: LanguageModelV1;
   connection: Connection;
+  schedule: Schedule;
   playbook: string;
   additionalInstructions?: string;
 };
@@ -20,6 +21,7 @@ async function runModelPlaybook({
   messages,
   modelInstance,
   connection,
+  schedule,
   playbook,
   additionalInstructions
 }: RunModelPlaybookParams) {
@@ -34,7 +36,7 @@ async function runModelPlaybook({
     model: modelInstance,
     system: monitoringSystemPrompt,
     messages: messages,
-    tools: await getTools(connection),
+    tools: await getTools(connection, schedule.userId),
     maxSteps: 20
   });
 
@@ -166,7 +168,7 @@ function shouldNotify(notifyLevel: 'alert' | 'warning' | 'info', notificationLev
 export async function runSchedule(schedule: Schedule, now: Date) {
   console.log(`Running schedule ${schedule.id}`);
 
-  const connection = await getConnection(schedule.connectionId);
+  const connection = await getConnectionFromSchedule(schedule);
   if (!connection) {
     throw new Error(`Connection ${schedule.connectionId} not found`);
   }
@@ -177,6 +179,7 @@ export async function runSchedule(schedule: Schedule, now: Date) {
     messages,
     modelInstance,
     connection,
+    schedule,
     playbook: schedule.playbook,
     additionalInstructions: schedule.additionalInstructions ?? ''
   });
@@ -203,6 +206,7 @@ export async function runSchedule(schedule: Schedule, now: Date) {
         messages,
         modelInstance,
         connection,
+        schedule,
         playbook: nextPlaybook,
         additionalInstructions: ''
       });
@@ -214,6 +218,7 @@ export async function runSchedule(schedule: Schedule, now: Date) {
 
   // save the result in the database with all messages
   const scheduleRun: Omit<ScheduleRun, 'id'> = {
+    projectId: connection.projectId,
     scheduleId: schedule.id,
     result: resultText,
     summary: notificationResult.summary,
@@ -221,7 +226,7 @@ export async function runSchedule(schedule: Schedule, now: Date) {
     messages: messages,
     createdAt: now.toISOString() // using the start time
   };
-  const run = await insertScheduleRunLimitHistory(scheduleRun, schedule.keepHistory);
+  const run = await insertScheduleRunLimitHistory(scheduleRun, schedule.keepHistory, schedule.userId);
 
   if (shouldNotify(schedule.notifyLevel, notificationResult.notificationLevel)) {
     await sendScheduleNotification(

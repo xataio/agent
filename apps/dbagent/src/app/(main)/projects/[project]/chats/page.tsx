@@ -2,14 +2,25 @@ import { actionGetScheduleRun } from '~/components/chats/actions';
 import { ChatsUI } from '~/components/chats/chats-ui';
 import { listConnections } from '~/lib/db/connections';
 
-interface SearchParams {
-  runId?: string;
-}
+type PageParams = {
+  project: string;
+};
 
-export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
+type SearchParams = {
+  runId?: string;
+};
+
+export default async function Page({
+  params,
+  searchParams
+}: {
+  params: Promise<PageParams>;
+  searchParams: Promise<SearchParams>;
+}) {
+  const { project } = await params;
   const { runId } = await searchParams;
 
-  const connections = await listConnections();
+  const connections = await listConnections(project);
   const scheduleRun = await actionGetScheduleRun(runId);
 
   return (
