@@ -49,9 +49,10 @@ export async function fetchRDSClusters(
 }
 
 export async function fetchRDSClusterDetails(
+  projectId: string,
   clusterInfo: RDSClusterInfo
 ): Promise<{ success: boolean; message: string; data: RDSClusterDetailedInfo | null }> {
-  const aws = await getIntegration('aws');
+  const aws = await getIntegration(projectId, 'aws');
   if (!aws) {
     return { success: false, message: 'AWS integration not found', data: null };
   }
@@ -80,9 +81,11 @@ export async function fetchRDSClusterDetails(
   }
 }
 
-export async function getAWSIntegration(): Promise<{ success: boolean; message: string; data: AwsIntegration | null }> {
+export async function getAWSIntegration(
+  projectId: string
+): Promise<{ success: boolean; message: string; data: AwsIntegration | null }> {
   try {
-    const aws = await getIntegration('aws');
+    const aws = await getIntegration(projectId, 'aws');
     if (!aws) {
       return { success: false, message: 'AWS integration not found', data: null };
     }
@@ -98,7 +101,7 @@ export async function saveClusterDetails(
   region: string,
   connection: Connection
 ): Promise<{ success: boolean; message: string }> {
-  const aws = await getIntegration('aws');
+  const aws = await getIntegration(connection.projectId, 'aws');
   if (!aws) {
     return { success: false, message: 'AWS integration not found' };
   }
@@ -110,11 +113,16 @@ export async function saveClusterDetails(
   const cluster = await getRDSClusterInfo(clusterIdentifier, client);
   if (cluster) {
     const instanceId = await saveCluster({
+      projectId: connection.projectId,
       clusterIdentifier,
       region,
       data: cluster
     });
-    await associateClusterConnection(instanceId, connection.id);
+    await associateClusterConnection({
+      projectId: connection.projectId,
+      clusterId: instanceId,
+      connectionId: connection.id
+    });
     return { success: true, message: 'Cluster details saved successfully' };
   } else {
     const instance = await getRDSInstanceInfo(clusterIdentifier, client);
@@ -122,6 +130,7 @@ export async function saveClusterDetails(
       return { success: false, message: 'RDS instance not found' };
     }
     const instanceId = await saveCluster({
+      projectId: connection.projectId,
       clusterIdentifier,
       region,
       data: {
@@ -138,7 +147,11 @@ export async function saveClusterDetails(
         isStandaloneInstance: true
       }
     });
-    await associateClusterConnection(instanceId, connection.id);
+    await associateClusterConnection({
+      projectId: connection.projectId,
+      clusterId: instanceId,
+      connectionId: connection.id
+    });
     return { success: true, message: 'Instance details saved successfully' };
   }
 }

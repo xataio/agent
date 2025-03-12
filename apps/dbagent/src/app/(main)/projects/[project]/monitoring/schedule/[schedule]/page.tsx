@@ -1,17 +1,17 @@
-import { actionListConnections } from '~/components/connections/actions';
 import { actionListPlaybooks } from '~/components/monitoring/actions';
 import { ScheduleForm } from '~/components/monitoring/schedule-form';
+import { listConnections } from '~/lib/db/connections';
 
-interface PageParams {
+type PageParams = {
   project: string;
   schedule: string;
-}
+};
 
 export default async function Page({ params }: { params: Promise<PageParams> }) {
   const { project, schedule } = await params;
 
   const playbooks = await actionListPlaybooks();
-  const connections = await actionListConnections();
+  const connections = await listConnections(project);
 
   return (
     <div className="container">

@@ -1,6 +1,6 @@
-import { checkAndRunJobs } from '~/lib/monitoring/scheduler';
+import { checkAndRunJobsAsAdmin } from '~/lib/monitoring/scheduler';
 
 export async function POST() {
-  await checkAndRunJobs();
+  await checkAndRunJobsAsAdmin();
   return new Response('OK', { status: 200 });
 }

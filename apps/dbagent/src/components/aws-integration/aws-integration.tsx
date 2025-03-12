@@ -47,7 +47,7 @@ export function AWSIntegration({ projectId, connections }: { projectId: string; 
 
   useEffect(() => {
     const loadAWSIntegration = async () => {
-      const response = await getAWSIntegration();
+      const response = await getAWSIntegration(projectId);
       if (response.success && response.data) {
         setAccessKeyId(response.data.accessKeyId);
         setSecretAccessKey(response.data.secretAccessKey);
@@ -87,7 +87,7 @@ export function AWSIntegration({ projectId, connections }: { projectId: string; 
     }
     setSelectedCluster(cluster.identifier);
     try {
-      const details = await fetchRDSClusterDetails(cluster);
+      const details = await fetchRDSClusterDetails(projectId, cluster);
       setClusterDetails(details.data);
     } catch (error) {
       toast('Error: Failed to fetch RDS instance details.');

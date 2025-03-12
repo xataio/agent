@@ -1,19 +1,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import {
-  addConnection,
-  deleteConnection,
-  getConnection,
-  listConnections,
-  makeConnectionDefault,
-  updateConnection
-} from '~/lib/db/connections';
+import { addConnection, makeConnectionDefault, updateConnection } from '~/lib/db/connections';
 import { getTargetDbConnection } from '~/lib/targetdb/db';
-
-export async function actionListConnections() {
-  return await listConnections();
-}
 
 function translateError(error: string) {
   if (error.includes('uq_connections_connection_string')) {
@@ -64,14 +53,6 @@ export async function actionMakeConnectionDefault(id: string) {
     console.error('Error making connection default:', error);
     return { success: false, message: 'Failed to make connection default' };
   }
-}
-
-export async function actionGetConnection(id: string) {
-  return await getConnection(id);
-}
-
-export async function actionDeleteConnection(id: string) {
-  return await deleteConnection(id);
 }
 
 export async function validateConnection(connectionString: string) {

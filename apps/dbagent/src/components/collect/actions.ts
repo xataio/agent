@@ -13,11 +13,11 @@ import {
   TableStat
 } from '~/lib/targetdb/db';
 
-export async function collectInfo(conn: Connection | undefined) {
-  if (!conn) {
+export async function collectInfo(connection: Connection | undefined) {
+  if (!connection) {
     return { success: false, message: 'No connection selected' };
   }
-  const client = await getTargetDbConnection(conn.connectionString);
+  const client = await getTargetDbConnection(connection.connectionString);
   try {
     const result = await client.query('SELECT * FROM public.test');
     return { success: true, message: 'Info collected successfully', data: result.rows };
@@ -29,19 +29,19 @@ export async function collectInfo(conn: Connection | undefined) {
 }
 
 export async function collectTables(
-  conn: Connection | undefined
+  connection: Connection | undefined
 ): Promise<{ success: boolean; message?: string; data: TableStat[] }> {
-  if (!conn) {
+  if (!connection) {
     return { success: false, message: 'No connection selected', data: [] };
   }
   let data: TableStat[] = [];
   try {
-    data = await getTableStats(conn.connectionString);
+    data = await getTableStats(connection.connectionString);
   } catch (error) {
     return { success: false, message: `Error collecting tables: ${error}`, data: [] };
   }
   try {
-    await saveConnectionInfo({ connectionId: conn.id, type: 'tables', data });
+    await saveConnectionInfo({ projectId: connection.projectId, connectionId: connection.id, type: 'tables', data });
   } catch (error) {
     return { success: false, message: `Error saving tables: ${error}`, data: [] };
   }
@@ -53,19 +53,24 @@ export async function collectTables(
 }
 
 export async function collectExtensions(
-  conn: Connection | undefined
+  connection: Connection | undefined
 ): Promise<{ success: boolean; message?: string; data: PgExtension[] }> {
-  if (!conn) {
+  if (!connection) {
     return { success: false, message: 'No connection selected', data: [] };
   }
   let data: PgExtension[] = [];
   try {
-    data = await getExtensions(conn.connectionString);
+    data = await getExtensions(connection.connectionString);
   } catch (error) {
     return { success: false, message: `Error collecting extensions: ${error}`, data: [] };
   }
   try {
-    await saveConnectionInfo({ connectionId: conn.id, type: 'extensions', data });
+    await saveConnectionInfo({
+      projectId: connection.projectId,
+      connectionId: connection.id,
+      type: 'extensions',
+      data
+    });
   } catch (error) {
     return { success: false, message: `Error saving extensions: ${error}`, data: [] };
   }
@@ -73,19 +78,24 @@ export async function collectExtensions(
 }
 
 export async function collectPerformanceSettings(
-  conn: Connection | undefined
+  connection: Connection | undefined
 ): Promise<{ success: boolean; message?: string; data: PerformanceSetting[] }> {
-  if (!conn) {
+  if (!connection) {
     return { success: false, message: 'No connection selected', data: [] };
   }
   let data: PerformanceSetting[] = [];
   try {
-    data = await getPerformanceSettings(conn.connectionString);
+    data = await getPerformanceSettings(connection.connectionString);
   } catch (error) {
     return { success: false, message: `Error collecting performance settings: ${error}`, data: [] };
   }
   try {
-    await saveConnectionInfo({ connectionId: conn.id, type: 'performance_settings', data });
+    await saveConnectionInfo({
+      projectId: connection.projectId,
+      connectionId: connection.id,
+      type: 'performance_settings',
+      data
+    });
   } catch (error) {
     return { success: false, message: `Error saving performance settings: ${error}`, data: [] };
   }
@@ -105,7 +115,12 @@ export async function collectVacuumData(
     return { success: false, message: `Error collecting vacuum data: ${error}`, data: [] };
   }
   try {
-    await saveConnectionInfo({ connectionId: connection.id, type: 'vacuum_settings', data });
+    await saveConnectionInfo({
+      projectId: connection.projectId,
+      connectionId: connection.id,
+      type: 'vacuum_settings',
+      data
+    });
   } catch (error) {
     return { success: false, message: `Error saving vacuum data: ${error}`, data: [] };
   }
@@ -120,16 +135,16 @@ export interface CollectInfo {
 }
 
 export async function getCollectInfo(
-  conn: Connection | undefined
+  connection: Connection | undefined
 ): Promise<{ success: boolean; message?: string; data: CollectInfo | null }> {
-  if (!conn) {
+  if (!connection) {
     return { success: false, message: 'No connection selected', data: null };
   }
   try {
-    const tables = await getConnectionInfo(conn.id, 'tables');
-    const extensions = await getConnectionInfo(conn.id, 'extensions');
-    const performance_settings = await getConnectionInfo(conn.id, 'performance_settings');
-    const vacuum_settings = await getConnectionInfo(conn.id, 'vacuum_settings');
+    const tables = await getConnectionInfo(connection.id, 'tables');
+    const extensions = await getConnectionInfo(connection.id, 'extensions');
+    const performance_settings = await getConnectionInfo(connection.id, 'performance_settings');
+    const vacuum_settings = await getConnectionInfo(connection.id, 'vacuum_settings');
     if (!tables || !extensions || !performance_settings || !vacuum_settings) {
       return { success: true, message: 'No data found', data: null };
     }
