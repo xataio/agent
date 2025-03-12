@@ -3,6 +3,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { auth } from '~/auth';
 import { env } from '../env/server';
+import { authenticatedUser } from './schema';
 
 const pool = new Pool({
   connectionString: env.DATABASE_URL,
@@ -30,7 +31,7 @@ export async function queryDb<T>(
         throw new Error('Unable to query the database without a user');
       }
 
-      await db.execute(sql.raw(`SET ROLE "user"`));
+      await db.execute(sql.raw(`SET ROLE "${authenticatedUser.name}"`));
       await db.execute(sql.raw(`SET "app.current_user" = '${userId}'`));
     }
 
