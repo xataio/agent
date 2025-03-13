@@ -41,7 +41,7 @@ Letting the agent introduce itself:
 
 Here is an under 4 minutes walkthrough of the agent in action:
 
-<video src="https://github.com/xataio/agent/assets/1016365/69292929-9999-4999-9999-999999999999" width="100%" />
+[![Xata agent demo](https://img.youtube.com/vi/SLVRdihoRwI/maxresdefault.jpg)](https://youtu.be/SLVRdihoRwI)
 
 ## Installation / self-hosted
 
