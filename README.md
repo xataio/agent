@@ -41,7 +41,7 @@ Letting the agent introduce itself:
 
 Here is an under 4 minutes walkthrough of the agent in action:
 
-[![Xata agent demo](https://img.youtube.com/vi/SLVRdihoRwI/maxresdefault.jpg)](https://youtu.be/SLVRdihoRwI)
+https://github.com/user-attachments/assets/5bb426cc-35e7-4a68-8832-d67f7a14e2f7
 
 ## Installation / self-hosted
 
