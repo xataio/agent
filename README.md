@@ -41,7 +41,9 @@ Letting the agent introduce itself:
 
 Here is an under 4 minutes walkthrough of the agent in action:
 
-https://github.com/user-attachments/assets/fc6f5195-ed0f-4fe8-bdc9-233638a720a4
+https://github.com/user-attachments/assets/cdd2da8f-2d9d-4794-ada5-da161a8861fd
+
+A youtube version of the demo is available [here](https://youtu.be/SLVRdihoRwI).
 
 ## Installation / self-hosted
 
@@ -110,4 +112,4 @@ While it's still early days, we are using the agent ourself in our day-to-day op
   - [ ] Add an approval workflow for the agent to run potentially dangerous statements
   - [ ] Allow configuration of the tools that can be defined per monitoring schedule
 
-While the Agent is by its nature primarily an open-source project that you self-host, we are also working on a cloud version. The advantage of the cloud version is that some integrations are easier to install. If you are interested in the cloud version, please let us know.
+While the Agent is by its nature primarily an open-source project that you self-host, we are also working on a cloud version. The advantage of the cloud version is that some integrations are easier to install. If you are interested in the cloud version, please [sign up on the waitlist here](https://tally.so/r/wgvkgM).
