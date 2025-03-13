@@ -45,6 +45,10 @@ https://github.com/user-attachments/assets/fc6f5195-ed0f-4fe8-bdc9-233638a720a4
 
 ## Installation / self-hosted
 
+We provide docker images for the agent itself. The only other dependency is a Postgres database in which the agent will store its configuration, state, and history.
+
+We provide a docker-compose file to start the agent and the Postgres database.
+
 Edit the `.env.production` file in the root of the project. You need to set the `PUBLIC_URL` and the API key for at least OpenAI.
 
 Start a local instance via docker compose:
@@ -60,3 +64,45 @@ We have a more detailed [guide](https://github.com/xataio/agent/wiki/Xata-Agent-
 ## Development
 
 Go to the `apps/dbagent` directory and follow the instructions in the [README](./apps/dbagent/README.md).
+
+## Extensibility
+
+The agent can be extended via the following mechanisms:
+
+- **Tools**: These are functions that the agent can call to get information about the database. They are written in TypeScript, see this [file](https://github.com/xataio/agent/blob/main/apps/dbagent/src/lib/ai/aidba.ts#L50) for their description.
+- **Playbooks**: These are sequences of steps that the agent can follow to troubleshoot an issue. They are simply written in english. The pre-defined playbooks are [here](https://github.com/xataio/agent/blob/main/apps/dbagent/src/lib/tools/playbooks.ts).
+- **Integrations**: For example, the AWS and Slack integrations. They contain configuration and UI widgets.
+
+## Status / Roadmap
+
+While it's still early days, we are using the agent ourself in our day-to-day operations work at Xata.
+
+- Playbooks:
+- [x] general monitoring
+- [x] tune settings
+- [x] investigate slow queries
+- [x] investigate high CPU
+- [x] investigate high memory
+- [x] investigate high connection count
+- [ ] investigate locks
+- [ ] investigate vacuuming
+- Other playbooks (please let us know)
+- [ ] MCP server for other agents to be able to use the agent as a tool
+- Support for more cloud providers:
+  - [x] AWS RDS
+  - [x] AWS Aurora
+  - [ ] Google Cloud SQL
+  - [ ] Azure Database for PostgreSQL
+  - [ ] Digital Ocean Managed Databases
+  - [ ] Other (please let us know)
+- Notifications & integrations:
+  - [x] Simple Slack integration
+  - [ ] Slack integration as an AI agent (https://github.com/xataio/agent/pull/29)
+  - [ ] Discord integration
+  - [ ] Other (please let us know)
+- Eval & testing:
+  - [ ] Add eval testing for the interaction with LLMs (https://github.com/xataio/agent/pull/38)
+- Approval workflow:
+  - [ ] Add an approval workflow for the agent to run potentially dangerous statements
+
+While the Agent is by its nature primarily an open-source project that you self-host, we are also working on a cloud version. The advantage of the cloud version is that some integrations are easier to install. If you are interested in the cloud version, please let us know.
