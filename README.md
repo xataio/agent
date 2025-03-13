@@ -61,6 +61,8 @@ Open the app at `http://localhost:8080` (or the public URL you set in the `.env.
 
 We have a more detailed [guide](https://github.com/xataio/agent/wiki/Xata-Agent-%E2%80%90-Deploy-on-EC2) on how to deploy via docker-compose on an EC2 instance.
 
+For authentication, you can use your own OAuth provider.
+
 ## Development
 
 Go to the `apps/dbagent` directory and follow the instructions in the [README](./apps/dbagent/README.md).
@@ -78,16 +80,18 @@ The agent can be extended via the following mechanisms:
 While it's still early days, we are using the agent ourself in our day-to-day operations work at Xata.
 
 - Playbooks:
-- [x] general monitoring
-- [x] tune settings
-- [x] investigate slow queries
-- [x] investigate high CPU
-- [x] investigate high memory
-- [x] investigate high connection count
-- [ ] investigate locks
-- [ ] investigate vacuuming
-- Other playbooks (please let us know)
-- [ ] MCP server for other agents to be able to use the agent as a tool
+  - [x] general monitoring
+  - [x] tune settings
+  - [x] investigate slow queries
+  - [x] investigate high CPU
+  - [x] investigate high memory
+  - [x] investigate high connection count
+  - [ ] investigate locks
+  - [ ] investigate vacuuming
+  - Other playbooks (please let us know)
+- MCP integrations:
+  - [ ] Act as an MCP server for other agents
+  - [ ] Call the tools over the network via MCP
 - Support for more cloud providers:
   - [x] AWS RDS
   - [x] AWS Aurora
@@ -104,5 +108,6 @@ While it's still early days, we are using the agent ourself in our day-to-day op
   - [ ] Add eval testing for the interaction with LLMs (https://github.com/xataio/agent/pull/38)
 - Approval workflow:
   - [ ] Add an approval workflow for the agent to run potentially dangerous statements
+  - [ ] Allow configuration of the tools that can be defined per monitoring schedule
 
 While the Agent is by its nature primarily an open-source project that you self-host, we are also working on a cloud version. The advantage of the cloud version is that some integrations are easier to install. If you are interested in the cloud version, please let us know.
