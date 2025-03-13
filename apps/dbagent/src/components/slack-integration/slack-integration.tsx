@@ -79,7 +79,11 @@ export function SlackIntegration({ projectId }: { projectId: string }) {
               <AlertTitle>Create a Slack Webhook</AlertTitle>
               <AlertDescription>
                 To create an incoming webhook for posting to your Slack workspace,{' '}
-                <Link href="https://api.slack.com/messaging/webhooks" className="font-medium underline">
+                <Link
+                  href="https://github.com/xataio/agent/wiki/Xata-Agent-%E2%80%90-Slack-integration-guide"
+                  target="_blank"
+                  className="font-medium underline"
+                >
                   follow this guide
                 </Link>
                 . It only takes a few minutes to set up.
