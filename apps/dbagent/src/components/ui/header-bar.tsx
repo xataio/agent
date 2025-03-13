@@ -29,8 +29,8 @@ export type User = {
 export function Logo() {
   return (
     <Link href="/" className="flex items-center gap-1">
-      <Image src="/images/logos/xata-logo.svg" alt="xata agent" width={32} height={32} />
-      <h1 className="text-md font-bold">Xata</h1>
+      <Image src="/images/logos/xata-agent-logo.svg" alt="xata agent" width={32} height={32} />
+      <h1 className="pt-1 text-xl font-bold">xata</h1>
     </Link>
   );
 }
