@@ -35,7 +35,7 @@ Letting the agent introduce itself:
 >
 > Past experience:
 >
-> - I have been helping the Xata team monitor and operate over 35K active Postgres databases.
+> - I have been helping the Xata team monitor and operate tons of active Postgres databases.
 
 ## Demo
 
