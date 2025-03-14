@@ -66,58 +66,56 @@ export function SlackIntegration({ projectId }: { projectId: string }) {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Notifications</CardTitle>
-          <CardDescription>Configure slack notifications</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-6">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Create a Slack Webhook</AlertTitle>
-              <AlertDescription>
-                To create an incoming webhook for posting to your Slack workspace,{' '}
-                <Link
-                  href="https://github.com/xataio/agent/wiki/Xata-Agent-%E2%80%90-Slack-integration-guide"
-                  target="_blank"
-                  className="font-medium underline"
-                >
-                  follow this guide
-                </Link>
-                . It only takes a few minutes to set up.
-              </AlertDescription>
-            </Alert>
-          </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Notifications</CardTitle>
+        <CardDescription>Configure slack notifications</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="mb-6">
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Create a Slack Webhook</AlertTitle>
+            <AlertDescription>
+              To create an incoming webhook for posting to your Slack workspace,{' '}
+              <Link
+                href="https://github.com/xataio/agent/wiki/Xata-Agent-%E2%80%90-Slack-integration-guide"
+                target="_blank"
+                className="font-medium underline"
+              >
+                follow this guide
+              </Link>
+              . It only takes a few minutes to set up.
+            </AlertDescription>
+          </Alert>
+        </div>
 
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="webhookUrl">Incoming Webhook URL</Label>
-                <Input
-                  id="webhookUrl"
-                  type="url"
-                  placeholder="https://hooks.slack.com/services/..."
-                  disabled={isLoading}
-                  {...register('webhookUrl', {
-                    required: 'Webhook URL is required',
-                    pattern: {
-                      value: /^https:\/\/hooks\.slack\.com\/.+/,
-                      message: 'Must be a valid Slack webhook URL'
-                    }
-                  })}
-                />
-                {errors.webhookUrl && <p className="text-sm text-red-500">{errors.webhookUrl.message}</p>}
-              </div>
-
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Loading...' : 'Save Webhook URL'}
-              </Button>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="webhookUrl">Incoming Webhook URL</Label>
+              <Input
+                id="webhookUrl"
+                type="url"
+                placeholder="https://hooks.slack.com/services/..."
+                disabled={isLoading}
+                {...register('webhookUrl', {
+                  required: 'Webhook URL is required',
+                  pattern: {
+                    value: /^https:\/\/hooks\.slack\.com\/.+/,
+                    message: 'Must be a valid Slack webhook URL'
+                  }
+                })}
+              />
+              {errors.webhookUrl && <p className="text-sm text-red-500">{errors.webhookUrl.message}</p>}
             </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Loading...' : 'Save Webhook URL'}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

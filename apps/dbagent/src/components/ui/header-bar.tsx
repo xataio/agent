@@ -12,13 +12,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  SidebarTrigger,
   useIsMobile
 } from '@internal/components';
+import { Menu } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
-import Image from 'next/image';
 import Link from 'next/link';
 import { PropsWithChildren } from 'react';
+import { XataAgentLogo } from '~/components/logo/xata-agent-logo';
 
 export type User = {
   name?: string | null;
@@ -29,8 +31,8 @@ export type User = {
 export function Logo() {
   return (
     <Link href="/" className="flex items-center gap-1">
-      <Image src="/images/logos/xata-agent-logo.svg" alt="xata agent" width={32} height={32} />
-      <h1 className="pt-1 text-xl font-bold">xata</h1>
+      <XataAgentLogo size={160} />
+      <h1 className="sr-only">xata agent</h1>
     </Link>
   );
 }
@@ -54,14 +56,11 @@ export const HeaderBar = ({ children }: PropsWithChildren<{ user?: User }>) => {
         </nav>
         <div className="ml-auto flex items-center gap-4">
           <UserAvatar user={session?.user} />
+          <SidebarTrigger className="md:hidden" icon={Menu} />
         </div>
       </div>
     </header>
   );
-};
-
-export const BelowHeaderBar = ({ children }: PropsWithChildren) => {
-  return <div className="mt-[53px] h-[calc(100vh-53px)]">{children}</div>;
 };
 
 function UserAvatar({ user }: { user?: User }) {

@@ -99,103 +99,101 @@ export function AWSIntegration({ projectId, connections }: { projectId: string; 
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>AWS Integration</CardTitle>
-          <CardDescription>Configure your AWS integration and select an RDS cluster</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-6">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Add an IAM policy and user</AlertTitle>
-              <AlertDescription>
-                To obtain the Access Key ID and Secret Access Key,{' '}
-                <Link
-                  href="https://github.com/xataio/agent/wiki/Xata-Agent-%E2%80%90-AWS-integration-guide"
-                  target="_blank"
-                  className="font-medium underline"
-                >
-                  follow this guide
-                </Link>
-                . It only takes a few minutes to set up.
-              </AlertDescription>
-            </Alert>
+    <Card>
+      <CardHeader>
+        <CardTitle>AWS Integration</CardTitle>
+        <CardDescription>Configure your AWS integration and select an RDS cluster</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="mb-6">
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Add an IAM policy and user</AlertTitle>
+            <AlertDescription>
+              To obtain the Access Key ID and Secret Access Key,{' '}
+              <Link
+                href="https://github.com/xataio/agent/wiki/Xata-Agent-%E2%80%90-AWS-integration-guide"
+                target="_blank"
+                className="font-medium underline"
+              >
+                follow this guide
+              </Link>
+              . It only takes a few minutes to set up.
+            </AlertDescription>
+          </Alert>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="accessKeyId">Access Key ID</Label>
+            <Input id="accessKeyId" value={accessKeyId} onChange={(e) => setAccessKeyId(e.target.value)} required />
           </div>
+          <div>
+            <Label htmlFor="secretAccessKey">Secret Access Key</Label>
+            <Input
+              id="secretAccessKey"
+              type="password"
+              value={secretAccessKey}
+              onChange={(e) => setSecretAccessKey(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="region">Region</Label>
+            <Select value={region} onValueChange={setRegion} required>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a region" />
+              </SelectTrigger>
+              <SelectContent>
+                {regions.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {r}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Fetching Clusters
+              </>
+            ) : (
+              'Fetch RDS Clusters/Instances'
+            )}
+          </Button>
+        </form>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="accessKeyId">Access Key ID</Label>
-              <Input id="accessKeyId" value={accessKeyId} onChange={(e) => setAccessKeyId(e.target.value)} required />
-            </div>
-            <div>
-              <Label htmlFor="secretAccessKey">Secret Access Key</Label>
-              <Input
-                id="secretAccessKey"
-                type="password"
-                value={secretAccessKey}
-                onChange={(e) => setSecretAccessKey(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="region">Region</Label>
-              <Select value={region} onValueChange={setRegion} required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a region" />
-                </SelectTrigger>
-                <SelectContent>
-                  {regions.map((r) => (
-                    <SelectItem key={r} value={r}>
-                      {r}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Fetching Clusters
-                </>
-              ) : (
-                'Fetch RDS Clusters/Instances'
-              )}
-            </Button>
-          </form>
+        {rdsClusters.length > 0 && (
+          <div className="mt-8">
+            <h3 className="mb-2 text-lg font-semibold">Select an RDS Cluster/Instance</h3>
+            <Select value={selectedCluster} onValueChange={handleClusterSelect}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select an RDS cluster/instance" />
+              </SelectTrigger>
+              <SelectContent>
+                {rdsClusters.map((cluster) => (
+                  <SelectItem key={cluster.identifier} value={cluster.identifier}>
+                    {cluster.identifier}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
-          {rdsClusters.length > 0 && (
-            <div className="mt-8">
-              <h3 className="mb-2 text-lg font-semibold">Select an RDS Cluster/Instance</h3>
-              <Select value={selectedCluster} onValueChange={handleClusterSelect}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select an RDS cluster/instance" />
-                </SelectTrigger>
-                <SelectContent>
-                  {rdsClusters.map((cluster) => (
-                    <SelectItem key={cluster.identifier} value={cluster.identifier}>
-                      {cluster.identifier}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {clusterDetails && (
-            <div className="mt-8">
-              <RDSClusterCard clusterInfo={clusterDetails} />
-              <DatabaseConnectionSelector
-                clusterIdentifier={clusterDetails.identifier}
-                region={region}
-                connections={connections}
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+        {clusterDetails && (
+          <div className="mt-8">
+            <RDSClusterCard clusterInfo={clusterDetails} />
+            <DatabaseConnectionSelector
+              clusterIdentifier={clusterDetails.identifier}
+              region={region}
+              connections={connections}
+            />
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

@@ -93,7 +93,7 @@ function CreateProjectButton() {
 
 export function ProjectsList({ projects }: ProjectListProps) {
   return (
-    <div className="h-full w-full p-8">
+    <div className="mx-auto h-full w-full max-w-6xl px-8 pt-24">
       {projects.length === 0 ? (
         <CreateProjectOnboarding />
       ) : (

@@ -11,10 +11,17 @@ interface ChatSidebarProps {
 
 export function ChatSidebar({ chats, selectedChatId, onSelectChat, onNewChat }: ChatSidebarProps) {
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] w-80 flex-col border-l pb-12">
+    <div className="flex h-full w-80 flex-col pb-12">
       <div className="flex flex-1 flex-col space-y-4 py-4">
         <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold">Chat History</h2>
+          <div className="flex flex-row items-center justify-between pb-4">
+            <h2 className="mb-2 px-4 text-lg font-semibold">Chat History</h2>
+            <Button onClick={onNewChat} className="w-full max-w-32 justify-start gap-2" variant="secondary" size="sm">
+              <MessageSquarePlus size={16} />
+              New Chat
+            </Button>
+          </div>
+
           <ScrollArea className="h-[calc(100vh-16rem)]">
             {chats.map((chat) => (
               <button
@@ -32,12 +39,6 @@ export function ChatSidebar({ chats, selectedChatId, onSelectChat, onNewChat }: 
             ))}
           </ScrollArea>
         </div>
-      </div>
-      <div className="mt-auto px-3 py-2">
-        <Button onClick={onNewChat} className="w-full justify-start gap-2">
-          <MessageSquarePlus size={16} />
-          New Chat
-        </Button>
       </div>
     </div>
   );

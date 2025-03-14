@@ -23,9 +23,5 @@ export default async function Page({
   const connections = await listConnections(project);
   const scheduleRun = await actionGetScheduleRun(runId);
 
-  return (
-    <div className="container">
-      <ChatsUI connections={connections} scheduleRun={scheduleRun} />
-    </div>
-  );
+  return <ChatsUI connections={connections} scheduleRun={scheduleRun} />;
 }
