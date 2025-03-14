@@ -4,7 +4,7 @@ import * as projectsExports from '~/lib/db/projects';
 
 export const mockGetProjectsById = () => {
   vi.spyOn(projectsExports, 'getProjectById').mockImplementation(async (id) => {
-    return { success: true, project: { id, ownerId: 'ownerId', name: 'project name' } };
+    return { id, name: 'project name' };
   });
 };
 

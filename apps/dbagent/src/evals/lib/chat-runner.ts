@@ -28,7 +28,7 @@ export const evalChat = async ({
   const response = await generateText({
     model: getModelInstance(env.CHAT_MODEL),
     system: chatSystemPrompt,
-    tools: await getTools(connection, targetClient),
+    tools: await getTools(connection),
     messages,
     maxSteps: 20
   });
