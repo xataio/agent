@@ -6,6 +6,9 @@ import { evalResponseSchema } from '~/evals/api-schemas';
 
 export async function GET(request: NextRequest) {
   try {
+    if (process.env.EVAL !== '1') {
+      throw new Error('EVAL environment variable must be set to 1');
+    }
     const searchParams = request.nextUrl.searchParams;
 
     const folderParam = z.string().min(1).safeParse(searchParams.get('folder'));
