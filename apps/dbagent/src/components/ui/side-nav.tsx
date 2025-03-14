@@ -19,7 +19,6 @@ import {
 import {
   ActivityIcon,
   AlarmClock,
-  BotMessageSquare,
   CloudIcon,
   DatabaseIcon,
   NotebookPen,
@@ -27,6 +26,7 @@ import {
   Server,
   ZapIcon
 } from 'lucide-react';
+import { Bot } from '../icons/bot';
 
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -98,7 +98,7 @@ export function SideNav({ className, projectId, onboardingComplete }: SideNavPro
     {
       title: 'Chats',
       url: `${basePath}/chats`,
-      icon: BotMessageSquare,
+      icon: Bot,
       className: 'text-sm'
     },
     {

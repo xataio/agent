@@ -10,13 +10,15 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  Code,
   ScrollArea,
   Textarea
 } from '@internal/components';
-import { Bot, Clock, Lightbulb, Send, User, Wrench } from 'lucide-react';
+import { Clock, Lightbulb, Send, User, Wrench } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { Bot } from '~/components/icons/bot';
 import { Connection } from '~/lib/db/connections';
 import { ScheduleRun } from '~/lib/db/schedule-runs';
 import { Schedule } from '~/lib/db/schedules';
@@ -189,7 +191,7 @@ function ChatsUIContent({
         <Card className="mx-auto max-w-5xl">
           <CardHeader className="border-b">
             <div className="flex items-center justify-between">
-              <CardTitle>
+              <CardTitle className="text-lg">
                 {selectedChatId
                   ? chats.find((chat) => chat.id === selectedChatId)?.title || 'New Conversation'
                   : 'Select or start a new chat'}
@@ -232,29 +234,15 @@ function ChatsUIContent({
                           ) : null}
                         </AvatarFallback>
                       </Avatar>
-
                       <div
-                        className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                          message.role === 'assistant' ? 'bg-secondary' : 'bg-primary text-primary-foreground ml-auto'
+                        className={`prose prose-sm max-w-[80%] rounded-lg px-4 py-2 ${
+                          message.role === 'assistant' ? 'bg-muted' : 'bg-primary text-primary-foreground ml-auto'
                         }`}
                       >
                         {part.type === 'text' ? (
                           <ReactMarkdown
                             components={{
-                              p: ({ children }) => <p className="mb-2 text-sm last:mb-0">{children}</p>,
-                              ul: ({ children }) => <ul className="mb-2 list-inside list-disc text-sm">{children}</ul>,
-                              ol: ({ children }) => (
-                                <ol className="mb-2 list-inside list-decimal text-sm">{children}</ol>
-                              ),
-                              li: ({ children }) => <li className="mb-1">{children}</li>,
-                              h1: ({ children }) => <h1 className="mb-2 text-xl font-bold">{children}</h1>,
-                              h2: ({ children }) => <h2 className="mb-2 text-lg font-semibold">{children}</h2>,
-                              h3: ({ children }) => <h3 className="mb-2 text-base font-medium">{children}</h3>,
-                              code: ({ children }) => (
-                                <code className="rounded bg-black px-1 py-0.5 font-mono text-sm text-white">
-                                  {children}
-                                </code>
-                              )
+                              code: ({ children }) => <Code>{children}</Code>
                             }}
                           >
                             {message.content}
@@ -262,12 +250,12 @@ function ChatsUIContent({
                         ) : part.type === 'tool-invocation' ? (
                           <div className="text-muted-foreground mt-1 text-xs">
                             <Clock className="mr-1 inline-block h-4 w-4" />
-                            Tool called: {part.toolInvocation.toolName}
+                            Tool called: <Code>{part.toolInvocation.toolName}</Code>
                           </div>
                         ) : part.type === 'reasoning' ? (
                           <div className="text-muted-foreground mt-1 text-xs">
                             <Clock className="mr-1 inline-block h-4 w-4" />
-                            {part.type}
+                            <Code>{part.type}</Code>
                           </div>
                         ) : null}
                       </div>
@@ -275,6 +263,7 @@ function ChatsUIContent({
                   ))}
                 </div>
               ))}
+
               {status !== 'ready' && (
                 <div className="flex gap-3">
                   <Avatar>
@@ -282,7 +271,7 @@ function ChatsUIContent({
                       <Bot className="h-6 w-6" />
                     </AvatarFallback>
                   </Avatar>
-                  <div className="bg-secondary max-w-[80%] rounded-lg px-4 py-2">
+                  <div className="bg-muted max-w-[80%] rounded-lg px-4 py-2">
                     <p className="text-sm">Thinking...</p>
                   </div>
                 </div>
