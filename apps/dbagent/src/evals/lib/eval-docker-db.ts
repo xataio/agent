@@ -61,7 +61,7 @@ export const startPostgresContainer = async (userOptions: PostgresContainerOptio
 };
 
 export const runSql = async (sql: string, postgresConfig: PostgresConfig) => {
-  await delay(1000);
+  await delay(2000);
   const client = new Client({
     host: postgresConfig.host,
     port: postgresConfig.port,
