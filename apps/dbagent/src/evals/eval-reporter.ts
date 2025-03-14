@@ -15,6 +15,7 @@ const getEnv = () => {
   };
 };
 
+// eslint-disable-next-line import/no-default-export
 export default class EvalReporter implements Reporter {
   onTestRunEnd() {
     const evalTraceFolder = ensureTestRunTraceFolderExists();
