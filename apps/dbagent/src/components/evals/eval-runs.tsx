@@ -21,7 +21,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { Check, CircleX, FileText } from 'lucide-react';
 import path from 'path';
-import { useState } from 'react';
+import { CSSProperties, useState } from 'react';
 import { EvalFile, evalResponseSchema } from '~/evals/api-schemas';
 import { EvalSummary } from '~/evals/lib/schemas';
 
@@ -55,6 +55,7 @@ const TestSidebar = ({
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
+            src/components/evals/eval-runs.tsx
             <SidebarMenu>
               {evalSummaries.map((evalSummary) => {
                 const isActive = selectedTest === evalSummary.id;
@@ -195,9 +196,11 @@ export const TestSuiteViewer: React.FC<{
 
   return (
     <SidebarProvider
-      style={{
-        '--sidebar-width': '30rem'
-      }}
+      style={
+        {
+          '--sidebar-width': '30rem'
+        } as CSSProperties
+      }
     >
       <div className="flex h-screen w-full">
         <TestSidebar evalSummaries={evalSummaries} onTestSelect={handleTestClick} selectedTest={selectedEvalId} />
