@@ -52,16 +52,6 @@ const finalAnswerJudge = (expectedAnswer = ''): LLMJudgeConfig => ({
   `
 });
 
-const correctToolCallsJudge: LLMJudgeConfig = {
-  name: 'tool_call',
-  prompt: ({ input, steps }) => `
-  The following question was answered by an expert in PostgreSQL and database administration:
-  <question>${input}</question>
-  <intermediateSteps>${steps}</intermediateSteps>
-
-  Did the expert use the appropriate tools to answer the question correctly. Please provide a critique if `
-};
-
 const conciseAnswerJudge: LLMJudgeConfig = {
   name: 'concise',
   prompt: ({ input, finalAnswer }) => `
