@@ -1,4 +1,5 @@
 import dotenvx from '@dotenvx/dotenvx';
+import path from 'path';
 import { defineConfig } from 'vitest/config';
 
 const env = dotenvx.config({ path: '.env.eval' }).parsed;
@@ -15,7 +16,8 @@ export default defineConfig({
     globalSetup: './src/evals/global-setup.ts',
     setupFiles: './src/evals/setup.ts',
     alias: {
-      '~/': new URL('./src/', import.meta.url).pathname
+      '~/': new URL('./src/', import.meta.url).pathname,
+      'server-only': path.resolve(__dirname, './src/evals/mocks/empty.ts')
     },
     // https://github.com/nextauthjs/next-auth/discussions/9385#discussioncomment-11064988
     server: {
@@ -23,6 +25,6 @@ export default defineConfig({
         inline: ['next']
       }
     },
-    reporters: ['default', (await import('./src/evals/eval-reporter')).evalReporter]
+    reporters: ['default', './src/evals/eval-reporter']
   }
 });

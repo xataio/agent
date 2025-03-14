@@ -1,6 +1,7 @@
 import fs from 'fs';
 import Papa from 'papaparse';
 import path from 'path';
+import { TestCase } from 'vitest/node';
 import { Reporter } from 'vitest/reporters';
 import { env } from '../lib/env/eval';
 import { EVAL_RESULT_FILE_NAME, EVAL_RESULTS_CSV_FILE_NAME, EVAL_RESULTS_FILE_NAME } from './lib/consts';
@@ -14,8 +15,8 @@ const getEnv = () => {
   };
 };
 
-export const evalReporter: Reporter = {
-  onTestRunEnd: () => {
+export default class EvalReporter implements Reporter {
+  onTestRunEnd() {
     const evalTraceFolder = ensureTestRunTraceFolderExists();
 
     const folders = fs.readdirSync(evalTraceFolder);
@@ -49,8 +50,9 @@ export const evalReporter: Reporter = {
     fs.writeFileSync(path.join(evalTraceFolder, EVAL_RESULTS_CSV_FILE_NAME), csvContents);
 
     console.log(`View eval results: http://localhost:4001/evals?folder=${evalTraceFolder}`);
-  },
-  onTestCaseResult: async (testCase) => {
+  }
+
+  onTestCaseResult(testCase: TestCase) {
     if (['skipped', 'pending'].includes(testCase.result().state)) {
       return;
     }
@@ -64,8 +66,8 @@ export const evalReporter: Reporter = {
 
     evalResultSchema.parse(testCaseResult);
 
-    const traceFolder = await ensureTraceFolderExists(evalId);
+    const traceFolder = ensureTraceFolderExists(evalId);
 
     fs.writeFileSync(path.join(traceFolder, EVAL_RESULT_FILE_NAME), JSON.stringify(testCaseResult, null, 2));
   }
-};
+}
