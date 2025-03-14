@@ -24,15 +24,17 @@ export const evalChat = async ({
     isDefault: true
   };
   const targetClient = await getTargetDbConnection(dbConnection);
-
-  const response = await generateText({
-    model: getModelInstance(env.CHAT_MODEL),
-    system: chatSystemPrompt,
-    tools: await getTools(connection),
-    messages,
-    maxSteps: 20
-  });
-  traceVercelAiResponse(response, expect);
-  await targetClient.end();
-  return response;
+  try {
+    const response = await generateText({
+      model: getModelInstance(env.CHAT_MODEL),
+      system: chatSystemPrompt,
+      tools: await getTools(connection),
+      messages,
+      maxSteps: 20
+    });
+    traceVercelAiResponse(response, expect);
+    return response;
+  } finally {
+    await targetClient.end();
+  }
 };
