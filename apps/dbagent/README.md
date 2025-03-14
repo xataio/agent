@@ -65,3 +65,16 @@ Run the app:
 ```bash
 docker compose up
 ```
+
+## Run the evals
+
+Create the `.env.eval` file and edit it to add the LLM credentials:
+
+```bash
+cp .env.eval.example .env.eval
+vim .env.eval
+```
+
+Update you `.env.local` file to contain: `EVAL=true`
+
+Ensure you have docker installed and run: `pnpm run eval`
