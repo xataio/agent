@@ -3,10 +3,11 @@ import { NextRequest } from 'next/server';
 import path from 'path';
 import { z } from 'zod';
 import { evalResponseSchema } from '~/evals/api-schemas';
+import { env } from '~/lib/env/server';
 
 export async function GET(request: NextRequest) {
   try {
-    if (process.env.EVAL !== '1') {
+    if (env.EVAL !== 'true') {
       throw new Error('EVAL environment variable must be set to 1');
     }
     const searchParams = request.nextUrl.searchParams;

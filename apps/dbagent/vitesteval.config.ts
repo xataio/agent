@@ -10,7 +10,7 @@ export default defineConfig({
     exclude: ['**/node_modules/**'],
     watch: false,
     maxConcurrency: 2,
-    env: { EVAL: '1', ...env },
+    env: { EVAL: 'true', ...env },
     testTimeout: 60000,
     hookTimeout: 60000,
     globalSetup: './src/evals/global-setup.ts',

@@ -20,7 +20,9 @@ const schema = z.object({
 
   // Scheduler
   MAX_PARALLEL_RUNS: z.number().default(20), // How many schedules can be run in parallel
-  TIMEOUT_FOR_RUNNING_SCHEDULE_SECS: z.number().default(15 * 60) // How long to wait before assuming it's dead and restart
+  TIMEOUT_FOR_RUNNING_SCHEDULE_SECS: z.number().default(15 * 60), // How long to wait before assuming it's dead and restart
+
+  EVAL: z.string(z.enum(['true', 'false'])).default('false')
 });
 
 const serverEnv = schema.parse(process.env);
