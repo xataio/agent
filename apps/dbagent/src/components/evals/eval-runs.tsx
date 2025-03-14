@@ -196,7 +196,7 @@ export const TestSuiteViewer: React.FC<{
   return (
     <SidebarProvider
       style={{
-        '--sidebar-width': '20rem'
+        '--sidebar-width': '30rem'
       }}
     >
       <div className="flex h-screen w-full">
