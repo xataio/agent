@@ -2,53 +2,63 @@
 
 import { useChat } from '@ai-sdk/react';
 import {
-  Avatar,
-  AvatarFallback,
   Button,
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
+  Input,
   ScrollArea,
   Textarea
 } from '@internal/components';
-import { Bot, Clock, Lightbulb, Send, User, Wrench } from 'lucide-react';
+import { Message } from 'ai';
+import { Send } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
+import { Memory } from '~/lib/ai/memory';
 import { Connection } from '~/lib/db/connections';
 import { ScheduleRun } from '~/lib/db/schedule-runs';
 import { Schedule } from '~/lib/db/schedules';
-import { ChatSidebar } from './chat-sidebar';
+import { ChatSidebar, ChatWithLastMessage } from './chat-sidebar';
 import { ConnectionSelector } from './conn-selector';
-import { mockChats } from './mock-data';
+import { MessageCard, ThinkingIndicator } from './message-card';
 import { ModelSelector } from './model-selector';
+
+function generateChatMessageID(): string {
+  return crypto.randomUUID();
+}
 
 export function ChatsUI({
   connections,
-  scheduleRun
+  scheduleRun,
+  projectId
 }: {
   connections: Connection[];
   scheduleRun?: { schedule: Schedule; run: ScheduleRun } | null;
+  projectId: string;
 }) {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <ChatsUIContent connections={connections} scheduleRun={scheduleRun} />
+      <ChatsUIContent connections={connections} scheduleRun={scheduleRun} projectId={projectId} />
     </Suspense>
   );
 }
 
 function ChatsUIContent({
   connections,
-  scheduleRun
+  scheduleRun,
+  projectId
 }: {
   connections: Connection[];
   scheduleRun?: { schedule: Schedule; run: ScheduleRun } | null;
+  projectId: string;
 }) {
+  const memory = new Memory(projectId);
+
   const searchParams = useSearchParams();
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
-  const [chats, setChats] = useState(mockChats);
+  const [chats, setChats] = useState<ChatWithLastMessage[]>([]);
   const defaultConnection = connections.find((c) => c.isDefault);
   const [connectionId, setConnectionId] = useState<string>(
     scheduleRun?.schedule.connectionId || defaultConnection?.id || ''
@@ -58,26 +68,65 @@ function ChatsUIContent({
 
   const { messages, input, handleInputChange, handleSubmit, setInput, status, setMessages } = useChat({
     id: selectedChatId || undefined,
+    generateId: () => crypto.randomUUID(),
     body: {
       model
     },
-    initialMessages: scheduleRun?.run.messages
+    initialMessages: scheduleRun?.run.messages,
+    sendExtraMessageFields: true,
+    onFinish: async (message) => {
+      if (selectedChatId) {
+        try {
+          // Update the last message in the UI
+          setChats((prevChats) =>
+            prevChats.map((chat) => (chat.id === selectedChatId ? { ...chat, lastMessage: message } : chat))
+          );
+        } catch (error) {
+          console.error('Failed to save assistant message:', error);
+        }
+      }
+    }
   });
+
+  // Load chats from the database
+  useEffect(() => {
+    const loadChats = async () => {
+      try {
+        const fetchedChats = await memory.listChats();
+        const chatWithLastMessages = await Promise.all(
+          fetchedChats.map(async (chat) => {
+            const messages = await memory.getChatMemory(chat.id).getMessages(1);
+            const lastMessage = messages.length > 0 ? messages[0] : null;
+            return { ...chat, lastMessage: lastMessage ?? null };
+          })
+        );
+        setChats(chatWithLastMessages);
+
+        // Find the last chat by most recent creation date
+        const lastChat =
+          chatWithLastMessages.length > 0
+            ? chatWithLastMessages.reduce((latest, current) =>
+                new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest
+              )
+            : null;
+
+        if (lastChat) {
+          await handleSelectChat(lastChat.id);
+        } else {
+          await handleNewChat();
+        }
+      } catch (error) {
+        console.error('Failed to load chats:', error);
+      }
+    };
+
+    void loadChats();
+  }, [projectId]);
 
   useEffect(() => {
     const startParam = searchParams.get('start');
-    console.log('startParam', startParam);
     if (startParam === 'report' && defaultConnection?.id) {
-      const newChat = {
-        id: `new-${Date.now()}`,
-        title: 'Initial Assessment',
-        lastMessage: '',
-        timestamp: new Date().toISOString()
-      };
-      setChats((prev) => [newChat, ...prev]);
-      setSelectedChatId(newChat.id);
-      setConnectionId(defaultConnection.id);
-      setMessages([]);
+      void handleNewChat('Initial Assessment', defaultConnection.id);
 
       // Send initial assessment request
       const initialMessage =
@@ -89,78 +138,96 @@ function ChatsUIContent({
   useEffect(() => {
     const playbookParam = searchParams.get('playbook');
     if (playbookParam && defaultConnection?.id) {
-      const newChat = {
-        id: `new-${Date.now()}`,
-        title: `Playbook: ${playbookParam}`,
-        lastMessage: '',
-        timestamp: new Date().toISOString()
-      };
-      setChats((prev) => [newChat, ...prev]);
-      setSelectedChatId(newChat.id);
-      setConnectionId(defaultConnection.id);
-      setMessages([]);
+      void handleNewChat(`Playbook: ${playbookParam}`, defaultConnection.id);
 
       const initialMessage = `Run playbook ${playbookParam}`;
       setInput(initialMessage);
     }
   }, [searchParams, defaultConnection?.id]);
 
-  /*useEffect(() => {
-    const fetchScheduleRun = async (runId: string) => {
-      const { schedule, run } = await actionGetScheduleRun(runId)      
-      const newChat = {
-        id: `new-${Date.now()}`,
-        title: `Scheduled run followup`,
-        lastMessage: run.summary || '',
-        timestamp: new Date().toISOString()
-      };
-      setChats((prev) => [newChat, ...prev]);
-      setSelectedChatId(newChat.id);
-      setConnectionId(schedule.connectionId);
-      setMessages(run.messages);
-    };
-    const runId = searchParams.get('runId');
-    if (runId) {
-      void fetchScheduleRun(runId);
-    }
-  }, [searchParams, defaultConnection?.id]);*/
+  const handleNewChat = async (title: string = 'New Conversation', connectionId?: string) => {
+    // Create a properly typed new chat object
+    const newChat = await memory.saveChat({
+      title: title !== '' ? title : 'New Conversation',
+      connectionId: connectionId,
+      createdAt: new Date()
+    });
 
-  const handleNewChat = () => {
-    const newChat = {
-      id: `new-${Date.now()}`,
-      title: 'New Conversation',
-      lastMessage: '',
-      timestamp: new Date().toISOString()
-    };
-    setChats([newChat, ...chats]);
+    setChats([{ ...newChat, lastMessage: null }, ...chats]);
     setSelectedChatId(newChat.id);
     setMessages([]);
   };
 
-  const handleSelectChat = (chatId: string) => {
+  const handleDeleteChat = async (chatId: string) => {
+    await memory.deleteChat(chatId);
+    setChats(chats.filter((c) => c.id !== chatId));
+    if (selectedChatId === chatId) {
+      const nextChatId = chats.filter((c) => c.id !== chatId)[0]?.id ?? null;
+      if (nextChatId) {
+        await handleSelectChat(nextChatId);
+      } else {
+        await handleNewChat();
+      }
+    }
+  };
+
+  const handleSelectChat = async (chatId: string) => {
     setSelectedChatId(chatId);
-    setMessages([]); // In a real app, you'd load messages from the DB here
+    try {
+      // Update connection ID if the chat has one
+      const selectedChat = chats.find((c) => c.id === chatId);
+      if (selectedChat?.connectionId) {
+        setConnectionId(selectedChat.connectionId);
+      }
+
+      // Load messages for the selected chat
+      const messages = await memory.getChatMemory(chatId).getMessages();
+      setMessages(messages);
+    } catch (error) {
+      console.error('Failed to load chat messages:', error);
+      setMessages([]);
+    }
   };
 
   const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!input.trim() || !connectionId) return;
+    if (!input.trim() || !connectionId || !selectedChatId) return;
 
-    if (selectedChatId) {
-      // Update the last message in the chat list
-      setChats(
-        chats.map((chat) =>
-          chat.id === selectedChatId ? { ...chat, lastMessage: input, timestamp: new Date().toISOString() } : chat
-        )
+    const id = generateChatMessageID();
+    const newUserMessage: Message = {
+      id: id,
+      role: 'user',
+      content: input
+    };
+
+    try {
+      if (selectedChatId) {
+        // Update the last message in the chat list
+        setChats(
+          chats.map((chat) =>
+            chat.id === selectedChatId
+              ? { ...chat, lastMessage: newUserMessage, timestamp: new Date().toISOString() }
+              : chat
+          )
+        );
+      }
+
+      // Update the last message in the UI
+      setChats((prevChats) =>
+        prevChats.map((chat) => (chat.id === selectedChatId ? { ...chat, lastMessage: newUserMessage } : chat))
       );
+    } catch (error) {
+      console.error('Failed to update chat:', error);
     }
 
-    // Include the context in the message
+    // Include the context in the message for the AI SDK
     handleSubmit(e, {
       body: {
         connectionId,
         model,
-        messages: [...messages, { role: 'user', content: input }]
+        chatId: selectedChatId,
+        history: messages,
+        messages: [newUserMessage]
       }
     });
   };
@@ -176,24 +243,43 @@ function ChatsUIContent({
     }
   }, [messages]);
 
+  const handleTitleEdit = async (newTitle: string) => {
+    if (!selectedChatId) return;
+
+    try {
+      // Update the title in the database
+      await memory.updateChat(selectedChatId, newTitle);
+
+      // Update the title in the UI
+      setChats((prevChats) =>
+        prevChats.map((chat) => (chat.id === selectedChatId ? { ...chat, title: newTitle } : chat))
+      );
+    } catch (error) {
+      console.error('Failed to update chat title:', error);
+    }
+  };
+
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-row-reverse">
-      <ChatSidebar
-        chats={chats}
-        selectedChatId={selectedChatId}
-        onSelectChat={handleSelectChat}
-        onNewChat={handleNewChat}
-      />
+      <div className="w-80 flex-none">
+        <ChatSidebar
+          chats={chats}
+          selectedChatId={selectedChatId}
+          onSelectChat={handleSelectChat}
+          onNewChat={() => void handleNewChat()}
+          onDelete={handleDeleteChat}
+        />
+      </div>
 
       <main className="flex-1 overflow-hidden">
         <Card className="mx-auto h-[calc(100vh-5.5rem)] max-w-5xl">
           <CardHeader className="border-b">
             <div className="flex items-center justify-between">
-              <CardTitle>
-                {selectedChatId
-                  ? chats.find((chat) => chat.id === selectedChatId)?.title || 'New Conversation'
-                  : 'Select or start a new chat'}
-              </CardTitle>
+              <ChatTitle
+                title={chats.find((chat) => chat.id === selectedChatId)?.title || 'New Conversation'}
+                onEdit={selectedChatId ? handleTitleEdit : undefined}
+              />
+
               <div className="flex items-center gap-2">
                 <ModelSelector value={model} onValueChange={setModel} />
                 <ConnectionSelector
@@ -213,80 +299,9 @@ function ChatsUIContent({
                 </div>
               )}
               {messages.map((message) => (
-                <div key={message.id} className="space-y-4">
-                  {message.parts.map((part, index) => (
-                    <div
-                      key={`${message.id}-${index}`}
-                      className={`flex gap-3 ${message.role === 'assistant' ? 'flex-row' : 'flex-row-reverse'}`}
-                    >
-                      <Avatar>
-                        <AvatarFallback>
-                          {part.type === 'text' && message.role === 'user' ? (
-                            <User className="h-6 w-6" />
-                          ) : part.type === 'text' ? (
-                            <Bot className="h-6 w-6" />
-                          ) : part.type === 'tool-invocation' ? (
-                            <Wrench className="h-6 w-6" />
-                          ) : part.type === 'reasoning' ? (
-                            <Lightbulb className="h-6 w-6" />
-                          ) : null}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <div
-                        className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                          message.role === 'assistant' ? 'bg-secondary' : 'bg-primary text-primary-foreground ml-auto'
-                        }`}
-                      >
-                        {part.type === 'text' ? (
-                          <ReactMarkdown
-                            components={{
-                              p: ({ children }) => <p className="mb-2 text-sm last:mb-0">{children}</p>,
-                              ul: ({ children }) => <ul className="mb-2 list-inside list-disc text-sm">{children}</ul>,
-                              ol: ({ children }) => (
-                                <ol className="mb-2 list-inside list-decimal text-sm">{children}</ol>
-                              ),
-                              li: ({ children }) => <li className="mb-1">{children}</li>,
-                              h1: ({ children }) => <h1 className="mb-2 text-xl font-bold">{children}</h1>,
-                              h2: ({ children }) => <h2 className="mb-2 text-lg font-semibold">{children}</h2>,
-                              h3: ({ children }) => <h3 className="mb-2 text-base font-medium">{children}</h3>,
-                              code: ({ children }) => (
-                                <code className="rounded bg-black px-1 py-0.5 font-mono text-sm text-white">
-                                  {children}
-                                </code>
-                              )
-                            }}
-                          >
-                            {message.content}
-                          </ReactMarkdown>
-                        ) : part.type === 'tool-invocation' ? (
-                          <div className="text-muted-foreground mt-1 text-xs">
-                            <Clock className="mr-1 inline-block h-4 w-4" />
-                            Tool called: {part.toolInvocation.toolName}
-                          </div>
-                        ) : part.type === 'reasoning' ? (
-                          <div className="text-muted-foreground mt-1 text-xs">
-                            <Clock className="mr-1 inline-block h-4 w-4" />
-                            {part.type}
-                          </div>
-                        ) : null}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <MessageCard key={message.id} message={message} />
               ))}
-              {status !== 'ready' && (
-                <div className="flex gap-3">
-                  <Avatar>
-                    <AvatarFallback>
-                      <Bot className="h-6 w-6" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="bg-secondary max-w-[80%] rounded-lg px-4 py-2">
-                    <p className="text-sm">Thinking...</p>
-                  </div>
-                </div>
-              )}
+              {status !== 'ready' && <ThinkingIndicator />}
               <div ref={messagesEndRef} />
             </CardContent>
           </ScrollArea>
@@ -323,5 +338,55 @@ function ChatsUIContent({
         </Card>
       </main>
     </div>
+  );
+}
+
+function ChatTitle({ title, onEdit }: { title: string; onEdit?: (newTitle: string) => Promise<void> | void }) {
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(title);
+
+  return (
+    <CardTitle>
+      {onEdit ? (
+        isEditingTitle ? (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void onEdit(editedTitle);
+              setIsEditingTitle(false);
+            }}
+            className="flex"
+          >
+            <Input
+              type="text"
+              value={editedTitle}
+              onChange={(e) => setEditedTitle(e.target.value)}
+              className="mr-2 rounded border px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoFocus
+              onBlur={() => {
+                void onEdit(editedTitle);
+                setIsEditingTitle(false);
+              }}
+            />
+            <Button type="submit" size="sm">
+              Save
+            </Button>
+          </form>
+        ) : (
+          <button
+            onClick={() => {
+              setEditedTitle(title);
+              setIsEditingTitle(true);
+            }}
+            className="cursor-pointer border-none bg-transparent p-0 text-left text-lg font-semibold hover:underline"
+            aria-label="Edit chat title"
+          >
+            {title}
+          </button>
+        )
+      ) : (
+        'Select or start a new chat'
+      )}
+    </CardTitle>
   );
 }

@@ -25,7 +25,7 @@ export default async function Page({
 
   return (
     <div className="container">
-      <ChatsUI connections={connections} scheduleRun={scheduleRun} />
+      <ChatsUI connections={connections} scheduleRun={scheduleRun} projectId={project} />
     </div>
   );
 }
