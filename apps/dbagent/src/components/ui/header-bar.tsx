@@ -12,8 +12,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  SidebarTrigger,
   useIsMobile
 } from '@internal/components';
+import { Menu } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
@@ -54,14 +56,11 @@ export const HeaderBar = ({ children }: PropsWithChildren<{ user?: User }>) => {
         </nav>
         <div className="ml-auto flex items-center gap-4">
           <UserAvatar user={session?.user} />
+          <SidebarTrigger className="md:hidden" icon={Menu} />
         </div>
       </div>
     </header>
   );
-};
-
-export const BelowHeaderBar = ({ children }: PropsWithChildren) => {
-  return <div className="mt-[53px] h-[calc(100vh-53px)]">{children}</div>;
 };
 
 function UserAvatar({ user }: { user?: User }) {

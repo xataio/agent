@@ -177,7 +177,7 @@ function ChatsUIContent({
   }, [messages]);
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] flex-row-reverse">
+    <div className="flex h-full flex-row-reverse pb-8">
       <ChatSidebar
         chats={chats}
         selectedChatId={selectedChatId}
@@ -185,8 +185,8 @@ function ChatsUIContent({
         onNewChat={handleNewChat}
       />
 
-      <main className="flex-1 overflow-hidden">
-        <Card className="mx-auto h-[calc(100vh-5.5rem)] max-w-5xl">
+      <div className="flex-1 overflow-hidden">
+        <Card className="mx-auto max-w-5xl">
           <CardHeader className="border-b">
             <div className="flex items-center justify-between">
               <CardTitle>
@@ -321,7 +321,7 @@ function ChatsUIContent({
             </form>
           </CardFooter>
         </Card>
-      </main>
+      </div>
     </div>
   );
 }
