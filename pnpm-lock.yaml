@@ -161,9 +161,6 @@ importers:
       react-syntax-highlighter:
         specifier: ^15.6.1
         version: 15.6.1(react@19.0.0)
-      sans:
-        specifier: link:geist/font/sans
-        version: link:geist/font/sans
       server-only:
         specifier: ^0.0.1
         version: 0.0.1
