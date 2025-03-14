@@ -3,6 +3,7 @@ import Papa from 'papaparse';
 import path from 'path';
 import { TestCase } from 'vitest/node';
 import { Reporter } from 'vitest/reporters';
+import { delay } from '~/utils/delay';
 import { env } from '../lib/env/eval';
 import { EVAL_RESULT_FILE_NAME, EVAL_RESULTS_CSV_FILE_NAME, EVAL_RESULTS_FILE_NAME } from './lib/consts';
 import { EvalResult, evalResultSchema, evalSummarySchema } from './lib/schemas';
@@ -17,7 +18,7 @@ const getEnv = () => {
 
 // eslint-disable-next-line import/no-default-export
 export default class EvalReporter implements Reporter {
-  onTestRunEnd() {
+  async onTestRunEnd() {
     const evalTraceFolder = ensureTestRunTraceFolderExists();
 
     const folders = fs.readdirSync(evalTraceFolder);
@@ -49,7 +50,8 @@ export default class EvalReporter implements Reporter {
 
     const csvContents = Papa.unparse(csvTestResults);
     fs.writeFileSync(path.join(evalTraceFolder, EVAL_RESULTS_CSV_FILE_NAME), csvContents);
-
+    // hack: make sure this message is printed last
+    await delay(1000);
     console.log(`View eval results: http://localhost:4001/evals?folder=${evalTraceFolder}`);
   }
 
