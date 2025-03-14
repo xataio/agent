@@ -26,10 +26,10 @@ import {
   Server,
   ZapIcon
 } from 'lucide-react';
-import { Bot } from '../icons/bot';
-
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Bot } from '../icons/bot';
 
 interface SideNavProps {
   className?: string;
@@ -124,10 +124,10 @@ export function SideNav({ className, projectId, onboardingComplete }: SideNavPro
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <a href={item.url}>
+                    <Link href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
 
                   {item.subItems && (
@@ -135,10 +135,10 @@ export function SideNav({ className, projectId, onboardingComplete }: SideNavPro
                       {item.subItems.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.title} className="text-sm">
                           <SidebarMenuSubButton asChild>
-                            <a href={subItem.url}>
+                            <Link href={subItem.url}>
                               <subItem.icon />
                               <span>{subItem.title}</span>
-                            </a>
+                            </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       ))}
