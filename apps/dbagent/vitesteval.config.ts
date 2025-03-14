@@ -14,7 +14,6 @@ export default defineConfig({
     testTimeout: 60000,
     hookTimeout: 60000,
     globalSetup: './src/evals/global-setup.ts',
-    setupFiles: './src/evals/setup.ts',
     alias: {
       '~/': new URL('./src/', import.meta.url).pathname,
       'server-only': path.resolve(__dirname, './src/evals/mocks/empty.ts')
