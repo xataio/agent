@@ -55,7 +55,6 @@ const TestSidebar = ({
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
-            src/components/evals/eval-runs.tsx
             <SidebarMenu>
               {evalSummaries.map((evalSummary) => {
                 const isActive = selectedTest === evalSummary.id;
@@ -99,17 +98,17 @@ const CurrentEval = ({
   isLoading: boolean;
   error: any;
 }) => {
-  if (isLoading || !files) {
+  if (isLoading) {
     return (
       <div className="h-[calc(100vh-2.5rem)] items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
       </div>
     );
   }
-  if (error) {
+  if (error || !files) {
     return (
       <div className="h-[calc(100vh-2.5rem)] items-center justify-center">
-        <p className="text-red-600">Error loading files</p>
+        <p className="text-red-600">Error loading files make sure you set EVAL=true in you .env.local</p>
       </div>
     );
   }
@@ -184,7 +183,8 @@ export const TestSuiteViewer: React.FC<{
     error
   } = useQuery({
     queryKey: ['evalFiles', evalFolder, selectedEvalId],
-    queryFn: () => fetchFiles(path.join(evalFolder, selectedEvalId))
+    queryFn: () => fetchFiles(path.join(evalFolder, selectedEvalId)),
+    retry: false
   });
 
   const handleTestClick = (testId: string) => {
