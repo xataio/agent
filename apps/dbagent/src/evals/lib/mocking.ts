@@ -32,8 +32,6 @@ const defaultMock: GetConnectionInfoFunc = async (_connectionId, key) => {
   return null;
 };
 
-export const mockGetConnectionInfo = (
-  mockImplementation: GetConnectionInfoFunc = defaultMock as GetConnectionInfoFunc
-) => {
+export const mockGetConnectionInfo = (mockImplementation: GetConnectionInfoFunc = defaultMock) => {
   vi.spyOn(connectionInfoExports, 'getConnectionInfo').mockImplementation(mockImplementation);
 };
