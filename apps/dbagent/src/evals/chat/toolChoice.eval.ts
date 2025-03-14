@@ -173,8 +173,7 @@ describe.concurrent('tool_choice', () => {
 
     const allToolCalls = result.steps.flatMap((step) => step.toolCalls);
     const toolCallNames = allToolCalls.map((toolCall) => toolCall.toolName);
-    // @ts-ignore
-    expect(toolCallNames).toContain(...toolCalls);
+    expect(toolCallNames).toEqual(expect.arrayContaining(toolCalls));
     const unexpectedToolCalls = toolCallNames.filter((toolCall) => !toolCalls.includes(toolCall));
     if (!allowOtherTools) {
       expect(unexpectedToolCalls).toEqual([]);
