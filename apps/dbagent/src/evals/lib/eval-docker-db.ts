@@ -1,5 +1,6 @@
 import Docker from 'dockerode';
 import { Client } from 'pg';
+import { delay } from '~/utils/delay';
 
 export type PostgresConfig = {
   host: string;
@@ -59,8 +60,6 @@ export const startPostgresContainer = async (userOptions: PostgresContainerOptio
     }
   };
 };
-
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const runSql = async (sql: string, postgresConfig: PostgresConfig) => {
   await delay(1000);
