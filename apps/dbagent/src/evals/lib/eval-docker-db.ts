@@ -24,7 +24,6 @@ export const startPostgresContainer = async (userOptions: PostgresContainerOptio
   const { image = 'postgres:17', port = 9877 } = userOptions;
   const container = await docker.createContainer({
     Image: image,
-    // name: 'dbagent-eval-postgres',
     Cmd: ['postgres', '-c', 'shared_preload_libraries=pg_stat_statements'],
     Env: ['POSTGRES_USER=test', 'POSTGRES_PASSWORD=test', 'POSTGRES_DB=testdb'],
     ExposedPorts: { '5432/tcp': {} },
