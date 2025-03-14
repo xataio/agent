@@ -9,7 +9,7 @@
     "start": "next start --port ${PORT-4001}",
     "lint": "next lint .",
     "tsc": "tsc --noEmit",
-    "test": "vitest",
+    "test": "vitest --passWithNoTests",
     "eval": "vitest --config vitesteval.config.ts",
     "db:migrate": "drizzle-kit migrate",
     "db:generate": "drizzle-kit generate",
