@@ -16,7 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Aida, your AI expert in PostgreSQL'
+  title: 'Xata Agent | Your AI PostgreSQL expert'
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

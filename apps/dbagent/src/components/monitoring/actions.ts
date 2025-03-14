@@ -2,6 +2,7 @@
 
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
+import { auth } from '~/auth';
 import { getScheduleRuns, ScheduleRun } from '~/lib/db/schedule-runs';
 import {
   deleteSchedule,
@@ -9,11 +10,10 @@ import {
   getSchedules,
   insertSchedule,
   Schedule,
-  scheduleGetNextRun,
   updateSchedule,
   updateScheduleRunData
 } from '~/lib/db/schedules';
-import { utcToLocalDate } from '~/lib/monitoring/scheduler';
+import { scheduleGetNextRun, utcToLocalDate } from '~/lib/monitoring/scheduler';
 import { listPlaybooks } from '~/lib/tools/playbooks';
 
 export async function generateCronExpression(description: string): Promise<string> {
@@ -28,16 +28,20 @@ export async function generateCronExpression(description: string): Promise<strin
   return text.trim();
 }
 
-export async function actionCreateSchedule(schedule: Omit<Schedule, 'id'>): Promise<Schedule> {
+export async function actionCreateSchedule(schedule: Omit<Schedule, 'id' | 'userId'>): Promise<Schedule> {
+  const session = await auth();
+  const userId = session?.user?.id ?? '';
   if (schedule.enabled) {
     schedule.status = 'scheduled';
-    schedule.nextRun = scheduleGetNextRun(schedule, new Date()).toISOString();
+    schedule.nextRun = scheduleGetNextRun({ ...schedule, userId }, new Date()).toISOString();
   }
-  return insertSchedule(schedule);
+  return insertSchedule({ ...schedule, userId });
 }
 
-export async function actionUpdateSchedule(schedule: Schedule): Promise<Schedule> {
-  return updateSchedule(schedule);
+export async function actionUpdateSchedule(schedule: Omit<Schedule, 'userId'>): Promise<Schedule> {
+  const session = await auth();
+  const userId = session?.user?.id ?? '';
+  return updateSchedule({ ...schedule, userId });
 }
 
 export async function actionGetSchedules(): Promise<Schedule[]> {

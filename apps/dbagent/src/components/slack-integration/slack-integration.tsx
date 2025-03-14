@@ -18,7 +18,8 @@ import {
 import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { getWebhookUrl, saveWebhookUrl } from './actions';
+import { getIntegration } from '~/lib/db/integrations';
+import { saveWebhookUrl } from './actions';
 
 export function SlackIntegration({ projectId }: { projectId: string }) {
   const [isLoading, setIsLoading] = useState(true);
@@ -37,7 +38,7 @@ export function SlackIntegration({ projectId }: { projectId: string }) {
   useEffect(() => {
     const fetchWebhookUrl = async () => {
       try {
-        const data = await getWebhookUrl();
+        const data = await getIntegration(projectId, 'slack');
         if (data) {
           setValue('webhookUrl', data.webhookUrl);
         }
@@ -78,7 +79,11 @@ export function SlackIntegration({ projectId }: { projectId: string }) {
               <AlertTitle>Create a Slack Webhook</AlertTitle>
               <AlertDescription>
                 To create an incoming webhook for posting to your Slack workspace,{' '}
-                <Link href="https://api.slack.com/messaging/webhooks" className="font-medium underline">
+                <Link
+                  href="https://github.com/xataio/agent/wiki/Xata-Agent-%E2%80%90-Slack-integration-guide"
+                  target="_blank"
+                  className="font-medium underline"
+                >
                   follow this guide
                 </Link>
                 . It only takes a few minutes to set up.

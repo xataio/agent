@@ -1,6 +1,9 @@
 'use client';
 
 import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
   Button,
   Card,
   CardContent,
@@ -16,7 +19,8 @@ import {
   SelectValue,
   toast
 } from '@internal/components';
-import { Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { RDSClusterDetailedInfo, RDSClusterInfo } from '~/lib/aws/rds';
 import { Connection } from '~/lib/db/connections';
@@ -47,7 +51,7 @@ export function AWSIntegration({ projectId, connections }: { projectId: string; 
 
   useEffect(() => {
     const loadAWSIntegration = async () => {
-      const response = await getAWSIntegration();
+      const response = await getAWSIntegration(projectId);
       if (response.success && response.data) {
         setAccessKeyId(response.data.accessKeyId);
         setSecretAccessKey(response.data.secretAccessKey);
@@ -87,7 +91,7 @@ export function AWSIntegration({ projectId, connections }: { projectId: string; 
     }
     setSelectedCluster(cluster.identifier);
     try {
-      const details = await fetchRDSClusterDetails(cluster);
+      const details = await fetchRDSClusterDetails(projectId, cluster);
       setClusterDetails(details.data);
     } catch (error) {
       toast('Error: Failed to fetch RDS instance details.');
@@ -102,6 +106,24 @@ export function AWSIntegration({ projectId, connections }: { projectId: string; 
           <CardDescription>Configure your AWS integration and select an RDS cluster</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-6">
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Add an IAM policy and user</AlertTitle>
+              <AlertDescription>
+                To obtain the Access Key ID and Secret Access Key,{' '}
+                <Link
+                  href="https://github.com/xataio/agent/wiki/Xata-Agent-%E2%80%90-AWS-integration-guide"
+                  target="_blank"
+                  className="font-medium underline"
+                >
+                  follow this guide
+                </Link>
+                . It only takes a few minutes to set up.
+              </AlertDescription>
+            </Alert>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="accessKeyId">Access Key ID</Label>

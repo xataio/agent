@@ -3,17 +3,25 @@ import { getClusterByConnection } from '../db/aws-clusters';
 import { Connection } from '../db/connections';
 import { getIntegration } from '../db/integrations';
 
-export async function getClusterMetric(
-  connection: Connection,
-  metricName: string,
-  periodInSeconds: number
-): Promise<string> {
-  const awsCredentials = await getIntegration('aws');
+type GetClusterMetricParams = {
+  connection: Connection;
+  metricName: string;
+  periodInSeconds: number;
+  asUserId?: string;
+};
+
+export async function getClusterMetric({
+  connection,
+  metricName,
+  periodInSeconds,
+  asUserId
+}: GetClusterMetricParams): Promise<string> {
+  const awsCredentials = await getIntegration(connection.projectId, 'aws', asUserId);
   if (!awsCredentials) {
     return 'AWS credentials not configured';
   }
 
-  const cluster = await getClusterByConnection(connection.id);
+  const cluster = await getClusterByConnection(connection.id, asUserId);
   if (!cluster) {
     return 'Cluster not found';
   }

@@ -1,12 +1,12 @@
 import { getConnectionInfo } from '../db/connection-info';
 import { Connection } from '../db/connections';
 import { getProjectById } from '../db/projects';
-import { getPerformanceSettings, getVacuumSettings } from '../targetdb/db';
+import { findTableSchema, getPerformanceSettings, getVacuumSettings } from '../targetdb/db';
 
-export async function getTablesAndInstanceInfo(connection: Connection): Promise<string> {
+export async function getTablesAndInstanceInfo(connection: Connection, asUserId?: string): Promise<string> {
   try {
-    const tables = await getConnectionInfo(connection.id, 'tables');
-    const project = await getProjectById(connection.projectId);
+    const tables = await getConnectionInfo(connection.id, 'tables', asUserId);
+    const project = await getProjectById(connection.projectId, asUserId);
 
     return `
 Here are the tables, their sizes, and usage counts:
@@ -33,28 +33,15 @@ Vacuum settings: ${JSON.stringify(vacuumSettings)}
 `;
 }
 
-export async function getPostgresExtensions(connection: Connection): Promise<string> {
-  const extensions = await getConnectionInfo(connection.id, 'extensions');
+export async function getPostgresExtensions(connection: Connection, asUserId?: string): Promise<string> {
+  const extensions = await getConnectionInfo(connection.id, 'extensions', asUserId);
   return `Extensions: ${JSON.stringify(extensions)}`;
 }
 
-export async function findTableSchema(client: any, tableName: string): Promise<string> {
-  const query = `
-    SELECT 
-      schemaname as schema,
-      pg_total_relation_size(schemaname || '.' || tablename) as total_bytes
-    FROM pg_tables 
-    WHERE tablename = $1
-    ORDER BY total_bytes DESC
-    LIMIT 1;
-  `;
-
+export async function toolFindTableSchema(connString: string, tableName: string): Promise<string> {
   try {
-    const result = await client.query(query, [tableName]);
-    if (result.rows.length === 0) {
-      return 'public'; // Default to public if no match found
-    }
-    return result.rows[0].schema;
+    const result = await findTableSchema(connString, tableName);
+    return result;
   } catch (error) {
     console.error('Error finding schema for table', error);
     return 'public'; // Default to public on error

@@ -1,6 +1,6 @@
 'use server';
 
-import { getIntegration, saveIntegration, SlackIntegration } from '~/lib/db/integrations';
+import { saveIntegration } from '~/lib/db/integrations';
 
 export async function saveWebhookUrl(
   projectId: string,
@@ -24,8 +24,4 @@ export async function saveWebhookUrl(
 
   console.log('Webhook URL saved:', webhookUrl);
   return { success: true, message: 'Webhook URL saved successfully' };
-}
-
-export async function getWebhookUrl(): Promise<SlackIntegration | null> {
-  return await getIntegration('slack');
 }

@@ -14,5 +14,8 @@ export default {
   dbCredentials: {
     // eslint-disable-next-line no-process-env
     url: process.env.DATABASE_URL!
+  },
+  entities: {
+    roles: true
   }
 } satisfies Config;

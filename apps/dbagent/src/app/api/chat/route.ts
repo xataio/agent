@@ -1,7 +1,6 @@
 import { streamText } from 'ai';
 import { chatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
 import { getConnection } from '~/lib/db/connections';
-import { getTargetDbConnection } from '~/lib/targetdb/db';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -31,24 +30,27 @@ export async function POST(req: Request) {
   if (!connection) {
     return new Response('Connection not found', { status: 404 });
   }
-  const targetClient = await getTargetDbConnection(connection.connectionString);
+  try {
+    const context = chatSystemPrompt;
 
-  const context = chatSystemPrompt;
+    console.log(context);
 
-  console.log(context);
+    const modelInstance = getModelInstance(model);
 
-  const modelInstance = getModelInstance(model);
+    const result = streamText({
+      model: modelInstance,
+      messages,
+      system: context,
+      tools: await getTools(connection),
+      maxSteps: 20,
+      toolCallStreaming: true
+    });
 
-  const result = streamText({
-    model: modelInstance,
-    messages,
-    system: context,
-    tools: await getTools(connection, targetClient),
-    maxSteps: 20,
-    toolCallStreaming: true
-  });
-
-  return result.toDataStreamResponse({
-    getErrorMessage: errorHandler
-  });
+    return result.toDataStreamResponse({
+      getErrorMessage: errorHandler
+    });
+  } catch (error) {
+    console.error('Error in chat', error);
+    return new Response('Error in chat', { status: 500 });
+  }
 }

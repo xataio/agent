@@ -1,19 +1,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import {
-  addConnection,
-  deleteConnection,
-  getConnection,
-  listConnections,
-  makeConnectionDefault,
-  updateConnection
-} from '~/lib/db/connections';
+import { addConnection, makeConnectionDefault, updateConnection } from '~/lib/db/connections';
 import { getTargetDbConnection } from '~/lib/targetdb/db';
-
-export async function actionListConnections() {
-  return await listConnections();
-}
 
 function translateError(error: string) {
   if (error.includes('uq_connections_connection_string')) {
@@ -66,25 +55,17 @@ export async function actionMakeConnectionDefault(id: string) {
   }
 }
 
-export async function actionGetConnection(id: string) {
-  return await getConnection(id);
-}
-
-export async function actionDeleteConnection(id: string) {
-  return await deleteConnection(id);
-}
-
 export async function validateConnection(connectionString: string) {
+  const client = await getTargetDbConnection(connectionString);
   try {
-    const client = await getTargetDbConnection(connectionString);
-
     const versionResult = await client.query('SELECT version()');
     const version = versionResult.rows[0].version;
-    await client.end();
     console.log('Connection validated successfully. Postgres version: ', version);
     return { success: true, message: `Connection validated successfully.` };
   } catch (error) {
     console.error('Error validating connection:', error);
     return { success: false, message: `Failed to validate connection. ${error}` };
+  } finally {
+    await client.end();
   }
 }

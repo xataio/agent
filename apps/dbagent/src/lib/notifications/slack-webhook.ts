@@ -12,9 +12,10 @@ export async function sendScheduleNotification(
   connection: Connection,
   level: NotificationLevel,
   title: string,
-  message: string
+  message: string,
+  extraNotificationText?: string
 ) {
-  const slack = await getIntegration('slack');
+  const slack = await getIntegration(connection.projectId, 'slack', schedule.userId);
   if (!slack) {
     console.error('No Slack integration configured.');
     return;
@@ -43,6 +44,17 @@ export async function sendScheduleNotification(
           text: slackEmoji + ' ' + title
         }
       },
+      ...(extraNotificationText
+        ? [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: extraNotificationText
+              }
+            }
+          ]
+        : []),
       {
         type: 'section',
         fields: [
@@ -94,7 +106,7 @@ export async function sendScheduleNotification(
               type: 'plain_text',
               text: 'Open in chat'
             },
-            url: `${env.PUBLIC_URL}/chats?runId=${run.id}`
+            url: `${env.PUBLIC_URL}/projects/${schedule.projectId}/chats?runId=${run.id}`
           },
           {
             type: 'button',
@@ -102,7 +114,7 @@ export async function sendScheduleNotification(
               type: 'plain_text',
               text: 'Run History'
             },
-            url: `${env.PUBLIC_URL}/monitoring/runs/${schedule.id}`
+            url: `${env.PUBLIC_URL}/projects/${schedule.projectId}/monitoring/runs/${schedule.id}`
           },
           {
             type: 'button',
@@ -110,7 +122,7 @@ export async function sendScheduleNotification(
               type: 'plain_text',
               text: 'View Schedule Settings'
             },
-            url: `${env.PUBLIC_URL}/monitoring/schedule/${schedule.id}`
+            url: `${env.PUBLIC_URL}/projects/${schedule.projectId}/monitoring/schedule/${schedule.id}`
           }
         ]
       }

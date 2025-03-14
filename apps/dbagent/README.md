@@ -1,6 +1,6 @@
-# Aida
+# Xata Agent
 
-Aida is primarily a Next.js + Vercel AI SDK app.
+The Xata Agent is primarily a Next.js + Vercel AI SDK app.
 
 ## Development
 
@@ -10,7 +10,7 @@ the Node version from `.nvrmc`.
 If you do not have `pnpm` installed run:
 
 ```sh
-npm install -g pnpm@^9
+npm install -g pnpm@^10
 ```
 
 Install dependencies:
@@ -22,13 +22,14 @@ pnpm install
 Start postgres via the docker-compose file:
 
 ```bash
-docker compose up
+docker compose up postgres
 ```
 
-add it in `.env.local`:
+create the `.env.local` file and edit it to add the LLM credentials:
 
 ```bash
-DATABASE_URL=postgresql://dbagent:changeme@localhost:5432/dbagent
+cp .env.example .env.local
+vim .env.local
 ```
 
 Initialize the database:
@@ -48,4 +49,19 @@ In a separate terminal, run the scheduler. This is a simple script that calls th
 
 ```bash
 pnpm run dev-scheduler
+```
+
+## Run via Docker compose
+
+Create the `.env.local` file and edit it to add the LLM credentials:
+
+```bash
+cp .env.example .env.local
+vim .env.local
+```
+
+Run the app:
+
+```bash
+docker compose up
 ```

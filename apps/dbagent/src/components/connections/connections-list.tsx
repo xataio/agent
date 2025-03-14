@@ -5,8 +5,8 @@ import { CheckIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Connection } from '~/lib/db/connections';
-import { actionListConnections, actionMakeConnectionDefault } from './actions';
+import { Connection, listConnections } from '~/lib/db/connections';
+import { actionMakeConnectionDefault } from './actions';
 
 function maskConnectionString(connString: string): string {
   // Handle URL format for both postgresql:// and postgres:// prefixes
@@ -23,7 +23,7 @@ export function ConnectionsList() {
 
   useEffect(() => {
     const loadConnections = async () => {
-      const connections = await actionListConnections();
+      const connections = await listConnections(project);
       if (connections.length === 0) {
         router.push(`/projects/${project}/start/connect/add`);
         return;
@@ -31,7 +31,7 @@ export function ConnectionsList() {
       setConnections(connections);
     };
     void loadConnections();
-  }, [router]);
+  }, [router, project]);
 
   const handleMakeDefault = async (id: string) => {
     await actionMakeConnectionDefault(id);
@@ -67,7 +67,7 @@ export function ConnectionsList() {
               <TableCell className="font-mono text-sm">{maskConnectionString(connection.connectionString)}</TableCell>
               <TableCell>
                 <Button asChild variant="outline" size="sm">
-                  <Link href={`/start/connect/edit/${connection.id}`}>Edit</Link>
+                  <Link href={`/projects/${project}/start/connect/edit/${connection.id}`}>Edit</Link>
                 </Button>
               </TableCell>
               <TableCell>

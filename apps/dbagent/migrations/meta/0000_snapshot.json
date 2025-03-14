@@ -1,5 +1,5 @@
 {
-  "id": "46570abf-9adc-4929-88fc-4aef7de485f8",
+  "id": "41b6af1e-4438-473b-ae7f-73a9552b76b6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -15,6 +15,12 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "cluster_id": {
           "name": "cluster_id",
           "type": "uuid",
@@ -28,15 +34,70 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_aws_cluster_conn_cluster_id": {
+          "name": "idx_aws_cluster_conn_cluster_id",
+          "columns": [
+            {
+              "expression": "cluster_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_aws_cluster_conn_connection_id": {
+          "name": "idx_aws_cluster_conn_connection_id",
+          "columns": [
+            {
+              "expression": "connection_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_aws_cluster_conn_project_id": {
+          "name": "idx_aws_cluster_conn_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
+        "fk_aws_cluster_connections_project": {
+          "name": "fk_aws_cluster_connections_project",
+          "tableFrom": "aws_cluster_connections",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
         "fk_aws_cluster_connections_cluster": {
           "name": "fk_aws_cluster_connections_cluster",
           "tableFrom": "aws_cluster_connections",
           "tableTo": "aws_clusters",
           "columnsFrom": ["cluster_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "fk_aws_cluster_connections_connection": {
@@ -45,13 +106,21 @@
           "tableTo": "connections",
           "columnsFrom": ["connection_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
+      "policies": {
+        "aws_cluster_connections_policy": {
+          "name": "aws_cluster_connections_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = aws_cluster_connections.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -65,6 +134,12 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
         },
         "cluster_identifier": {
           "name": "cluster_identifier",
@@ -86,8 +161,34 @@
           "notNull": true
         }
       },
-      "indexes": {},
-      "foreignKeys": {},
+      "indexes": {
+        "idx_aws_clusters_project_id": {
+          "name": "idx_aws_clusters_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_aws_clusters_project": {
+          "name": "fk_aws_clusters_project",
+          "tableFrom": "aws_clusters",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "uq_aws_clusters_integration_identifier": {
@@ -96,7 +197,15 @@
           "columns": ["cluster_identifier"]
         }
       },
-      "policies": {},
+      "policies": {
+        "aws_clusters_policy": {
+          "name": "aws_clusters_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = aws_clusters.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -110,6 +219,12 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
         },
         "connection_id": {
           "name": "connection_id",
@@ -130,15 +245,55 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_connection_info_connection_id": {
+          "name": "idx_connection_info_connection_id",
+          "columns": [
+            {
+              "expression": "connection_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_connection_info_project_id": {
+          "name": "idx_connection_info_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
+        "fk_connection_info_project": {
+          "name": "fk_connection_info_project",
+          "tableFrom": "connection_info",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
         "fk_connections_info_connection": {
           "name": "fk_connections_info_connection",
           "tableFrom": "connection_info",
           "tableTo": "connections",
           "columnsFrom": ["connection_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -150,7 +305,15 @@
           "columns": ["connection_id", "type"]
         }
       },
-      "policies": {},
+      "policies": {
+        "connection_info_policy": {
+          "name": "connection_info_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = connection_info.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -191,7 +354,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_connections_project_id": {
+          "name": "idx_connections_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "fk_connections_project": {
           "name": "fk_connections_project",
@@ -199,7 +378,7 @@
           "tableTo": "projects",
           "columnsFrom": ["project_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -216,7 +395,15 @@
           "columns": ["project_id", "connection_string"]
         }
       },
-      "policies": {},
+      "policies": {
+        "connections_policy": {
+          "name": "connections_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = connections.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -250,7 +437,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_integrations_project_id": {
+          "name": "idx_integrations_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "fk_integrations_project": {
           "name": "fk_integrations_project",
@@ -258,7 +461,7 @@
           "tableTo": "projects",
           "columnsFrom": ["project_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -270,7 +473,102 @@
           "columns": ["project_id", "name"]
         }
       },
-      "policies": {},
+      "policies": {
+        "integrations_policy": {
+          "name": "integrations_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = integrations.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.project_members": {
+      "name": "project_members",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "member_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'member'"
+        },
+        "added_at": {
+          "name": "added_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_project_members_project_id": {
+          "name": "idx_project_members_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_project_members_project": {
+          "name": "fk_project_members_project",
+          "tableFrom": "project_members",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uq_project_members_user_project": {
+          "name": "uq_project_members_user_project",
+          "nullsNotDistinct": false,
+          "columns": ["project_id", "user_id"]
+        }
+      },
+      "policies": {
+        "projects_members_policy": {
+          "name": "projects_members_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "true"
+        }
+      },
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -290,25 +588,42 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "owner_id": {
-          "name": "owner_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "uq_projects_name": {
-          "name": "uq_projects_name",
-          "nullsNotDistinct": false,
-          "columns": ["owner_id", "name"]
+      "uniqueConstraints": {},
+      "policies": {
+        "projects_view_policy": {
+          "name": "projects_view_policy",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n      SELECT 1 FROM project_members\n      WHERE project_id = projects.id AND user_id = current_setting('app.current_user', true)::TEXT\n    )"
+        },
+        "projects_create_policy": {
+          "name": "projects_create_policy",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": ["authenticated_user"],
+          "withCheck": "true"
+        },
+        "projects_update_policy": {
+          "name": "projects_update_policy",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n      SELECT 1 FROM project_members\n      WHERE project_id = projects.id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'\n    )"
+        },
+        "projects_delete_policy": {
+          "name": "projects_delete_policy",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n      SELECT 1 FROM project_members\n      WHERE project_id = projects.id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'\n    )"
         }
       },
-      "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -322,6 +637,12 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
         },
         "schedule_id": {
           "name": "schedule_id",
@@ -384,22 +705,84 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "idx_schedule_runs_schedule_id": {
+          "name": "idx_schedule_runs_schedule_id",
+          "columns": [
+            {
+              "expression": "schedule_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_schedule_runs_project_id": {
+          "name": "idx_schedule_runs_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_schedule_runs_notification_level": {
+          "name": "idx_schedule_runs_notification_level",
+          "columns": [
+            {
+              "expression": "notification_level",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
+        "fk_schedule_runs_project": {
+          "name": "fk_schedule_runs_project",
+          "tableFrom": "schedule_runs",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
         "fk_schedule_runs_schedule": {
           "name": "fk_schedule_runs_schedule",
           "tableFrom": "schedule_runs",
           "tableTo": "schedules",
           "columnsFrom": ["schedule_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
+      "policies": {
+        "schedule_runs_policy": {
+          "name": "schedule_runs_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = schedule_runs.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
       "checkConstraints": {},
       "isRLSEnabled": false
     },
@@ -417,6 +800,12 @@
         "project_id": {
           "name": "project_id",
           "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -509,9 +898,105 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'openai-gpt-4o'"
+        },
+        "max_steps": {
+          "name": "max_steps",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notify_level": {
+          "name": "notify_level",
+          "type": "notification_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'alert'"
+        },
+        "extra_notification_text": {
+          "name": "extra_notification_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_schedules_project_id": {
+          "name": "idx_schedules_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_schedules_connection_id": {
+          "name": "idx_schedules_connection_id",
+          "columns": [
+            {
+              "expression": "connection_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_schedules_status": {
+          "name": "idx_schedules_status",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_schedules_next_run": {
+          "name": "idx_schedules_next_run",
+          "columns": [
+            {
+              "expression": "next_run",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_schedules_enabled": {
+          "name": "idx_schedules_enabled",
+          "columns": [
+            {
+              "expression": "enabled",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "fk_schedules_project": {
           "name": "fk_schedules_project",
@@ -519,7 +1004,7 @@
           "tableTo": "projects",
           "columnsFrom": ["project_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "fk_schedules_connection": {
@@ -528,18 +1013,31 @@
           "tableTo": "connections",
           "columnsFrom": ["connection_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
+      "policies": {
+        "schedules_policy": {
+          "name": "schedules_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = schedules.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
       "checkConstraints": {},
       "isRLSEnabled": false
     }
   },
   "enums": {
+    "public.member_role": {
+      "name": "member_role",
+      "schema": "public",
+      "values": ["owner", "member"]
+    },
     "public.notification_level": {
       "name": "notification_level",
       "schema": "public",
@@ -553,7 +1051,14 @@
   },
   "schemas": {},
   "sequences": {},
-  "roles": {},
+  "roles": {
+    "authenticated_user": {
+      "name": "authenticated_user",
+      "createDb": false,
+      "createRole": false,
+      "inherit": true
+    }
+  },
   "policies": {},
   "views": {},
   "_meta": {

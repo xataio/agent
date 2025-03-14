@@ -141,6 +141,68 @@ Based on all the information you have gathered, make a summary of your findings 
 Be very specific about the queries you found and the reason for which they are slow.
 `;
 
+const INVESTIGATE_HIGH_CONNECTION_COUNT_PLAYBOOK = `
+Objective:
+To investigate and resolve high connection count in the PostgreSQL database.
+
+Step 1:
+Use the tool getConnectionsStats to get the connections stats. If the 
+percentage of connections utilization is very low, you can stop here. Proceed with the next step only if the
+percentage is at least 20%.
+
+Step 2:
+Get the metric for the number of connections. Check if the trend is upwards and consider
+how much time there is until the max is reached. If it looks like the max will be reached in the 
+next hour, this should be alert level.
+
+Step 3:
+If the percentage of connections utilization is high, get the instance info 
+(with the tool getTablesAndInstanceInfo) and think about the stats you have gathered so far.
+Is the max_connections appropriate for the instance type? Are there many idle connections?
+
+Step 4:
+Call the tool getConnectionsGroups to get an overview of the open connections.
+Try to figure out where are the bulk of the connections coming from. 
+Are there many many "idle in transaction" connections? Think about the wait_event as well.
+
+Step 5:
+If there are many idle connections, get the oldest idle connections with the tool getOldestIdleConnections.
+
+Step 6:
+Based on all the information you have gathered, make a summary of your findings and report them to the user.
+Provide actionable advice to the user. If for example you recommend killing old idle connections,
+provide the query to do so. However, use judgement in selecting only the connections that are least likely to
+impact users (for example, because they are very old).
+If you recommend changing the max_connections parameter, provide the new value.
+`;
+
+const INVESTIGATE_LOW_MEMORY_PLAYBOOK = `
+Objective:
+To investigate and resolve low freeable memory in the PostgreSQL database.
+
+Step 1:
+Get the freeable memory metric using the tool getInstanceMetric.
+
+Step 3:
+Get the instance details and compare the freeable memory with the amount of memory available.
+
+Step 4:
+Check the logs for any indications of memory pressure or out of memory errors. If there are,
+make sure to report that to the user. Also this would mean that the situation is critical.
+
+Step 4:
+Check active queries. Use the tool getConnectionsGroups to get the currently active queries.
+If a user or application stands out for doing a lot of work, record that to indicate to the user.
+
+Step 5:
+Check the work_mem setting and shared_buffers setting. Think if it would make sense to reduce these
+in order to free up memory.
+
+Step 6:
+If there is no clear root cause for using memory, suggest to the user to scale up the Postgres instance.
+Recommend a particular instance class.
+`;
+
 export function getPlaybook(name: string): string {
   switch (name) {
     case 'investigateSlowQueries':
@@ -151,23 +213,28 @@ export function getPlaybook(name: string): string {
       return TUNING_PLAYBOOK;
     case 'investigateHighCpuUsage':
       return INVESTIGATE_HIGH_CPU_USAGE_PLAYBOOK;
+    case 'investigateHighConnectionCount':
+      return INVESTIGATE_HIGH_CONNECTION_COUNT_PLAYBOOK;
+    case 'investigateLowMemory':
+      return INVESTIGATE_LOW_MEMORY_PLAYBOOK;
     default:
       return `Error:Playbook ${name} not found`;
   }
 }
 
 export function listPlaybooks(): string[] {
-  return ['investigateSlowQueries', 'generalMonitoring', 'tuneSettings', 'investigateHighCpuUsage'];
+  return [
+    'generalMonitoring',
+    'investigateSlowQueries',
+    'investigateHighCpuUsage',
+    'investigateLowMemory',
+    'investigateHighConnectionCount',
+    'tuneSettings'
+  ];
 }
 
 export function getBuiltInPlaybooks(): Playbook[] {
   return [
-    {
-      name: 'investigateSlowQueries',
-      description: 'Investigate slow queries using pg_stat_statements and EXPLAIN calls.',
-      content: SLOW_QUERIES_PLAYBOOK,
-      isBuiltIn: true
-    },
     {
       name: 'generalMonitoring',
       description: 'General monitoring of the database, checking logs, slow queries, main metrics, etc.',
@@ -175,15 +242,34 @@ export function getBuiltInPlaybooks(): Playbook[] {
       isBuiltIn: true
     },
     {
-      name: 'tuneSettings',
-      description: 'Tune configuration settings for the database, based on the instance type, the database schema. ',
-      content: TUNING_PLAYBOOK,
+      name: 'investigateSlowQueries',
+      description: 'Investigate slow queries using pg_stat_statements and EXPLAIN calls.',
+      content: SLOW_QUERIES_PLAYBOOK,
       isBuiltIn: true
     },
     {
       name: 'investigateHighCpuUsage',
       description: 'Investigate high CPU usage. This playbook should be execute while the CPU usage is elevated.',
       content: INVESTIGATE_HIGH_CPU_USAGE_PLAYBOOK,
+      isBuiltIn: true
+    },
+    {
+      name: 'investigateLowMemory',
+      description: 'Investigate low freeable memory. This playbook should be execute while the freeable memory is low.',
+      content: INVESTIGATE_LOW_MEMORY_PLAYBOOK,
+      isBuiltIn: true
+    },
+    {
+      name: 'investigateHighConnectionCount',
+      description:
+        'Investigate high connection count. This playbook should be execute while the connection count is elevated.',
+      content: INVESTIGATE_HIGH_CONNECTION_COUNT_PLAYBOOK,
+      isBuiltIn: true
+    },
+    {
+      name: 'tuneSettings',
+      description: 'Tune configuration settings for the database, based on the instance type, the database schema. ',
+      content: TUNING_PLAYBOOK,
       isBuiltIn: true
     }
   ];

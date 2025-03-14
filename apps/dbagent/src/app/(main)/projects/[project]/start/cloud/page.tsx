@@ -6,8 +6,8 @@ type PageParams = {
 };
 
 export default async function Page({ params }: { params: Promise<PageParams> }) {
-  const connections = await listConnections();
   const { project } = await params;
+  const connections = await listConnections(project);
 
   return (
     <div className="container mx-auto p-4">

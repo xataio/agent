@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dbagent}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-dbagent}
+    ports:
+      - '5432:5432'
+    volumes:
+      - agent_postgres_data:/var/lib/postgresql/data
+      - ./apps/dbagent/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  xata-agent:
+    image: xataio/agent:0.1.2
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dbagent}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-dbagent}
+      NODE_ENV: production
+      AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-localhost}
+    env_file: '.env.production'
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgres
+
+volumes:
+  agent_postgres_data:

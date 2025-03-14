@@ -46,7 +46,7 @@ export function Onboarding() {
   const { project } = useParams<{ project: string }>();
 
   useEffect(() => {
-    getCompletedTasks()
+    getCompletedTasks(project)
       .then((tasks) => {
         if (tasks.length === onboardingTasks.length && completedTasks.length < onboardingTasks.length) {
           void confetti({
@@ -78,8 +78,8 @@ export function Onboarding() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Onboarding</h1>
           <p className="text-muted-foreground mt-2">
-            Hey, I&apos;m Aida, your new hire. I&apos;m a PostgreSQL specialized AI expert. In order to get the most out
-            of me, I need to know a few things about your database. Complete the task below to give me access to your
+            Hey, I&apos;m your new hire. I&apos;m a PostgreSQL specialized AI expert. In order to get the most out of
+            me, I need to know a few things about your database. Complete the task below to give me access to your
             database and observability data.
           </p>
         </div>

@@ -44,6 +44,9 @@ const formSchema = z.object({
   maxInterval: z.string().optional(),
   cronExpression: z.string().optional(),
   additionalInstructions: z.string().optional(),
+  maxSteps: z.string().optional(),
+  notifyLevel: z.enum(['info', 'warning', 'alert']),
+  extraNotificationText: z.string().optional(),
   enabled: z.boolean()
 });
 
@@ -81,6 +84,9 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
       maxInterval: '1440',
       cronExpression: '0 * * * *',
       additionalInstructions: '',
+      maxSteps: '0',
+      notifyLevel: 'alert',
+      extraNotificationText: '',
       enabled: true
     }
   });
@@ -98,6 +104,9 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
           minInterval: schedule.minInterval?.toString(),
           maxInterval: schedule.maxInterval?.toString(),
           additionalInstructions: schedule.additionalInstructions ?? undefined,
+          maxSteps: schedule.maxSteps?.toString() || '0',
+          notifyLevel: schedule.notifyLevel || 'alert',
+          extraNotificationText: schedule.extraNotificationText ?? undefined,
           enabled: schedule.enabled
         });
       };
@@ -106,7 +115,7 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
   }, [isEditMode, form.reset, scheduleId]);
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    const schedule: Omit<Schedule, 'id'> = {
+    const schedule: Omit<Schedule, 'id' | 'userId'> = {
       projectId,
       connectionId: connections.find((c) => c.name === data.connection)?.id.toString() || '',
       model: data.model,
@@ -116,6 +125,9 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
       additionalInstructions: data.additionalInstructions,
       minInterval: Number(data.minInterval),
       maxInterval: Number(data.maxInterval),
+      maxSteps: Number(data.maxSteps),
+      notifyLevel: data.notifyLevel,
+      extraNotificationText: data.extraNotificationText,
       enabled: data.enabled,
       keepHistory: 300,
       status: data.enabled ? 'scheduled' : 'disabled'
@@ -174,7 +186,7 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Playbook</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a playbook" />
@@ -295,6 +307,64 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
                     <FormControl>
                       <Textarea placeholder="Enter any additional instructions here..." {...field} />
                     </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="maxSteps"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Max Steps</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      The model can decide to run other playbooks (of its choice) in order to drill down during the
+                      investigation. This parameter controls how many times it can chain new playbook calls. Set to 0 to
+                      disable, in which case only the given playbook is executed.
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="notifyLevel"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notification Level</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select notification level" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="info">Info</SelectItem>
+                        <SelectItem value="warning">Warning</SelectItem>
+                        <SelectItem value="alert">Alert</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>At which level should the schedule trigger a notification.</FormDescription>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="extraNotificationText"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Extra Notification Text</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Optional extra text for notifications..." {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      An optional extra text to include with the notification. On Slack this can be used to ping
+                      particular people or groups.
+                    </FormDescription>
                   </FormItem>
                 )}
               />
