@@ -16,10 +16,16 @@ import { Message } from 'ai';
 import { Send } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
-import { Memory } from '~/lib/ai/memory';
 import { Connection } from '~/lib/db/connections';
 import { ScheduleRun } from '~/lib/db/schedule-runs';
 import { Schedule } from '~/lib/db/schedules';
+import {
+  actionCreateChat,
+  actionDeleteChat,
+  actionGetChatMessages,
+  actionListChats,
+  actionUpdateChat
+} from './actions';
 import { ChatSidebar, ChatWithLastMessage } from './chat-sidebar';
 import { ConnectionSelector } from './conn-selector';
 import { MessageCard, ThinkingIndicator } from './message-card';
@@ -54,8 +60,6 @@ function ChatsUIContent({
   scheduleRun?: { schedule: Schedule; run: ScheduleRun } | null;
   projectId: string;
 }) {
-  const memory = new Memory(projectId);
-
   const searchParams = useSearchParams();
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [chats, setChats] = useState<ChatWithLastMessage[]>([]);
@@ -92,10 +96,10 @@ function ChatsUIContent({
   useEffect(() => {
     const loadChats = async () => {
       try {
-        const fetchedChats = await memory.listChats();
+        const fetchedChats = await actionListChats(projectId);
         const chatWithLastMessages = await Promise.all(
           fetchedChats.map(async (chat) => {
-            const messages = await memory.getChatMemory(chat.id).getMessages(1);
+            const messages = await actionGetChatMessages(chat.id, 1);
             const lastMessage = messages.length > 0 ? messages[0] : null;
             return { ...chat, lastMessage: lastMessage ?? null };
           })
@@ -147,19 +151,14 @@ function ChatsUIContent({
 
   const handleNewChat = async (title: string = 'New Conversation', connectionId?: string) => {
     // Create a properly typed new chat object
-    const newChat = await memory.saveChat({
-      title: title !== '' ? title : 'New Conversation',
-      connectionId: connectionId,
-      createdAt: new Date()
-    });
-
+    const newChat = await actionCreateChat(projectId, title, connectionId);
     setChats([{ ...newChat, lastMessage: null }, ...chats]);
     setSelectedChatId(newChat.id);
     setMessages([]);
   };
 
   const handleDeleteChat = async (chatId: string) => {
-    await memory.deleteChat(chatId);
+    await actionDeleteChat(projectId, chatId);
     setChats(chats.filter((c) => c.id !== chatId));
     if (selectedChatId === chatId) {
       const nextChatId = chats.filter((c) => c.id !== chatId)[0]?.id ?? null;
@@ -181,7 +180,7 @@ function ChatsUIContent({
       }
 
       // Load messages for the selected chat
-      const messages = await memory.getChatMemory(chatId).getMessages();
+      const messages = await actionGetChatMessages(chatId);
       setMessages(messages);
     } catch (error) {
       console.error('Failed to load chat messages:', error);
@@ -248,7 +247,7 @@ function ChatsUIContent({
 
     try {
       // Update the title in the database
-      await memory.updateChat(selectedChatId, newTitle);
+      await actionUpdateChat(projectId, selectedChatId, { title: newTitle });
 
       // Update the title in the UI
       setChats((prevChats) =>
