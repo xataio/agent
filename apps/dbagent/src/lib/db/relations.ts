@@ -4,9 +4,11 @@ import { relations } from 'drizzle-orm/relations';
 import {
   awsClusterConnections,
   awsClusters,
+  chats,
   connectionInfo,
   connections,
   integrations,
+  messages,
   projectMembers,
   projects,
   scheduleRuns,
@@ -102,5 +104,24 @@ export const projectMembersRelations = relations(projectMembers, ({ one }) => ({
   project: one(projects, {
     fields: [projectMembers.projectId],
     references: [projects.id]
+  })
+}));
+
+export const chatsRelations = relations(chats, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [chats.projectId],
+    references: [projects.id]
+  }),
+  connection: one(connections, {
+    fields: [chats.connectionId],
+    references: [connections.id]
+  }),
+  messages: many(messages)
+}));
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  chat: one(chats, {
+    fields: [messages.chatId],
+    references: [chats.id]
   })
 }));

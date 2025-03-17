@@ -15,6 +15,13 @@
       "when": 1741953778092,
       "tag": "0001_default_privs",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1742075449445,
+      "tag": "0002_motionless_maddog",
+      "breakpoints": true
     }
   ]
 }

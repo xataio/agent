@@ -23,6 +23,67 @@ export const authenticatedUser = pgRole('authenticated_user', { inherit: true })
 export const scheduleStatus = pgEnum('schedule_status', ['disabled', 'scheduled', 'running']);
 export const notificationLevel = pgEnum('notification_level', ['info', 'warning', 'alert']);
 export const memberRole = pgEnum('member_role', ['owner', 'member']);
+export const messageRole = pgEnum('message_role', ['system', 'user', 'assistant', 'tool']);
+
+export const chats = pgTable(
+  'chats',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    projectId: uuid('project_id').notNull(),
+    title: text('title').default('New Conversation'),
+    connectionId: uuid('connection_id'),
+    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_chats_project'
+    }),
+    foreignKey({
+      columns: [table.connectionId],
+      foreignColumns: [connections.id],
+      name: 'fk_chats_connection'
+    }),
+    index('idx_chats_project_id').on(table.projectId),
+    index('idx_chats_connection_id').on(table.connectionId),
+    pgPolicy('chats_policy', {
+      to: authenticatedUser,
+      for: 'all',
+      using: sql`EXISTS (
+        SELECT 1 FROM project_members
+        WHERE project_id = chats.project_id AND user_id = current_setting('app.current_user', true)::TEXT
+      )`
+    })
+  ]
+);
+
+export const messages = pgTable(
+  'messages',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    chatId: uuid('chat_id').notNull(),
+    message: jsonb('message').$type<Message>().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.chatId],
+      foreignColumns: [chats.id],
+      name: 'fk_messages_chat'
+    }).onDelete('cascade'),
+    index('idx_messages_chat_id').on(table.chatId),
+    pgPolicy('messages_policy', {
+      to: authenticatedUser,
+      for: 'all',
+      using: sql`EXISTS (
+        SELECT 1 FROM project_members pm
+        JOIN chats c ON c.project_id = pm.project_id
+        WHERE c.id = messages.chat_id AND pm.user_id = current_setting('app.current_user', true)::TEXT
+      )`
+    })
+  ]
+);
 
 export const awsClusters = pgTable(
   'aws_clusters',

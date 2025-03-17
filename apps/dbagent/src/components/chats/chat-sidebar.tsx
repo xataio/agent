@@ -1,34 +1,81 @@
 import { Button, cn, ScrollArea } from '@internal/components';
+import { Message } from 'ai';
 import { MessageSquarePlus } from 'lucide-react';
-import type { Chat } from './mock-data';
+import type { Chat } from '~/lib/ai/memory';
+
+export type ChatWithLastMessage = Chat & {
+  lastMessage: Message | null;
+};
 
 interface ChatSidebarProps {
-  chats: Chat[];
+  chats: ChatWithLastMessage[];
   selectedChatId: string | null;
   onSelectChat: (chatId: string) => void;
   onNewChat: () => void;
+  onDelete: (chatId: string) => void;
 }
 
-export function ChatSidebar({ chats, selectedChatId, onSelectChat, onNewChat }: ChatSidebarProps) {
+interface ChatSidebarItemProps {
+  chat: ChatWithLastMessage;
+  selectedChatId: string | null;
+  onSelectChat: (chatId: string) => void;
+  onDelete?: (chatId: string) => void;
+}
+
+function ChatSidebarItem({ chat, selectedChatId, onSelectChat, onDelete }: ChatSidebarItemProps) {
+  const lastMessage = chat.lastMessage?.content;
+  const createdAt = new Date(chat.lastMessage?.createdAt || chat.createdAt).toLocaleString();
+
+  return (
+    <div className="group relative mb-2">
+      <button
+        onClick={() => onSelectChat(chat.id)}
+        className={cn(
+          'hover:bg-accent w-full rounded-lg px-4 py-2 text-left transition-colors',
+          selectedChatId === chat.id && 'bg-accent'
+        )}
+      >
+        <h3 className="w-50 truncate font-medium">{chat.title}</h3>
+        {lastMessage && (
+          <div className="h-10 overflow-hidden">
+            <p className="text-muted-foreground text-sm">{lastMessage}</p>
+          </div>
+        )}
+        <p className="text-muted-foreground mt-1 text-xs">{createdAt}</p>
+      </button>
+
+      {onDelete && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute right-2 top-2 opacity-0 transition-opacity hover:bg-red-500 hover:text-white group-hover:opacity-100"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(chat.id);
+          }}
+        >
+          ×
+        </Button>
+      )}
+    </div>
+  );
+}
+
+export function ChatSidebar({ chats, selectedChatId, onSelectChat, onNewChat, onDelete }: ChatSidebarProps) {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] w-80 flex-col border-l pb-12">
       <div className="flex flex-1 flex-col space-y-4 py-4">
-        <div className="px-3 py-2">
+        <div className="w-full overflow-hidden px-3 py-2">
           <h2 className="mb-2 px-4 text-lg font-semibold">Chat History</h2>
           <ScrollArea className="h-[calc(100vh-16rem)]">
             {chats.map((chat) => (
-              <button
+              <ChatSidebarItem
                 key={chat.id}
-                onClick={() => onSelectChat(chat.id)}
-                className={cn(
-                  'hover:bg-accent mb-2 w-full rounded-lg px-4 py-2 text-left transition-colors',
-                  selectedChatId === chat.id && 'bg-accent'
-                )}
-              >
-                <h3 className="truncate font-medium">{chat.title}</h3>
-                <p className="text-muted-foreground truncate text-sm">{chat.lastMessage}</p>
-                <p className="text-muted-foreground mt-1 text-xs">{new Date(chat.timestamp).toLocaleDateString()}</p>
-              </button>
+                chat={chat}
+                selectedChatId={selectedChatId}
+                onSelectChat={onSelectChat}
+                onDelete={chats.length > 1 ? onDelete : undefined}
+              />
             ))}
           </ScrollArea>
         </div>
