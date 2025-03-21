@@ -30,7 +30,7 @@ export const Bot: React.FC<BotProps> = ({ size = 24, isAnimating }) => (
       ></path>
       <motion.path
         className="eyes"
-        animate={{ scaleY: [1, 1, 1, 0.5] }}
+        animate={isAnimating ? { scaleY: [1, 1, 1, 0.5] } : false}
         transition={{
           duration: 3,
           times: [0, 0.8, 0.9, 1],
