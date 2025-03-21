@@ -90,11 +90,11 @@ export function MonitoringScheduleTable({ connections }: { connections: Connecti
         <h1 className="text-2xl font-bold">Monitoring Schedules</h1>
         <div className="mb-6 flex items-center gap-2">
           <Button variant="outline" onClick={() => refreshSchedules()}>
-            <RefreshCwIcon className="mr-2 h-4 w-4" />
+            <RefreshCwIcon className="h-4 w-4" />
           </Button>
           <Link href={`/projects/${project}/monitoring/schedule/add`}>
             <Button>
-              <PlusIcon className="mr-2 h-4 w-4" /> Add New Schedule
+              <PlusIcon className="h-4 w-4" /> Add New Schedule
             </Button>
           </Link>
         </div>

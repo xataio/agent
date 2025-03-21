@@ -9,7 +9,6 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
-  CardTitle,
   Code,
   ScrollArea,
   Textarea
@@ -179,7 +178,7 @@ function ChatsUIContent({
   }, [messages]);
 
   return (
-    <div className="flex h-full flex-row-reverse pb-8">
+    <div className="flex h-full flex-row-reverse">
       <ChatSidebar
         chats={chats}
         selectedChatId={selectedChatId}
@@ -188,14 +187,9 @@ function ChatsUIContent({
       />
 
       <div className="flex-1 overflow-hidden">
-        <Card className="mx-auto max-w-5xl">
+        <Card className="mx-auto flex h-full max-w-5xl flex-col justify-between">
           <CardHeader className="border-b">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">
-                {selectedChatId
-                  ? chats.find((chat) => chat.id === selectedChatId)?.title || 'New Conversation'
-                  : 'Select or start a new chat'}
-              </CardTitle>
+            <div className="flex flex-col justify-between">
               <div className="flex items-center gap-2">
                 <ModelSelector value={model} onValueChange={setModel} />
                 <ConnectionSelector
@@ -207,7 +201,7 @@ function ChatsUIContent({
             </div>
           </CardHeader>
 
-          <ScrollArea className="h-[calc(100vh-19.5rem)] flex-1">
+          <ScrollArea className="h-[calc(100vh-25rem)] flex-1">
             <CardContent className="space-y-4 p-4">
               {connectionId && (
                 <div className="text-muted-foreground mb-4 text-sm">
