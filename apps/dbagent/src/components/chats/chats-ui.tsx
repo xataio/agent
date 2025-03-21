@@ -13,6 +13,7 @@ import {
   ScrollArea,
   Textarea
 } from '@internal/components';
+import { motion } from 'framer-motion';
 import { Clock, Lightbulb, Send, User, Wrench } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
@@ -262,11 +263,21 @@ function ChatsUIContent({
                 <div className="flex gap-3">
                   <Avatar>
                     <AvatarFallback>
-                      <Bot className="h-6 w-6" />
+                      <Bot className="h-6 w-6" isAnimating />
                     </AvatarFallback>
                   </Avatar>
                   <div className="bg-muted max-w-[80%] rounded-lg px-4 py-2">
-                    <p className="text-sm">Thinking...</p>
+                    <motion.p
+                      className="text-sm"
+                      animate={{ opacity: [1, 0.5, 1, 0.5] }}
+                      transition={{
+                        duration: 4,
+                        times: [0, 0.8, 0.9, 1],
+                        repeat: Infinity
+                      }}
+                    >
+                      Thinking...
+                    </motion.p>
                   </div>
                 </div>
               )}

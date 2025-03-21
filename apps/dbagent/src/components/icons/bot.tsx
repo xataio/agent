@@ -1,12 +1,22 @@
+import { motion } from 'framer-motion';
 import * as React from 'react';
 
 export type BotProps = {
   size?: number;
+  isAnimating?: boolean;
 } & React.SVGProps<SVGElement>;
 
-export const Bot: React.FC<BotProps> = ({ size = 24 }) => (
+export const Bot: React.FC<BotProps> = ({ size = 24, isAnimating }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 364 364">
-    <g fill="currentColor">
+    <motion.g
+      fill="currentColor"
+      animate={isAnimating ? { rotate: [0, 4, 0, -4, 0] } : false}
+      transition={{
+        duration: 3,
+        repeat: Infinity,
+        ease: 'easeIn'
+      }}
+    >
       <path d="M203.094 130.344c-11.25 49.5-97.969 58.125-130.781 60.469l11.25-66.094 126.562-42.188 94.219 71.719c-1.406 12.187-9 38.813-50.625 25.313s-51.563-31.876-50.625-49.219"></path>
       <path
         fillRule="evenodd"
@@ -18,7 +28,16 @@ export const Bot: React.FC<BotProps> = ({ size = 24 }) => (
         d="M27.313 221.083c0-95.939 69.262-173.708 154.688-173.708 85.432 0 154.687 77.769 154.687 173.708v70.04c0 87.503-309.375 87.503-309.375 0zm141.134-93.869c-56.11 0-101.595 46.743-101.595 104.404 0 36.038 28.428 65.253 63.497 65.253h103.302c35.069 0 63.498-29.215 63.498-65.253 0-57.661-45.486-104.404-101.596-104.404z"
         clipRule="evenodd"
       ></path>
-      <path d="M165 216.875c0-12.426-10.074-22.5-22.5-22.5s-22.5 10.074-22.5 22.5v13c0 12.426 10.074 22.5 22.5 22.5s22.5-10.074 22.5-22.5zM199 216.875c0-12.426 10.074-22.5 22.5-22.5s22.5 10.074 22.5 22.5v13c0 12.426-10.074 22.5-22.5 22.5s-22.5-10.074-22.5-22.5z"></path>
-    </g>
+      <motion.path
+        className="eyes"
+        animate={{ scaleY: [1, 1, 1, 0.5] }}
+        transition={{
+          duration: 3,
+          times: [0, 0.8, 0.9, 1],
+          repeat: Infinity
+        }}
+        d="M165 216.875c0-12.426-10.074-22.5-22.5-22.5s-22.5 10.074-22.5 22.5v13c0 12.426 10.074 22.5 22.5 22.5s22.5-10.074 22.5-22.5zM199 216.875c0-12.426 10.074-22.5 22.5-22.5s22.5 10.074 22.5 22.5v13c0 12.426-10.074 22.5-22.5 22.5s-22.5-10.074-22.5-22.5z"
+      />
+    </motion.g>
   </svg>
 );
