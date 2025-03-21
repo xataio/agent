@@ -83,7 +83,7 @@ export const colorTokensHex = {
     destructive: colors.red[500],
     'destructive-foreground': colors.white,
     danger: colors.red[500],
-    success: colors.green[500],
+    success: colors.green[600],
     warning: colors.yellow[500],
     border: grayPalette[200],
     input: grayPalette[300],

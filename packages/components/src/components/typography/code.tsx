@@ -8,7 +8,8 @@ export interface CodeProps extends React.HTMLAttributes<HTMLElement>, VariantPro
 export const codeVariants = cva('not-prose font-semibold p-1 rounded-sm font-code px-1.5 overflow-x-auto font-code', {
   variants: {
     variant: {
-      default: 'bg-zinc-200 dark:bg-zinc-700 '
+      default: 'bg-zinc-200 dark:bg-zinc-700',
+      primary: 'bg-primary/10 dark:text-purple-300 text-purple-700'
     }
   },
   defaultVariants: {

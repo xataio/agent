@@ -178,7 +178,7 @@ function ChatsUIContent({
   }, [messages]);
 
   return (
-    <div className="flex h-full flex-row-reverse">
+    <div className="flex h-full flex-row-reverse gap-2">
       <ChatSidebar
         chats={chats}
         selectedChatId={selectedChatId}

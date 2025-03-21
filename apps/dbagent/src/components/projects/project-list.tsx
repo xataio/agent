@@ -185,8 +185,11 @@ function ProjectCard({ project }: { project: Project }) {
         }}
       >
         <div className="flex items-center justify-between p-4">
-          <div className="flex items-center">
-            <Database className="mr-2 h-5 w-5" />
+          <div className="flex items-center gap-2">
+            <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-lg">
+              <Database className="h-5 w-5" />
+            </div>
+
             <CardTitle className="text-xl">{project.name}</CardTitle>
           </div>
           <DropdownMenu>

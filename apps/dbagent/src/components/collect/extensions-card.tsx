@@ -104,7 +104,7 @@ export function ExtensionsCard({
               {extensions.map((ext) => (
                 <TableRow key={ext.name}>
                   <TableCell>{ext.name}</TableCell>
-                  <TableCell className={ext.installed_version ? 'text-green-500' : ''}>
+                  <TableCell className={ext.installed_version ? 'text-success' : ''}>
                     {ext.installed_version ? 'Yes' : 'No'}
                   </TableCell>
                   <TableCell>{ext.default_version}</TableCell>

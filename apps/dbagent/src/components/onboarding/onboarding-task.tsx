@@ -21,7 +21,7 @@ export function OnboardingTask({ title, description, icon, isCompleted, buttonTe
             <h3 className={cn('font-medium', isCompleted && 'text-muted-foreground line-through')}>{title}</h3>
             <div className="flex items-center gap-2">
               {isCompleted ? (
-                <span className="flex items-center text-sm text-green-500">
+                <span className="text-success flex items-center text-sm">
                   <Check className="mr-1 h-4 w-4" />
                   Completed
                 </span>
