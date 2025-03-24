@@ -40,6 +40,7 @@
     "drizzle-kit": "^0.30.5",
     "drizzle-orm": "^0.41.0",
     "drizzle-zod": "^0.7.0",
+    "geist": "^1.3.1",
     "framer-motion": "^12.5.0",
     "kysely": "^0.27.6",
     "lucide-react": "^0.483.0",
