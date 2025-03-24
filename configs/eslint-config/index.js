@@ -87,8 +87,8 @@ export const base = tseslint.config(
         {
           '**/*.test.{js,ts,jsx,tsx}': `@(${KEBAB_CASE}).test`,
           '**/*.d.{js,ts}': `@(${KEBAB_CASE}).d`,
-          '**/!(*.test).{jsx,tsx}': 'KEBAB_CASE',
-          '**/!(*.test|*.config|*.d).{js,ts}': 'KEBAB_CASE'
+          '**/!(*.test|*.eval).{jsx,tsx}': 'KEBAB_CASE',
+          '**/!(*.test|*.eval|*.config|*.d).{js,ts}': 'KEBAB_CASE'
         }
       ],
       'check-file/folder-naming-convention': [
