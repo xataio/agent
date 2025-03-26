@@ -1,4 +1,5 @@
-import { Client } from 'pg';
+import pkg from 'pg';
+const { Client } = pkg;
 
 export async function getTargetDbConnection(connectionString: string): Promise<Client> {
   let modifiedConnectionString = connectionString;
