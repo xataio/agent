@@ -5,8 +5,8 @@ import { BookOpenIcon, ClockIcon, PencilIcon, PlayIcon, TrashIcon } from 'lucide
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Playbook } from '~/lib/tools/playbooks';
-import { actionDeletePlaybook, actionGetBuiltInPlaybooks, actionGetCustomPlaybooks, customPlaybook } from './action';
+import { Playbook, getBuiltInPlaybooks } from '~/lib/tools/playbooks';
+import { actionDeletePlaybook, actionGetCustomPlaybooks, customPlaybook } from './action';
 
 export function PlaybooksTable() {
   const router = useRouter();
@@ -18,7 +18,7 @@ export function PlaybooksTable() {
   const loadPlaybooks = async () => {
     setIsLoading(true);
     try {
-      const playbooks = await actionGetBuiltInPlaybooks();
+      const playbooks = getBuiltInPlaybooks();
       const customPlaybooks = await actionGetCustomPlaybooks();
       setPlaybooks(playbooks);
       setCustomPlaybooks(customPlaybooks);

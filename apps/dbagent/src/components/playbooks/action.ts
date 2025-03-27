@@ -42,11 +42,12 @@ export async function actionGetCustomPlaybooks(_projectId?: string) {
   return customPlaybooks;
 }
 
+//not used anywhere but in this file
 export async function actionGetBuiltInPlaybooks() {
   return getBuiltInPlaybooks();
 }
 
-//edit this to work with projectId in the future
+//not used anywhere but in this file
 export async function actionGetPlaybookByName(name: string, _projectId?: string) {
   // First check built-in playbooks
   const builtInPlaybook = getBuiltInPlaybooks().find((p) => p.name === name);
@@ -148,9 +149,10 @@ export async function actionGeneratePlaybookContent(name: string, description: s
         content: prompt
       }
     ],
-    //lower values are more deterministic higher are more creative
+    //lower values for temperature and topP are more deterministic higher are more creative(max 2.0)
     //0.1 is deterministic, 0.7 is creative
-    temperature: 0.1,
+    temperature: 0.2,
+    topP: 0.1,
     maxTokens: 1000
   });
 
