@@ -19,7 +19,7 @@ export function PlaybooksTable() {
     setIsLoading(true);
     try {
       const playbooks = getBuiltInPlaybooks();
-      const customPlaybooks = await actionGetCustomPlaybooks();
+      const customPlaybooks = await actionGetCustomPlaybooks(project);
       setPlaybooks(playbooks);
       setCustomPlaybooks(customPlaybooks);
     } finally {
@@ -71,7 +71,7 @@ export function PlaybooksTable() {
             </>
           )}
           {playbooks.map((playbook) => (
-            <TableRow key={playbook.name}>
+            <TableRow key={`built-in-${playbook.name}`}>
               <TableCell>
                 <Code variant="primary">
                   <Link href={`/projects/${project}/playbooks/${playbook.name}`}>{playbook.name}</Link>
@@ -113,7 +113,7 @@ export function PlaybooksTable() {
           ))}
 
           {customPlaybooks.map((customPlaybook) => (
-            <TableRow key={customPlaybook.name}>
+            <TableRow key={`custom-${customPlaybook.id}`}>
               <TableCell>
                 <Code variant="primary">
                   <Link href={`/projects/${project}/playbooks/${customPlaybook.id}`}>{customPlaybook.name}</Link>

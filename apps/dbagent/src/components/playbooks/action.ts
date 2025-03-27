@@ -18,11 +18,13 @@ export interface customPlaybook {
 }
 
 //playbook db get
-export async function actionGetCustomPlaybooks(_projectId?: string) {
-  // const builtInPlaybooks = getBuiltInPlaybooks();
+export async function actionGetCustomPlaybooks(projectId?: string) {
+  if (!projectId) {
+    throw new Error('Project ID is required');
+  }
 
   const customPlaybooks = await queryDb(async ({ db }) => {
-    const results = await db.select().from(playbooks);
+    const results = await db.select().from(playbooks).where(eq(playbooks.projectId, projectId));
     return results.map((playbook) => ({
       name: playbook.name,
       description: playbook.description || '',

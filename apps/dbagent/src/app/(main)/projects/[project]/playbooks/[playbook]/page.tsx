@@ -22,7 +22,7 @@ export default async function PlaybookPage({ params }: { params: Promise<PagePar
   }
 
   // Then check custom playbooks
-  const customPlaybooks = await actionGetCustomPlaybooks();
+  const customPlaybooks = await actionGetCustomPlaybooks((await params).project);
   const customPlaybook = customPlaybooks.find((p) => p.id === playbookId);
 
   if (!customPlaybook) {
