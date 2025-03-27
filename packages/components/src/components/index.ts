@@ -54,3 +54,5 @@ export * from './shadcn/textarea';
 export * from './shadcn/toggle';
 export * from './shadcn/toggle-group';
 export * from './shadcn/tooltip';
+export * from './typography/code';
+export * from './typography/typography';

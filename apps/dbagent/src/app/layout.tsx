@@ -1,18 +1,12 @@
 import '@internal/theme';
+import { GeistSans } from 'geist/font/sans';
 import { Metadata } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import { Geist_Mono } from 'next/font/google';
 import { Providers } from '~/components/providers';
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap'
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-jetbrains-mono'
+const geistMono = Geist_Mono({
+  variable: '--font-code',
+  subsets: ['latin']
 });
 
 export const metadata: Metadata = {
@@ -21,7 +15,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html suppressHydrationWarning lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    <html suppressHydrationWarning lang="en" className={`${GeistSans.className} ${geistMono.variable}`}>
       <body>
         <Providers>{children}</Providers>
       </body>
