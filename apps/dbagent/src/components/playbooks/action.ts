@@ -1,10 +1,13 @@
 'use server';
 
+import { openai } from '@ai-sdk/openai';
+import { generateText } from 'ai';
+import { and, eq } from 'drizzle-orm';
 import { queryDb } from '~/lib/db/db';
 import { playbooks } from '~/lib/db/schema';
 import { getBuiltInPlaybooks, Playbook } from '~/lib/tools/playbooks';
 
-export interface PlaybookInput {
+export interface customPlaybook {
   name: string;
   description: string;
   content: string;
@@ -29,6 +32,7 @@ export async function actionGetCustomPlaybooks(_projectId?: string) {
     }));
   });
 
+  //console ouput for testing custom playbooks
   console.log('Loaded playbooks:', {
     // builtIn: builtInPlaybooks,
     custom: customPlaybooks
@@ -54,10 +58,21 @@ export async function actionGetPlaybookByName(name: string, _projectId?: string)
 }
 
 //playbook db insert
-export async function actionCreatePlaybook(input: PlaybookInput): Promise<Playbook> {
+export async function actionCreatePlaybook(input: customPlaybook): Promise<Playbook> {
   console.log('Creating playbook', input);
 
   return await queryDb(async ({ db, userId }) => {
+    // Check if playbook with same name exists in the project
+    const existingPlaybook = await db
+      .select()
+      .from(playbooks)
+      .where(and(eq(playbooks.name, input.name), eq(playbooks.projectId, input.projectId)))
+      .limit(1);
+
+    if (existingPlaybook.length > 0) {
+      throw new Error('A playbook with this name already exists in this project');
+    }
+
     const result = await db
       .insert(playbooks)
       .values({
@@ -100,9 +115,41 @@ export async function actionUpdatePlaybook(
   };
 }
 
-export async function actionDeletePlaybook(_projectId?: string): Promise<void> {
-  // In a real implementation, this would delete a record from the database
+export async function actionDeletePlaybook(id: string): Promise<void> {
+  return await queryDb(async ({ db }) => {
+    await db.delete(playbooks).where(eq(playbooks.id, id));
+  });
+}
 
-  // For now, just return a promise that resolves
-  return Promise.resolve();
+export async function actionGeneratePlaybookContent(name: string, description: string): Promise<string> {
+  const prompt = `Generate a detailed playbook content for a database task with the following details:
+                  Name: ${name}
+                  Description: ${description}
+
+                  The playbook should:
+                  1. Be written in clear, step-by-step instructions
+                  2. Include specific SQL commands where needed
+                  3. Follow best practices for database operations
+                  4. Include error handling considerations
+                  5. Be formatted in a way that's easy for an AI agent to follow
+
+                  Please generate the playbook content:`;
+
+  const { text } = await generateText({
+    model: openai('gpt-4o'),
+    messages: [
+      {
+        role: 'system',
+        content: 'You are a database expert who creates detailed, step-by-step playbooks for database operations.'
+      },
+      {
+        role: 'user',
+        content: prompt
+      }
+    ],
+    temperature: 0.7,
+    maxTokens: 1000
+  });
+
+  return text.trim() || 'Failed to generate playbook content';
 }

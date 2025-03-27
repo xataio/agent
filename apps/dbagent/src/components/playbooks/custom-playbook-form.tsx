@@ -1,12 +1,12 @@
 'use client';
 
 import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle, Textarea } from '@internal/components';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Wand2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Playbook } from '~/lib/tools/playbooks';
-import { actionCreatePlaybook, actionUpdatePlaybook } from './action';
+import { actionCreatePlaybook, actionGeneratePlaybookContent, actionUpdatePlaybook } from './action';
 
 interface CustomPlaybookFormProps {
   initialData?: Playbook;
@@ -22,6 +22,7 @@ export function CustomPlaybookForm({ initialData, isEditing = false }: CustomPla
   const [content, setContent] = useState(initialData?.content || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +51,25 @@ export function CustomPlaybookForm({ initialData, isEditing = false }: CustomPla
       setError(err instanceof Error ? err.message : 'An error occurred while saving the playbook');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateContent = async () => {
+    if (!name || !description) {
+      setError('Please fill in both name and description before generating content');
+      return;
+    }
+
+    setGenerating(true);
+    setError(null);
+    try {
+      const generatedContent = await actionGeneratePlaybookContent(name, description);
+      setContent(generatedContent);
+    } catch (err) {
+      console.error('Error generating content:', err);
+      setError(err instanceof Error ? err.message : 'Failed to generate playbook content');
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -106,6 +126,18 @@ export function CustomPlaybookForm({ initialData, isEditing = false }: CustomPla
               <label htmlFor="content" className="text-sm font-medium">
                 Playbook Content
               </label>
+              <div className="mb-2 flex justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGenerateContent}
+                  disabled={generating || !name || !description}
+                >
+                  <Wand2 className="mr-2 h-4 w-4" />
+                  {generating ? 'Generating...' : 'Generate Content'}
+                </Button>
+              </div>
               <Textarea
                 id="content"
                 className="min-h-[300px] font-mono text-sm"

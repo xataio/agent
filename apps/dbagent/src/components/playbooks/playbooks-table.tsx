@@ -6,12 +6,12 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Playbook } from '~/lib/tools/playbooks';
-import { actionDeletePlaybook, actionGetBuiltInPlaybooks, actionGetCustomPlaybooks, PlaybookInput } from './action';
+import { actionDeletePlaybook, actionGetBuiltInPlaybooks, actionGetCustomPlaybooks, customPlaybook } from './action';
 
 export function PlaybooksTable() {
   const router = useRouter();
   const [playbooks, setPlaybooks] = useState<Playbook[]>([]);
-  const [customPlaybooks, setCustomPlaybooks] = useState<PlaybookInput[]>([]);
+  const [customPlaybooks, setCustomPlaybooks] = useState<customPlaybook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { project } = useParams<{ project: string }>();
 
@@ -122,7 +122,7 @@ export function PlaybooksTable() {
                     variant="outline"
                     size="icon"
                     title="View playbook details"
-                    onClick={() => router.push(`/projects/${project}/playbooks/${customPlaybook.name}`)}
+                    onClick={() => router.push(`/projects/${project}/playbooks/${customPlaybook.id}`)}
                   >
                     <BookOpenIcon className="h-3 w-3" />
                   </Button>
@@ -157,7 +157,7 @@ export function PlaybooksTable() {
                     variant="outline"
                     size="icon"
                     title="Delete playbook"
-                    onClick={() => handleDeletePlaybook(customPlaybook.name)}
+                    onClick={() => handleDeletePlaybook(customPlaybook.id)}
                   >
                     <TrashIcon className="h-3 w-3" />
                   </Button>

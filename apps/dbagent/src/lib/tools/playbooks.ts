@@ -271,13 +271,6 @@ export function getBuiltInPlaybooks(): Playbook[] {
       description: 'Tune configuration settings for the database, based on the instance type, the database schema. ',
       content: TUNING_PLAYBOOK,
       isBuiltIn: true
-    },
-    //test playbook to distingush between built-in and custom playbooks
-    {
-      name: 'tuneSettingsCustomTest',
-      description: 'Tune configuration settings for the database, based on the instance type, the database schema. ',
-      content: TUNING_PLAYBOOK,
-      isBuiltIn: false
     }
   ];
 }
