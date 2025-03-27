@@ -131,8 +131,26 @@ export function CustomPlaybookForm({ initialData, isEditing = false }: CustomPla
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleGenerateContent}
-                  disabled={generating || !name || !description}
+                  title={
+                    !name && !description
+                      ? 'Please fill in both name and description'
+                      : !name
+                        ? 'Please fill in the name'
+                        : !description
+                          ? 'Please fill in the description'
+                          : 'Generate playbook content'
+                  }
+                  onClick={() => {
+                    if (!name && !description) {
+                      setError('Please fill in both name and description before generating content');
+                    } else if (!name) {
+                      setError('Please fill in the name before generating content');
+                    } else if (!description) {
+                      setError('Please fill in the description before generating content');
+                    } else {
+                      void handleGenerateContent();
+                    }
+                  }}
                 >
                   <Wand2 className="mr-2 h-4 w-4" />
                   {generating ? 'Generating...' : 'Generate Content'}

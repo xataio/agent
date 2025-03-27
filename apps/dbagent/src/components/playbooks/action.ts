@@ -2,6 +2,7 @@
 
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
+
 import { and, eq } from 'drizzle-orm';
 import { queryDb } from '~/lib/db/db';
 import { playbooks } from '~/lib/db/schema';
@@ -147,7 +148,9 @@ export async function actionGeneratePlaybookContent(name: string, description: s
         content: prompt
       }
     ],
-    temperature: 0.7,
+    //lower values are more deterministic higher are more creative
+    //0.1 is deterministic, 0.7 is creative
+    temperature: 0.1,
     maxTokens: 1000
   });
 
