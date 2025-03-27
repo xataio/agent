@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@internal/components';
+import { Button, Code, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@internal/components';
 import { BookOpenIcon, ClockIcon, PencilIcon, PlayIcon, TrashIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -73,11 +73,12 @@ export function PlaybooksTable() {
           {playbooks.map((playbook) => (
             <TableRow key={playbook.name}>
               <TableCell>
-                <Link href={`/projects/${project}/playbooks/${playbook.name}`}>{playbook.name}</Link>
+                <Code variant="primary">
+                  <Link href={`/projects/${project}/playbooks/${playbook.name}`}>{playbook.name}</Link>
+                </Code>
               </TableCell>
               <TableCell>{playbook.isBuiltIn ? 'Built-in' : 'Custom'}</TableCell>
               <TableCell>{playbook.description}</TableCell>
-
               <TableCell>
                 <div className="flex gap-2">
                   <Button
@@ -113,7 +114,11 @@ export function PlaybooksTable() {
 
           {customPlaybooks.map((customPlaybook) => (
             <TableRow key={customPlaybook.name}>
-              <TableCell>{customPlaybook.name}</TableCell>
+              <TableCell>
+                <Code variant="primary">
+                  <Link href={`/projects/${project}/playbooks/${customPlaybook.id}`}>{customPlaybook.name}</Link>
+                </Code>
+              </TableCell>
               <TableCell>{customPlaybook.isBuiltIn ? 'Built-in' : 'Custom'}</TableCell>
               <TableCell>{customPlaybook.description}</TableCell>
               <TableCell>
