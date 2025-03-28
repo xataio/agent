@@ -358,7 +358,7 @@ export const chats = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     projectId: uuid('project_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
     title: text('title').notNull(),
     userId: text('user_id').notNull(),
     visibility: varchar('visibility', { enum: ['public', 'private'] })
@@ -395,7 +395,7 @@ export const messages = pgTable(
     role: varchar('role').notNull(),
     parts: jsonb('parts').notNull(),
     attachments: jsonb('attachments').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull()
+    createdAt: timestamp('created_at').defaultNow().notNull()
   },
   (table) => [
     foreignKey({
@@ -431,7 +431,7 @@ export const votes = pgTable(
     messageId: uuid('message_id').notNull(),
     userId: text('user_id').notNull(),
     isUpvoted: boolean('is_upvoted').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull()
+    createdAt: timestamp('created_at').defaultNow().notNull()
   },
   (table) => [
     primaryKey({ columns: [table.chatId, table.messageId, table.userId] }),
@@ -472,7 +472,7 @@ export const documents = pgTable(
   {
     id: uuid('id').defaultRandom().notNull(),
     projectId: uuid('project_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
     title: text('title').notNull(),
     content: text('content'),
     kind: varchar('kind', { enum: ['text', 'code', 'image', 'sheet'] })
@@ -513,7 +513,7 @@ export const suggestions = pgTable(
     description: text('description'),
     isResolved: boolean('is_resolved').default(false).notNull(),
     userId: text('user_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull()
+    createdAt: timestamp('created_at').defaultNow().notNull()
   },
   (table) => [
     primaryKey({ columns: [table.id] }),

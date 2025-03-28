@@ -1,4 +1,3 @@
-import { fetcher } from '@/lib/utils';
 import { UseChatHelpers } from '@ai-sdk/react';
 import { useSidebar } from '@internal/components';
 import type { Attachment, UIMessage } from 'ai';
@@ -19,6 +18,7 @@ import { textArtifact } from './artifacts/text/client';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
 import { useArtifact } from './use-artifact';
+import { fetcher } from './utils';
 import { VersionFooter } from './version-footer';
 
 export const artifactDefinitions = [textArtifact, codeArtifact, imageArtifact, sheetArtifact];
