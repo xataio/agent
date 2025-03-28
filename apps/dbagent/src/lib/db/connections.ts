@@ -36,6 +36,16 @@ export async function getConnection(id: string): Promise<Connection | null> {
   });
 }
 
+export async function getConnectionByName(projectId: string, name: string): Promise<Connection | null> {
+  return queryDb(async ({ db }) => {
+    const result = await db
+      .select()
+      .from(connections)
+      .where(and(eq(connections.projectId, projectId), eq(connections.name, name)));
+    return result[0] ?? null;
+  });
+}
+
 export async function getConnectionFromSchedule(schedule: Schedule): Promise<Connection | null> {
   return queryDb(
     async ({ db }) => {

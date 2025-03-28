@@ -6,26 +6,25 @@ import {
   getExtensions,
   getPerformanceSettings,
   getTableStats,
-  getTargetDbConnection,
   getVacuumSettings,
   PerformanceSetting,
   PgExtension,
-  TableStat
+  TableStat,
+  withTargetDbConnection
 } from '~/lib/targetdb/db';
 
 export async function collectInfo(connection: Connection | undefined) {
   if (!connection) {
     return { success: false, message: 'No connection selected' };
   }
-  const client = await getTargetDbConnection(connection.connectionString);
-  try {
-    const result = await client.query('SELECT * FROM public.test');
-    return { success: true, message: 'Info collected successfully', data: result.rows };
-  } catch (error) {
-    return { success: false, message: `Error collecting info: ${error}` };
-  } finally {
-    await client.end();
-  }
+  return await withTargetDbConnection(connection.connectionString, async (client) => {
+    try {
+      const result = await client.query('SELECT * FROM public.test');
+      return { success: true, message: 'Info collected successfully', data: result.rows };
+    } catch (error) {
+      return { success: false, message: `Error collecting info: ${error}` };
+    }
+  });
 }
 
 export async function collectTables(
@@ -36,7 +35,7 @@ export async function collectTables(
   }
   let data: TableStat[] = [];
   try {
-    data = await getTableStats(connection.connectionString);
+    data = await withTargetDbConnection(connection.connectionString, getTableStats);
   } catch (error) {
     return { success: false, message: `Error collecting tables: ${error}`, data: [] };
   }
@@ -60,7 +59,7 @@ export async function collectExtensions(
   }
   let data: PgExtension[] = [];
   try {
-    data = await getExtensions(connection.connectionString);
+    data = await withTargetDbConnection(connection.connectionString, getExtensions);
   } catch (error) {
     return { success: false, message: `Error collecting extensions: ${error}`, data: [] };
   }
@@ -85,7 +84,7 @@ export async function collectPerformanceSettings(
   }
   let data: PerformanceSetting[] = [];
   try {
-    data = await getPerformanceSettings(connection.connectionString);
+    data = await withTargetDbConnection(connection.connectionString, getPerformanceSettings);
   } catch (error) {
     return { success: false, message: `Error collecting performance settings: ${error}`, data: [] };
   }
@@ -110,7 +109,7 @@ export async function collectVacuumData(
   }
   let data: PerformanceSetting[] = [];
   try {
-    data = await getVacuumSettings(connection.connectionString);
+    data = await withTargetDbConnection(connection.connectionString, getVacuumSettings);
   } catch (error) {
     return { success: false, message: `Error collecting vacuum data: ${error}`, data: [] };
   }
