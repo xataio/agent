@@ -36,19 +36,23 @@ export async function POST(req: Request) {
     console.log(context);
 
     const modelInstance = getModelInstance(model);
+    const { tools, end } = await getTools(connection);
+    try {
+      const result = streamText({
+        model: modelInstance,
+        messages,
+        system: context,
+        tools: tools,
+        maxSteps: 20,
+        toolCallStreaming: true
+      });
 
-    const result = streamText({
-      model: modelInstance,
-      messages,
-      system: context,
-      tools: await getTools(connection),
-      maxSteps: 20,
-      toolCallStreaming: true
-    });
-
-    return result.toDataStreamResponse({
-      getErrorMessage: errorHandler
-    });
+      return result.toDataStreamResponse({
+        getErrorMessage: errorHandler
+      });
+    } finally {
+      await end();
+    }
   } catch (error) {
     console.error('Error in chat', error);
     return new Response('Error in chat', { status: 500 });

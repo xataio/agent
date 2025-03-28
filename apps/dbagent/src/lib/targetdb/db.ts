@@ -1,7 +1,32 @@
-import pkg from 'pg';
-const { Client } = pkg;
+import pg from 'pg';
+
+export type Pool = pg.Pool;
+export type Client = pg.Client;
+export type ClientBase = pg.ClientBase;
+
+export function getTargetDbPool(connectionString: string): Pool {
+  const parsed = parseConnectionString(connectionString);
+  const pool = new pg.Pool({
+    connectionString: parsed.connectionString,
+    ssl: parsed.ssl,
+    min: 0,
+    max: 2
+  });
+  return pool;
+}
 
 export async function getTargetDbConnection(connectionString: string): Promise<Client> {
+  const parsed = parseConnectionString(connectionString);
+  const client = new pg.Client({
+    connectionString: parsed.connectionString,
+    ssl: parsed.ssl
+  });
+
+  await client.connect();
+  return client;
+}
+
+function parseConnectionString(connectionString: string): { connectionString: string; ssl: any } {
   let modifiedConnectionString = connectionString;
   let sslConfig = undefined;
   if (connectionString.includes('sslmode=require')) {
@@ -11,13 +36,35 @@ export async function getTargetDbConnection(connectionString: string): Promise<C
       rejectUnauthorized: false // Allow self-signed certificates
     };
   }
-  const client = new Client({
+  return {
     connectionString: modifiedConnectionString,
     ssl: sslConfig
-  });
+  };
+}
 
-  await client.connect();
-  return client;
+export async function withPoolConnection<T>(
+  pool: Pool | (() => Promise<Pool>),
+  fn: (client: ClientBase) => Promise<T>
+): Promise<T> {
+  const poolInstance = typeof pool === 'function' ? await pool() : pool;
+  const client = await poolInstance.connect();
+  try {
+    return await fn(client);
+  } finally {
+    client.release();
+  }
+}
+
+export async function withTargetDbConnection<T>(
+  connectionString: string,
+  fn: (client: ClientBase) => Promise<T>
+): Promise<T> {
+  const client = await getTargetDbConnection(connectionString);
+  try {
+    return await fn(client);
+  } finally {
+    await client.end();
+  }
 }
 
 export interface TableStat {
@@ -32,10 +79,8 @@ export interface TableStat {
   nTupDel: number;
 }
 
-export async function getTableStats(connString: string): Promise<TableStat[]> {
-  const client = await getTargetDbConnection(connString);
-  try {
-    const result = await client.query(`
+export async function getTableStats(client: ClientBase): Promise<TableStat[]> {
+  const result = await client.query(`
     SELECT
         c.oid AS oid,
         t.table_name AS name,
@@ -67,20 +112,17 @@ export async function getTableStats(connString: string): Promise<TableStat[]> {
     LIMIT 100;
 `);
 
-    return result.rows.map((row) => ({
-      schema: row.schema,
-      name: row.name,
-      rows: parseInt(row.rows),
-      size: row.size,
-      seqScans: parseInt(row.seq_scan),
-      idxScans: parseInt(row.idx_scan),
-      nTupIns: parseInt(row.n_tup_ins),
-      nTupUpd: parseInt(row.n_tup_upd),
-      nTupDel: parseInt(row.n_tup_del)
-    }));
-  } finally {
-    await client.end();
-  }
+  return result.rows.map((row) => ({
+    schema: row.schema,
+    name: row.name,
+    rows: parseInt(row.rows),
+    size: row.size,
+    seqScans: parseInt(row.seq_scan),
+    idxScans: parseInt(row.idx_scan),
+    nTupIns: parseInt(row.n_tup_ins),
+    nTupUpd: parseInt(row.n_tup_upd),
+    nTupDel: parseInt(row.n_tup_del)
+  }));
 }
 
 export interface PgExtension {
@@ -89,20 +131,15 @@ export interface PgExtension {
   installed_version: string;
 }
 
-export async function getExtensions(connString: string): Promise<PgExtension[]> {
-  const client = await getTargetDbConnection(connString);
-  try {
-    const result = await client.query('SELECT name, default_version, installed_version FROM pg_available_extensions');
+export async function getExtensions(client: ClientBase): Promise<PgExtension[]> {
+  const result = await client.query('SELECT name, default_version, installed_version FROM pg_available_extensions');
 
-    // Sort installed extensions to the top
-    return result.rows.sort((a, b) => {
-      if (a.installed_version && !b.installed_version) return -1;
-      if (!a.installed_version && b.installed_version) return 1;
-      return a.name.localeCompare(b.name);
-    });
-  } finally {
-    await client.end();
-  }
+  // Sort installed extensions to the top
+  return result.rows.sort((a, b) => {
+    if (a.installed_version && !b.installed_version) return -1;
+    if (!a.installed_version && b.installed_version) return 1;
+    return a.name.localeCompare(b.name);
+  });
 }
 
 export interface PerformanceSetting {
@@ -113,10 +150,8 @@ export interface PerformanceSetting {
   description: string;
 }
 
-export async function getPerformanceSettings(connString: string): Promise<PerformanceSetting[]> {
-  const client = await getTargetDbConnection(connString);
-  try {
-    const result = await client.query(`
+export async function getPerformanceSettings(client: ClientBase): Promise<PerformanceSetting[]> {
+  const result = await client.query(`
       SELECT 
         name,
         setting,
@@ -145,16 +180,11 @@ export async function getPerformanceSettings(connString: string): Promise<Perfor
         'huge_pages'
       )
     `);
-    return result.rows;
-  } finally {
-    await client.end();
-  }
+  return result.rows;
 }
 
-export async function getVacuumSettings(connString: string): Promise<PerformanceSetting[]> {
-  const client = await getTargetDbConnection(connString);
-  try {
-    const result = await client.query(`
+export async function getVacuumSettings(client: ClientBase): Promise<PerformanceSetting[]> {
+  const result = await client.query(`
       SELECT 
         name,
         setting,
@@ -171,10 +201,7 @@ export async function getVacuumSettings(connString: string): Promise<Performance
         'track_counts'
       );
     `);
-    return result.rows;
-  } finally {
-    await client.end();
-  }
+  return result.rows;
 }
 
 export interface ActiveQuery {
@@ -186,10 +213,8 @@ export interface ActiveQuery {
   wait_event: string | null;
 }
 
-export async function getCurrentActiveQueries(connString: string): Promise<ActiveQuery[]> {
-  const client = await getTargetDbConnection(connString);
-  try {
-    const result = await client.query(`
+export async function getCurrentActiveQueries(client: ClientBase): Promise<ActiveQuery[]> {
+  const result = await client.query(`
       SELECT 
         pid,
         state,
@@ -203,10 +228,7 @@ export async function getCurrentActiveQueries(connString: string): Promise<Activ
       ORDER BY duration DESC 
       LIMIT 500;
     `);
-    return result.rows;
-  } finally {
-    await client.end();
-  }
+  return result.rows;
 }
 
 export interface BlockedQuery {
@@ -217,10 +239,8 @@ export interface BlockedQuery {
   blocked_duration: number;
 }
 
-export async function getQueriesWaitingOnLocks(connString: string): Promise<BlockedQuery[]> {
-  const client = await getTargetDbConnection(connString);
-  try {
-    const result = await client.query(`
+export async function getQueriesWaitingOnLocks(client: ClientBase): Promise<BlockedQuery[]> {
+  const result = await client.query(`
       WITH blocked_queries AS (
         SELECT 
           blocked.pid as blocked_pid,
@@ -247,10 +267,7 @@ export async function getQueriesWaitingOnLocks(connString: string): Promise<Bloc
       )
       SELECT * FROM blocked_queries ORDER BY blocked_duration DESC;
     `);
-    return result.rows;
-  } finally {
-    await client.end();
-  }
+  return result.rows;
 }
 
 export interface VacuumStats {
@@ -265,10 +282,8 @@ export interface VacuumStats {
   modifications_since_analyze: number;
 }
 
-export async function getVacuumStats(connString: string): Promise<VacuumStats[]> {
-  const client = await getTargetDbConnection(connString);
-  try {
-    const result = await client.query(`
+export async function getVacuumStats(client: ClientBase): Promise<VacuumStats[]> {
+  const result = await client.query(`
       SELECT
         schemaname,
         relname as table_name,
@@ -283,10 +298,7 @@ export async function getVacuumStats(connString: string): Promise<VacuumStats[]>
       ORDER BY n_dead_tup DESC
       LIMIT 50;
     `);
-    return result.rows;
-  } finally {
-    await client.end();
-  }
+  return result.rows;
 }
 
 export interface ConnectionsStats {
@@ -296,12 +308,10 @@ export interface ConnectionsStats {
   connections_utilization_pctg: number;
 }
 
-export async function getConnectionsStats(connString: string): Promise<ConnectionsStats[]> {
-  const client = await getTargetDbConnection(connString);
-  try {
-    const result = await client.query(`
-SELECT
-    A.total_connections,
+export async function getConnectionsStats(client: ClientBase): Promise<ConnectionsStats[]> {
+  const result = await client.query(`
+    SELECT
+        A.total_connections,
     A.non_idle_connections,
     B.max_connections,
     round((100 * A.total_connections::numeric / B.max_connections::numeric), 2) connections_utilization_pctg
@@ -309,10 +319,7 @@ FROM
     (select count(1) as total_connections, sum(case when state!='idle' then 1 else 0 end) as non_idle_connections from pg_stat_activity) A,
     (select setting as max_connections from pg_settings where name='max_connections') B;
 `);
-    return result.rows;
-  } finally {
-    await client.end();
-  }
+  return result.rows;
 }
 
 export interface ConnectionDetails {
@@ -325,10 +332,8 @@ export interface ConnectionDetails {
   wait_event: string;
 }
 
-export async function getConnectionsGroups(connString: string): Promise<ConnectionDetails[]> {
-  const client = await getTargetDbConnection(connString);
-  try {
-    const result = await client.query(`
+export async function getConnectionsGroups(client: ClientBase): Promise<ConnectionDetails[]> {
+  const result = await client.query(`
 SELECT 
     count(*) AS total_connections,
     state,
@@ -346,22 +351,14 @@ GROUP BY
     wait_event_type, 
     wait_event
 ORDER BY total_connections DESC;`);
-    return result.rows;
-  } finally {
-    await client.end();
-  }
+  return result.rows;
 }
 
-export async function getOldestIdleConnections(connString: string): Promise<ConnectionDetails[]> {
-  const client = await getTargetDbConnection(connString);
-  try {
-    const result = await client.query(`
+export async function getOldestIdleConnections(client: ClientBase): Promise<ConnectionDetails[]> {
+  const result = await client.query(`
       SELECT * FROM pg_stat_activity WHERE state = 'idle' ORDER BY query_start ASC LIMIT 10;
     `);
-    return result.rows;
-  } finally {
-    await client.end();
-  }
+  return result.rows;
 }
 
 interface SlowQuery {
@@ -372,10 +369,8 @@ interface SlowQuery {
   query: string;
 }
 
-export async function getSlowQueries(connString: string, thresholdMs: number): Promise<SlowQuery[]> {
-  const client = await getTargetDbConnection(connString);
-  try {
-    const query = `
+export async function getSlowQueries(client: ClientBase, thresholdMs: number): Promise<SlowQuery[]> {
+  const query = `
     SELECT 
       calls,
       round(max_exec_time/1000) max_exec_secs,
@@ -387,15 +382,11 @@ export async function getSlowQueries(connString: string, thresholdMs: number): P
     ORDER BY total_exec_time DESC 
     LIMIT 10;
   `;
-    const result = await client.query(query, [thresholdMs]);
-    return result.rows;
-  } finally {
-    await client.end();
-  }
+  const result = await client.query(query, [thresholdMs]);
+  return result.rows;
 }
 
-export async function explainQuery(connString: string, schema: string, query: string): Promise<string> {
-  const client = await getTargetDbConnection(connString);
+export async function explainQuery(client: ClientBase, schema: string, query: string): Promise<string> {
   if (query.includes('$1') || query.includes('$2') || query.includes('$3') || query.includes('$4')) {
     return 'The query seems to contain placeholders ($1, $2, etc). Replace them with actual values and try again.';
   }
@@ -414,11 +405,10 @@ export async function explainQuery(connString: string, schema: string, query: st
     toReturn = 'I could not run EXPLAIN on that query. Try a different method.';
   }
   await client.query('ROLLBACK');
-  await client.end();
   return toReturn;
 }
 
-export async function describeTable(connString: string, schema: string, table: string): Promise<string> {
+export async function describeTable(client: ClientBase, schema: string, table: string): Promise<string> {
   console.log('schema', schema);
   console.log('table', table);
   // Get column information
@@ -462,47 +452,37 @@ export async function describeTable(connString: string, schema: string, table: s
     ORDER BY
       i.relname;
   `;
-  const client = await getTargetDbConnection(connString);
-  try {
-    const columns = await client.query(columnQuery, [schema, table]);
-    const indexes = await client.query(indexQuery, [table, schema]);
+  const columns = await client.query(columnQuery, [schema, table]);
+  const indexes = await client.query(indexQuery, [table, schema]);
 
-    let description = `Table: ${schema}.${table}\n\nColumns:\n`;
+  let description = `Table: ${schema}.${table}\n\nColumns:\n`;
 
-    columns.rows.forEach((col: any) => {
-      description += `${col.column_name} ${col.data_type}`;
-      description += col.is_nullable === 'YES' ? ' NULL' : ' NOT NULL';
-      if (col.column_default) {
-        description += ` DEFAULT ${col.column_default}`;
-      }
-      description += '\n';
-    });
+  columns.rows.forEach((col: any) => {
+    description += `${col.column_name} ${col.data_type}`;
+    description += col.is_nullable === 'YES' ? ' NULL' : ' NOT NULL';
+    if (col.column_default) {
+      description += ` DEFAULT ${col.column_default}`;
+    }
+    description += '\n';
+  });
 
-    description += '\nIndexes:\n';
-    indexes.rows.forEach((idx: any) => {
-      description += `${idx.index_name} ON (${idx.column_names})`;
-      if (idx.is_primary) {
-        description += ' PRIMARY KEY';
-      } else if (idx.is_unique) {
-        description += ' UNIQUE';
-      }
-      description += '\n';
-    });
+  description += '\nIndexes:\n';
+  indexes.rows.forEach((idx: any) => {
+    description += `${idx.index_name} ON (${idx.column_names})`;
+    if (idx.is_primary) {
+      description += ' PRIMARY KEY';
+    } else if (idx.is_unique) {
+      description += ' UNIQUE';
+    }
+    description += '\n';
+  });
 
-    return description;
-  } catch (error) {
-    console.error('Error describing table', error);
-    return `Could not describe table ${schema}.${table}`;
-  } finally {
-    await client.end();
-  }
+  return description;
 }
 
-export async function findTableSchema(connString: string, table: string): Promise<string> {
-  const client = await getTargetDbConnection(connString);
-  try {
-    const result = await client.query(
-      `
+export async function findTableSchema(client: ClientBase, table: string): Promise<string> {
+  const result = await client.query(
+    `
       SELECT 
       schemaname as schema,
       pg_total_relation_size(schemaname || '.' || tablename) as total_bytes
@@ -511,13 +491,10 @@ export async function findTableSchema(connString: string, table: string): Promis
     ORDER BY total_bytes DESC
     LIMIT 1;
   `,
-      [table]
-    );
-    if (result.rows.length === 0) {
-      return 'public'; // Default to public if no match found
-    }
-    return result.rows[0].schema;
-  } finally {
-    await client.end();
+    [table]
+  );
+  if (result.rows.length === 0) {
+    return 'public'; // Default to public if no match found
   }
+  return result.rows[0].schema;
 }

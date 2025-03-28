@@ -1,11 +1,17 @@
 import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
-import { auth } from '~/auth';
+import pg from 'pg';
 import { env } from '../env/server';
 import { authenticatedUser } from './schema';
 
-const pool = new Pool({
+// Global variable to store the user ID provider function
+let userIdProvider: (() => Promise<string | undefined>) | null = null;
+
+export function setUserIdProvider(provider: () => Promise<string | undefined>) {
+  userIdProvider = provider;
+}
+
+const pool = new pg.Pool({
   connectionString: env.DATABASE_URL,
   max: 20
 });
@@ -14,8 +20,12 @@ export async function queryDb<T>(
   callback: (params: { db: ReturnType<typeof drizzle>; userId: string }) => Promise<T>,
   { admin = false, asUserId }: { admin?: boolean; asUserId?: string } = {}
 ): Promise<T> {
-  const session = await auth();
-  const userId = asUserId ?? session?.user?.id ?? '';
+  if (!userIdProvider) {
+    throw new Error('User ID provider not configured');
+  }
+
+  const sessionUserId = await userIdProvider();
+  const userId = asUserId ?? sessionUserId ?? '';
 
   // We'll use userId in raw SQL, so validate that it only contains valid UUID characters
   if (userId !== '' && userId !== 'local' && !/^[0-9a-f-]*$/i.test(userId)) {

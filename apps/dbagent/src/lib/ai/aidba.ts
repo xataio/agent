@@ -30,10 +30,18 @@ Then use the contents of the playbook as an action plan. Execute the plan step b
 At the end of your execution, print a summary of the results.
 `;
 
-export async function getTools(connection: Connection, asUserId?: string): Promise<Record<string, Tool>> {
+export async function getTools(
+  connection: Connection,
+  asUserId?: string
+): Promise<{ tools: Record<string, Tool>; end: () => Promise<void> }> {
   const dbTools = getDBSQLTools(connection.connectionString);
   const clusterTools = getDBClusterTools(connection, asUserId);
-  return mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools);
+  return {
+    tools: mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools),
+    end: async () => {
+      await dbTools.end();
+    }
+  };
 }
 
 export function getModelInstance(model: string): LanguageModelV1 {

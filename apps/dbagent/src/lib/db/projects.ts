@@ -30,6 +30,18 @@ export async function createProject(project: Omit<Project, 'id'>): Promise<strin
   });
 }
 
+export async function getProjectByName(name: string, asUserId?: string): Promise<Project | null> {
+  return await queryDb(
+    async ({ db }) => {
+      const results = await db.select().from(projects).where(eq(projects.name, name));
+      return results[0] ?? null;
+    },
+    {
+      asUserId: asUserId
+    }
+  );
+}
+
 export async function getProjectById(id: string, asUserId?: string): Promise<Project | null> {
   return await queryDb(
     async ({ db }) => {

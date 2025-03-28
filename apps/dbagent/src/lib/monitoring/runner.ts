@@ -32,22 +32,27 @@ async function runModelPlaybook({
     createdAt: new Date()
   });
 
-  const result = await generateText({
-    model: modelInstance,
-    system: monitoringSystemPrompt,
-    messages: messages,
-    tools: await getTools(connection, schedule.userId),
-    maxSteps: 20
-  });
+  const { tools, end } = await getTools(connection, schedule.userId);
+  try {
+    const result = await generateText({
+      model: modelInstance,
+      system: monitoringSystemPrompt,
+      maxSteps: 20,
+      tools,
+      messages
+    });
 
-  messages.push({
-    id: generateId(),
-    role: 'assistant',
-    content: result.text,
-    createdAt: new Date()
-  });
+    messages.push({
+      id: generateId(),
+      role: 'assistant',
+      content: result.text,
+      createdAt: new Date()
+    });
 
-  return result;
+    return result;
+  } finally {
+    await end();
+  }
 }
 
 async function decideNotificationLevel(messages: Message[], modelInstance: LanguageModelV1) {
