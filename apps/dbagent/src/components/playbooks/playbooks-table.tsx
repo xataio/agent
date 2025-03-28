@@ -5,8 +5,9 @@ import { BookOpenIcon, ClockIcon, PencilIcon, PlayIcon, TrashIcon } from 'lucide
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { customPlaybook } from '~/lib/tools/custom-playbooks';
 import { Playbook, getBuiltInPlaybooks } from '~/lib/tools/playbooks';
-import { actionDeletePlaybook, actionGetCustomPlaybooks, customPlaybook } from './action';
+import { actionDeletePlaybook, actionGetCustomPlaybooks } from './action';
 
 export function PlaybooksTable() {
   const router = useRouter();
@@ -28,8 +29,9 @@ export function PlaybooksTable() {
   };
 
   //delete playbook action
-  const handleDeletePlaybook = async (playbookName: string) => {
-    await actionDeletePlaybook(playbookName);
+  //remove this and add it to the edit function later
+  const handleDeletePlaybook = async (id: string) => {
+    await actionDeletePlaybook(id);
     void loadPlaybooks();
   };
 

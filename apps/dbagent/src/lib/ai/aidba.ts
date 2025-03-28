@@ -3,6 +3,7 @@ import { deepseek } from '@ai-sdk/deepseek';
 import { openai } from '@ai-sdk/openai';
 import { LanguageModelV1, Tool } from 'ai';
 import { z } from 'zod';
+import { actionGetCustomPlaybookDescriptions, actionListCustomPlaybooksNames } from '~/components/playbooks/action';
 import {
   getPerformanceAndVacuumSettings,
   getPostgresExtensions,
@@ -197,14 +198,25 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
         name: z.string()
       }),
       execute: async ({ name }) => {
-        return getPlaybook(name);
+        const getCustomPlaybookDescription = await actionGetCustomPlaybookDescriptions(
+          connection.projectId,
+          connection.id
+        );
+        const playBookDescription = getPlaybook(name);
+        const description =
+          getCustomPlaybookDescription || (playBookDescription ?? `Error: Playbook ${name} not found`);
+
+        return description;
       }
     },
     listPlaybooks: {
       description: `List the available playbooks.`,
       parameters: z.object({}),
       execute: async () => {
-        return listPlaybooks();
+        const customPlaybookNames = await actionListCustomPlaybooksNames(connection.projectId);
+        const playbookNames = listPlaybooks();
+
+        return [...playbookNames, ...customPlaybookNames];
       }
     }
   };
