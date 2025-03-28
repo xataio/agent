@@ -51,7 +51,7 @@ We provide docker images for the agent itself. The only other dependency is a Po
 
 We provide a docker-compose file to start the agent and the Postgres database.
 
-Edit the `.env.production` file in the root of the project. You need to set the `PUBLIC_URL` and the API key for at least OpenAI.
+Edit the `.env.production` file in the root of the project. You need to set the `PUBLIC_URL`, `DATABASE_URL`, and the API key for at least OpenAI.
 
 Start a local instance via docker compose:
 
