@@ -48,7 +48,11 @@ Then use the contents of the playbook as an action plan. Execute the plan step b
 At the end of your execution, print a summary of the results.
 `;
 
-export async function getTools(connection: Connection, asUserId?: string): Promise<Record<string, Tool>> {
+export async function getTools(
+  connection: Connection,
+  asUserId?: string,
+  asProjectId?: string
+): Promise<Record<string, Tool>> {
   return {
     getCurrentTime: {
       description: 'Get the current time',
@@ -198,25 +202,35 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
         name: z.string()
       }),
       execute: async ({ name }) => {
-        const getCustomPlaybookDescription = await actionGetCustomPlaybookDescriptions(
-          connection.projectId,
-          connection.id
-        );
         const playBookDescription = getPlaybook(name);
-        const description =
-          getCustomPlaybookDescription || (playBookDescription ?? `Error: Playbook ${name} not found`);
 
-        return description;
+        if (asProjectId && asUserId) {
+          const getCustomPlaybookDescription = await actionGetCustomPlaybookDescriptions(asProjectId, name, asUserId);
+
+          if (getCustomPlaybookDescription !== null) {
+            return getCustomPlaybookDescription;
+          }
+        }
+
+        console.log('playBookDescription', playBookDescription);
+        return playBookDescription;
       }
     },
     listPlaybooks: {
       description: `List the available playbooks.`,
       parameters: z.object({}),
       execute: async () => {
-        const customPlaybookNames = await actionListCustomPlaybooksNames(connection.projectId);
         const playbookNames = listPlaybooks();
 
-        return [...playbookNames, ...customPlaybookNames];
+        if (asProjectId && asUserId) {
+          const customPlaybookNames = await actionListCustomPlaybooksNames(asProjectId, asUserId);
+          if (customPlaybookNames !== null) {
+            return [...playbookNames, ...customPlaybookNames];
+          }
+        }
+
+        console.log('playbookNames', playbookNames);
+        return playbookNames;
       }
     }
   };
