@@ -41,7 +41,7 @@ export async function POST(req: Request) {
       model: modelInstance,
       messages,
       system: context,
-      tools: await getTools(connection, connection.id, connection.projectId),
+      tools: await getTools(connection),
       maxSteps: 20,
       toolCallStreaming: true
     });

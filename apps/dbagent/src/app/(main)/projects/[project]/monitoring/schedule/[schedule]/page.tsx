@@ -12,7 +12,7 @@ export default async function Page({ params }: { params: Promise<PageParams> }) 
   const { project, schedule } = await params;
 
   const builtInPlaybooks = await actionListPlaybooks();
-  const customPlaybooks = await actionListCustomPlaybooksNames(project);
+  const customPlaybooks = (await actionListCustomPlaybooksNames(project)) ?? [];
   const playbooks = [...builtInPlaybooks, ...customPlaybooks];
 
   const connections = await listConnections(project);

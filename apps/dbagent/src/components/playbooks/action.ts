@@ -26,6 +26,7 @@ export async function actionGetCustomPlaybooks(projectId?: string, asUserId?: st
 
   //this has to go into tools folder under playbooks or customplaybooks
   //goes into a db/custom-playbooks folder
+  //method need projectId and userId as a parameter
   const customPlaybooks = await queryDb(
     async ({ db }) => {
       const results = await db.select().from(playbooks).where(eq(playbooks.projectId, projectId));
@@ -76,20 +77,18 @@ export async function actionGetCustomPlaybook(
 //get a list of custom playbook names
 export async function actionListCustomPlaybooksNames(projectId: string, asUserId?: string): Promise<string[] | null> {
   const customPlaybooks = await actionGetCustomPlaybooks(projectId, asUserId);
-  if (customPlaybooks.length === 0) {
-    return null;
-  }
-  return customPlaybooks.map((playbook) => playbook.name);
+  const customPlaybooksNames = customPlaybooks.map((playbook) => playbook.name);
+  return customPlaybooksNames.length === 0 ? null : customPlaybooksNames;
 }
 
 //get a custom playbook descriptions by name
-export async function actionGetCustomPlaybookDescriptions(
+export async function actionGetCustomPlaybookContent(
   projectId: string,
   name: string,
   asUserId?: string
 ): Promise<string | null> {
   const playbookWithDesc = await actionGetCustomPlaybook(projectId, name, asUserId);
-  return playbookWithDesc?.description ?? null;
+  return playbookWithDesc?.content ?? null;
 }
 
 //playbook db insert

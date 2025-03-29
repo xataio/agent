@@ -3,7 +3,7 @@ import { deepseek } from '@ai-sdk/deepseek';
 import { openai } from '@ai-sdk/openai';
 import { LanguageModelV1, Tool } from 'ai';
 import { z } from 'zod';
-import { actionGetCustomPlaybookDescriptions, actionListCustomPlaybooksNames } from '~/components/playbooks/action';
+import { actionGetCustomPlaybookContent, actionListCustomPlaybooksNames } from '~/components/playbooks/action';
 import {
   getPerformanceAndVacuumSettings,
   getPostgresExtensions,
@@ -203,13 +203,12 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
       }),
       execute: async ({ name }) => {
         const playBookDescription = getPlaybook(name);
+        const projectId = asProjectId || connection.projectId;
+        const getCustomPlaybookContent = await actionGetCustomPlaybookContent(projectId, name, asUserId);
+        console.log('getCustomPlaybookContent', getCustomPlaybookContent);
 
-        if (asProjectId && asUserId) {
-          const getCustomPlaybookDescription = await actionGetCustomPlaybookDescriptions(asProjectId, name, asUserId);
-
-          if (getCustomPlaybookDescription !== null) {
-            return getCustomPlaybookDescription;
-          }
+        if (getCustomPlaybookContent !== null) {
+          return getCustomPlaybookContent;
         }
 
         console.log('playBookDescription', playBookDescription);
@@ -221,12 +220,12 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
       parameters: z.object({}),
       execute: async () => {
         const playbookNames = listPlaybooks();
+        const projectId = asProjectId || connection.projectId;
+        const customPlaybookNames = await actionListCustomPlaybooksNames(projectId, asUserId);
+        console.log('customPlaybookNames', customPlaybookNames);
 
-        if (asProjectId && asUserId) {
-          const customPlaybookNames = await actionListCustomPlaybooksNames(asProjectId, asUserId);
-          if (customPlaybookNames !== null) {
-            return [...playbookNames, ...customPlaybookNames];
-          }
+        if (customPlaybookNames !== null) {
+          return [...playbookNames, ...customPlaybookNames];
         }
 
         console.log('playbookNames', playbookNames);
