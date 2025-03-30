@@ -87,8 +87,9 @@ export async function fetchCloudSQLInstanceDetails(
     return { success: false, message: 'GCP integration not found', data: null };
   }
   const client = initializeCloudSQLClient({ clientEmail: gcp.clientEmail, privateKey: gcp.privateKey });
+  console.log('instance', instance);
   const instanceDetails = await getCloudSQLInstanceInfo(instance.name, client, gcp.gcpProjectId);
-  // This would fetch detailed information about a specific Cloud SQL instance
+  console.log('instanceDetails', instanceDetails);
   return {
     success: true,
     message: 'Cloud SQL instance details fetched successfully',

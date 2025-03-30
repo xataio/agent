@@ -16,6 +16,12 @@ export interface CloudSQLInstanceInfo {
   storageSize: number;
   multiAZ: boolean;
   primaryInstance?: string;
+  connectionName?: string;
+  settings?: {
+    tier: string;
+    availabilityType: string;
+    dataDiskSizeGb: string;
+  };
 }
 
 export interface GCPCredentials {
@@ -69,7 +75,15 @@ export async function listCloudSQLInstances(
         databaseVersion: instance.databaseVersion || '',
         storageSize: Number(instance.settings?.dataDiskSizeGb || 0),
         multiAZ: instance.settings?.availabilityType === 'REGIONAL',
-        primaryInstance: instance.masterInstanceName ? instance.masterInstanceName : undefined
+        primaryInstance: instance.masterInstanceName ? instance.masterInstanceName : undefined,
+        connectionName: instance.connectionName || undefined,
+        settings: instance.settings
+          ? {
+              tier: instance.settings.tier || '',
+              availabilityType: instance.settings.availabilityType || '',
+              dataDiskSizeGb: String(instance.settings.dataDiskSizeGb || '0')
+            }
+          : undefined
       }));
   } catch (error) {
     console.error('Error fetching CloudSQL instances:', error);
@@ -109,7 +123,15 @@ export async function getCloudSQLInstanceInfo(
       databaseVersion: instance.databaseVersion || '',
       storageSize: Number(instance.settings?.dataDiskSizeGb || 0),
       multiAZ: instance.settings?.availabilityType === 'REGIONAL',
-      primaryInstance: instance.masterInstanceName ? instance.masterInstanceName : undefined
+      primaryInstance: instance.masterInstanceName ? instance.masterInstanceName : undefined,
+      connectionName: instance.connectionName || undefined,
+      settings: instance.settings
+        ? {
+            tier: instance.settings.tier || '',
+            availabilityType: instance.settings.availabilityType || '',
+            dataDiskSizeGb: String(instance.settings.dataDiskSizeGb || '0')
+          }
+        : undefined
     };
   } catch (error) {
     console.error('Error fetching CloudSQL instance info:', error);

@@ -25,12 +25,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Connection } from '~/lib/db/connections';
 import { CloudSQLInstanceInfo } from '~/lib/gcp/cloudsql';
-import {
-  CloudSQLInstanceDetailedInfo,
-  fetchCloudSQLInstanceDetails,
-  fetchCloudSQLInstances,
-  getGCPIntegration
-} from './actions';
+import { fetchCloudSQLInstanceDetails, fetchCloudSQLInstances, getGCPIntegration } from './actions';
 
 export function GCPIntegration({ projectId, connections }: { projectId: string; connections: Connection[] }) {
   const [gcpProjectId, setGcpProjectId] = useState('');
@@ -38,7 +33,7 @@ export function GCPIntegration({ projectId, connections }: { projectId: string; 
   const [privateKey, setPrivateKey] = useState('');
   const [cloudSQLInstances, setCloudSQLInstances] = useState<CloudSQLInstanceInfo[]>([]);
   const [selectedInstance, setSelectedInstance] = useState('');
-  const [instanceDetails, setInstanceDetails] = useState<CloudSQLInstanceDetailedInfo | null>(null);
+  const [instanceDetails, setInstanceDetails] = useState<CloudSQLInstanceInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -190,7 +185,7 @@ export function GCPIntegration({ projectId, connections }: { projectId: string; 
 }
 
 // Component to display Cloud SQL instance details
-function CloudSQLInstanceCard({ instanceInfo }: { instanceInfo: CloudSQLInstanceDetailedInfo }) {
+function CloudSQLInstanceCard({ instanceInfo }: { instanceInfo: CloudSQLInstanceInfo }) {
   return (
     <div className="border-border mb-6 rounded-lg border p-4">
       <h3 className="mb-2 text-lg font-semibold">{instanceInfo.name}</h3>
@@ -213,15 +208,15 @@ function CloudSQLInstanceCard({ instanceInfo }: { instanceInfo: CloudSQLInstance
         </div>
         <div>
           <p className="text-muted-foreground text-sm">Machine Type</p>
-          <p className="text-sm">{instanceInfo.settings.tier}</p>
+          <p className="text-sm">{instanceInfo.settings?.tier || '-'}</p>
         </div>
         <div>
           <p className="text-muted-foreground text-sm">Storage</p>
-          <p className="text-sm">{instanceInfo.settings.dataDiskSizeGb} GB</p>
+          <p className="text-sm">{instanceInfo.settings?.dataDiskSizeGb || '0'} GB</p>
         </div>
         <div>
           <p className="text-muted-foreground text-sm">High Availability</p>
-          <p className="text-sm">{instanceInfo.settings.availabilityType}</p>
+          <p className="text-sm">{instanceInfo.settings?.availabilityType || '-'}</p>
         </div>
         <div>
           <p className="text-muted-foreground text-sm">Connection Name</p>
