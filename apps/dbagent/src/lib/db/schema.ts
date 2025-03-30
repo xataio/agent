@@ -273,7 +273,8 @@ export const projects = pgTable(
   'projects',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
-    name: text('name').notNull()
+    name: text('name').notNull(),
+    cloudProvider: text('cloud_provider').default('aws').notNull()
   },
   () => [
     pgPolicy('projects_view_policy', {

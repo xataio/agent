@@ -1,0 +1,1 @@
+ALTER TABLE "projects" ADD COLUMN "cloud_provider" text DEFAULT 'aws' NOT NULL;

@@ -7,6 +7,7 @@ import { projectMembers, projects } from './schema';
 export type Project = {
   id: string;
   name: string;
+  cloudProvider: string;
 };
 
 export async function generateProjectId(): Promise<string> {
