@@ -91,54 +91,6 @@ export async function listCloudSQLInstances(
   }
 }
 
-export async function getCloudSQLInstanceInfo(
-  instanceName: string,
-  client: sqladmin_v1beta4.Sqladmin,
-  projectId: string
-): Promise<CloudSQLInstanceInfo | null> {
-  try {
-    const response = await client.instances.get({
-      project: projectId,
-      instance: instanceName
-    });
-
-    const instance = response.data;
-
-    if (!instance) {
-      return null;
-    }
-
-    return {
-      name: instance.name || '',
-      id: instance.instanceType || '',
-      engine: 'postgres', // Assuming we're only interested in PostgreSQL
-      engineVersion: extractPostgresVersion(instance.databaseVersion || ''),
-      tier: instance.settings?.tier || '',
-      state: instance.state || '',
-      region: instance.region || '',
-      ipAddresses: (instance.ipAddresses || []).map((ip: sqladmin_v1beta4.Schema$IpMapping) => ({
-        type: ip.type || '',
-        ipAddress: ip.ipAddress || ''
-      })),
-      databaseVersion: instance.databaseVersion || '',
-      storageSize: Number(instance.settings?.dataDiskSizeGb || 0),
-      multiAZ: instance.settings?.availabilityType === 'REGIONAL',
-      primaryInstance: instance.masterInstanceName ? instance.masterInstanceName : undefined,
-      connectionName: instance.connectionName || undefined,
-      settings: instance.settings
-        ? {
-            tier: instance.settings.tier || '',
-            availabilityType: instance.settings.availabilityType || '',
-            dataDiskSizeGb: String(instance.settings.dataDiskSizeGb || '0')
-          }
-        : undefined
-    };
-  } catch (error) {
-    console.error('Error fetching CloudSQL instance info:', error);
-    return null;
-  }
-}
-
 // Helper function to extract the actual PostgreSQL version from GCP format
 function extractPostgresVersion(databaseVersion: string): string {
   // GCP format is like 'POSTGRES_14' or 'POSTGRES_9_6'

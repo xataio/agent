@@ -25,7 +25,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Connection } from '~/lib/db/connections';
 import { CloudSQLInstanceInfo } from '~/lib/gcp/cloudsql';
-import { fetchCloudSQLInstanceDetails, fetchCloudSQLInstances, getGCPIntegration } from './actions';
+import { fetchCloudSQLInstances, getGCPIntegration } from './actions';
 
 export function GCPIntegration({ projectId, connections }: { projectId: string; connections: Connection[] }) {
   const [gcpProjectId, setGcpProjectId] = useState('');
@@ -77,12 +77,7 @@ export function GCPIntegration({ projectId, connections }: { projectId: string; 
       return;
     }
     setSelectedInstance(instance.id);
-    try {
-      const details = await fetchCloudSQLInstanceDetails(projectId, instance);
-      setInstanceDetails(details.data);
-    } catch (error) {
-      toast('Error: Failed to fetch Cloud SQL instance details.');
-    }
+    setInstanceDetails(instance);
   };
 
   return (

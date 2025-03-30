@@ -1,12 +1,7 @@
 'use server';
 
 import { GcpIntegration, getIntegration, saveIntegration } from '~/lib/db/integrations';
-import {
-  CloudSQLInstanceInfo,
-  getCloudSQLInstanceInfo,
-  initializeCloudSQLClient,
-  listCloudSQLInstances
-} from '~/lib/gcp/cloudsql';
+import { CloudSQLInstanceInfo, initializeCloudSQLClient, listCloudSQLInstances } from '~/lib/gcp/cloudsql';
 
 export interface CloudSQLInstancesResponse {
   success: boolean;
@@ -69,30 +64,4 @@ export async function getGCPIntegration(
     console.error('Error fetching GCP integration:', error);
     return { success: false, message: 'Error fetching GCP integration', data: null };
   }
-}
-
-// Define the response type for fetchCloudSQLInstanceDetails
-export interface CloudSQLInstanceDetailsResponse {
-  success: boolean;
-  message: string;
-  data: CloudSQLInstanceInfo | null;
-}
-
-export async function fetchCloudSQLInstanceDetails(
-  projectId: string,
-  instance: CloudSQLInstanceInfo
-): Promise<CloudSQLInstanceDetailsResponse> {
-  const gcp = await getIntegration(projectId, 'gcp');
-  if (!gcp) {
-    return { success: false, message: 'GCP integration not found', data: null };
-  }
-  const client = initializeCloudSQLClient({ clientEmail: gcp.clientEmail, privateKey: gcp.privateKey });
-  console.log('instance', instance);
-  const instanceDetails = await getCloudSQLInstanceInfo(instance.name, client, gcp.gcpProjectId);
-  console.log('instanceDetails', instanceDetails);
-  return {
-    success: true,
-    message: 'Cloud SQL instance details fetched successfully',
-    data: instanceDetails
-  };
 }
