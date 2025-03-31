@@ -21,7 +21,7 @@
   "devDependencies": {
     "@eslint/compat": "^1.2.7",
     "@internal/tsconfig": "workspace:*",
-    "@types/node": "^22.13.11",
+    "@types/node": "^22.13.14",
     "@types/react": "^19.0.12",
     "eslint": "^9.23.0",
     "husky": "^9.1.7",
@@ -46,7 +46,8 @@
     "overrides": {
       "esbuild@<=0.24.2": ">=0.25.0",
       "prismjs@<1.30.0": ">=1.30.0",
-      "@babel/runtime@<7.26.10": ">=7.26.10"
+      "@babel/runtime@<7.26.10": ">=7.26.10",
+      "vite@>=6.1.0 <6.1.2": ">=6.1.2"
     }
   },
   "engines": {
