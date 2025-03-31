@@ -3,6 +3,7 @@ import { deepseek } from '@ai-sdk/deepseek';
 import { openai } from '@ai-sdk/openai';
 import { LanguageModelV1, Tool } from 'ai';
 import { Connection } from '~/lib/db/connections';
+import { getUserDBAccess } from '~/lib/db/db';
 import { commonToolset, getDBClusterTools, getDBSQLTools, mergeToolsets, playbookToolset } from './tools';
 
 export const commonSystemPrompt = `
@@ -34,8 +35,9 @@ export async function getTools(
   connection: Connection,
   asUserId?: string
 ): Promise<{ tools: Record<string, Tool>; end: () => Promise<void> }> {
+  const dbAccess = await getUserDBAccess(asUserId);
   const dbTools = getDBSQLTools(connection.connectionString);
-  const clusterTools = getDBClusterTools(connection, asUserId);
+  const clusterTools = getDBClusterTools(dbAccess, connection);
   return {
     tools: mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools),
     end: async () => {

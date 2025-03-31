@@ -1,6 +1,6 @@
 import { actionGetScheduleRun } from '~/components/chats/actions';
 import { ChatsUI } from '~/components/chats/chats-ui';
-import { listConnections } from '~/lib/db/connections';
+import { getProjectConnectionList } from '../actions';
 
 type PageParams = {
   project: string;
@@ -20,7 +20,7 @@ export default async function Page({
   const { project } = await params;
   const { runId } = await searchParams;
 
-  const connections = await listConnections(project);
+  const connections = await getProjectConnectionList(project);
   const scheduleRun = await actionGetScheduleRun(runId);
 
   return <ChatsUI connections={connections} scheduleRun={scheduleRun} />;

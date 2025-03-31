@@ -2,7 +2,7 @@ import { SidebarInset } from '@internal/components';
 import { notFound } from 'next/navigation';
 import { getCompletedTaskPercentage } from '~/components/onboarding/actions';
 import { SideNav } from '~/components/ui/side-nav';
-import { getProjectById } from '~/lib/db/projects';
+import { getProject } from './actions';
 
 type LayoutParams = {
   project: string;
@@ -17,7 +17,7 @@ export default async function Layout({
 }) {
   const { project: projectId } = await params;
 
-  const project = await getProjectById(projectId);
+  const project = await getProject(projectId);
   if (!project) {
     return notFound();
   }
