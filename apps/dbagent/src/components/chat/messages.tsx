@@ -3,8 +3,8 @@ import { UIMessage } from 'ai';
 import equal from 'fast-deep-equal';
 import { memo } from 'react';
 import { Vote } from '~/lib/db/schema';
+import { XataAgentLogo } from '../logo/xata-agent-logo';
 import { PreviewMessage, ThinkingMessage } from './message';
-import { Overview } from './overview';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 
 interface MessagesProps {
@@ -23,7 +23,11 @@ function PureMessages({ chatId, status, votes, messages, setMessages, reload, is
 
   return (
     <div ref={messagesContainerRef} className="flex min-w-0 flex-1 flex-col gap-6 overflow-y-scroll pt-4">
-      {messages.length === 0 && <Overview />}
+      {messages.length === 0 && (
+        <div className="flex h-full w-full items-center justify-center">
+          <XataAgentLogo size={160} />
+        </div>
+      )}
 
       {messages.map((message, index) => (
         <PreviewMessage

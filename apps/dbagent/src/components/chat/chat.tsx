@@ -7,7 +7,6 @@ import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { Vote } from '~/lib/db/schema';
 import { Artifact } from './artifact';
-import { ChatHeader } from './header';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 import { useArtifactSelector } from './use-artifact';
@@ -48,9 +47,7 @@ export function Chat({
 
   return (
     <>
-      <div className="bg-background flex h-dvh min-w-0 flex-col">
-        <ChatHeader selectedModelId={selectedChatModel} />
-
+      <div className="bg-background flex h-full min-w-0 flex-col">
         <Messages
           chatId={id}
           status={status}

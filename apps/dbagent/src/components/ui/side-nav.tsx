@@ -94,9 +94,14 @@ export function SideNav({ className, projectId, onboardingComplete }: SideNavPro
         }
       ]
     },
-
     {
       title: 'Chats',
+      url: `${basePath}/chats-2`,
+      icon: Bot,
+      className: 'text-sm'
+    },
+    {
+      title: 'Old Chats',
       url: `${basePath}/chats`,
       icon: Bot,
       className: 'text-sm'
