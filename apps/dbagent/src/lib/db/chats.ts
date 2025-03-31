@@ -1,31 +1,26 @@
 import 'server-only';
 
-import { genSaltSync, hashSync } from 'bcrypt-ts';
 import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm';
 
 import { ArtifactKind } from '~/components/chat/artifact';
 import { queryDb } from './db';
 import { chats, documents, Message, messages, type Suggestion, suggestions, votes } from './schema';
 
-export async function getUser(email: string): Promise<Array<User>> {
-  return queryDb(async ({ db }) => {
-    return await db.select().from(user).where(eq(user.email, email));
-  });
-}
-
-export async function createUser(email: string, password: string) {
-  const salt = genSaltSync(10);
-  const hash = hashSync(password, salt);
-
-  return queryDb(async ({ db }) => {
-    return await db.insert(user).values({ email, password: hash });
-  });
-}
-
-export async function saveChat({ id, userId, title }: { id: string; userId: string; title: string }) {
+export async function saveChat({
+  id,
+  projectId,
+  userId,
+  title
+}: {
+  id: string;
+  projectId: string;
+  userId: string;
+  title: string;
+}) {
   return queryDb(async ({ db }) => {
     return await db.insert(chats).values({
       id,
+      projectId,
       createdAt: new Date(),
       userId,
       title
@@ -70,10 +65,14 @@ export async function getMessagesByChatId({ id }: { id: string }) {
 export async function voteMessage({
   chatId,
   messageId,
+  projectId,
+  userId,
   type
 }: {
   chatId: string;
   messageId: string;
+  userId: string;
+  projectId: string;
   type: 'up' | 'down';
 }) {
   return queryDb(async ({ db }) => {
@@ -91,6 +90,8 @@ export async function voteMessage({
     return await db.insert(votes).values({
       chatId,
       messageId,
+      projectId,
+      userId,
       isUpvoted: type === 'up'
     });
   });
@@ -107,13 +108,15 @@ export async function saveDocument({
   title,
   kind,
   content,
-  userId
+  userId,
+  projectId
 }: {
   id: string;
   title: string;
   kind: ArtifactKind;
   content: string;
   userId: string;
+  projectId: string;
 }) {
   return queryDb(async ({ db }) => {
     return await db.insert(documents).values({
@@ -122,7 +125,8 @@ export async function saveDocument({
       kind,
       content,
       userId,
-      createdAt: new Date()
+      createdAt: new Date(),
+      projectId
     });
   });
 }

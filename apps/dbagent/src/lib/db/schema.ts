@@ -506,6 +506,7 @@ export const suggestions = pgTable(
     id: uuid('id').defaultRandom().notNull(),
     projectId: uuid('project_id').notNull(),
     documentId: uuid('document_id').notNull(),
+    documentCreatedAt: timestamp('document_created_at').notNull(),
     originalText: text('original_text').notNull(),
     suggestedText: text('suggested_text').notNull(),
     description: text('description'),

@@ -2,6 +2,8 @@ import { Button, toast, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger
 import type { Message } from 'ai';
 import equal from 'fast-deep-equal';
 import { CopyIcon } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { useParams } from 'next/navigation';
 import { memo } from 'react';
 import { useSWRConfig } from 'swr';
 import { useCopyToClipboard } from 'usehooks-ts';
@@ -19,6 +21,9 @@ export function PureMessageActions({
   vote: Vote | undefined;
   isLoading: boolean;
 }) {
+  const { data: session } = useSession();
+  const { project: projectId } = useParams<{ project: string }>();
+
   const { mutate } = useSWRConfig();
   const [_, copyToClipboard] = useCopyToClipboard();
 
@@ -85,9 +90,9 @@ export function PureMessageActions({
                         return [
                           ...votesWithoutCurrent,
                           {
-                            projectId: message.projectId,
+                            projectId,
                             createdAt: new Date(),
-                            userId: message.userId,
+                            userId: session?.user?.id!,
                             chatId,
                             messageId: message.id,
                             isUpvoted: true
@@ -139,6 +144,9 @@ export function PureMessageActions({
                         return [
                           ...votesWithoutCurrent,
                           {
+                            projectId,
+                            createdAt: new Date(),
+                            userId: session?.user?.id!,
                             chatId,
                             messageId: message.id,
                             isUpvoted: false

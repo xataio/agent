@@ -37,7 +37,6 @@
     "@tanstack/react-query": "^5.71.0",
     "@vercel/functions": "^2.0.0",
     "ai": "^4.2.8",
-    "bcrypt-ts": "^6.0.0",
     "bytes": "^3.1.2",
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.1",
