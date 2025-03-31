@@ -26,6 +26,8 @@ import { useEffect, useState } from 'react';
 import { Connection } from '~/lib/db/connections';
 import { CloudSQLInstanceInfo } from '~/lib/gcp/cloudsql';
 import { fetchCloudSQLInstances, getGCPIntegration } from './actions';
+import { DatabaseConnectionSelector } from './db-instance-connector';
+import { CloudSQLInstanceCard } from './gcp-instance-card';
 
 export function GCPIntegration({ projectId, connections }: { projectId: string; connections: Connection[] }) {
   const [gcpProjectId, setGcpProjectId] = useState('');
@@ -76,6 +78,7 @@ export function GCPIntegration({ projectId, connections }: { projectId: string; 
       toast('Error: Selected instance not found');
       return;
     }
+    console.log('Selected instance', instance);
     setSelectedInstance(instance.id);
     setInstanceDetails(instance);
   };
@@ -165,96 +168,17 @@ export function GCPIntegration({ projectId, connections }: { projectId: string; 
         )}
 
         {instanceDetails && (
-          <div className="mt-8">
+          <div>
             <CloudSQLInstanceCard instanceInfo={instanceDetails} />
             <DatabaseConnectionSelector
-              _instanceId={instanceDetails.id}
-              _region={instanceDetails.region}
-              _connections={connections}
+              projectId={projectId}
+              instanceName={instanceDetails.name}
+              gcpProjectId={gcpProjectId}
+              connections={connections}
             />
           </div>
         )}
       </CardContent>
     </Card>
-  );
-}
-
-// Component to display Cloud SQL instance details
-function CloudSQLInstanceCard({ instanceInfo }: { instanceInfo: CloudSQLInstanceInfo }) {
-  return (
-    <div className="border-border mb-6 rounded-lg border p-4">
-      <h3 className="mb-2 text-lg font-semibold">{instanceInfo.name}</h3>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
-          <p className="text-muted-foreground text-sm">ID</p>
-          <p className="font-mono text-sm">{instanceInfo.id}</p>
-        </div>
-        <div>
-          <p className="text-muted-foreground text-sm">Region</p>
-          <p className="text-sm">{instanceInfo.region}</p>
-        </div>
-        <div>
-          <p className="text-muted-foreground text-sm">Database Version</p>
-          <p className="text-sm">{instanceInfo.databaseVersion}</p>
-        </div>
-        <div>
-          <p className="text-muted-foreground text-sm">State</p>
-          <p className="text-sm">{instanceInfo.state}</p>
-        </div>
-        <div>
-          <p className="text-muted-foreground text-sm">Machine Type</p>
-          <p className="text-sm">{instanceInfo.settings?.tier || '-'}</p>
-        </div>
-        <div>
-          <p className="text-muted-foreground text-sm">Storage</p>
-          <p className="text-sm">{instanceInfo.settings?.dataDiskSizeGb || '0'} GB</p>
-        </div>
-        <div>
-          <p className="text-muted-foreground text-sm">High Availability</p>
-          <p className="text-sm">{instanceInfo.settings?.availabilityType || '-'}</p>
-        </div>
-        <div>
-          <p className="text-muted-foreground text-sm">Connection Name</p>
-          <p className="font-mono text-sm">{instanceInfo.connectionName}</p>
-        </div>
-      </div>
-
-      {instanceInfo.ipAddresses && instanceInfo.ipAddresses.length > 0 && (
-        <div className="mt-4">
-          <p className="text-muted-foreground mb-1 text-sm">IP Addresses</p>
-          <div className="space-y-1">
-            {instanceInfo.ipAddresses.map((ip, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <span className="text-xs font-medium">{ip.type}:</span>
-                <code className="bg-muted rounded px-1 py-0.5 text-xs">{ip.ipAddress}</code>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Placeholder component for database connection selector
-function DatabaseConnectionSelector({
-  _instanceId,
-  _region,
-  _connections
-}: {
-  _instanceId: string;
-  _region: string;
-  _connections: Connection[];
-}) {
-  return (
-    <div className="mt-4">
-      <h3 className="text-md mb-2 font-semibold">Connect to this instance</h3>
-      <p className="text-muted-foreground mb-4 text-sm">
-        Choose an existing database connection or create a new one to connect to this Cloud SQL instance.
-      </p>
-
-      {/* Implement the connection selector here */}
-      <Button variant="outline">Configure Connection</Button>
-    </div>
   );
 }

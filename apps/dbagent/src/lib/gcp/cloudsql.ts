@@ -100,3 +100,50 @@ function extractPostgresVersion(databaseVersion: string): string {
   // Convert 14 to 14.0 or 9_6 to 9.6
   return match[1].replace('_', '.');
 }
+
+export async function getCloudSQLInstanceDetails(
+  client: sqladmin_v1beta4.Sqladmin,
+  gcpProjectId: string,
+  instanceName: string
+): Promise<CloudSQLInstanceInfo | null> {
+  try {
+    const response = await client.instances.get({
+      project: gcpProjectId,
+      instance: instanceName
+    });
+
+    const instance = response.data;
+    if (!instance) {
+      return null;
+    }
+
+    return {
+      name: instance.name || '',
+      id: instance.instanceType || '',
+      engine: 'postgres',
+      engineVersion: extractPostgresVersion(instance.databaseVersion || ''),
+      tier: instance.settings?.tier || '',
+      state: instance.state || '',
+      region: instance.region || '',
+      ipAddresses: (instance.ipAddresses || []).map((ip) => ({
+        type: ip.type || '',
+        ipAddress: ip.ipAddress || ''
+      })),
+      databaseVersion: instance.databaseVersion || '',
+      storageSize: Number(instance.settings?.dataDiskSizeGb || 0),
+      multiAZ: instance.settings?.availabilityType === 'REGIONAL',
+      primaryInstance: instance.masterInstanceName ? instance.masterInstanceName : undefined,
+      connectionName: instance.connectionName || undefined,
+      settings: instance.settings
+        ? {
+            tier: instance.settings.tier || '',
+            availabilityType: instance.settings.availabilityType || '',
+            dataDiskSizeGb: String(instance.settings.dataDiskSizeGb || '0')
+          }
+        : undefined
+    };
+  } catch (error) {
+    console.error('Error fetching CloudSQL instance details:', error);
+    return null;
+  }
+}
