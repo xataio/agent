@@ -27,7 +27,7 @@ export function PlaybookView({ playbook }: { playbook: Playbook }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="bg-muted whitespace-pre-wrap rounded-md p-4 text-sm">{playbook.content}</div>
+          <div className="bg-muted prose prose-sm whitespace-pre-wrap rounded-md p-4">{playbook.content}</div>
         </CardContent>
         <CardFooter className="flex justify-end gap-3 pt-6">
           <Link href={`/projects/${project}/monitoring/schedule/add?playbook=${playbook.name}`}>

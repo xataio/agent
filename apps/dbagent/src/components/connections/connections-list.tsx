@@ -73,7 +73,7 @@ export function ConnectionsList() {
               <TableCell>
                 {connection.isDefault ? (
                   <div className="flex items-center justify-center">
-                    <CheckIcon className="h-5 w-5 text-green-500" />
+                    <CheckIcon className="text-success h-5 w-5" />
                   </div>
                 ) : (
                   <Button

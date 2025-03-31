@@ -14,7 +14,7 @@ export function OnboardingProgress({ completedSteps, totalSteps }: OnboardingPro
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Setup Progress</h2>
         <div className="flex items-center gap-2">
-          <CheckCircle2 className="h-5 w-5 text-green-500" />
+          <CheckCircle2 className="text-success h-5 w-5" />
           <span className="text-muted-foreground text-sm">
             {completedSteps} of {totalSteps} complete ({percentage}%)
           </span>

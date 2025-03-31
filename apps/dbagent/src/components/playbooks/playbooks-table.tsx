@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@internal/components';
+import { Button, Code, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@internal/components';
 import { BookOpenIcon, ClockIcon, PlayIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -60,7 +60,9 @@ export function PlaybooksTable() {
           {playbooks.map((playbook) => (
             <TableRow key={playbook.name}>
               <TableCell>
-                <Link href={`/projects/${project}/playbooks/${playbook.name}`}>{playbook.name}</Link>
+                <Code variant="primary">
+                  <Link href={`/projects/${project}/playbooks/${playbook.name}`}>{playbook.name}</Link>
+                </Code>
               </TableCell>
               <TableCell>{playbook.description}</TableCell>
               <TableCell>
