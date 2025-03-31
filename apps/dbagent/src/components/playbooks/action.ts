@@ -47,7 +47,14 @@ export async function actionGetCustomPlaybooks(projectId?: string, asUserId?: st
 }
 
 //get a custom playbook by id
-export async function actionGetCustomPlaybook(
+export async function actionGetCustomPlaybook(projectId: string, id: string, asUserId?: string) {
+  const customPlaybooks = await actionGetCustomPlaybooks(projectId, asUserId);
+  const customPlaybook = customPlaybooks.find((playbook) => playbook.id === id);
+  return customPlaybook;
+}
+
+//get a custom playbook by Name (used in scheduler since names are given though getPlaybook)
+export async function actionGetCustomPlaybookByName(
   projectId: string,
   name: string,
   asUserId?: string
@@ -87,7 +94,7 @@ export async function actionGetCustomPlaybookContent(
   name: string,
   asUserId?: string
 ): Promise<string | null> {
-  const playbookWithDesc = await actionGetCustomPlaybook(projectId, name, asUserId);
+  const playbookWithDesc = await actionGetCustomPlaybookByName(projectId, name, asUserId);
   return playbookWithDesc?.content ?? null;
 }
 
@@ -137,19 +144,34 @@ export async function actionCreatePlaybook(input: customPlaybook): Promise<Playb
 }
 
 export async function actionUpdatePlaybook(
-  name: string,
+  id: string,
   input: { description?: string; content?: string }
 ): Promise<Playbook | null> {
-  // In a real implementation, this would update a record in the database
+  return await queryDb(async ({ db }) => {
+    const result = await db
+      .update(playbooks)
+      .set({
+        description: input.description,
+        content: input.content
+      })
+      .where(eq(playbooks.id, id))
+      .returning();
 
-  // For now, return a mock result
-  return {
-    name,
-    description: input.description || '',
-    content: input.content || '',
-    isBuiltIn: false
-  };
+    const playbook = result[0];
+
+    if (!playbook) {
+      return null;
+    }
+
+    return {
+      name: playbook.name,
+      description: playbook.description || '',
+      content: playbook.content as string,
+      isBuiltIn: false
+    };
+  });
 }
+
 //goes into a db/custom-playbooks folder
 export async function actionDeletePlaybook(id: string): Promise<void> {
   return await queryDb(async ({ db }) => {

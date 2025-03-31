@@ -202,7 +202,7 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
         name: z.string()
       }),
       execute: async ({ name }) => {
-        const playBookDescription = getPlaybook(name);
+        const playBookContent = getPlaybook(name);
         const projectId = asProjectId || connection.projectId;
         const getCustomPlaybookContent = await actionGetCustomPlaybookContent(projectId, name, asUserId);
         console.log('getCustomPlaybookContent', getCustomPlaybookContent);
@@ -211,8 +211,8 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
           return getCustomPlaybookContent;
         }
 
-        console.log('playBookDescription', playBookDescription);
-        return playBookDescription;
+        console.log('playBookDescription', playBookContent);
+        return playBookContent;
       }
     },
     listPlaybooks: {

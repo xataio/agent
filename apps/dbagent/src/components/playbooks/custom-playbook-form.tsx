@@ -1,15 +1,20 @@
 'use client';
 
 import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle, Textarea } from '@internal/components';
-import { ArrowLeft, Wand2 } from 'lucide-react';
+import { ArrowLeft, TrashIcon, Wand2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Playbook } from '~/lib/tools/playbooks';
-import { actionCreatePlaybook, actionGeneratePlaybookContent, actionUpdatePlaybook } from './action';
+import {
+  actionCreatePlaybook,
+  actionDeletePlaybook,
+  actionGeneratePlaybookContent,
+  actionUpdatePlaybook
+} from './action';
 
 interface CustomPlaybookFormProps {
-  initialData?: Playbook;
+  initialData?: Playbook & { id?: string };
   isEditing?: boolean;
 }
 
@@ -23,14 +28,15 @@ export function CustomPlaybookForm({ initialData, isEditing = false }: CustomPla
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      if (isEditing && initialData) {
-        await actionUpdatePlaybook(initialData.name, {
+      if (isEditing && initialData?.id) {
+        await actionUpdatePlaybook(initialData.id, {
           description,
           content
         });
@@ -49,6 +55,22 @@ export function CustomPlaybookForm({ initialData, isEditing = false }: CustomPla
     } catch (err) {
       console.error('Error saving playbook:', err);
       setError(err instanceof Error ? err.message : 'An error occurred while saving the playbook');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!initialData?.id) return;
+
+    setLoading(true);
+    setError(null);
+    try {
+      await actionDeletePlaybook(initialData.id);
+      router.push(`/projects/${project}/playbooks`);
+    } catch (err) {
+      console.error('Error deleting playbook:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred while deleting the playbook');
     } finally {
       setLoading(false);
     }
@@ -172,6 +194,35 @@ export function CustomPlaybookForm({ initialData, isEditing = false }: CustomPla
             <Button variant="outline" type="button" onClick={() => router.push(`/projects/${project}/playbooks`)}>
               Cancel
             </Button>
+            {isEditing && (
+              <>
+                {!showDeleteConfirm ? (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    disabled={loading}
+                  >
+                    <TrashIcon className="mr-2 h-4 w-4" />
+                    Delete
+                  </Button>
+                ) : (
+                  <>
+                    <Button type="button" variant="destructive" onClick={handleDelete} disabled={loading}>
+                      Confirm Delete
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      disabled={loading}
+                    >
+                      Cancel Delete
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
             <Button type="submit" disabled={loading}>
               {loading ? 'Saving...' : isEditing ? 'Update Playbook' : 'Create Playbook'}
             </Button>

@@ -1,13 +1,13 @@
 'use client';
 
 import { Button, Code, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@internal/components';
-import { BookOpenIcon, ClockIcon, PencilIcon, PlayIcon, TrashIcon } from 'lucide-react';
+import { BookOpenIcon, ClockIcon, PencilIcon, PlayIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { customPlaybook } from '~/lib/tools/custom-playbooks';
 import { Playbook, getBuiltInPlaybooks } from '~/lib/tools/playbooks';
-import { actionDeletePlaybook, actionGetCustomPlaybooks } from './action';
+import { actionGetCustomPlaybooks } from './action';
 
 export function PlaybooksTable() {
   const router = useRouter();
@@ -26,13 +26,6 @@ export function PlaybooksTable() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  //delete playbook action
-  //remove this and add it to the edit function later
-  const handleDeletePlaybook = async (id: string) => {
-    await actionDeletePlaybook(id);
-    void loadPlaybooks();
   };
 
   useEffect(() => {
@@ -156,17 +149,9 @@ export function PlaybooksTable() {
                     variant="outline"
                     size="icon"
                     title="Edit playbook"
-                    onClick={() => router.push(`/projects/${project}/playbooks/${customPlaybook.name}/edit`)}
+                    onClick={() => router.push(`/projects/${project}/playbooks/${customPlaybook.id}/edit`)}
                   >
                     <PencilIcon className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    title="Delete playbook"
-                    onClick={() => handleDeletePlaybook(customPlaybook.id)}
-                  >
-                    <TrashIcon className="h-3 w-3" />
                   </Button>
                 </div>
               </TableCell>

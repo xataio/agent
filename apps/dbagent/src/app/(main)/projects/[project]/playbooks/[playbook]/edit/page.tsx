@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
+import { actionGetCustomPlaybook } from '~/components/playbooks/action';
 import { CustomPlaybookForm } from '~/components/playbooks/custom-playbook-form';
-import { getPlaybookDetails } from '~/lib/tools/playbooks';
 
 type PageParams = {
   project: string;
@@ -8,13 +8,22 @@ type PageParams = {
 };
 
 export default async function EditPlaybookPage({ params }: { params: Promise<PageParams> }) {
-  const { playbook: playbookName } = await params;
-  const playbook = getPlaybookDetails(playbookName);
+  const { project, playbook: playbookId } = await params;
 
-  if (!playbook || playbook.isBuiltIn) {
-    // Built-in playbooks cannot be edited
+  // Then check custom playbooks
+  const customPlaybook = await actionGetCustomPlaybook(project, playbookId);
+  if (!customPlaybook) {
     notFound();
   }
 
-  return <CustomPlaybookForm initialData={playbook} isEditing />;
+  // Convert custom playbook to Playbook type for CustomPlaybookForm
+  const customPlaybookForForm = {
+    name: customPlaybook.name,
+    description: customPlaybook.description,
+    content: customPlaybook.content,
+    isBuiltIn: false,
+    id: customPlaybook.id
+  };
+
+  return <CustomPlaybookForm initialData={customPlaybookForForm} isEditing />;
 }
