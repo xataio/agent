@@ -1,7 +1,7 @@
-import { updateDocumentPrompt } from '@/lib/ai/prompts';
-import { myProvider } from '@/lib/ai/providers';
-import { createDocumentHandler } from '@/lib/artifacts/server';
 import { smoothStream, streamText } from 'ai';
+import { updateDocumentPrompt } from '~/lib/ai/prompts';
+import { myProvider } from '~/lib/ai/providers';
+import { createDocumentHandler } from '../server';
 
 export const textDocumentHandler = createDocumentHandler<'text'>({
   kind: 'text',

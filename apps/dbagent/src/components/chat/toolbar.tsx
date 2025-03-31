@@ -6,7 +6,7 @@ import type { ChatRequestOptions, CreateMessage, Message } from 'ai';
 import { AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion';
 import { ArrowUpIcon } from 'lucide-react';
 import { nanoid } from 'nanoid';
-import { type Dispatch, memo, ReactNode, type SetStateAction, useEffect, useRef, useState } from 'react';
+import { type Dispatch, memo, ReactNode, RefObject, type SetStateAction, useEffect, useRef, useState } from 'react';
 import { useOnClickOutside } from 'usehooks-ts';
 import { StopIcon, SummarizeIcon } from '../icons';
 import { artifactDefinitions, ArtifactKind } from './artifact';
@@ -252,17 +252,19 @@ export const Tools = ({
           ))}
       </AnimatePresence>
 
-      <Tool
-        description={primaryTool.description}
-        icon={primaryTool.icon}
-        selectedTool={selectedTool}
-        setSelectedTool={setSelectedTool}
-        isToolbarVisible={isToolbarVisible}
-        setIsToolbarVisible={setIsToolbarVisible}
-        append={append}
-        isAnimating={isAnimating}
-        onClick={primaryTool.onClick}
-      />
+      {primaryTool && (
+        <Tool
+          description={primaryTool.description}
+          icon={primaryTool.icon}
+          selectedTool={selectedTool}
+          setSelectedTool={setSelectedTool}
+          isToolbarVisible={isToolbarVisible}
+          setIsToolbarVisible={setIsToolbarVisible}
+          append={append}
+          isAnimating={isAnimating}
+          onClick={primaryTool.onClick}
+        />
+      )}
     </motion.div>
   );
 };
@@ -290,7 +292,7 @@ const PureToolbar = ({
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  useOnClickOutside(toolbarRef, () => {
+  useOnClickOutside(toolbarRef as RefObject<HTMLElement>, () => {
     setIsToolbarVisible(false);
     setSelectedTool(null);
   });

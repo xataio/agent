@@ -1,17 +1,17 @@
 'use client';
 
-import { useArtifactSelector } from '@/hooks/use-artifact';
-import type { Vote } from '@/lib/db/schema';
-import { fetcher, generateUUID } from '@/lib/utils';
 import { useChat } from '@ai-sdk/react';
 import { toast } from '@internal/components';
 import type { Attachment, UIMessage } from 'ai';
 import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
+import { Vote } from '~/lib/db/schema';
 import { Artifact } from './artifact';
 import { ChatHeader } from './header';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
+import { useArtifactSelector } from './use-artifact';
+import { fetcher, generateUUID } from './utils';
 
 export function Chat({
   id,

@@ -1,8 +1,9 @@
-import { Artifact } from '@/components/create-artifact';
-import { CopyIcon, LineChartIcon, RedoIcon, SparklesIcon, UndoIcon } from '@/components/icons';
-import { SpreadsheetEditor } from '@/components/sheet-editor';
+import { toast } from '@internal/components';
+import { CopyIcon, LineChartIcon, SparklesIcon, UndoIcon } from 'lucide-react';
 import { parse, unparse } from 'papaparse';
-import { toast } from 'sonner';
+import { RedoIcon } from '~/components/icons';
+import { Artifact } from '../../create-artifact';
+import { SpreadsheetEditor } from '../../sheet-editor';
 
 type Metadata = any;
 

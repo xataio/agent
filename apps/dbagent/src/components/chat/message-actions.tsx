@@ -85,6 +85,9 @@ export function PureMessageActions({
                         return [
                           ...votesWithoutCurrent,
                           {
+                            projectId: message.projectId,
+                            createdAt: new Date(),
+                            userId: message.userId,
                             chatId,
                             messageId: message.id,
                             isUpvoted: true

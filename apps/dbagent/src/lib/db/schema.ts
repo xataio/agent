@@ -1,3 +1,4 @@
+import { Message as SDKMessage } from '@ai-sdk/ui-utils';
 import { InferSelectModel, sql } from 'drizzle-orm';
 import {
   boolean,
@@ -253,7 +254,7 @@ export const scheduleRuns = pgTable(
     result: text('result').notNull(),
     summary: text('summary'),
     notificationLevel: notificationLevel('notification_level').default('info').notNull(),
-    messages: jsonb('messages').$type<Message[]>().notNull()
+    messages: jsonb('messages').$type<SDKMessage[]>().notNull()
   },
   (table) => [
     foreignKey({
@@ -360,10 +361,7 @@ export const chats = pgTable(
     projectId: uuid('project_id').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     title: text('title').notNull(),
-    userId: text('user_id').notNull(),
-    visibility: varchar('visibility', { enum: ['public', 'private'] })
-      .notNull()
-      .default('private')
+    userId: text('user_id').notNull()
   },
   (table) => [
     foreignKey({

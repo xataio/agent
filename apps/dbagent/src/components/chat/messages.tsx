@@ -1,8 +1,8 @@
-import { Vote } from '@/lib/db/schema';
 import { UseChatHelpers } from '@ai-sdk/react';
 import { UIMessage } from 'ai';
 import equal from 'fast-deep-equal';
 import { memo } from 'react';
+import { Vote } from '~/lib/db/schema';
 import { PreviewMessage, ThinkingMessage } from './message';
 import { Overview } from './overview';
 import { useScrollToBottom } from './use-scroll-to-bottom';
