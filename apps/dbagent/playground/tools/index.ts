@@ -6,9 +6,9 @@ import { getProjectByName } from '~/lib/db/projects';
 import { getTargetDbPool, Pool } from '~/lib/targetdb/db';
 
 type PlaygroundToolsConfig = {
-  projectConnection: string | undefined;
-  dbUrl: string | undefined;
-  userId: string | undefined;
+  projectConnection?: string;
+  dbUrl?: string;
+  userId?: string;
 };
 
 export function buildPlaygroundTools(config: PlaygroundToolsConfig): Record<string, Tool> {
