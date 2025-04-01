@@ -223,6 +223,7 @@ export function getPlaybook(name: string): string {
 }
 
 export function listPlaybooks(): string[] {
+  //TODO: add the custom playbooks
   return [
     'generalMonitoring',
     'investigateSlowQueries',
