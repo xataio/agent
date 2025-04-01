@@ -1,3 +1,5 @@
+'use server';
+
 import { and, eq } from 'drizzle-orm';
 import { queryDb } from '~/lib/db/db';
 import { playbooks } from '~/lib/db/schema';

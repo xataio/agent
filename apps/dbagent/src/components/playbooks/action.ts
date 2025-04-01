@@ -2,93 +2,17 @@
 
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
-import { dbCreatePlaybook, dbDeletePlaybook, dbGetCustomPlaybooks, dbUpdatePlaybook } from '~/lib/db/custom-playbooks';
-import { customPlaybook } from '~/lib/tools/custom-playbooks';
+
+import { dbCreatePlaybook, dbDeletePlaybook, dbUpdatePlaybook } from '~/lib/db/custom-playbooks';
+import {
+  customPlaybook,
+  getCustomPlaybook,
+  getCustomPlaybookByName,
+  getCustomPlaybookContent,
+  getCustomPlaybooks,
+  getListOfCustomPlaybooksNames
+} from '~/lib/tools/custom-playbooks';
 import { Playbook } from '~/lib/tools/playbooks';
-
-//playbook db get
-export async function actionGetCustomPlaybooks(projectId?: string, asUserId?: string) {
-  if (!projectId) {
-    throw new Error('[INVALID_INPUT] Project ID is required');
-  }
-  try {
-    return await dbGetCustomPlaybooks(projectId, asUserId);
-  } catch (error) {
-    console.error('Error in actionGetCustomPlaybooks:', error);
-    throw new Error('Failed to get custom playbooks');
-  }
-}
-
-//get a custom playbook by id
-export async function actionGetCustomPlaybook(projectId: string, id: string, asUserId?: string) {
-  const customPlaybooks = await actionGetCustomPlaybooks(projectId, asUserId);
-  const customPlaybook = customPlaybooks.find((playbook) => playbook.id === id);
-  return customPlaybook;
-}
-
-//get a custom playbook by Name (used in scheduler since names are given though getPlaybook)
-export async function actionGetCustomPlaybookByName(
-  projectId: string,
-  name: string,
-  asUserId?: string
-): Promise<customPlaybook | null> {
-  if (!projectId) {
-    throw new Error('Project ID is required');
-  }
-  if (!name) {
-    throw new Error('Playbook Name is required');
-  }
-
-  try {
-    const customPlaybooks = await actionGetCustomPlaybooks(projectId, asUserId);
-    const customPlaybook = customPlaybooks.find((playbook) => playbook.name === name);
-
-    if (!customPlaybook) {
-      return null;
-    }
-
-    return customPlaybook;
-  } catch (error) {
-    console.error('Error getting custom playbook:', error);
-    throw new Error('Failed to get custom playbook');
-  }
-}
-
-//get a list of custom playbook names
-export async function actionListCustomPlaybooksNames(projectId: string, asUserId?: string): Promise<string[] | null> {
-  const customPlaybooks = await actionGetCustomPlaybooks(projectId, asUserId);
-  const customPlaybooksNames = customPlaybooks.map((playbook) => playbook.name);
-  return customPlaybooksNames.length === 0 ? null : customPlaybooksNames;
-}
-
-//get a custom playbook content by name
-export async function actionGetCustomPlaybookContent(
-  projectId: string,
-  name: string,
-  asUserId?: string
-): Promise<string | null> {
-  const playbookWithDesc = await actionGetCustomPlaybookByName(projectId, name, asUserId);
-  return playbookWithDesc?.content ?? null;
-}
-
-//playbook db insert
-export async function actionCreatePlaybook(input: customPlaybook): Promise<Playbook> {
-  console.log('Creating playbook', input);
-  return await dbCreatePlaybook(input);
-}
-
-//playbook db update
-export async function actionUpdatePlaybook(
-  id: string,
-  input: { description?: string; content?: string }
-): Promise<Playbook | null> {
-  return await dbUpdatePlaybook(id, input);
-}
-
-//playbook db delete
-export async function actionDeletePlaybook(id: string): Promise<void> {
-  return await dbDeletePlaybook(id);
-}
 
 //playbook content generation
 export async function actionGeneratePlaybookContent(name: string, description: string): Promise<string> {
@@ -124,5 +48,68 @@ export async function actionGeneratePlaybookContent(name: string, description: s
     maxTokens: 1000
   });
 
-  return text.trim() || 'Failed to generate playbook content';
+  try {
+    return text.trim();
+  } catch (error) {
+    console.error('Error in actionGeneratePlaybookContent:', error);
+    throw new Error('Failed to generate playbook content');
+  }
+}
+
+//playbook db get
+export async function actionGetCustomPlaybooks(projectId?: string, asUserId?: string): Promise<customPlaybook[]> {
+  return getCustomPlaybooks(projectId, asUserId);
+}
+
+//get a custom playbook by id
+export async function actionGetCustomPlaybook(
+  projectId: string,
+  id: string,
+  asUserId?: string
+): Promise<customPlaybook> {
+  return getCustomPlaybook(projectId, id, asUserId);
+}
+
+//get a custom playbook by Name (used in scheduler since names are given though getPlaybook)
+export async function actionGetCustomPlaybookByName(
+  projectId: string,
+  name: string,
+  asUserId?: string
+): Promise<customPlaybook | null> {
+  return getCustomPlaybookByName(projectId, name, asUserId);
+}
+
+//get a list of custom playbook names
+export async function actionListCustomPlaybooksNames(projectId: string, asUserId?: string): Promise<string[] | null> {
+  return getListOfCustomPlaybooksNames(projectId, asUserId);
+}
+
+//get a custom playbook content by name
+export async function actionGetCustomPlaybookContent(
+  projectId: string,
+  name: string,
+  asUserId?: string
+): Promise<string | null> {
+  return getCustomPlaybookContent(projectId, name, asUserId);
+}
+
+//playbook db insert
+export async function actionCreatePlaybook(input: customPlaybook): Promise<Playbook> {
+  console.log('Creating playbook {input: ', input, '}');
+  return await dbCreatePlaybook(input);
+}
+
+//playbook db update
+export async function actionUpdatePlaybook(
+  id: string,
+  input: { description?: string; content?: string }
+): Promise<Playbook | null> {
+  console.log('Updating playbook {id: ', id, '} with {input: ', input, '}');
+  return await dbUpdatePlaybook(id, input);
+}
+
+//playbook db delete
+export async function actionDeletePlaybook(id: string): Promise<void> {
+  console.log('Deleting playbook {id: ', id, '}');
+  return await dbDeletePlaybook(id);
 }
