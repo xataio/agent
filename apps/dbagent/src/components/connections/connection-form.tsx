@@ -66,6 +66,10 @@ export function ConnectionForm({ projectId, id }: ConnectionFormProps) {
   };
 
   const handleValidate = async (connectionString: string) => {
+    if (!connectionString) {
+      toast('Connection string is required');
+      return;
+    }
     setIsValidating(true);
     const result = await validateConnection(connectionString);
     setIsValidating(false);

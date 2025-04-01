@@ -56,16 +56,18 @@ export async function actionMakeConnectionDefault(id: string) {
 }
 
 export async function validateConnection(connectionString: string) {
-  const client = await getTargetDbConnection(connectionString);
   try {
-    const versionResult = await client.query('SELECT version()');
-    const version = versionResult.rows[0].version;
-    console.log('Connection validated successfully. Postgres version: ', version);
-    return { success: true, message: `Connection validated successfully.` };
+    const client = await getTargetDbConnection(connectionString);
+    try {
+      const versionResult = await client.query('SELECT version()');
+      const version = versionResult.rows[0].version;
+      console.log('Connection validated successfully. Postgres version: ', version);
+      return { success: true, message: `Connection validated successfully.` };
+    } finally {
+      await client.end();
+    }
   } catch (error) {
     console.error('Error validating connection:', error);
     return { success: false, message: `Failed to validate connection. ${error}` };
-  } finally {
-    await client.end();
   }
 }
