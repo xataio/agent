@@ -23,9 +23,9 @@ ${JSON.stringify(project)}
   }
 }
 
-export async function getPerformanceAndVacuumSettings(connection: Connection): Promise<string> {
-  const performanceSettings = await getPerformanceSettings(connection.connectionString);
-  const vacuumSettings = await getVacuumSettings(connection.connectionString);
+export async function getPerformanceAndVacuumSettings(connString: string): Promise<string> {
+  const performanceSettings = await getPerformanceSettings(connString);
+  const vacuumSettings = await getVacuumSettings(connString);
 
   return `
 Performance settings: ${JSON.stringify(performanceSettings)}
