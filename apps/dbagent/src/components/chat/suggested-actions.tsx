@@ -6,34 +6,29 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 
 interface SuggestedActionsProps {
-  chatId: string;
   append: (
     message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
 }
 
-function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
+function PureSuggestedActions({ append }: SuggestedActionsProps) {
   const suggestedActions = [
     {
-      title: 'What are the advantages',
-      label: 'of using Next.js?',
-      action: 'What are the advantages of using Next.js?'
+      title: 'Are there any performance issues with my database?',
+      action: 'Are there any performance issues with my database?'
     },
     {
-      title: 'Write code to',
-      label: `demonstrate djikstra's algorithm`,
-      action: `Write code to demonstrate djikstra's algorithm`
+      title: 'What are the most expensive queries in my database?',
+      action: 'What are the most expensive queries in my database?'
     },
     {
-      title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`
+      title: 'How can I optimize my database queries?',
+      action: 'How can I optimize my database queries?'
     },
     {
-      title: 'What is the weather',
-      label: 'in San Francisco?',
-      action: 'What is the weather in San Francisco?'
+      title: 'What are the most common errors in my database?',
+      action: 'What are the most common errors in my database?'
     }
   ];
 
@@ -46,13 +41,11 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
           exit={{ opacity: 0, y: 20 }}
           transition={{ delay: 0.05 * index }}
           key={`suggested-action-${suggestedAction.title}-${index}`}
-          className={index > 1 ? 'hidden sm:block' : 'block'}
+          className={index > 1 ? 'hidden sm:flex' : 'flex'}
         >
           <Button
             variant="ghost"
             onClick={async () => {
-              window.history.replaceState({}, '', `/chat/${chatId}`);
-
               append({
                 role: 'user',
                 content: suggestedAction.action
@@ -60,8 +53,7 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
             }}
             className="h-auto w-full flex-1 items-start justify-start gap-1 rounded-xl border px-4 py-3.5 text-left text-sm sm:flex-col"
           >
-            <span className="font-medium">{suggestedAction.title}</span>
-            <span className="text-muted-foreground">{suggestedAction.label}</span>
+            <p className="text-wrap font-medium">{suggestedAction.title}</p>
           </Button>
         </motion.div>
       ))}
