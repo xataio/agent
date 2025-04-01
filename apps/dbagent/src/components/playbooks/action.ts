@@ -2,48 +2,21 @@
 
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
-
-import { and, eq } from 'drizzle-orm';
-import { headers } from 'next/headers';
-import { queryDb } from '~/lib/db/db';
-import { playbooks } from '~/lib/db/schema';
+import { dbCreatePlaybook, dbDeletePlaybook, dbGetCustomPlaybooks, dbUpdatePlaybook } from '~/lib/db/custom-playbooks';
 import { customPlaybook } from '~/lib/tools/custom-playbooks';
 import { Playbook } from '~/lib/tools/playbooks';
-
-//edit this method to not be as hardcoded, also not sure if this is needed
-export async function getProjectIdFromUrl(): Promise<string> {
-  const headersList = (await headers()).entries();
-  const referervalue = headersList.find(([key]) => key === 'referer')?.[1];
-  const valueTest = referervalue?.split('projects/')?.[1]?.split('/')?.[0];
-  return valueTest ?? '';
-}
 
 //playbook db get
 export async function actionGetCustomPlaybooks(projectId?: string, asUserId?: string) {
   if (!projectId) {
-    throw new Error('Project ID is required');
+    throw new Error('[INVALID_INPUT] Project ID is required');
   }
-
-  //this has to go into tools folder under playbooks or customplaybooks
-  //goes into a db/custom-playbooks folder
-  //method need projectId and userId as a parameter
-  const customPlaybooks = await queryDb(
-    async ({ db }) => {
-      const results = await db.select().from(playbooks).where(eq(playbooks.projectId, projectId));
-
-      return results.map((playbook) => ({
-        name: playbook.name,
-        description: playbook.description || '',
-        content: playbook.content as string,
-        id: playbook.id,
-        projectId: playbook.projectId,
-        isBuiltIn: false
-      }));
-    },
-    { asUserId }
-  );
-
-  return customPlaybooks;
+  try {
+    return await dbGetCustomPlaybooks(projectId, asUserId);
+  } catch (error) {
+    console.error('Error in actionGetCustomPlaybooks:', error);
+    throw new Error('Failed to get custom playbooks');
+  }
 }
 
 //get a custom playbook by id
@@ -88,7 +61,7 @@ export async function actionListCustomPlaybooksNames(projectId: string, asUserId
   return customPlaybooksNames.length === 0 ? null : customPlaybooksNames;
 }
 
-//get a custom playbook descriptions by name
+//get a custom playbook content by name
 export async function actionGetCustomPlaybookContent(
   projectId: string,
   name: string,
@@ -101,84 +74,23 @@ export async function actionGetCustomPlaybookContent(
 //playbook db insert
 export async function actionCreatePlaybook(input: customPlaybook): Promise<Playbook> {
   console.log('Creating playbook', input);
-
-  //this has to go into tools folder under playbooks or customplaybooks
-  //goes into a db/custom-playbooks folder
-  return await queryDb(async ({ db, userId }) => {
-    // Check if playbook with same name exists in the project
-    const existingPlaybook = await db
-      .select()
-      .from(playbooks)
-      .where(and(eq(playbooks.name, input.name), eq(playbooks.projectId, input.projectId)))
-      .limit(1);
-
-    if (existingPlaybook.length > 0) {
-      throw new Error('A playbook with this name already exists in this project');
-    }
-
-    const result = await db
-      .insert(playbooks)
-      .values({
-        id: input.id,
-        projectId: input.projectId,
-        name: input.name,
-        description: input.description,
-        content: input.content,
-        createdBy: userId
-      })
-      .returning();
-
-    const playbook = result[0];
-
-    if (!playbook) {
-      throw new Error('Failed to create playbook');
-    }
-
-    return {
-      name: playbook.name,
-      description: playbook.description || '',
-      content: playbook.content as string,
-      isBuiltIn: false
-    };
-  });
+  return await dbCreatePlaybook(input);
 }
 
+//playbook db update
 export async function actionUpdatePlaybook(
   id: string,
   input: { description?: string; content?: string }
 ): Promise<Playbook | null> {
-  return await queryDb(async ({ db }) => {
-    const result = await db
-      .update(playbooks)
-      .set({
-        description: input.description,
-        content: input.content
-      })
-      .where(eq(playbooks.id, id))
-      .returning();
-
-    const playbook = result[0];
-
-    if (!playbook) {
-      return null;
-    }
-
-    return {
-      name: playbook.name,
-      description: playbook.description || '',
-      content: playbook.content as string,
-      isBuiltIn: false
-    };
-  });
+  return await dbUpdatePlaybook(id, input);
 }
 
-//goes into a db/custom-playbooks folder
+//playbook db delete
 export async function actionDeletePlaybook(id: string): Promise<void> {
-  return await queryDb(async ({ db }) => {
-    await db.delete(playbooks).where(eq(playbooks.id, id));
-  });
+  return await dbDeletePlaybook(id);
 }
 
+//playbook content generation
 export async function actionGeneratePlaybookContent(name: string, description: string): Promise<string> {
   const prompt = `Generate a detailed playbook content for a database task with the following details:
                   Name: ${name}
