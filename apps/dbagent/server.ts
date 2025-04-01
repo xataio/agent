@@ -7,7 +7,7 @@ const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
-void app.prepare().then(async () => {
+void app.prepare().then(() => {
   createServer((req, res) => {
     void handle(req, res);
   }).listen(port, () => {

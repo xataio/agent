@@ -1,6 +1,6 @@
+import { getProjectConnectionList } from '~/app/(main)/projects/[project]/actions';
 import { actionGetScheduleRun } from '~/components/chats/actions';
 import { ChatsUI } from '~/components/chats/chats-ui';
-import { getProjectConnectionList } from '../actions';
 
 type PageParams = {
   project: string;

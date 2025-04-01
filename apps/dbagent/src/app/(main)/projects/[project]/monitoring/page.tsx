@@ -1,5 +1,5 @@
+import { getProjectConnectionList } from '~/app/(main)/projects/[project]/actions';
 import { MonitoringScheduleTable } from '~/components/monitoring/schedules-table';
-import { getProjectConnectionList } from '../actions';
 
 export default async function Page({ params }: { params: Promise<{ project: string }> }) {
   const { project } = await params;
