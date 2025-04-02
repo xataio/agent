@@ -7,7 +7,6 @@ import { dbCreatePlaybook, dbDeletePlaybook, dbUpdatePlaybook } from '~/lib/db/c
 import {
   customPlaybook,
   getCustomPlaybook,
-  getCustomPlaybookByName,
   getCustomPlaybookContent,
   getCustomPlaybooks,
   getListOfCustomPlaybooksNames
@@ -68,15 +67,6 @@ export async function actionGetCustomPlaybook(
   asUserId?: string
 ): Promise<customPlaybook> {
   return getCustomPlaybook(projectId, id, asUserId);
-}
-
-//get a custom playbook by Name (used in scheduler since names are given though getPlaybook)
-export async function actionGetCustomPlaybookByName(
-  projectId: string,
-  name: string,
-  asUserId?: string
-): Promise<customPlaybook | null> {
-  return getCustomPlaybookByName(projectId, name, asUserId);
 }
 
 //get a list of custom playbook names
