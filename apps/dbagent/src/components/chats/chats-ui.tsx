@@ -55,7 +55,7 @@ function ChatsUIContent({
   const [connectionId, setConnectionId] = useState<string>(
     scheduleRun?.schedule.connectionId || defaultConnection?.id || ''
   );
-  const [model, setModel] = useState(scheduleRun?.schedule.model || 'openai-gpt-4o');
+  const [model, setModel] = useState(scheduleRun?.schedule.model || 'openai:gpt-4o');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { messages, input, handleInputChange, handleSubmit, setInput, status, setMessages } = useChat({

@@ -14,9 +14,16 @@ const schema = z.object({
   AUTH_OPENID_ISSUER: z.string().optional(),
 
   // LLM API credentials
-  OPENAI_API_KEY: z.string(),
+  OPENAI_API_KEY: z.string().optional(),
+  OPENAI_BASE_URL: z.string().optional(),
+  OPENAI_MODEL_PREFIX: z.string().optional(),
+
   DEEPSEEK_API_KEY: z.string().optional(),
+  DEEPSEEK_BASE_URL: z.string().optional(),
+  DEEPSEEK_MODEL_PREFIX: z.string().optional(),
+
   ANTHROPIC_API_KEY: z.string().optional(),
+  ANTHROPIC_BASE_URL: z.string().optional(),
 
   // Scheduler
   MAX_PARALLEL_RUNS: z.number().default(20), // How many schedules can be run in parallel
