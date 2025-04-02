@@ -1,0 +1,16 @@
+model_list:
+  - model_name: openai/*
+    litellm_params:
+      model: openai/*
+      api_key: os.environ/OPENAI_API_KEY
+
+  - model_name: deepseek/deepseek-chat
+    litellm_params:
+      model: deepseek/deepseek-chat
+      api_key: os.environ/DEEPSEEK_API_KEY
+
+general_settings:
+  master_key: 'sk-1234'
+  database_url: os.environ/DATABASE_URL
+  store_model_in_db: true
+  store_prompts_in_spend_logs: true

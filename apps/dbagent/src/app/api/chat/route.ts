@@ -36,6 +36,7 @@ export async function POST(req: Request) {
     console.log(context);
 
     const modelInstance = getModelInstance(model);
+    console.log(model, modelInstance);
 
     const result = streamText({
       model: modelInstance,
