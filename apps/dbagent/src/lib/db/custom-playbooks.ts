@@ -17,7 +17,8 @@ export async function dbGetCustomPlaybooks(projectId: string, asUserId?: string)
         content: playbook.content as string,
         id: playbook.id,
         projectId: playbook.projectId,
-        isBuiltIn: false
+        isBuiltIn: false,
+        createdBy: playbook.createdBy
       }));
     },
     { asUserId }
@@ -49,17 +50,18 @@ export async function dbCreatePlaybook(input: customPlaybook): Promise<Playbook>
       })
       .returning();
 
-    const playbook = result[0];
+    const createdPlaybook = result[0];
 
-    if (!playbook) {
+    if (!createdPlaybook) {
       throw new Error('Failed to create playbook');
     }
 
     return {
-      name: playbook.name,
-      description: playbook.description || '',
-      content: playbook.content as string,
-      isBuiltIn: false
+      name: createdPlaybook.name,
+      description: createdPlaybook.description || '',
+      content: createdPlaybook.content as string,
+      isBuiltIn: false,
+      createdBy: createdPlaybook.createdBy
     };
   });
 }

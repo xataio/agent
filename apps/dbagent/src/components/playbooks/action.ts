@@ -2,6 +2,7 @@
 
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
+import { auth } from '~/auth';
 
 import { dbCreatePlaybook, dbDeletePlaybook, dbUpdatePlaybook } from '~/lib/db/custom-playbooks';
 import {
@@ -85,8 +86,10 @@ export async function actionGetCustomPlaybookContent(
 
 //playbook db insert
 export async function actionCreatePlaybook(input: customPlaybook): Promise<Playbook> {
+  const session = await auth();
+  const userId = session?.user?.id ?? '';
   console.log('Creating playbook {input: ', input, '}');
-  return await dbCreatePlaybook(input);
+  return await dbCreatePlaybook({ ...input, createdBy: userId });
 }
 
 //playbook db update

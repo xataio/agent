@@ -7,8 +7,10 @@ export interface customPlaybook {
   id: string;
   projectId: string;
   isBuiltIn: boolean;
+  createdBy: string;
 }
 
+//get a list of custom playbooks using projectId
 export async function getCustomPlaybooks(projectId: string, asUserId?: string): Promise<customPlaybook[]> {
   if (!projectId) {
     throw new Error('[INVALID_INPUT] Project ID is required');
@@ -21,6 +23,7 @@ export async function getCustomPlaybooks(projectId: string, asUserId?: string): 
   }
 }
 
+//get a custom playbook by id
 export async function getCustomPlaybook(projectId: string, id: string, asUserId?: string): Promise<customPlaybook> {
   const customPlaybooks = await getCustomPlaybooks(projectId, asUserId);
   const customPlaybook = customPlaybooks.find((playbook) => playbook.id === id);
@@ -30,6 +33,7 @@ export async function getCustomPlaybook(projectId: string, id: string, asUserId?
   return customPlaybook;
 }
 
+//get a custom playbook by name
 export async function getCustomPlaybookByName(
   projectId: string,
   name: string,
@@ -57,6 +61,7 @@ export async function getCustomPlaybookByName(
   }
 }
 
+//get a list of custom playbooks names
 export async function getListOfCustomPlaybooksNames(projectId: string, asUserId?: string): Promise<string[] | null> {
   try {
     const customPlaybooks = await getCustomPlaybooks(projectId, asUserId);
@@ -68,6 +73,7 @@ export async function getListOfCustomPlaybooksNames(projectId: string, asUserId?
   }
 }
 
+//get a custom playbook content by name
 export async function getCustomPlaybookContent(
   projectId: string,
   name: string,
