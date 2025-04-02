@@ -1,3 +1,4 @@
+import { Monitoring } from '@google-cloud/monitoring';
 import { auth, sqladmin_v1beta4 } from '@googleapis/sqladmin';
 
 export interface CloudSQLInstanceInfo {
@@ -145,5 +146,66 @@ export async function getCloudSQLInstanceDetails(
   } catch (error) {
     console.error('Error fetching CloudSQL instance details:', error);
     return null;
+  }
+}
+
+export async function getCloudSQLInstanceMetric(
+  client: Monitoring,
+  gcpProjectId: string,
+  instanceName: string,
+  metricName: string,
+  startTime: Date,
+  endTime: Date
+): Promise<{ timestamp: Date; value: number }[]> {
+  try {
+    // Calculate time difference in seconds
+    const timeDiffSeconds = Math.floor((endTime.getTime() - startTime.getTime()) / 1000);
+
+    // Target around 50 data points
+    let period = 3600; // Default to 1 hour
+    if (timeDiffSeconds <= 500) {
+      // Up to ~8 minutes
+      period = 10; // 10 second intervals
+    } else if (timeDiffSeconds <= 3600) {
+      // Up to ~60 minutes
+      period = 60; // 1 minute intervals
+    } else if (timeDiffSeconds <= 43200) {
+      // Up to ~12 hours
+      period = 300; // 5 minute intervals
+    }
+
+    const projectPath = `projects/${gcpProjectId}`;
+    const filter = `metric.type = "cloudsql.googleapis.com/${metricName}" AND resource.labels.database_id = "${instanceName}"`;
+
+    const request = {
+      name: projectPath,
+      filter: filter,
+      interval: {
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString()
+      },
+      aggregation: {
+        alignmentPeriod: { seconds: period.toString() },
+        perSeriesAligner: 'ALIGN_MEAN'
+      }
+    };
+
+    const [timeSeries] = await client.listTimeSeries(request);
+
+    if (!timeSeries || timeSeries.length === 0) {
+      return [];
+    }
+
+    return (
+      timeSeries[0].points?.map(
+        (point: { interval: { startTime: any }; value: { doubleValue: any; int64Value: any } }) => ({
+          timestamp: new Date(point.interval?.startTime || ''),
+          value: Number(point.value?.doubleValue || point.value?.int64Value || 0)
+        })
+      ) || []
+    );
+  } catch (error) {
+    console.error('Error fetching CloudSQL instance metrics:', error);
+    return [];
   }
 }
