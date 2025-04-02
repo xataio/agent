@@ -3,7 +3,6 @@ import { deepseek } from '@ai-sdk/deepseek';
 import { openai } from '@ai-sdk/openai';
 import { LanguageModelV1, Tool } from 'ai';
 import { z } from 'zod';
-import { actionGetCustomPlaybookContent, actionListCustomPlaybooksNames } from '~/components/playbooks/action';
 import {
   getPerformanceAndVacuumSettings,
   getPostgresExtensions,
@@ -15,6 +14,7 @@ import { getClusterMetric } from '~/lib/tools/metrics';
 import { getPlaybook, listPlaybooks } from '~/lib/tools/playbooks';
 import { toolDescribeTable, toolExplainQuery, toolGetSlowQueries } from '~/lib/tools/slow-queries';
 import { Connection } from '../db/connections';
+import { getCustomPlaybookContent, getListOfCustomPlaybooksNames } from '../tools/custom-playbooks';
 import {
   toolCurrentActiveQueries,
   toolGetConnectionsGroups,
@@ -204,11 +204,11 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
       execute: async ({ name }) => {
         const playBookContent = getPlaybook(name);
         const projectId = asProjectId || connection.projectId;
-        const getCustomPlaybookContent = await actionGetCustomPlaybookContent(projectId, name, asUserId);
-        console.log('getCustomPlaybookContent', getCustomPlaybookContent);
+        const customPlaybookContent = await getCustomPlaybookContent(projectId, name, asUserId);
+        console.log('getCustomPlaybookContent', customPlaybookContent);
 
-        if (getCustomPlaybookContent !== null) {
-          return getCustomPlaybookContent;
+        if (customPlaybookContent !== null) {
+          return customPlaybookContent;
         }
 
         console.log('playBookDescription', playBookContent);
@@ -221,7 +221,7 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
       execute: async () => {
         const playbookNames = listPlaybooks();
         const projectId = asProjectId || connection.projectId;
-        const customPlaybookNames = await actionListCustomPlaybooksNames(projectId, asUserId);
+        const customPlaybookNames = await getListOfCustomPlaybooksNames(projectId, asUserId);
         console.log('customPlaybookNames', customPlaybookNames);
 
         if (customPlaybookNames !== null) {
