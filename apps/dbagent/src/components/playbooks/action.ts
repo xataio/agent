@@ -57,7 +57,7 @@ export async function actionGeneratePlaybookContent(name: string, description: s
 }
 
 //playbook db get
-export async function actionGetCustomPlaybooks(projectId?: string, asUserId?: string): Promise<customPlaybook[]> {
+export async function actionGetCustomPlaybooks(projectId: string, asUserId?: string): Promise<customPlaybook[]> {
   return getCustomPlaybooks(projectId, asUserId);
 }
 

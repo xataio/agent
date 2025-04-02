@@ -9,7 +9,7 @@ export interface customPlaybook {
   isBuiltIn: boolean;
 }
 
-export async function getCustomPlaybooks(projectId?: string, asUserId?: string): Promise<customPlaybook[]> {
+export async function getCustomPlaybooks(projectId: string, asUserId?: string): Promise<customPlaybook[]> {
   if (!projectId) {
     throw new Error('[INVALID_INPUT] Project ID is required');
   }
