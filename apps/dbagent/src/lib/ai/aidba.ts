@@ -5,6 +5,7 @@ import { ProviderV1 } from '@ai-sdk/provider';
 import { createProviderRegistry, customProvider, LanguageModelV1, Provider, Tool } from 'ai';
 import { env } from '~/lib/env/server';
 import { Connection } from '../db/connections';
+import { commonToolset, getDBClusterTools, getDBSQLTools, mergeToolsets, playbookToolset } from './tools';
 
 const OpenAIChatModelIds = [
   'o1',
