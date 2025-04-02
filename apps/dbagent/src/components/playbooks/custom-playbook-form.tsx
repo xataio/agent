@@ -5,11 +5,13 @@ import { ArrowLeft, TrashIcon, Wand2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { getSchedulesByUserIdAndProjectId } from '~/lib/db/schedules';
 import { Playbook } from '~/lib/tools/playbooks';
 import {
   actionCreatePlaybook,
   actionDeletePlaybook,
   actionGeneratePlaybookContent,
+  actionGetCustomPlaybook,
   actionUpdatePlaybook
 } from './action';
 
@@ -47,7 +49,8 @@ export function CustomPlaybookForm({ initialData, isEditing = false }: CustomPla
           content,
           projectId: project,
           id: crypto.randomUUID(),
-          isBuiltIn: false
+          isBuiltIn: false,
+          createdBy: ''
         });
       }
 
@@ -66,8 +69,21 @@ export function CustomPlaybookForm({ initialData, isEditing = false }: CustomPla
     setLoading(true);
     setError(null);
     try {
-      await actionDeletePlaybook(initialData.id);
-      router.push(`/projects/${project}/playbooks`);
+      //check if the playbook is being used for monitoring by checking if a schedule exists for the playbook
+      //if it does, do not delete the playbook
+      //if it does not, delete the playbook
+      const playbookToDelete = await actionGetCustomPlaybook(project, initialData.id);
+      const schedules = await getSchedulesByUserIdAndProjectId(playbookToDelete.createdBy, project);
+      const doesScheduleExistForCustomPlaybook = schedules.find(
+        (schedule) => schedule.playbook === playbookToDelete.name
+      );
+
+      if (!doesScheduleExistForCustomPlaybook) {
+        await actionDeletePlaybook(initialData.id);
+        router.push(`/projects/${project}/playbooks`);
+      } else {
+        setError('This playbooks is unable to be deleted as it is currently being used for monitoring.');
+      }
     } catch (err) {
       console.error('Error deleting playbook:', err);
       setError(err instanceof Error ? err.message : 'An error occurred while deleting the playbook');
