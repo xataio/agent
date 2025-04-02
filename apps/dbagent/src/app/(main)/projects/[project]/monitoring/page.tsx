@@ -1,13 +1,10 @@
+import { getProjectConnectionList } from '~/app/(main)/projects/[project]/actions';
 import { MonitoringScheduleTable } from '~/components/monitoring/schedules-table';
-import { listConnections } from '~/lib/db/connections';
 
-type PageParams = {
-  project: string;
-};
-
-export default async function Page({ params }: { params: Promise<PageParams> }) {
+export default async function Page({ params }: { params: Promise<{ project: string }> }) {
   const { project } = await params;
-  const connections = await listConnections(project);
+
+  const connections = await getProjectConnectionList(project);
 
   return (
     <div className="container">

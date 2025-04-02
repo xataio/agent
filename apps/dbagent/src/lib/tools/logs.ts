@@ -1,8 +1,8 @@
 import { getRDSClusterLogs, getRDSInstanceLogs, initializeRDSClient } from '../aws/rds';
 import { getClusterByConnection } from '../db/aws-clusters';
 import { Connection } from '../db/connections';
+import { DBAccess } from '../db/db';
 import { getIntegration } from '../db/integrations';
-
 type GetInstanceLogsParams = {
   connection: Connection;
   periodInSeconds: number;
@@ -10,19 +10,17 @@ type GetInstanceLogsParams = {
   asUserId?: string;
 };
 
-export async function getInstanceLogs({
-  connection,
-  periodInSeconds,
-  grep,
-  asUserId
-}: GetInstanceLogsParams): Promise<string> {
+export async function getInstanceLogs(
+  dbAccess: DBAccess,
+  { connection, periodInSeconds, grep }: GetInstanceLogsParams
+): Promise<string> {
   // Get AWS credentials from integrations
-  const awsCredentials = await getIntegration(connection.projectId, 'aws', asUserId);
+  const awsCredentials = await getIntegration(dbAccess, connection.projectId, 'aws');
   if (!awsCredentials) {
     return 'AWS credentials not configured';
   }
 
-  const cluster = await getClusterByConnection(connection.id, asUserId);
+  const cluster = await getClusterByConnection(dbAccess, connection.id);
   if (!cluster) {
     return 'Cluster not found';
   }

@@ -28,7 +28,8 @@ import {
 import { Database, MoreVertical, PlusCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Suspense, useState } from 'react';
-import { createProject, deleteProject, Project, updateProject } from '~/lib/db/projects';
+import { Project } from '~/lib/db/projects';
+import { actionCreateProject, actionDeleteProject, actionUpdateProject } from './actions';
 
 interface ProjectListProps {
   projects: Project[];
@@ -46,7 +47,7 @@ function CreateProjectButton() {
     setIsLoading(true);
 
     try {
-      const projectId = await createProject({ name: projectName });
+      const projectId = await actionCreateProject(projectName);
       router.push(`/projects/${projectId}/start`);
     } catch (error: any) {
       toast.error(error.message);
@@ -154,7 +155,7 @@ function ProjectCard({ project }: { project: Project }) {
   const handleRename = async () => {
     if (newProjectName.trim() !== '') {
       try {
-        await updateProject(project.id, { name: newProjectName });
+        await actionUpdateProject(project.id, { name: newProjectName });
         toast.success('Project renamed successfully');
         router.refresh();
       } catch (error: any) {
@@ -166,7 +167,7 @@ function ProjectCard({ project }: { project: Project }) {
 
   const handleDelete = async () => {
     try {
-      await deleteProject({ id: project.id });
+      await actionDeleteProject(project.id);
       toast.success('Project deleted successfully');
       router.refresh();
     } catch (error: any) {
@@ -272,7 +273,7 @@ function CreateProjectOnboarding() {
     setIsLoading(true);
 
     try {
-      const projectId = await createProject({ name: projectName });
+      const projectId = await actionCreateProject(projectName);
       router.push(`/projects/${projectId}/start`);
     } catch (error: any) {
       toast.error(error.message);

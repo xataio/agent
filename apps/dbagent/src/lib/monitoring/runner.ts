@@ -3,6 +3,7 @@ import { generateId, generateObject, generateText, LanguageModelV1 } from 'ai';
 import { z } from 'zod';
 import { getModelInstance, getTools, monitoringSystemPrompt } from '../ai/aidba';
 import { Connection, getConnectionFromSchedule } from '../db/connections';
+import { DBAccess } from '../db/db';
 import { insertScheduleRunLimitHistory, ScheduleRun } from '../db/schedule-runs';
 import { Schedule } from '../db/schedules';
 import { sendScheduleNotification } from '../notifications/slack-webhook';
@@ -32,22 +33,27 @@ async function runModelPlaybook({
     createdAt: new Date()
   });
 
-  const result = await generateText({
-    model: modelInstance,
-    system: monitoringSystemPrompt,
-    messages: messages,
-    tools: await getTools(connection, schedule.userId),
-    maxSteps: 20
-  });
+  const { tools, end } = await getTools(connection, schedule.userId);
+  try {
+    const result = await generateText({
+      model: modelInstance,
+      system: monitoringSystemPrompt,
+      maxSteps: 20,
+      tools,
+      messages
+    });
 
-  messages.push({
-    id: generateId(),
-    role: 'assistant',
-    content: result.text,
-    createdAt: new Date()
-  });
+    messages.push({
+      id: generateId(),
+      role: 'assistant',
+      content: result.text,
+      createdAt: new Date()
+    });
 
-  return result;
+    return result;
+  } finally {
+    await end();
+  }
 }
 
 async function decideNotificationLevel(messages: Message[], modelInstance: LanguageModelV1) {
@@ -165,10 +171,10 @@ function shouldNotify(notifyLevel: 'alert' | 'warning' | 'info', notificationLev
   return levelMap[notificationLevel] >= levelMap[notifyLevel];
 }
 
-export async function runSchedule(schedule: Schedule, now: Date) {
+export async function runSchedule(dbAccess: DBAccess, schedule: Schedule, now: Date) {
   console.log(`Running schedule ${schedule.id}`);
 
-  const connection = await getConnectionFromSchedule(schedule);
+  const connection = await getConnectionFromSchedule(dbAccess, schedule);
   if (!connection) {
     throw new Error(`Connection ${schedule.connectionId} not found`);
   }
@@ -226,10 +232,11 @@ export async function runSchedule(schedule: Schedule, now: Date) {
     messages: messages,
     createdAt: now.toISOString() // using the start time
   };
-  const run = await insertScheduleRunLimitHistory(scheduleRun, schedule.keepHistory, schedule.userId);
+  const run = await insertScheduleRunLimitHistory(dbAccess, scheduleRun, schedule.keepHistory);
 
   if (shouldNotify(schedule.notifyLevel, notificationResult.notificationLevel)) {
     await sendScheduleNotification(
+      dbAccess,
       run,
       schedule,
       connection,

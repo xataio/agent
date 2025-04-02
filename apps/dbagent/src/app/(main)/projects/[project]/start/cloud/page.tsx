@@ -1,13 +1,10 @@
+import { getProjectConnectionList } from '~/app/(main)/projects/[project]/actions';
 import { AWSIntegration } from '~/components/aws-integration/aws-integration';
-import { listConnections } from '~/lib/db/connections';
 
-type PageParams = {
-  project: string;
-};
-
-export default async function Page({ params }: { params: Promise<PageParams> }) {
+export default async function Page({ params }: { params: Promise<{ project: string }> }) {
   const { project } = await params;
-  const connections = await listConnections(project);
+
+  const connections = await getProjectConnectionList(project);
 
   return (
     <div className="container mx-auto p-4">

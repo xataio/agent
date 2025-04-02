@@ -1,8 +1,8 @@
 import { ProjectsList } from '~/components/projects/project-list';
-import { listProjects } from '~/lib/db/projects';
+import { getProjectsList } from './actions';
 
 export default async function ProjectsPage() {
-  const projects = await listProjects();
+  const projects = await getProjectsList();
 
   return <ProjectsList projects={projects} />;
 }

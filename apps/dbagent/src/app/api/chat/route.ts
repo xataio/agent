@@ -1,6 +1,7 @@
 import { streamText } from 'ai';
 import { chatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
 import { getConnection } from '~/lib/db/connections';
+import { getUserSessionDBAccess } from '~/lib/db/db';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -26,24 +27,26 @@ function errorHandler(error: unknown) {
 export async function POST(req: Request) {
   const { messages, connectionId, model } = await req.json();
 
-  const connection = await getConnection(connectionId);
+  const db = await getUserSessionDBAccess();
+  const connection = await getConnection(db, connectionId);
   if (!connection) {
     return new Response('Connection not found', { status: 404 });
   }
   try {
     const context = chatSystemPrompt;
-
-    console.log(context);
-
     const modelInstance = getModelInstance(model);
 
+    const { tools, end } = await getTools(connection);
     const result = streamText({
       model: modelInstance,
       messages,
       system: context,
-      tools: await getTools(connection),
+      tools: tools,
       maxSteps: 20,
-      toolCallStreaming: true
+      toolCallStreaming: true,
+      onFinish: async (_result) => {
+        await end();
+      }
     });
 
     return result.toDataStreamResponse({

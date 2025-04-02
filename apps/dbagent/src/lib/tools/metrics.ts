@@ -1,27 +1,25 @@
 import { getRDSClusterMetric, getRDSInstanceMetric } from '../aws/rds';
 import { getClusterByConnection } from '../db/aws-clusters';
 import { Connection } from '../db/connections';
+import { DBAccess } from '../db/db';
 import { getIntegration } from '../db/integrations';
 
 type GetClusterMetricParams = {
   connection: Connection;
   metricName: string;
   periodInSeconds: number;
-  asUserId?: string;
 };
 
-export async function getClusterMetric({
-  connection,
-  metricName,
-  periodInSeconds,
-  asUserId
-}: GetClusterMetricParams): Promise<string> {
-  const awsCredentials = await getIntegration(connection.projectId, 'aws', asUserId);
+export async function getClusterMetric(
+  dbAccess: DBAccess,
+  { connection, metricName, periodInSeconds }: GetClusterMetricParams
+): Promise<string> {
+  const awsCredentials = await getIntegration(dbAccess, connection.projectId, 'aws');
   if (!awsCredentials) {
     return 'AWS credentials not configured';
   }
 
-  const cluster = await getClusterByConnection(connection.id, asUserId);
+  const cluster = await getClusterByConnection(dbAccess, connection.id);
   if (!cluster) {
     return 'Cluster not found';
   }

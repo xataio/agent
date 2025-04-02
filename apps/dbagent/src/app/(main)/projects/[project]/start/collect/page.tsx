@@ -1,13 +1,10 @@
+import { getProjectConnectionList } from '~/app/(main)/projects/[project]/actions';
 import { CollectInfo } from '~/components/collect/collect';
-import { listConnections } from '~/lib/db/connections';
 
-type PageParams = {
-  project: string;
-};
-
-export default async function Page({ params }: { params: Promise<PageParams> }) {
+export default async function Page({ params }: { params: Promise<{ project: string }> }) {
   const { project } = await params;
-  const connections = await listConnections(project);
+
+  const connections = await getProjectConnectionList(project);
 
   return (
     <div className="container mx-auto max-w-6xl p-4">
