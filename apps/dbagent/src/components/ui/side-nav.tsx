@@ -96,13 +96,13 @@ export function SideNav({ className, projectId, onboardingComplete }: SideNavPro
     },
     {
       title: 'Chats',
-      url: `${basePath}/chats-2`,
+      url: `${basePath}/chats`,
       icon: Bot,
       className: 'text-sm'
     },
     {
       title: 'Old Chats',
-      url: `${basePath}/chats`,
+      url: `${basePath}/chats-old`,
       icon: Bot,
       className: 'text-sm'
     },
