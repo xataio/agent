@@ -34,7 +34,6 @@ export class playbookTools implements ToolsetGroup {
       }),
       execute: async ({ name }: { name: string }) => {
         const { connProjectId, asUserId, asProjectId } = await getter();
-        console.log('getPlaybookTool', name, connProjectId, asUserId, asProjectId);
         return await getCustomPlaybookAndPlaybookTool(name, connProjectId, asUserId, asProjectId);
       }
     });
@@ -47,7 +46,6 @@ export class playbookTools implements ToolsetGroup {
       parameters: z.object({}),
       execute: async () => {
         const { connProjectId, asUserId, asProjectId } = await getter();
-        console.log('listPlaybooksTool', connProjectId, asUserId, asProjectId);
         return await listCustomPlaybooksAndPlaybookTool(connProjectId, asUserId, asProjectId);
       }
     });

@@ -82,7 +82,7 @@ export function CustomPlaybookForm({ initialData, isEditing = false }: CustomPla
         await actionDeletePlaybook(initialData.id);
         router.push(`/projects/${project}/playbooks`);
       } else {
-        setError('This playbook cannot be deleted because it is currently in use for monitoring.');
+        setError('This playbook cannot be deleted because it is currently in use for monitoring');
       }
     } catch (err) {
       console.error('Error deleting playbook:', err);
