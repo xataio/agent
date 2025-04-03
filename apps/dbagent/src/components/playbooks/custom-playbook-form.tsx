@@ -44,7 +44,7 @@ export function CustomPlaybookForm({ initialData, isEditing = false }: CustomPla
         });
       } else {
         await actionCreatePlaybook({
-          name,
+          name: name.trim(),
           description,
           content,
           projectId: project,
@@ -82,7 +82,7 @@ export function CustomPlaybookForm({ initialData, isEditing = false }: CustomPla
         await actionDeletePlaybook(initialData.id);
         router.push(`/projects/${project}/playbooks`);
       } else {
-        setError('This playbooks is unable to be deleted as it is currently being used for monitoring.');
+        setError('This playbook cannot be deleted because it is currently in use for monitoring.');
       }
     } catch (err) {
       console.error('Error deleting playbook:', err);

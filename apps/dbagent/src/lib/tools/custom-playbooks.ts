@@ -1,5 +1,5 @@
 import { dbGetCustomPlaybooks } from '../db/custom-playbooks';
-
+import { getPlaybook, listPlaybooks } from './playbooks';
 export interface customPlaybook {
   name: string;
   description: string;
@@ -86,4 +86,32 @@ export async function getCustomPlaybookContent(
     console.error('Error in getCustomPlaybookContent:', error);
     throw new Error('Failed to get custom playbook content');
   }
+}
+
+//gets content for either a custom playbook or a built in playbook
+export async function getCustomPlaybookAndPlaybookTool(
+  name: string,
+  connProjectId: string,
+  asUserId?: string,
+  asProjectId?: string
+): Promise<string> {
+  const playBookContent = getPlaybook(name);
+  //im not sure this is needed as asProjectId and connProjectId might be the same when ran in runners.ts
+  const projectId = asProjectId || connProjectId;
+  const customPlaybookContent = await getCustomPlaybookContent(projectId, name, asUserId);
+
+  return customPlaybookContent !== null ? customPlaybookContent : playBookContent;
+}
+
+//gets a list of custom playbooks and built in playbooks
+export async function listCustomPlaybooksAndPlaybookTool(
+  connProjectId: string,
+  asUserId?: string,
+  asProjectId?: string
+): Promise<string[]> {
+  const playbookNames = listPlaybooks();
+  const projectId = asProjectId || connProjectId;
+  const customPlaybookNames = await getListOfCustomPlaybooksNames(projectId, asUserId);
+
+  return customPlaybookNames !== null ? [...playbookNames, ...customPlaybookNames] : playbookNames;
 }

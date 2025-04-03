@@ -8,7 +8,6 @@ import { dbCreatePlaybook, dbDeletePlaybook, dbUpdatePlaybook } from '~/lib/db/c
 import {
   customPlaybook,
   getCustomPlaybook,
-  getCustomPlaybookContent,
   getCustomPlaybooks,
   getListOfCustomPlaybooksNames
 } from '~/lib/tools/custom-playbooks';
@@ -73,15 +72,6 @@ export async function actionGetCustomPlaybook(
 //get a list of custom playbook names
 export async function actionListCustomPlaybooksNames(projectId: string, asUserId?: string): Promise<string[] | null> {
   return getListOfCustomPlaybooksNames(projectId, asUserId);
-}
-
-//get a custom playbook content by name
-export async function actionGetCustomPlaybookContent(
-  projectId: string,
-  name: string,
-  asUserId?: string
-): Promise<string | null> {
-  return getCustomPlaybookContent(projectId, name, asUserId);
 }
 
 //playbook db insert
