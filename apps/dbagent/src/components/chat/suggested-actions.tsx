@@ -5,33 +5,20 @@ import { ChatRequestOptions, CreateMessage, Message } from 'ai';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 
+export type SuggestedAction = {
+  title: string;
+  action: string;
+};
+
 interface SuggestedActionsProps {
+  suggestedActions?: SuggestedAction[];
   append: (
     message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
 }
 
-function PureSuggestedActions({ append }: SuggestedActionsProps) {
-  const suggestedActions = [
-    {
-      title: 'Are there any performance issues with my database?',
-      action: 'Are there any performance issues with my database?'
-    },
-    {
-      title: 'What are the most expensive queries in my database?',
-      action: 'What are the most expensive queries in my database?'
-    },
-    {
-      title: 'How can I optimize my database queries?',
-      action: 'How can I optimize my database queries?'
-    },
-    {
-      title: 'What are the most common errors in my database?',
-      action: 'What are the most common errors in my database?'
-    }
-  ];
-
+function PureSuggestedActions({ suggestedActions = [], append }: SuggestedActionsProps) {
   return (
     <div data-testid="suggested-actions" className="grid w-full gap-2 sm:grid-cols-2">
       {suggestedActions.map((suggestedAction, index) => (

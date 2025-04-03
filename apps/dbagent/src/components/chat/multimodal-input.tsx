@@ -20,9 +20,10 @@ import equal from 'fast-deep-equal';
 import { ArrowUpIcon, PaperclipIcon } from 'lucide-react';
 import { StopIcon } from '../icons';
 import { PreviewAttachment } from './preview-attachment';
-import { SuggestedActions } from './suggested-actions';
+import { SuggestedAction, SuggestedActions } from './suggested-actions';
 
 function PureMultimodalInput({
+  suggestedActions,
   chatId,
   input,
   setInput,
@@ -36,6 +37,7 @@ function PureMultimodalInput({
   handleSubmit,
   className
 }: {
+  suggestedActions?: SuggestedAction[];
   chatId: string;
   input: UseChatHelpers['input'];
   setInput: UseChatHelpers['setInput'];
@@ -99,8 +101,6 @@ function PureMultimodalInput({
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
   const submitForm = useCallback(() => {
-    window.history.replaceState({}, '', `/chat/${chatId}`);
-
     handleSubmit(undefined, {
       experimental_attachments: attachments
     });
@@ -165,7 +165,7 @@ function PureMultimodalInput({
   return (
     <div className="relative flex w-full flex-col gap-4">
       {messages.length === 0 && attachments.length === 0 && uploadQueue.length === 0 && (
-        <SuggestedActions append={append} />
+        <SuggestedActions suggestedActions={suggestedActions} append={append} />
       )}
 
       <input
@@ -204,7 +204,7 @@ function PureMultimodalInput({
         value={input}
         onChange={handleInput}
         className={cn(
-          'bg-muted max-h-[calc(75dvh)] min-h-[24px] resize-none overflow-hidden rounded-2xl pb-10 !text-base focus-visible:ring-0 dark:border-zinc-700',
+          'bg-muted max-h-[calc(75dvh)] min-h-[24px] resize-none overflow-hidden rounded-2xl pb-10 !text-base focus-visible:ring-0 focus-visible:ring-offset-0 dark:border-zinc-700',
           className
         )}
         rows={2}

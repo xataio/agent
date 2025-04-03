@@ -1,27 +1,11 @@
-import { actionGetScheduleRun } from '~/components/chats/actions';
-import { ChatsUI } from '~/components/chats/chats-ui';
-import { listConnections } from '~/lib/db/connections';
+import { redirect } from 'next/navigation';
+import { generateUUID } from '~/components/chat/utils';
 
 type PageParams = {
   project: string;
 };
 
-type SearchParams = {
-  runId?: string;
-};
-
-export default async function Page({
-  params,
-  searchParams
-}: {
-  params: Promise<PageParams>;
-  searchParams: Promise<SearchParams>;
-}) {
+export default async function Page({ params }: { params: Promise<PageParams> }) {
   const { project } = await params;
-  const { runId } = await searchParams;
-
-  const connections = await listConnections(project);
-  const scheduleRun = await actionGetScheduleRun(runId);
-
-  return <ChatsUI connections={connections} scheduleRun={scheduleRun} />;
+  redirect(`/projects/${project}/chats/${generateUUID()}`);
 }
