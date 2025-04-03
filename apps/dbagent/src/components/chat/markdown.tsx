@@ -1,90 +1,50 @@
+import { Code } from '@internal/components';
 import Link from 'next/link';
 import { memo } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { CodeBlock } from './code-block';
 
 const components: Partial<Components> = {
   // @ts-expect-error
-  code: CodeBlock,
+  code: ({ children }) => <Code variant="primary">{children}</Code>,
   pre: ({ children }) => <>{children}</>,
   ol: ({ node, children, ...props }) => {
-    return (
-      <ol className="ml-4 list-outside list-decimal" {...props}>
-        {children}
-      </ol>
-    );
+    return <ol {...props}>{children}</ol>;
   },
   li: ({ node, children, ...props }) => {
-    return (
-      <li className="py-1" {...props}>
-        {children}
-      </li>
-    );
+    return <li {...props}>{children}</li>;
   },
   ul: ({ node, children, ...props }) => {
-    return (
-      <ul className="ml-4 list-outside list-decimal" {...props}>
-        {children}
-      </ul>
-    );
+    return <ul {...props}>{children}</ul>;
   },
   strong: ({ node, children, ...props }) => {
-    return (
-      <span className="font-semibold" {...props}>
-        {children}
-      </span>
-    );
+    return <span {...props}>{children}</span>;
   },
   a: ({ node, children, ...props }) => {
     return (
       // @ts-expect-error
-      <Link className="text-blue-500 hover:underline" target="_blank" rel="noreferrer" {...props}>
+      <Link className="text-link hover:underline" target="_blank" rel="noreferrer" {...props}>
         {children}
       </Link>
     );
   },
   h1: ({ node, children, ...props }) => {
-    return (
-      <h1 className="mb-2 mt-6 text-3xl font-semibold" {...props}>
-        {children}
-      </h1>
-    );
+    return <h1 {...props}>{children}</h1>;
   },
   h2: ({ node, children, ...props }) => {
-    return (
-      <h2 className="mb-2 mt-6 text-2xl font-semibold" {...props}>
-        {children}
-      </h2>
-    );
+    return <h2 {...props}>{children}</h2>;
   },
   h3: ({ node, children, ...props }) => {
-    return (
-      <h3 className="mb-2 mt-6 text-xl font-semibold" {...props}>
-        {children}
-      </h3>
-    );
+    return <h3 {...props}>{children}</h3>;
   },
   h4: ({ node, children, ...props }) => {
-    return (
-      <h4 className="mb-2 mt-6 text-lg font-semibold" {...props}>
-        {children}
-      </h4>
-    );
+    return <h4 {...props}>{children}</h4>;
   },
   h5: ({ node, children, ...props }) => {
-    return (
-      <h5 className="mb-2 mt-6 text-base font-semibold" {...props}>
-        {children}
-      </h5>
-    );
+    return <h5 {...props}>{children}</h5>;
   },
   h6: ({ node, children, ...props }) => {
-    return (
-      <h6 className="mb-2 mt-6 text-sm font-semibold" {...props}>
-        {children}
-      </h6>
-    );
+    return <h6 {...props}>{children}</h6>;
   }
 };
 

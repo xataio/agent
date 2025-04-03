@@ -1,7 +1,7 @@
 'use client';
 
 import { UseChatHelpers } from '@ai-sdk/react';
-import { Button, cn, Tooltip, TooltipContent, TooltipTrigger } from '@internal/components';
+import { Button, cn, Tooltip, TooltipContent, TooltipTrigger, Typography } from '@internal/components';
 import type { UIMessage } from 'ai';
 import equal from 'fast-deep-equal';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -38,7 +38,7 @@ const PurePreviewMessage = ({
     <AnimatePresence>
       <motion.div
         data-testid={`message-${message.role}`}
-        className="group/message mx-auto w-full max-w-3xl px-4"
+        className="group/message mx-auto w-full max-w-3xl"
         initial={{ y: 5, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         data-role={message.role}
@@ -62,7 +62,7 @@ const PurePreviewMessage = ({
 
           <div className="flex w-full flex-col gap-4">
             {message.experimental_attachments && (
-              <div data-testid={`message-attachments`} className="flex flex-row justify-end gap-2">
+              <div data-testid="message-attachments" className="flex flex-row justify-end gap-2">
                 {message.experimental_attachments.map((attachment) => (
                   <PreviewAttachment key={attachment.url} attachment={attachment} />
                 ))}
@@ -80,7 +80,7 @@ const PurePreviewMessage = ({
               if (type === 'text') {
                 if (mode === 'view') {
                   return (
-                    <div key={key} className="flex flex-row items-start gap-2">
+                    <div key={key} className="flex flex-row items-start">
                       {message.role === 'user' && !isReadonly && (
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -101,11 +101,18 @@ const PurePreviewMessage = ({
 
                       <div
                         data-testid="message-content"
-                        className={cn('flex flex-col gap-4', {
-                          'bg-primary text-primary-foreground rounded-xl px-3 py-2': message.role === 'user'
+                        className={cn('flex flex-col', {
+                          'bg-primary !text-primary-foreground rounded-xl px-3 py-2': message.role === 'user',
+                          '': message.role !== 'user'
                         })}
                       >
-                        <Markdown>{part.text}</Markdown>
+                        {message.role === 'user' ? (
+                          <Markdown>{part.text}</Markdown>
+                        ) : (
+                          <Typography>
+                            <Markdown>{part.text}</Markdown>
+                          </Typography>
+                        )}
                       </div>
                     </div>
                   );
@@ -144,8 +151,10 @@ const PurePreviewMessage = ({
                   const { result } = toolInvocation;
 
                   return (
-                    <div key={toolCallId}>
-                      <pre>{JSON.stringify(result, null, 2)}</pre>
+                    <div key={toolCallId} className="tool-invocation flex w-full flex-col items-start gap-2">
+                      <pre className="prose prose-sm w-full max-w-full whitespace-pre-wrap break-all">
+                        {JSON.stringify(result, null, 2)}
+                      </pre>
                     </div>
                   );
                 }
@@ -183,7 +192,7 @@ export const ThinkingMessage = () => {
   return (
     <motion.div
       data-testid="message-assistant-loading"
-      className="group/message mx-auto w-full max-w-3xl px-4"
+      className="group/message mx-auto w-full max-w-3xl"
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1, transition: { delay: 1 } }}
       data-role={role}
