@@ -1,7 +1,7 @@
 import { getConnectionInfo } from '../db/connection-info';
 import { Connection } from '../db/connections';
 import { getProjectById } from '../db/projects';
-import { findTableSchema, getPerformanceSettings, getVacuumSettings } from '../targetdb/db';
+import { ClientBase, findTableSchema, getPerformanceSettings, getVacuumSettings } from '../targetdb/db';
 
 export async function getTablesAndInstanceInfo(connection: Connection, asUserId?: string): Promise<string> {
   try {
@@ -23,9 +23,9 @@ ${JSON.stringify(project)}
   }
 }
 
-export async function getPerformanceAndVacuumSettings(connString: string): Promise<string> {
-  const performanceSettings = await getPerformanceSettings(connString);
-  const vacuumSettings = await getVacuumSettings(connString);
+export async function getPerformanceAndVacuumSettings(client: ClientBase): Promise<string> {
+  const performanceSettings = await getPerformanceSettings(client);
+  const vacuumSettings = await getVacuumSettings(client);
 
   return `
 Performance settings: ${JSON.stringify(performanceSettings)}
@@ -38,9 +38,9 @@ export async function getPostgresExtensions(connection: Connection, asUserId?: s
   return `Extensions: ${JSON.stringify(extensions)}`;
 }
 
-export async function toolFindTableSchema(connString: string, tableName: string): Promise<string> {
+export async function toolFindTableSchema(client: ClientBase, tableName: string): Promise<string> {
   try {
-    const result = await findTableSchema(connString, tableName);
+    const result = await findTableSchema(client, tableName);
     return result;
   } catch (error) {
     console.error('Error finding schema for table', error);
