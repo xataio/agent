@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
   const connection = await getConnection(connectionId);
   if (!connection) {
-    return new Response('Connection not found', { status: 404 });
+    return new Response('Connection not found', { status: 400 });
   }
   try {
     const context = chatSystemPrompt;
