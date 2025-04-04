@@ -42,11 +42,11 @@ export function PlaybooksTable() {
   };
 
   const handleCopyBuiltInPlaybook = (playBookName: string) => {
-    router.push(`/projects/${project}/playbooks/new?playbookName=${playBookName}`);
+    router.push(`/projects/${project}/playbooks/new?playbookName=${playBookName}&copyCount=0`);
   };
 
   const handleCopyCustomPlaybook = (customPlaybookId: string) => {
-    router.push(`/projects/${project}/playbooks/new?customPlaybookId=${customPlaybookId}`);
+    router.push(`/projects/${project}/playbooks/new?customPlaybookId=${customPlaybookId}&copyCount=0`);
   };
 
   useEffect(() => {
