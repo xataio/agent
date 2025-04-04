@@ -22,10 +22,10 @@ function PureMessages({ chatId, status, votes, messages, setMessages, reload, is
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
   return (
-    <div ref={messagesContainerRef} className="flex min-w-0 flex-1 flex-col gap-6 overflow-y-scroll pt-4">
+    <div ref={messagesContainerRef} className="flex h-full flex-1 flex-col gap-6">
       {messages.length === 0 && (
-        <div className="flex h-full w-full items-center justify-center">
-          <XataAgentLogo size={160} />
+        <div className="flex h-full flex-col items-center justify-center">
+          <XataAgentLogo size={300} />
         </div>
       )}
 

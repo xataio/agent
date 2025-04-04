@@ -55,19 +55,21 @@ export function Chat({
 
   return (
     <>
-      <div className="bg-background flex h-full min-w-0 flex-col">
-        <Messages
-          chatId={id}
-          status={status}
-          votes={votes}
-          messages={messages}
-          setMessages={setMessages}
-          reload={reload}
-          isReadonly={isReadonly}
-          isArtifactVisible={isArtifactVisible}
-        />
+      <div className="bg-background flex h-screen flex-col">
+        <div className="flex-1 space-y-2 overflow-y-auto pt-24">
+          <Messages
+            chatId={id}
+            status={status}
+            votes={votes}
+            messages={messages}
+            setMessages={setMessages}
+            reload={reload}
+            isReadonly={isReadonly}
+            isArtifactVisible={isArtifactVisible}
+          />
+        </div>
 
-        <form className="bg-background mx-auto flex w-full gap-2 px-4 pb-4 md:max-w-3xl md:pb-6">
+        <form className="bg-background mx-auto flex w-full gap-2 px-4 pb-4 pt-2 md:max-w-3xl md:pb-6">
           {!isReadonly && (
             <MultimodalInput
               suggestedActions={suggestedActions}
