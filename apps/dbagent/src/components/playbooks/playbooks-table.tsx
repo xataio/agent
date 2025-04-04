@@ -1,7 +1,20 @@
 'use client';
 
-import { Button, Code, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@internal/components';
-import { BookOpenIcon, ClockIcon, PencilIcon, PlayIcon } from 'lucide-react';
+import {
+  Button,
+  Code,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@internal/components';
+import { BookOpenIcon, ClockIcon, CopyIcon, MoreVerticalIcon, PencilIcon, PlayIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -26,6 +39,14 @@ export function PlaybooksTable() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleCopyBuiltInPlaybook = (playBookName: string) => {
+    router.push(`/projects/${project}/playbooks/new?playbookName=${playBookName}`);
+  };
+
+  const handleCopyCustomPlaybook = (customPlaybookId: string) => {
+    router.push(`/projects/${project}/playbooks/new?customPlaybookId=${customPlaybookId}`);
   };
 
   useEffect(() => {
@@ -79,29 +100,36 @@ export function PlaybooksTable() {
                   <Button
                     variant="outline"
                     size="icon"
-                    title="View playbook details"
-                    onClick={() => router.push(`/projects/${project}/playbooks/${playbook.name}`)}
-                  >
-                    <BookOpenIcon className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
                     title="Run playbook"
                     onClick={() => router.push(`/projects/${project}/chats?playbook=${playbook.name}`)}
                   >
                     <PlayIcon className="h-3 w-3" />
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    title="Schedule playbook"
-                    onClick={() =>
-                      router.push(`/projects/${project}/monitoring/schedule/add?playbook=${playbook.name}`)
-                    }
-                  >
-                    <ClockIcon className="h-3 w-3" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="icon">
+                        <MoreVerticalIcon className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => router.push(`/projects/${project}/playbooks/${playbook.name}`)}>
+                        <BookOpenIcon className="mr-2 h-3 w-3" />
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          router.push(`/projects/${project}/monitoring/schedule/add?playbook=${playbook.name}`)
+                        }
+                      >
+                        <ClockIcon className="mr-2 h-3 w-3" />
+                        Schedule
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleCopyBuiltInPlaybook(playbook.name)}>
+                        <CopyIcon className="mr-2 h-3 w-3" />
+                        Copy Playbook
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </TableCell>
             </TableRow>
@@ -121,38 +149,44 @@ export function PlaybooksTable() {
                   <Button
                     variant="outline"
                     size="icon"
-                    title="View playbook details"
-                    onClick={() => router.push(`/projects/${project}/playbooks/${customPlaybook.id}`)}
-                  >
-                    <BookOpenIcon className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
                     title="Run playbook"
                     onClick={() => router.push(`/projects/${project}/chats?playbook=${customPlaybook.name}`)}
                   >
                     <PlayIcon className="h-3 w-3" />
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    title="Schedule playbook"
-                    onClick={() =>
-                      router.push(`/projects/${project}/monitoring/schedule/add?playbook=${customPlaybook.name}`)
-                    }
-                  >
-                    <ClockIcon className="h-3 w-3" />
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    title="Edit playbook"
-                    onClick={() => router.push(`/projects/${project}/playbooks/${customPlaybook.id}/edit`)}
-                  >
-                    <PencilIcon className="h-3 w-3" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="icon">
+                        <MoreVerticalIcon className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => router.push(`/projects/${project}/playbooks/${customPlaybook.id}`)}
+                      >
+                        <BookOpenIcon className="mr-2 h-3 w-3" />
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          router.push(`/projects/${project}/monitoring/schedule/add?playbook=${customPlaybook.name}`)
+                        }
+                      >
+                        <ClockIcon className="mr-2 h-3 w-3" />
+                        Schedule
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => router.push(`/projects/${project}/playbooks/${customPlaybook.id}/edit`)}
+                      >
+                        <PencilIcon className="mr-2 h-3 w-3" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleCopyCustomPlaybook(customPlaybook.id)}>
+                        <CopyIcon className="mr-2 h-3 w-3" />
+                        Copy Playbook
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </TableCell>
             </TableRow>
