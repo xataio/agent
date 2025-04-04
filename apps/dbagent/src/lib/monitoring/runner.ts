@@ -36,7 +36,7 @@ async function runModelPlaybook({
     model: modelInstance,
     system: monitoringSystemPrompt,
     messages: messages,
-    tools: await getTools(connection, schedule.userId),
+    tools: await getTools(connection, schedule.userId, schedule.projectId),
     maxSteps: 20
   });
 

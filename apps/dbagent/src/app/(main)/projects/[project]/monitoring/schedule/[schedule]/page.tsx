@@ -1,5 +1,6 @@
 import { actionListPlaybooks } from '~/components/monitoring/actions';
 import { ScheduleForm } from '~/components/monitoring/schedule-form';
+import { actionListCustomPlaybooksNames } from '~/components/playbooks/action';
 import { listConnections } from '~/lib/db/connections';
 
 type PageParams = {
@@ -10,7 +11,10 @@ type PageParams = {
 export default async function Page({ params }: { params: Promise<PageParams> }) {
   const { project, schedule } = await params;
 
-  const playbooks = await actionListPlaybooks();
+  const builtInPlaybooks = await actionListPlaybooks();
+  const customPlaybooks = (await actionListCustomPlaybooksNames(project)) ?? [];
+  const playbooks = [...builtInPlaybooks, ...customPlaybooks];
+
   const connections = await listConnections(project);
 
   return (
