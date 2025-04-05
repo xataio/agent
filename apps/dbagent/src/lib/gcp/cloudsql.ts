@@ -1,4 +1,4 @@
-import { Monitoring } from '@google-cloud/monitoring';
+import { MetricServiceClient } from '@google-cloud/monitoring';
 import { auth, sqladmin_v1beta4 } from '@googleapis/sqladmin';
 
 export interface CloudSQLInstanceInfo {
@@ -150,7 +150,7 @@ export async function getCloudSQLInstanceDetails(
 }
 
 export async function getCloudSQLInstanceMetric(
-  client: Monitoring,
+  client: MetricServiceClient,
   gcpProjectId: string,
   instanceName: string,
   metricName: string,
@@ -181,12 +181,12 @@ export async function getCloudSQLInstanceMetric(
       name: projectPath,
       filter: filter,
       interval: {
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString()
+        startTime: { seconds: Math.floor(startTime.getTime() / 1000) },
+        endTime: { seconds: Math.floor(endTime.getTime() / 1000) }
       },
       aggregation: {
         alignmentPeriod: { seconds: period.toString() },
-        perSeriesAligner: 'ALIGN_MEAN'
+        perSeriesAligner: 'ALIGN_MEAN' as const
       }
     };
 
@@ -196,14 +196,17 @@ export async function getCloudSQLInstanceMetric(
       return [];
     }
 
-    return (
-      timeSeries[0].points?.map(
-        (point: { interval: { startTime: any }; value: { doubleValue: any; int64Value: any } }) => ({
-          timestamp: new Date(point.interval?.startTime || ''),
-          value: Number(point.value?.doubleValue || point.value?.int64Value || 0)
-        })
-      ) || []
-    );
+    const firstTimeSeries = timeSeries[0];
+    if (!firstTimeSeries || !firstTimeSeries.points) {
+      return [];
+    }
+
+    return firstTimeSeries.points.map((point) => ({
+      timestamp: new Date(
+        point.interval?.startTime?.seconds ? Number(point.interval.startTime.seconds) * 1000 : Date.now()
+      ),
+      value: Number(point.value?.doubleValue || point.value?.int64Value || 0)
+    }));
   } catch (error) {
     console.error('Error fetching CloudSQL instance metrics:', error);
     return [];

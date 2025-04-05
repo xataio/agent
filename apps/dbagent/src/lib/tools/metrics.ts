@@ -1,8 +1,10 @@
+import monitoring from '@google-cloud/monitoring';
 import { getRDSClusterMetric, getRDSInstanceMetric } from '../aws/rds';
 import { getClusterByConnection } from '../db/aws-clusters';
 import { Connection } from '../db/connections';
 import { getInstanceByConnection } from '../db/gcp-instances';
 import { getIntegration } from '../db/integrations';
+import { getCloudSQLInstanceMetric } from '../gcp/cloudsql';
 
 type GetClusterMetricParams = {
   connection: Connection;
@@ -23,6 +25,9 @@ export async function getClusterMetric({
     return getClusterMetricRDS({ connection, metricName, periodInSeconds, asUserId });
   } else if (cloudProvider === 'gcp') {
     return getClusterMetricGCP({ connection, metricName, periodInSeconds, asUserId });
+  } else {
+    console.error(`I can't fetch metrics for [${cloudProvider}] cloud provider`);
+    return `I can't fetch metrics for [${cloudProvider}] cloud provider`;
   }
 }
 
@@ -88,6 +93,14 @@ export async function getClusterMetricGCP({
     return 'GCP credentials not configured';
   }
 
+  const privateKey = gcpCredentials.privateKey.split(String.raw`\n`).join('\n');
+  const client = new monitoring.MetricServiceClient({
+    credentials: {
+      client_email: gcpCredentials.clientEmail,
+      private_key: privateKey
+    }
+  });
+
   const instance = await getInstanceByConnection(connection.id, asUserId);
   if (!instance) {
     return 'Instance not found';
@@ -98,13 +111,18 @@ export async function getClusterMetricGCP({
 
   try {
     const datapoints = await getCloudSQLInstanceMetric(
+      client,
+      connection.projectId,
       instance.instanceName,
-      instance.region,
-      gcpCredentials,
       metricName,
       startTime,
       endTime
     );
+    const toReturn = datapoints
+      .map((datapoint) => `${datapoint.timestamp.toISOString()}: ${datapoint.value}`)
+      .join('\n');
+    console.log('metric result', toReturn);
+    return toReturn;
   } catch (error) {
     console.error('Error fetching GCP instance metric', error);
     return 'Error fetching GCP instance metric';
