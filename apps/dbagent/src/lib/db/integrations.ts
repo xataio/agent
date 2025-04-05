@@ -10,6 +10,12 @@ export type AwsIntegration = {
   region: string;
 };
 
+export type GcpIntegration = {
+  clientEmail: string;
+  privateKey: string;
+  gcpProjectId: string;
+};
+
 export type SlackIntegration = {
   webhookUrl: string;
 };
@@ -22,6 +28,10 @@ type IntegrationTypes =
   | {
       type: 'slack';
       data: SlackIntegration;
+    }
+  | {
+      type: 'gcp';
+      data: GcpIntegration;
     };
 
 export async function saveIntegration<

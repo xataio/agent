@@ -22,6 +22,11 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Skeleton,
   toast
 } from '@internal/components';
@@ -34,8 +39,15 @@ interface ProjectListProps {
   projects: Project[];
 }
 
+const CloudProviders = [
+  { name: 'AWS', value: 'aws' },
+  { name: 'GCP', value: 'gcp' },
+  { name: 'Other', value: 'other' }
+];
+
 function CreateProjectButton() {
   const [projectName, setProjectName] = useState('');
+  const [cloudProvider, setCloudProvider] = useState(CloudProviders[0]?.value || 'aws');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -46,7 +58,10 @@ function CreateProjectButton() {
     setIsLoading(true);
 
     try {
-      const projectId = await createProject({ name: projectName });
+      const projectId = await createProject({
+        name: projectName,
+        cloudProvider
+      });
       router.push(`/projects/${projectId}/start`);
     } catch (error: any) {
       toast.error(error.message);
@@ -78,6 +93,23 @@ function CreateProjectButton() {
                 required
                 className="border-primary/20 focus-visible:ring-primary/30"
               />
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="cloudProvider" className="text-sm font-medium">
+                Cloud Provider
+              </Label>
+              <Select value={cloudProvider} onValueChange={setCloudProvider}>
+                <SelectTrigger className="border-primary/20 focus-visible:ring-primary/30">
+                  <SelectValue placeholder="Select a cloud provider" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CloudProviders.map((provider) => (
+                    <SelectItem key={provider.value} value={provider.value}>
+                      {provider.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="mt-4 flex justify-end space-x-2">
@@ -263,6 +295,7 @@ function CreateProjectOnboarding() {
   const router = useRouter();
 
   const [projectName, setProjectName] = useState('');
+  const [cloudProvider, setCloudProvider] = useState(CloudProviders[0]?.value || 'aws');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -272,7 +305,10 @@ function CreateProjectOnboarding() {
     setIsLoading(true);
 
     try {
-      const projectId = await createProject({ name: projectName });
+      const projectId = await createProject({
+        name: projectName,
+        cloudProvider
+      });
       router.push(`/projects/${projectId}/start`);
     } catch (error: any) {
       toast.error(error.message);
@@ -313,6 +349,23 @@ function CreateProjectOnboarding() {
                   required
                   className="border-primary/20 focus-visible:ring-primary/30"
                 />
+              </div>
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="cloudProvider" className="text-sm font-medium">
+                  Cloud Provider
+                </Label>
+                <Select value={cloudProvider} onValueChange={setCloudProvider}>
+                  <SelectTrigger className="border-primary/20 focus-visible:ring-primary/30">
+                    <SelectValue placeholder="Select a cloud provider" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CloudProviders.map((provider) => (
+                      <SelectItem key={provider.value} value={provider.value}>
+                        {provider.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardContent>
