@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { Connection } from '~/lib/db/connections';
 import { Project } from '~/lib/db/projects';
 import { getPostgresExtensions, getTablesAndInstanceInfo } from '~/lib/tools/dbinfo';
-import { getInstanceLogs } from '~/lib/tools/logs';
+import { getInstanceLogsGCP, getInstanceLogsRDS } from '~/lib/tools/logs';
 import { getClusterMetricGCP, getClusterMetricRDS } from '~/lib/tools/metrics';
 import { ToolsetGroup } from './types';
 
@@ -29,13 +29,14 @@ export class DBClusterTools implements ToolsetGroup {
       return {
         getTablesAndInstanceInfo: this.getTablesAndInstanceInfo(),
         getPostgresExtensions: this.getPostgresExtensions(),
-        getInstanceLogs: this.getInstanceLogs(),
+        getInstanceLogs: this.getInstanceLogsRDS(),
         getInstanceMetric: this.getInstanceMetricRDS()
       };
     } else if (this._project.cloudProvider === 'gcp') {
       return {
         getTablesAndInstanceInfo: this.getTablesAndInstanceInfo(),
         getPostgresExtensions: this.getPostgresExtensions(),
+        getInstanceLogs: this.getInstanceLogsGCP(),
         getInstanceMetric: this.getInstanceMetricGCP()
       };
     } else {
@@ -71,7 +72,7 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
     });
   }
 
-  private getInstanceLogs(): Tool {
+  private getInstanceLogsRDS(): Tool {
     const getter = this._connection;
     return tool({
       description: `Get the recent logs from the RDS instance. You can specify the period in seconds and optionally grep for a substring.`,
@@ -82,7 +83,23 @@ instance/cluster on which the DB is running. Useful during the initial assessmen
       execute: async ({ periodInSeconds, grep }) => {
         console.log('getInstanceLogs', periodInSeconds, grep);
         const { connection, asUserId } = await getter();
-        return await getInstanceLogs({ connection, periodInSeconds, grep, asUserId });
+        return await getInstanceLogsRDS({ connection, periodInSeconds, grep, asUserId });
+      }
+    });
+  }
+
+  private getInstanceLogsGCP(): Tool {
+    const getter = this._connection;
+    return tool({
+      description: `Get the recent logs from a GCP CloudSQL instance. You can specify the period in seconds and optionally grep for a substring.`,
+      parameters: z.object({
+        periodInSeconds: z.number(),
+        grep: z.string().optional()
+      }),
+      execute: async ({ periodInSeconds, grep }) => {
+        console.log('getInstanceLogs', periodInSeconds, grep);
+        const { connection, asUserId } = await getter();
+        return await getInstanceLogsGCP({ connection, periodInSeconds, grep, asUserId });
       }
     });
   }

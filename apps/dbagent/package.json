@@ -25,6 +25,7 @@
     "@aws-sdk/client-cloudwatch": "^3.777.0",
     "@aws-sdk/client-rds": "^3.777.0",
     "@fluentui/react-icons": "^2.0.292",
+    "@google-cloud/logging": "^11.2.0",
     "@google-cloud/monitoring": "^5.0.1",
     "@googleapis/sqladmin": "^27.0.0",
     "@internal/components": "workspace:*",

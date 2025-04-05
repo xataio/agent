@@ -1,3 +1,4 @@
+import { Logging } from '@google-cloud/logging';
 import { MetricServiceClient } from '@google-cloud/monitoring';
 import { auth, sqladmin_v1beta4 } from '@googleapis/sqladmin';
 
@@ -70,6 +71,26 @@ export function initializeMonitoringClient(credentials: GCPCredentials, gcpProje
     throw new Error(
       `Failed to initialize MetricServiceClient: ${error instanceof Error ? error.message : String(error)}`
     );
+  }
+}
+
+export function initializeLoggingClient(credentials: GCPCredentials, gcpProjectId: string): Logging {
+  const privateKey = credentials.privateKey.split(String.raw`\n`).join('\n');
+
+  try {
+    const client = new Logging({
+      credentials: {
+        client_email: credentials.clientEmail,
+        private_key: privateKey
+      },
+      projectId: gcpProjectId,
+      apiEndpoint: 'logging.googleapis.com'
+    });
+
+    return client;
+  } catch (error) {
+    console.error('Error initializing Logging client:', error);
+    throw new Error(`Failed to initialize Logging client: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -257,6 +278,71 @@ export async function getCloudSQLInstanceMetric(
     }));
   } catch (error) {
     console.error('Error fetching CloudSQL instance metrics:', error);
+    // Return empty array instead of throwing to allow the application to continue
+    return [];
+  }
+}
+
+export async function getCloudSQLPostgresLogs(
+  client: Logging,
+  gcpProjectId: string,
+  instanceName: string,
+  startTime: Date = new Date(Date.now() - 1 * 60 * 60 * 1000),
+  grep?: string
+): Promise<{ timestamp: Date; message: string }[]> {
+  try {
+    const endTime = new Date();
+
+    let filter = `
+      resource.type="cloudsql_database"
+      resource.labels.database_id="${gcpProjectId}:${instanceName}"
+      log_name="projects/${gcpProjectId}/logs/cloudsql.googleapis.com%2Fpostgres.log"
+    `.trim();
+
+    if (grep) {
+      filter += `\ntextPayload : "${grep}"`;
+    }
+
+    const request = {
+      resourceNames: [`projects/${gcpProjectId}`],
+      filter: filter,
+      orderBy: 'timestamp desc',
+      pageSize: 1000,
+      interval: {
+        startTime: { seconds: Math.floor(startTime.getTime() / 1000) },
+        endTime: { seconds: Math.floor(endTime.getTime() / 1000) }
+      }
+    };
+
+    console.log('Requesting logs with:', request);
+
+    // Add a timeout to prevent hanging
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        reject(new Error('Log request timed out after 30 seconds'));
+      }, 30000);
+    });
+
+    // Race the actual request against the timeout
+    const [entries] = await Promise.race([client.getEntries(request), timeoutPromise]);
+
+    console.log('Received log entries:', entries ? entries.length : 'none');
+
+    if (!entries || entries.length === 0) {
+      console.log('No log entries found for the specified criteria');
+      return [];
+    }
+
+    console.log(`Retrieved ${entries.length} log entries`);
+
+    return entries.map((entry: any) => ({
+      timestamp: new Date(
+        entry.metadata?.timestamp?.seconds ? Number(entry.metadata.timestamp.seconds) * 1000 : Date.now()
+      ),
+      message: entry.metadata?.textPayload || ''
+    }));
+  } catch (error) {
+    console.error('Error fetching CloudSQL Postgres logs:', error);
     // Return empty array instead of throwing to allow the application to continue
     return [];
   }
