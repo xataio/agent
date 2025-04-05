@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { ExpectStatic } from 'vitest';
 import { chatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
 import { Connection } from '~/lib/db/connections';
+import { Project } from '~/lib/db/projects';
 import { env } from '~/lib/env/eval';
 import { getTargetDbConnection } from '~/lib/targetdb/db';
 import { traceVercelAiResponse } from './trace';
@@ -23,12 +24,17 @@ export const evalChat = async ({
     projectId: 'projectId',
     isDefault: true
   };
+  const project: Project = {
+    id: 'projectId',
+    name: 'projectName',
+    cloudProvider: 'aws'
+  };
   const targetClient = await getTargetDbConnection(dbConnection);
   try {
     const response = await generateText({
       model: getModelInstance(env.CHAT_MODEL),
       system: chatSystemPrompt,
-      tools: await getTools(connection),
+      tools: await getTools(project, connection),
       messages,
       maxSteps: 20
     });

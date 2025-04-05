@@ -43,6 +43,36 @@ export function initializeCloudSQLClient(credentials: GCPCredentials): sqladmin_
   });
 }
 
+export function initializeMonitoringClient(credentials: GCPCredentials, gcpProjectId: string): MetricServiceClient {
+  const privateKey = credentials.privateKey.split(String.raw`\n`).join('\n');
+
+  try {
+    // Create a more explicit configuration with fallback options
+    const client = new MetricServiceClient({
+      credentials: {
+        client_email: credentials.clientEmail,
+        private_key: privateKey
+      },
+      projectId: gcpProjectId,
+      // Add a timeout to prevent hanging
+      timeout: 30000, // 30 seconds
+      // Explicitly set the API endpoint
+      apiEndpoint: 'monitoring.googleapis.com',
+      // Add fallback options to avoid protos.json dependency
+      fallback: true,
+      // Disable protos loading
+      protos: false
+    });
+
+    return client;
+  } catch (error) {
+    console.error('Error initializing MetricServiceClient:', error);
+    throw new Error(
+      `Failed to initialize MetricServiceClient: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
 export async function listCloudSQLInstances(
   client: sqladmin_v1beta4.Sqladmin,
   gcpProjectId: string
@@ -175,7 +205,11 @@ export async function getCloudSQLInstanceMetric(
     }
 
     const projectPath = `projects/${gcpProjectId}`;
-    const filter = `metric.type = "cloudsql.googleapis.com/${metricName}" AND resource.labels.database_id = "${instanceName}"`;
+    // Extract metric name if it starts with cloudsql.googleapis.com/
+    const normalizedMetricName = metricName.startsWith('cloudsql.googleapis.com/')
+      ? metricName.substring('cloudsql.googleapis.com/'.length)
+      : metricName;
+    const filter = `metric.type = "cloudsql.googleapis.com/${normalizedMetricName}" AND resource.labels.database_id = "${gcpProjectId}:${instanceName}"`;
 
     const request = {
       name: projectPath,
@@ -190,14 +224,28 @@ export async function getCloudSQLInstanceMetric(
       }
     };
 
-    const [timeSeries] = await client.listTimeSeries(request);
+    console.log('Requesting metrics with:', request);
+
+    // Add a timeout to prevent hanging
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        reject(new Error('Metric request timed out after 30 seconds'));
+      }, 30000);
+    });
+
+    // Race the actual request against the timeout
+    const [timeSeries] = await Promise.race([client.listTimeSeries(request), timeoutPromise]);
+
+    console.log('Received timeSeries response:', timeSeries ? 'success' : 'empty');
 
     if (!timeSeries || timeSeries.length === 0) {
+      console.log('No time series data found for the specified criteria');
       return [];
     }
 
     const firstTimeSeries = timeSeries[0];
     if (!firstTimeSeries || !firstTimeSeries.points) {
+      console.log('No points found in the time series');
       return [];
     }
 
@@ -209,6 +257,7 @@ export async function getCloudSQLInstanceMetric(
     }));
   } catch (error) {
     console.error('Error fetching CloudSQL instance metrics:', error);
+    // Return empty array instead of throwing to allow the application to continue
     return [];
   }
 }

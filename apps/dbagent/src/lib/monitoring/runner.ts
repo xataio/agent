@@ -3,6 +3,7 @@ import { generateId, generateObject, generateText, LanguageModelV1 } from 'ai';
 import { z } from 'zod';
 import { getModelInstance, getTools, monitoringSystemPrompt } from '../ai/aidba';
 import { Connection, getConnectionFromSchedule } from '../db/connections';
+import { getProjectById } from '../db/projects';
 import { insertScheduleRunLimitHistory, ScheduleRun } from '../db/schedule-runs';
 import { Schedule } from '../db/schedules';
 import { sendScheduleNotification } from '../notifications/slack-webhook';
@@ -32,11 +33,16 @@ async function runModelPlaybook({
     createdAt: new Date()
   });
 
+  const project = await getProjectById(connection.projectId);
+  if (!project) {
+    throw new Error(`Project ${connection.projectId} not found`);
+  }
+
   const result = await generateText({
     model: modelInstance,
     system: monitoringSystemPrompt,
     messages: messages,
-    tools: await getTools(connection, schedule.userId),
+    tools: await getTools(project, connection, schedule.userId),
     maxSteps: 20
   });
 
