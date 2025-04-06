@@ -1,7 +1,6 @@
 'use client';
 
 import { Button } from '@internal/components';
-import { UploadCloud } from 'lucide-react';
 import { DragEvent, useRef, useState } from 'react';
 
 interface FileUploadProps {
@@ -77,7 +76,7 @@ export function FileUpload({ onFileLoaded, onError }: FileUploadProps) {
 
   return (
     <div
-      className={`rounded-lg border-2 border-dashed p-8 text-center ${
+      className={`rounded-lg border-2 border-dashed p-4 text-center ${
         isDragging ? 'border-primary bg-primary/10' : 'border-gray-300'
       }`}
       onDragOver={handleDragOver}
@@ -85,8 +84,7 @@ export function FileUpload({ onFileLoaded, onError }: FileUploadProps) {
       onDrop={handleDrop}
     >
       <input type="file" ref={fileInputRef} onChange={handleFileInput} accept="application/json" className="hidden" />
-      <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
-      <div className="mt-4">
+      <div>
         {fileName ? (
           <p className="text-sm font-medium">
             Uploaded: <span className="font-semibold">{fileName}</span>
@@ -94,7 +92,6 @@ export function FileUpload({ onFileLoaded, onError }: FileUploadProps) {
         ) : (
           <>
             <p className="text-sm font-medium">Drag and drop your GCP credentials JSON file</p>
-            <p className="mt-1 text-xs text-gray-500">or</p>
           </>
         )}
       </div>
