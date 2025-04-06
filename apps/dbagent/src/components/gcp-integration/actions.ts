@@ -107,3 +107,51 @@ export async function actionSaveInstanceDetails(
     return { success: false, message: 'Error saving instance connection' };
   }
 }
+
+export interface GCPCredentialsResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    gcpProjectId: string;
+    clientEmail: string;
+    privateKey: string;
+  };
+}
+
+export async function processGCPCredentialsFile(
+  projectId: string,
+  fileContents: string
+): Promise<GCPCredentialsResponse> {
+  try {
+    // Parse the JSON content
+    const credentials = JSON.parse(fileContents);
+
+    // Extract required fields
+    const gcpProjectId = credentials.project_id;
+    const clientEmail = credentials.client_email;
+    const privateKey = credentials.private_key;
+
+    // Validate the required fields
+    if (!gcpProjectId || !clientEmail || !privateKey) {
+      return {
+        success: false,
+        message: 'Missing required fields in credentials file. Please check the file format.'
+      };
+    }
+
+    // Save the integration
+    await saveIntegration(projectId, 'gcp', { clientEmail, privateKey, gcpProjectId });
+
+    return {
+      success: true,
+      message: 'GCP credentials processed successfully',
+      data: { gcpProjectId, clientEmail, privateKey }
+    };
+  } catch (error) {
+    console.error('Error processing GCP credentials file:', error);
+    return {
+      success: false,
+      message: 'Failed to process GCP credentials file. Please check the file format.'
+    };
+  }
+}
