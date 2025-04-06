@@ -134,36 +134,32 @@ export function GCPIntegration({ projectId, connections }: { projectId: string; 
         >
           <TabsContent value="file" className="mt-4">
             {gcpProjectId && clientEmail && privateKey ? (
-              <Alert className="mb-4">
-                <AlertDescription className="text-sm">
-                  Credentials currently configured for project{' '}
-                  <span className="font-bold text-green-500">{gcpProjectId || 'N/A'}</span> and service account:{' '}
-                  <span className="font-bold text-green-500">{clientEmail || 'N/A'}</span>. You can change the
-                  credentials by uploading another file below or{' '}
-                  <button
-                    type="button"
-                    className="text-primary cursor-pointer border-none bg-transparent p-0 font-normal underline"
-                    onClick={() => setInputMethod('manual')}
-                  >
-                    enter the credentials manually
-                  </button>
-                  .
-                </AlertDescription>
-              </Alert>
+              <div className="mb-4 text-sm">
+                Credentials currently configured for project{' '}
+                <span className="text-success font-bold">{gcpProjectId || 'N/A'}</span> and service account:{' '}
+                <span className="text-success font-bold">{clientEmail || 'N/A'}</span>. You can change the credentials
+                by uploading another file below or{' '}
+                <button
+                  type="button"
+                  className="text-primary cursor-pointer border-none bg-transparent p-0 font-normal underline"
+                  onClick={() => setInputMethod('manual')}
+                >
+                  enter the credentials manually
+                </button>
+                .
+              </div>
             ) : (
-              <Alert className="mb-4">
-                <AlertDescription className="text-sm">
-                  Upload the JSON credentials file below or{' '}
-                  <button
-                    type="button"
-                    className="text-primary cursor-pointer border-none bg-transparent p-0 font-normal underline"
-                    onClick={() => setInputMethod('manual')}
-                  >
-                    enter the credentials manually
-                  </button>
-                  .
-                </AlertDescription>
-              </Alert>
+              <div className="mb-4 text-sm">
+                Upload the JSON credentials file below or{' '}
+                <button
+                  type="button"
+                  className="text-primary cursor-pointer border-none bg-transparent p-0 font-normal underline"
+                  onClick={() => setInputMethod('manual')}
+                >
+                  enter the credentials manually
+                </button>
+                .
+              </div>
             )}
             <FileUpload onFileLoaded={handleFileUpload} onError={(message) => toast(`Error: ${message}`)} />
             <div className="mt-4">
