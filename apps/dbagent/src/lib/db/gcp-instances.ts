@@ -19,7 +19,7 @@ export async function saveInstance(instance: Omit<GCPInstance, 'id'>): Promise<s
       .insert(gcpInstances)
       .values(instance)
       .onConflictDoUpdate({
-        target: [gcpInstances.gcpProjectId, gcpInstances.instanceName],
+        target: [gcpInstances.projectId, gcpInstances.gcpProjectId, gcpInstances.instanceName],
         set: {
           data: instance.data
         }

@@ -197,7 +197,7 @@ export const gcpInstances = pgTable(
       name: 'fk_gcp_instances_project'
     }).onDelete('cascade'),
     index('idx_gcp_instances_project_id').on(table.projectId),
-    unique('uq_gcp_instances_instance_name').on(table.gcpProjectId, table.instanceName),
+    unique('uq_gcp_instances_instance_name').on(table.projectId, table.gcpProjectId, table.instanceName),
     pgPolicy('gcp_instances_policy', {
       to: authenticatedUser,
       for: 'all',
