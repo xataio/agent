@@ -51,8 +51,6 @@ export function GCPIntegration({ projectId, connections }: { projectId: string; 
         setClientEmail(response.data.clientEmail);
         setPrivateKey(response.data.privateKey);
         setGcpProjectId(response.data.gcpProjectId);
-        // If we have existing data, default to manual input
-        setInputMethod('manual');
       }
     };
     void loadGCPIntegration();
@@ -89,25 +87,6 @@ export function GCPIntegration({ projectId, connections }: { projectId: string; 
         setClientEmail(response.data.clientEmail);
         setPrivateKey(response.data.privateKey);
         toast('GCP credentials processed successfully');
-
-        // Automatically fetch instances after credentials are processed
-        const instancesResponse = await fetchCloudSQLInstances(
-          projectId,
-          response.data.gcpProjectId,
-          response.data.clientEmail,
-          response.data.privateKey
-        );
-
-        if (instancesResponse.success) {
-          if (instancesResponse.data.length === 0) {
-            toast('No Cloud SQL instances found');
-          } else {
-            setCloudSQLInstances(instancesResponse.data);
-            toast('Cloud SQL instances fetched successfully');
-          }
-        } else {
-          toast(`Error: Failed to fetch Cloud SQL instances. ${instancesResponse.message || ''}`);
-        }
       } else {
         toast(`Error: ${response.message}`);
       }
@@ -166,7 +145,14 @@ export function GCPIntegration({ projectId, connections }: { projectId: string; 
                 <Loader2 className="text-primary h-8 w-8 animate-spin" />
               </div>
             ) : (
-              <FileUpload onFileLoaded={handleFileUpload} onError={(message) => toast(`Error: ${message}`)} />
+              <>
+                <FileUpload onFileLoaded={handleFileUpload} onError={(message) => toast(`Error: ${message}`)} />
+                <div className="mt-4">
+                  <Button onClick={handleSubmit} disabled={!gcpProjectId || !clientEmail || !privateKey}>
+                    Fetch Cloud SQL Instances
+                  </Button>
+                </div>
+              </>
             )}
           </TabsContent>
 
