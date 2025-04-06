@@ -19,8 +19,6 @@ import {
   SelectValue,
   Tabs,
   TabsContent,
-  TabsList,
-  TabsTrigger,
   Textarea,
   toast
 } from '@internal/components';
@@ -134,19 +132,36 @@ export function GCPIntegration({ projectId, connections }: { projectId: string; 
           onValueChange={(val: string) => setInputMethod(val as 'file' | 'manual')}
           className="mb-6"
         >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="file">Upload Credentials File</TabsTrigger>
-            <TabsTrigger value="manual">Enter Credentials Manually</TabsTrigger>
-          </TabsList>
-
           <TabsContent value="file" className="mt-4">
-            {gcpProjectId && clientEmail && privateKey && (
+            {gcpProjectId && clientEmail && privateKey ? (
               <Alert className="mb-4">
-                <AlertDescription className="text-md">
+                <AlertDescription className="text-sm">
                   Credentials currently configured for project{' '}
                   <span className="font-bold text-green-500">{gcpProjectId || 'N/A'}</span> and service account:{' '}
                   <span className="font-bold text-green-500">{clientEmail || 'N/A'}</span>. You can change the
-                  credentials by uploading another file below.
+                  credentials by uploading another file below or{' '}
+                  <button
+                    type="button"
+                    className="text-primary cursor-pointer border-none bg-transparent p-0 font-normal underline"
+                    onClick={() => setInputMethod('manual')}
+                  >
+                    enter the credentials manually
+                  </button>
+                  .
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Alert className="mb-4">
+                <AlertDescription className="text-sm">
+                  Upload the JSON credentials file below or{' '}
+                  <button
+                    type="button"
+                    className="text-primary cursor-pointer border-none bg-transparent p-0 font-normal underline"
+                    onClick={() => setInputMethod('manual')}
+                  >
+                    enter the credentials manually
+                  </button>
+                  .
                 </AlertDescription>
               </Alert>
             )}
@@ -166,6 +181,17 @@ export function GCPIntegration({ projectId, connections }: { projectId: string; 
           </TabsContent>
 
           <TabsContent value="manual" className="mt-4">
+            <div className="mb-4 text-sm">
+              Switch back to{' '}
+              <button
+                type="button"
+                className="text-primary cursor-pointer border-none bg-transparent p-0 font-normal underline"
+                onClick={() => setInputMethod('file')}
+              >
+                file upload mode
+              </button>
+              .
+            </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="gcpProjectId">GCP Project ID</Label>
