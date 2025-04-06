@@ -140,20 +140,29 @@ export function GCPIntegration({ projectId, connections }: { projectId: string; 
           </TabsList>
 
           <TabsContent value="file" className="mt-4">
-            {isLoading ? (
-              <div className="flex justify-center p-8">
-                <Loader2 className="text-primary h-8 w-8 animate-spin" />
-              </div>
-            ) : (
-              <>
-                <FileUpload onFileLoaded={handleFileUpload} onError={(message) => toast(`Error: ${message}`)} />
-                <div className="mt-4">
-                  <Button onClick={handleSubmit} disabled={!gcpProjectId || !clientEmail || !privateKey}>
-                    Fetch Cloud SQL Instances
-                  </Button>
-                </div>
-              </>
+            {gcpProjectId && clientEmail && privateKey && (
+              <Alert className="mb-4">
+                <AlertDescription className="text-md">
+                  Credentials currently configured for project{' '}
+                  <span className="font-bold text-green-500">{gcpProjectId || 'N/A'}</span> and service account:{' '}
+                  <span className="font-bold text-green-500">{clientEmail || 'N/A'}</span>. You can change the
+                  credentials by uploading another file below.
+                </AlertDescription>
+              </Alert>
             )}
+            <FileUpload onFileLoaded={handleFileUpload} onError={(message) => toast(`Error: ${message}`)} />
+            <div className="mt-4">
+              <Button onClick={handleSubmit} disabled={isLoading || !gcpProjectId || !clientEmail || !privateKey}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Fetching Cloud SQL Instances
+                  </>
+                ) : (
+                  'Fetch Cloud SQL Instances'
+                )}
+              </Button>
+            </div>
           </TabsContent>
 
           <TabsContent value="manual" className="mt-4">
