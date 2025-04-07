@@ -35,11 +35,7 @@ interface DBTools {
   end: () => Promise<void>;
 }
 
-export async function getTools(
-  connection: Connection,
-  asUserId?: string,
-  asProjectId?: string
-): Promise<DBTools> {
+export async function getTools(connection: Connection, asUserId?: string, asProjectId?: string): Promise<DBTools> {
   const dbTools = getDBSQLTools(connection.connectionString);
   const clusterTools = getDBClusterTools(connection, asUserId);
   const playbookToolset = getPlaybookToolset(connection.projectId, asUserId, asProjectId);
