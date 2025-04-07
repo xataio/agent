@@ -1,4 +1,18 @@
 services:
+  dbagent:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-dbagent}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-dbagent}
+      NODE_ENV: production
+      AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-localhost}
+    env_file: '.env.local'
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgres
+
   postgres:
     image: postgres:17
     environment:
@@ -16,31 +30,19 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-dbagent}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/litellm
       STORE_MODEL_IN_DB: 'True' # allows adding models to proxy via UI
+      MASTER_KEY: ${MASTER_KEY:-sk-1234}
     env_file:
       - '.env.local'
       - '.env.litellm.local'
     ports:
       - '4000:4000'
-    command: ['--config', '/app/etc/config.yaml', '--detailed_debug']
+    entrypoint: sh
+    command: -c "litellm --config /app/etc/$${LITELLM_CONFIG_FILE:-config.yaml} --detailed_debug"
     volumes:
       - ./etc/litellm:/app/etc
     depends_on:
       - postgres
     init: true
-
-  dbagent:
-    build:
-      context: ../..
-      dockerfile: Dockerfile
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-dbagent}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-dbagent}
-      NODE_ENV: production
-      AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-localhost}
-    env_file: '.env.local'
-    ports:
-      - '8080:8080'
-    depends_on:
-      - postgres
 
 volumes:
   postgres_data:

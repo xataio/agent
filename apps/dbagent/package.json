@@ -28,6 +28,7 @@
     "@fluentui/react-icons": "^2.0.292",
     "@internal/components": "workspace:*",
     "@internal/theme": "workspace:*",
+    "@internal/litellm-client": "workspace:*",
     "@tailwindcss/postcss": "^4.0.17",
     "@tanstack/react-query": "^5.71.0",
     "@vercel/functions": "^2.0.0",
