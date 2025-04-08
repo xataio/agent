@@ -118,8 +118,12 @@ export function GCPIntegration({ projectId, connections }: { projectId: string; 
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Create a service account</AlertTitle>
             <AlertDescription>
-              To obtain the Service Account Client Email and Private Key,{' '}
-              <Link href="#" target="_blank" className="font-medium underline">
+              To create a GCP service account for the Agent, follow this guide:{' '}
+              <Link
+                href="https://github.com/xataio/agent/wiki/Xata-Agent-%E2%80%90-GCP-CloudSQL-integration-guide"
+                target="_blank"
+                className="font-medium underline"
+              >
                 follow this guide
               </Link>
               .
