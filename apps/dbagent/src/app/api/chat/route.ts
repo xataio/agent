@@ -1,5 +1,5 @@
 import { streamText } from 'ai';
-import { chatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
+import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
 import { getConnection } from '~/lib/db/connections';
 import { getProjectById } from '~/lib/db/projects';
 
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     return new Response('Project not found', { status: 404 });
   }
   try {
-    const context = chatSystemPrompt;
+    const context = getChatSystemPrompt(project);
 
     console.log(context);
 
