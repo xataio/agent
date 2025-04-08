@@ -33,7 +33,8 @@ async function runModelPlaybook({
     createdAt: new Date()
   });
 
-  const { tools, end } = await getTools(connection, schedule.userId);
+  // XXX: The connection object has its projectId. Is it really possible to have the schedule.projectId differ from the connection.projectId?
+  const { tools, end } = await getTools(connection, schedule.userId, schedule.projectId);
   try {
     const result = await generateText({
       model: modelInstance,
@@ -95,7 +96,7 @@ Also provide a one sentence summary of the result. It can be something like "No 
 async function decideNextPlaybook(messages: Message[], schedule: Schedule, modelInstance: LanguageModelV1) {
   const prompt = `Based on the previous conversation, would you recommend running another specific playbook.
 These are the playbooks you can choose from: ${listPlaybooks().join(', ')}.
-As you choose the next playbook remember your goals: if the root cause is not clear yet, try to drill down to the root cause. If the root cause is clear, 
+As you choose the next playbook remember your goals: if the root cause is not clear yet, try to drill down to the root cause. If the root cause is clear,
 get actionable steps to fix the issue.
 Return:
 - Whether we should run another playbook (boolean)
@@ -130,7 +131,7 @@ Return:
 }
 
 async function summarizeResult(messages: Message[], modelInstance: LanguageModelV1) {
-  const prompt = `Summarize the results above and highlight what made you investigate, the root cause, and the recommended actions. 
+  const prompt = `Summarize the results above and highlight what made you investigate, the root cause, and the recommended actions.
 Be as specific as possible, like including the DDL to run. Use the following headers:
 
 Trigger

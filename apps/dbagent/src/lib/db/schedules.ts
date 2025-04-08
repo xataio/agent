@@ -1,6 +1,6 @@
 'use server';
 
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { DBAccess } from './db';
 import { schedules } from './schema';
 
@@ -66,6 +66,20 @@ export async function getSchedule(dbAccess: DBAccess, id: string): Promise<Sched
       throw new Error(`Schedule with id ${id} not found`);
     }
     return result[0];
+  });
+}
+
+//get schedules by userId and projectId used to check if customPlaybook is being used to monitor a database, inorder to notify a user before they delete it
+export async function getSchedulesByUserIdAndProjectId(
+  dbAccess: DBAccess,
+  userId: string,
+  projectId: string
+): Promise<Schedule[]> {
+  return await dbAccess.query(async ({ db }) => {
+    return await db
+      .select()
+      .from(schedules)
+      .where(and(eq(schedules.userId, userId), eq(schedules.projectId, projectId)));
   });
 }
 

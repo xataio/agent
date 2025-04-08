@@ -4,7 +4,7 @@ import { openai } from '@ai-sdk/openai';
 import { LanguageModelV1, Tool } from 'ai';
 import { Connection } from '~/lib/db/connections';
 import { getUserDBAccess } from '~/lib/db/db';
-import { commonToolset, getDBClusterTools, getDBSQLTools, mergeToolsets, playbookToolset } from './tools';
+import { commonToolset, getDBClusterTools, getDBSQLTools, getPlaybookToolset, mergeToolsets } from './tools';
 
 export const commonSystemPrompt = `
 You are an AI assistant expert in PostgreSQL and database administration.
@@ -31,13 +31,17 @@ Then use the contents of the playbook as an action plan. Execute the plan step b
 At the end of your execution, print a summary of the results.
 `;
 
-export async function getTools(
-  connection: Connection,
-  asUserId?: string
-): Promise<{ tools: Record<string, Tool>; end: () => Promise<void> }> {
+interface DBTools {
+  tools: Record<string, Tool>;
+  end: () => Promise<void>;
+}
+
+export async function getTools(connection: Connection, asUserId?: string, asProjectId?: string): Promise<DBTools> {
+  const projectId = asProjectId || connection.projectId;
   const dbAccess = await getUserDBAccess(asUserId);
   const dbTools = getDBSQLTools(connection.connectionString);
   const clusterTools = getDBClusterTools(dbAccess, connection);
+  const playbookToolset = getPlaybookToolset(dbAccess, projectId);
   return {
     tools: mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools),
     end: async () => {

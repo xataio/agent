@@ -1,34 +1,32 @@
 import pg from 'pg';
 
+export type PoolConfig = pg.PoolConfig;
 export type Pool = pg.Pool;
 export type Client = pg.Client;
 export type ClientBase = pg.ClientBase;
 
-export function getTargetDbPool(connectionString: string): Pool {
+export function getTargetDbPool(connectionString: string, poolConfig?: Omit<PoolConfig, 'connectionString'>): Pool {
   const parsed = parseConnectionString(connectionString);
-  const pool = new pg.Pool({
-    connectionString: parsed.connectionString,
-    ssl: parsed.ssl,
-    min: 0,
-    max: 2
-  });
-  return pool;
+  const config = {
+    ...(poolConfig || {}),
+    ...parsed
+  };
+  if (!config.min) config.min = 0;
+  if (!config.max) config.max = 1;
+
+  return new pg.Pool(config);
 }
 
 export async function getTargetDbConnection(connectionString: string): Promise<Client> {
   const parsed = parseConnectionString(connectionString);
-  const client = new pg.Client({
-    connectionString: parsed.connectionString,
-    ssl: parsed.ssl
-  });
-
+  const client = new pg.Client({ ...parsed });
   await client.connect();
   return client;
 }
 
-function parseConnectionString(connectionString: string): { connectionString: string; ssl: any } {
+function parseConnectionString(connectionString: string): { connectionString: string; ssl?: pg.ClientConfig['ssl'] } {
   let modifiedConnectionString = connectionString;
-  let sslConfig = undefined;
+  let sslConfig: pg.ClientConfig['ssl'] | undefined = undefined;
   if (connectionString.includes('sslmode=require')) {
     // Remove sslmode=require from connection string to avoid duplicate SSL config
     modifiedConnectionString = connectionString.replace(/[\s;]?sslmode=require/g, '');
@@ -152,18 +150,18 @@ export interface PerformanceSetting {
 
 export async function getPerformanceSettings(client: ClientBase): Promise<PerformanceSetting[]> {
   const result = await client.query(`
-      SELECT 
+      SELECT
         name,
         setting,
         unit,
         source,
-        short_desc as description 
-      FROM pg_settings 
+        short_desc as description
+      FROM pg_settings
       WHERE name IN (
         'max_connections',
         'work_mem',
         'shared_buffers',
-        'maintenance_work_mem', 
+        'maintenance_work_mem',
         'lock_timeout',
         'idle_in_transaction_session_timeout',
         'checkpoint_completion_target',
@@ -185,10 +183,10 @@ export async function getPerformanceSettings(client: ClientBase): Promise<Perfor
 
 export async function getVacuumSettings(client: ClientBase): Promise<PerformanceSetting[]> {
   const result = await client.query(`
-      SELECT 
+      SELECT
         name,
         setting,
-        unit, 
+        unit,
         source,
         short_desc as description
       FROM pg_settings
@@ -215,17 +213,17 @@ export interface ActiveQuery {
 
 export async function getCurrentActiveQueries(client: ClientBase): Promise<ActiveQuery[]> {
   const result = await client.query(`
-      SELECT 
+      SELECT
         pid,
         state,
         EXTRACT(EPOCH FROM (NOW() - query_start))::INTEGER as duration,
         wait_event_type,
         wait_event,
         query
-      FROM pg_stat_activity 
+      FROM pg_stat_activity
       WHERE state != 'idle'
         AND pid != pg_backend_pid()
-      ORDER BY duration DESC 
+      ORDER BY duration DESC
       LIMIT 500;
     `);
   return result.rows;
@@ -242,7 +240,7 @@ export interface BlockedQuery {
 export async function getQueriesWaitingOnLocks(client: ClientBase): Promise<BlockedQuery[]> {
   const result = await client.query(`
       WITH blocked_queries AS (
-        SELECT 
+        SELECT
           blocked.pid as blocked_pid,
           blocked.query as blocked_query,
           blocking.pid as blocking_pid,
@@ -334,7 +332,7 @@ export interface ConnectionDetails {
 
 export async function getConnectionsGroups(client: ClientBase): Promise<ConnectionDetails[]> {
   const result = await client.query(`
-SELECT 
+SELECT
     count(*) AS total_connections,
     state,
     usename AS user,
@@ -343,12 +341,12 @@ SELECT
     wait_event_type,
     wait_event
 FROM pg_stat_activity
-GROUP BY 
-    state, 
-    usename, 
-    application_name, 
-    client_addr, 
-    wait_event_type, 
+GROUP BY
+    state,
+    usename,
+    application_name,
+    client_addr,
+    wait_event_type,
     wait_event
 ORDER BY total_connections DESC;`);
   return result.rows;
@@ -371,15 +369,15 @@ interface SlowQuery {
 
 export async function getSlowQueries(client: ClientBase, thresholdMs: number): Promise<SlowQuery[]> {
   const query = `
-    SELECT 
+    SELECT
       calls,
       round(max_exec_time/1000) max_exec_secs,
-      round(mean_exec_time/1000) mean_exec_secs, 
+      round(mean_exec_time/1000) mean_exec_secs,
       round(total_exec_time/1000) total_exec_secs,
-      query 
-    FROM pg_stat_statements 
-    WHERE max_exec_time > $1 
-    ORDER BY total_exec_time DESC 
+      query
+    FROM pg_stat_statements
+    WHERE max_exec_time > $1
+    ORDER BY total_exec_time DESC
     LIMIT 10;
   `;
   const result = await client.query(query, [thresholdMs]);
@@ -413,13 +411,13 @@ export async function describeTable(client: ClientBase, schema: string, table: s
   console.log('table', table);
   // Get column information
   const columnQuery = `
-    SELECT 
+    SELECT
       column_name,
       data_type,
       is_nullable,
       column_default
     FROM information_schema.columns
-    WHERE table_schema = $1 
+    WHERE table_schema = $1
     AND table_name = $2
     ORDER BY ordinal_position;
   `;
@@ -483,10 +481,10 @@ export async function describeTable(client: ClientBase, schema: string, table: s
 export async function findTableSchema(client: ClientBase, table: string): Promise<string> {
   const result = await client.query(
     `
-      SELECT 
+      SELECT
       schemaname as schema,
       pg_total_relation_size(schemaname || '.' || tablename) as total_bytes
-    FROM pg_tables 
+    FROM pg_tables
     WHERE tablename = $1
     ORDER BY total_bytes DESC
     LIMIT 1;

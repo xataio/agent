@@ -13,12 +13,12 @@ export function getDBClusterTools(dbAccess: DBAccess, connection: Connection): R
 
 // The DBClusterTools toolset provides agent tools for accessing information about AWS RDS instance and cluster.
 export class DBClusterTools implements ToolsetGroup {
-  private _dbAccess: DBAccess;
-  private _getter: () => Promise<Connection>;
+  #dbAccess: DBAccess;
+  #getter: () => Promise<Connection>;
 
   constructor(dbAccess: DBAccess, getter: () => Promise<Connection>) {
-    this._dbAccess = dbAccess;
-    this._getter = getter;
+    this.#dbAccess = dbAccess;
+    this.#getter = getter;
   }
 
   toolset(): Record<string, Tool> {
@@ -31,8 +31,8 @@ export class DBClusterTools implements ToolsetGroup {
   }
 
   private getTablesAndInstanceInfo(): Tool {
-    const getter = this._getter;
-    const db = this._dbAccess;
+    const getter = this.#getter;
+    const db = this.#dbAccess;
     return tool({
       description: `Get the information about tables (sizes, row counts, usage)
       and the data about server instance/cluster on which the DB is running.
@@ -46,8 +46,8 @@ export class DBClusterTools implements ToolsetGroup {
   }
 
   private getPostgresExtensions(): Tool {
-    const getter = this._getter;
-    const db = this._dbAccess;
+    const getter = this.#getter;
+    const db = this.#dbAccess;
     return tool({
       description: `Get the available and installed PostgreSQL extensions for the database.`,
       parameters: z.object({}),
@@ -59,8 +59,8 @@ export class DBClusterTools implements ToolsetGroup {
   }
 
   private getInstanceLogs(): Tool {
-    const getter = this._getter;
-    const db = this._dbAccess;
+    const getter = this.#getter;
+    const db = this.#dbAccess;
     return tool({
       description: `Get the recent logs from the RDS instance. You can specify the period in seconds and optionally grep for a substring.`,
       parameters: z.object({
@@ -76,8 +76,8 @@ export class DBClusterTools implements ToolsetGroup {
   }
 
   private getInstanceMetric(): Tool {
-    const getter = this._getter;
-    const db = this._dbAccess;
+    const getter = this.#getter;
+    const db = this.#dbAccess;
     return tool({
       description: `Get the metrics for the RDS instance. You can specify the period in seconds.`,
       parameters: z.object({

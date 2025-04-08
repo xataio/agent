@@ -1,5 +1,13 @@
 import { Tool } from 'ai';
-import { commonToolset, DBClusterTools, DBSQLTools, mergeToolsets, playbookToolset, Toolset } from '~/lib/ai/tools';
+import {
+  builtinPlaybookToolset,
+  commonToolset,
+  DBClusterTools,
+  DBSQLTools,
+  mergeToolsets,
+  playbookTools,
+  Toolset
+} from '~/lib/ai/tools';
 import { Connection, getConnectionByName, getDefaultConnection } from '~/lib/db/connections';
 import { DBUserAccess } from '~/lib/db/db';
 import { getProjectByName } from '~/lib/db/projects';
@@ -12,10 +20,12 @@ type PlaygroundToolsConfig = {
 };
 
 export function buildPlaygroundTools(config: PlaygroundToolsConfig): Record<string, Tool> {
-  const toolsets: Toolset[] = [commonToolset, playbookToolset];
+  const toolsets: Toolset[] = [commonToolset];
   const connString: string | null = config.dbUrl ?? null;
 
   // Set up user ID provider if configured
+  let hasPlaybookToolset = false;
+  let hasDBTools = false;
   if (config.userId) {
     /// XXX: The use of 'Connection' currently breaks the playground due to next dependency issues.
     if (config.projectConnection && config.projectConnection !== '') {
@@ -28,13 +38,26 @@ export function buildPlaygroundTools(config: PlaygroundToolsConfig): Record<stri
       const connGetter = createConnectionGetter(config.userId, projectName, connectionName);
       toolsets.push(new DBClusterTools(db, async () => await connGetter()));
 
+      const playbookToolset = new playbookTools(db, async () => {
+        const conn = await connGetter();
+        return { projectId: conn.projectId };
+      });
+      toolsets.push(playbookToolset);
+      hasPlaybookToolset = true;
+
       if (!connString) {
         const targetDBPoolGetter = createTargetDBPoolGetter(connGetter);
         toolsets.push(new DBSQLTools(targetDBPoolGetter));
+        hasDBTools = true;
       }
     }
-  } else if (connString) {
+  }
+
+  if (connString && !hasDBTools) {
     toolsets.push(new DBSQLTools(getTargetDbPool(connString)));
+  }
+  if (!hasPlaybookToolset) {
+    toolsets.push(builtinPlaybookToolset);
   }
 
   return mergeToolsets(...toolsets);
