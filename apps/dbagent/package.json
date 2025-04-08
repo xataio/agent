@@ -75,7 +75,6 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "dockerode": "^4.0.5",
     "autoprefixer": "^10.4.21",
-    "dockerode": "^4.0.4",
     "dotenv": "^16.4.7",
     "filenamify": "^6.0.0",
     "mastra": "^0.4.3",
