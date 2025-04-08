@@ -15,27 +15,6 @@
       "when": 1741953778092,
       "tag": "0001_default_privs",
       "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1743277248108,
-      "tag": "0002_purple_mephistopheles",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1743410927825,
-      "tag": "0003_illegal_lifeguard",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1743926505817,
-      "tag": "0004_yellow_psylocke",
-      "breakpoints": true
     }
   ]
 }

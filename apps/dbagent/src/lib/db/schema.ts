@@ -336,12 +336,14 @@ export const scheduleRuns = pgTable(
   ]
 );
 
+export const cloudProvider = pgEnum('cloud_provider', ['aws', 'gcp', 'other']);
+
 export const projects = pgTable(
   'projects',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     name: text('name').notNull(),
-    cloudProvider: text('cloud_provider').default('aws').notNull()
+    cloudProvider: cloudProvider('cloud_provider').default('aws').notNull()
   },
   () => [
     pgPolicy('projects_view_policy', {
