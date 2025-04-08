@@ -33,21 +33,23 @@ import {
 import { Database, MoreVertical, PlusCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Suspense, useState } from 'react';
-import { createProject, deleteProject, Project, updateProject } from '~/lib/db/projects';
+import { CloudProviderType, createProject, deleteProject, Project, updateProject } from '~/lib/db/projects';
 
 interface ProjectListProps {
   projects: Project[];
 }
 
 const CloudProviders = [
-  { name: 'AWS', value: 'aws' },
-  { name: 'GCP', value: 'gcp' },
-  { name: 'Other', value: 'other' }
+  { name: 'AWS', value: 'aws' as CloudProviderType },
+  { name: 'GCP', value: 'gcp' as CloudProviderType },
+  { name: 'Other', value: 'other' as CloudProviderType }
 ];
 
 function CreateProjectButton() {
   const [projectName, setProjectName] = useState('');
-  const [cloudProvider, setCloudProvider] = useState(CloudProviders[0]?.value || 'aws');
+  const [cloudProvider, setCloudProvider] = useState<CloudProviderType>(
+    (CloudProviders[0]?.value as CloudProviderType) || 'aws'
+  );
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -98,7 +100,7 @@ function CreateProjectButton() {
               <Label htmlFor="cloudProvider" className="text-sm font-medium">
                 Cloud Provider
               </Label>
-              <Select value={cloudProvider} onValueChange={setCloudProvider}>
+              <Select value={cloudProvider} onValueChange={(value) => setCloudProvider(value as CloudProviderType)}>
                 <SelectTrigger className="border-primary/20 focus-visible:ring-primary/30">
                   <SelectValue placeholder="Select a cloud provider" />
                 </SelectTrigger>
@@ -295,7 +297,9 @@ function CreateProjectOnboarding() {
   const router = useRouter();
 
   const [projectName, setProjectName] = useState('');
-  const [cloudProvider, setCloudProvider] = useState(CloudProviders[0]?.value || 'aws');
+  const [cloudProvider, setCloudProvider] = useState<CloudProviderType>(
+    (CloudProviders[0]?.value as CloudProviderType) || 'aws'
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -354,7 +358,7 @@ function CreateProjectOnboarding() {
                 <Label htmlFor="cloudProvider" className="text-sm font-medium">
                   Cloud Provider
                 </Label>
-                <Select value={cloudProvider} onValueChange={setCloudProvider}>
+                <Select value={cloudProvider} onValueChange={(value) => setCloudProvider(value as CloudProviderType)}>
                   <SelectTrigger className="border-primary/20 focus-visible:ring-primary/30">
                     <SelectValue placeholder="Select a cloud provider" />
                   </SelectTrigger>
