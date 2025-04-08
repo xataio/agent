@@ -1,43 +1,89 @@
 import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
+import pg from 'pg';
 import { auth } from '~/auth';
 import { env } from '../env/server';
 import { authenticatedUser } from './schema';
 
-const pool = new Pool({
+const pool = new pg.Pool({
   connectionString: env.DATABASE_URL,
   max: 20
 });
 
-export async function queryDb<T>(
-  callback: (params: { db: ReturnType<typeof drizzle>; userId: string }) => Promise<T>,
-  { admin = false, asUserId }: { admin?: boolean; asUserId?: string } = {}
-): Promise<T> {
-  const session = await auth();
-  const userId = asUserId ?? session?.user?.id ?? '';
+/**
+ * Interface for database access that provides a consistent way to execute queries
+ * with proper user context and role settings.
+ */
+export interface DBAccess {
+  /**
+   * Executes a database query with the appropriate user context and role settings.
+   * @param callback Function that receives the database instance and user ID
+   * @returns The result of the callback function
+   */
+  query: <T>(callback: (params: { db: ReturnType<typeof drizzle>; userId: string }) => Promise<T>) => Promise<T>;
+}
 
-  // We'll use userId in raw SQL, so validate that it only contains valid UUID characters
-  if (userId !== '' && userId !== 'local' && !/^[0-9a-f-]*$/i.test(userId)) {
-    throw new Error('Invalid user ID format');
-  }
-
-  const client = await pool.connect();
-
-  try {
-    const db = drizzle(client);
-    if (!admin) {
-      if (userId === '') {
-        throw new Error('Unable to query the database without a user');
-      }
-
-      await db.execute(sql.raw(`SET ROLE "${authenticatedUser.name}"`));
-      await db.execute(sql.raw(`SET "app.current_user" = '${userId}'`));
+/**
+ * Database access implementation for admin operations.
+ * This bypasses user role restrictions and sets the user ID to 'admin'.
+ */
+export class DBAdminAccess implements DBAccess {
+  async query<T>(callback: (params: { db: ReturnType<typeof drizzle>; userId: string }) => Promise<T>): Promise<T> {
+    const client = await pool.connect();
+    try {
+      const db = drizzle(client);
+      return await callback({ db, userId: 'admin' });
+    } finally {
+      client.release(true);
     }
-
-    return await callback({ db, userId });
-  } finally {
-    // Destroy the client to release the connection back to the pool
-    client.release(true);
   }
+}
+
+/**
+ * Database access implementation for user-specific operations.
+ * This sets the appropriate user role and user ID for the query.
+ */
+export class DBUserAccess implements DBAccess {
+  private readonly _userId: string;
+
+  constructor(userId: string) {
+    if (userId !== '' && userId !== 'local' && !/^[0-9a-f-]*$/i.test(userId)) {
+      throw new Error('Invalid user ID format');
+    }
+    this._userId = userId;
+  }
+
+  async query<T>(callback: (params: { db: ReturnType<typeof drizzle>; userId: string }) => Promise<T>): Promise<T> {
+    const client = await pool.connect();
+    try {
+      const db = drizzle(client);
+      await db.execute(sql.raw(`SET ROLE "${authenticatedUser.name}"`));
+      await db.execute(sql.raw(`SET "app.current_user" = '${this._userId}'`));
+      return await callback({ db, userId: this._userId });
+    } finally {
+      client.release(true);
+    }
+  }
+}
+
+export async function getUserSessionDBAccess(): Promise<DBAccess> {
+  const session = await auth();
+  if (!session) {
+    throw new Error('No session found');
+  }
+  if (!session.user) {
+    throw new Error('No active user');
+  }
+  return new DBUserAccess(session.user.id!);
+}
+
+export async function getUserDBAccess(userId?: string): Promise<DBAccess> {
+  if (!userId) {
+    return getUserSessionDBAccess();
+  }
+  return new DBUserAccess(userId);
+}
+
+export function getAdminAccess(): DBAccess {
+  return new DBAdminAccess();
 }

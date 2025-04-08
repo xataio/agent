@@ -1,7 +1,7 @@
 'use server';
 
 import { eq } from 'drizzle-orm';
-import { queryDb } from './db';
+import { DBAccess } from './db';
 import { projectMembers, projects } from './schema';
 
 export type CloudProviderType = 'aws' | 'gcp' | 'other';
@@ -16,9 +16,9 @@ export async function generateProjectId(): Promise<string> {
   return crypto.randomUUID();
 }
 
-export async function createProject(project: Omit<Project, 'id'>): Promise<string> {
+export async function createProject(dbAccess: DBAccess, project: Omit<Project, 'id'>): Promise<string> {
   const projectId = await generateProjectId();
-  return await queryDb(async ({ db, userId }) => {
+  return await dbAccess.query(async ({ db, userId }) => {
     // Create the project
     await db.insert(projects).values({ ...project, id: projectId });
 
@@ -33,32 +33,38 @@ export async function createProject(project: Omit<Project, 'id'>): Promise<strin
   });
 }
 
-export async function getProjectById(id: string, asUserId?: string): Promise<Project | null> {
-  return await queryDb(
-    async ({ db }) => {
-      const results = await db.select().from(projects).where(eq(projects.id, id));
-      return results[0] ?? null;
-    },
-    {
-      asUserId: asUserId
-    }
-  );
+export async function getProjectByName(dbAccess: DBAccess, name: string): Promise<Project | null> {
+  return await dbAccess.query(async ({ db }) => {
+    const results = await db.select().from(projects).where(eq(projects.name, name));
+    return results[0] ?? null;
+  });
 }
 
-export async function listProjects(): Promise<Project[]> {
-  return await queryDb(async ({ db }) => {
+export async function getProjectById(dbAccess: DBAccess, id: string): Promise<Project | null> {
+  return await dbAccess.query(async ({ db }) => {
+    const results = await db.select().from(projects).where(eq(projects.id, id));
+    return results[0] ?? null;
+  });
+}
+
+export async function listProjects(dbAccess: DBAccess): Promise<Project[]> {
+  return await dbAccess.query(async ({ db }) => {
     return await db.select().from(projects);
   });
 }
 
-export async function deleteProject({ id }: { id: string }): Promise<void> {
-  await queryDb(async ({ db }) => {
+export async function deleteProject(dbAccess: DBAccess, { id }: { id: string }): Promise<void> {
+  await dbAccess.query(async ({ db }) => {
     await db.delete(projects).where(eq(projects.id, id));
   });
 }
 
-export async function updateProject(id: string, update: Partial<Omit<Project, 'id'>>): Promise<void> {
-  return await queryDb(async ({ db }) => {
+export async function updateProject(
+  dbAccess: DBAccess,
+  id: string,
+  update: Partial<Omit<Project, 'id'>>
+): Promise<void> {
+  return await dbAccess.query(async ({ db }) => {
     await db.update(projects).set(update).where(eq(projects.id, id));
   });
 }

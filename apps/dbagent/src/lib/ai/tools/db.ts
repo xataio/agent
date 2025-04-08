@@ -21,14 +21,14 @@ export function getDBSQLTools(connString: string): DBSQLTools {
 // The DBSQLTools toolset provides tools for querying the postgres database
 // directly via SQL to collect system performance information.
 export class DBSQLTools implements ToolsetGroup {
-  private _pool: Pool | (() => Promise<Pool>);
+  #pool: Pool | (() => Promise<Pool>);
 
   constructor(pool: Pool | (() => Promise<Pool>)) {
-    this._pool = pool;
+    this.#pool = pool;
   }
 
   async end() {
-    const pool = typeof this._pool === 'function' ? await this._pool() : this._pool;
+    const pool = typeof this.#pool === 'function' ? await this.#pool() : this.#pool;
     await pool.end();
   }
 
@@ -48,7 +48,7 @@ export class DBSQLTools implements ToolsetGroup {
   }
 
   getSlowQueries(): Tool {
-    const pool = this._pool;
+    const pool = this.#pool;
     return tool({
       description: `Get a list of slow queries formatted as a JSON array. Contains how many times the query was called,
 the max execution time in seconds, the mean execution time in seconds, the total execution time
@@ -64,7 +64,7 @@ the max execution time in seconds, the mean execution time in seconds, the total
   }
 
   explainQuery(): Tool {
-    const pool = this._pool;
+    const pool = this.#pool;
     return tool({
       description: `Run explain on a a query. Returns the explain plan as received from PostgreSQL.
 The query needs to be complete, it cannot contain $1, $2, etc. If you need to, replace the parameters with your own made up values.
@@ -89,7 +89,7 @@ If you know the schema, pass it in as well.`,
   }
 
   describeTable(): Tool {
-    const pool = this._pool;
+    const pool = this.#pool;
     return tool({
       description: `Describe a table. If you know the schema, pass it as a parameter. If you don't, use public.`,
       parameters: z.object({
@@ -106,7 +106,7 @@ If you know the schema, pass it in as well.`,
   }
 
   findTableSchema(): Tool {
-    const pool = this._pool;
+    const pool = this.#pool;
     return tool({
       description: `Find the schema of a table. Use this tool to find the schema of a table.`,
       parameters: z.object({
@@ -119,7 +119,7 @@ If you know the schema, pass it in as well.`,
   }
 
   getCurrentActiveQueries(): Tool {
-    const pool = this._pool;
+    const pool = this.#pool;
     return tool({
       description: `Get the currently active queries.`,
       parameters: z.object({}),
@@ -130,7 +130,7 @@ If you know the schema, pass it in as well.`,
   }
 
   getQueriesWaitingOnLocks(): Tool {
-    const pool = this._pool;
+    const pool = this.#pool;
     return tool({
       description: `Get the queries that are currently blocked waiting on locks.`,
       parameters: z.object({}),
@@ -141,7 +141,7 @@ If you know the schema, pass it in as well.`,
   }
 
   getVacuumStats(): Tool {
-    const pool = this._pool;
+    const pool = this.#pool;
     return tool({
       description: `Get the vacuum stats for the top tables in the database. They are sorted by the number of dead tuples descending.`,
       parameters: z.object({}),
@@ -152,7 +152,7 @@ If you know the schema, pass it in as well.`,
   }
 
   getConnectionsStats(): Tool {
-    const pool = this._pool;
+    const pool = this.#pool;
     return tool({
       description: `Get the connections stats for the database.`,
       parameters: z.object({}),
@@ -163,7 +163,7 @@ If you know the schema, pass it in as well.`,
   }
 
   getConnectionsGroups(): Tool {
-    const pool = this._pool;
+    const pool = this.#pool;
     return tool({
       description: `Get the connections groups for the database. This is a view in the pg_stat_activity table, grouped by (state, user, application_name, client_addr, wait_event_type, wait_event).`,
       parameters: z.object({}),
@@ -174,7 +174,7 @@ If you know the schema, pass it in as well.`,
   }
 
   getPerformanceAndVacuumSettings(): Tool {
-    const pool = this._pool;
+    const pool = this.#pool;
     return tool({
       description: `Get the performance and vacuum settings for the database.`,
       parameters: z.object({}),

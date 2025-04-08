@@ -1,5 +1,6 @@
 'use server';
 
+import { getUserSessionDBAccess } from '~/lib/db/db';
 import { associateInstanceConnection, saveInstance } from '~/lib/db/gcp-instances';
 import { GcpIntegration, getIntegration, saveIntegration } from '~/lib/db/integrations';
 import {
@@ -21,11 +22,12 @@ export async function fetchCloudSQLInstances(
   clientEmail: string,
   privateKey: string
 ): Promise<CloudSQLInstancesResponse> {
+  const dbAccess = await getUserSessionDBAccess();
   const client = initializeCloudSQLClient({ clientEmail, privateKey });
 
   try {
     const instances = await listCloudSQLInstances(client, gcpProjectId);
-    await saveIntegration(projectId, 'gcp', { clientEmail, privateKey, gcpProjectId });
+    await saveIntegration(dbAccess, projectId, 'gcp', { clientEmail, privateKey, gcpProjectId });
     return {
       success: true,
       data: instances,
@@ -60,8 +62,9 @@ export interface GCPIntegrationResponse {
 export async function getGCPIntegration(
   projectId: string
 ): Promise<{ success: boolean; message: string; data: GcpIntegration | null }> {
+  const dbAccess = await getUserSessionDBAccess();
   try {
-    const gcp = await getIntegration(projectId, 'gcp');
+    const gcp = await getIntegration(dbAccess, projectId, 'gcp');
     if (!gcp) {
       return { success: false, message: 'GCP integration not found', data: null };
     }
@@ -78,7 +81,8 @@ export async function actionSaveInstanceDetails(
   gcpProjectId: string,
   connectionId: string
 ): Promise<{ success: boolean; message: string }> {
-  const gcp = await getIntegration(projectId, 'gcp');
+  const dbAccess = await getUserSessionDBAccess();
+  const gcp = await getIntegration(dbAccess, projectId, 'gcp');
   if (!gcp) {
     return { success: false, message: 'GCP integration not found' };
   }
@@ -90,13 +94,13 @@ export async function actionSaveInstanceDetails(
     }
 
     console.log('Saving instance details', instanceName, instanceDetails);
-    const instanceId = await saveInstance({
+    const instanceId = await saveInstance(dbAccess, {
       projectId,
       gcpProjectId,
       instanceName,
       data: instanceDetails
     });
-    await associateInstanceConnection({
+    await associateInstanceConnection(dbAccess, {
       projectId,
       instanceId,
       connectionId
@@ -122,6 +126,7 @@ export async function processGCPCredentialsFile(
   projectId: string,
   fileContents: string
 ): Promise<GCPCredentialsResponse> {
+  const dbAccess = await getUserSessionDBAccess();
   try {
     // Parse the JSON content
     const credentials = JSON.parse(fileContents);
@@ -140,7 +145,7 @@ export async function processGCPCredentialsFile(
     }
 
     // Save the integration
-    await saveIntegration(projectId, 'gcp', { clientEmail, privateKey, gcpProjectId });
+    await saveIntegration(dbAccess, projectId, 'gcp', { clientEmail, privateKey, gcpProjectId });
 
     return {
       success: true,

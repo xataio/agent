@@ -4,6 +4,7 @@ import { google } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
 import { LanguageModelV1, Tool } from 'ai';
 import { Connection } from '~/lib/db/connections';
+import { getUserDBAccess } from '~/lib/db/db';
 import { Project } from '../db/projects';
 import { commonToolset, getDBClusterTools, getDBSQLTools, getPlaybookToolset, mergeToolsets } from './tools';
 
@@ -65,9 +66,12 @@ export async function getTools(
   asUserId?: string,
   asProjectId?: string
 ): Promise<DBTools> {
+  const projectId = asProjectId || connection.projectId;
+  const dbAccess = await getUserDBAccess(asUserId);
+
   const dbTools = getDBSQLTools(connection.connectionString);
-  const clusterTools = getDBClusterTools(project, connection, asUserId);
-  const playbookToolset = getPlaybookToolset(connection.projectId, asUserId, asProjectId);
+  const clusterTools = getDBClusterTools(dbAccess, project, connection);
+  const playbookToolset = getPlaybookToolset(dbAccess, projectId);
   return {
     tools: mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools),
     end: async () => {

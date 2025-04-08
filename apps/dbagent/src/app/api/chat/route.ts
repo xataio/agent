@@ -2,6 +2,7 @@ import { streamText } from 'ai';
 import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
 import { getConnection } from '~/lib/db/connections';
 import { getProjectById } from '~/lib/db/projects';
+import { getUserSessionDBAccess } from '~/lib/db/db';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -27,11 +28,12 @@ function errorHandler(error: unknown) {
 export async function POST(req: Request) {
   const { messages, connectionId, model } = await req.json();
 
-  const connection = await getConnection(connectionId);
+  const db = await getUserSessionDBAccess();
+  const connection = await getConnection(db, connectionId);
   if (!connection) {
     return new Response('Connection not found', { status: 404 });
   }
-  const project = await getProjectById(connection.projectId);
+  const project = await getProjectById(db, connection.projectId);
   if (!project) {
     return new Response('Project not found', { status: 404 });
   }

@@ -2,6 +2,7 @@ import { getRDSClusterMetric, getRDSInstanceMetric } from '../aws/rds';
 import { getClusterByConnection } from '../db/aws-clusters';
 import { Connection } from '../db/connections';
 import { getInstanceByConnection } from '../db/gcp-instances';
+import { DBAccess } from '../db/db';
 import { getIntegration } from '../db/integrations';
 import { getCloudSQLInstanceMetric, initializeMonitoringClient } from '../gcp/cloudsql';
 
@@ -10,21 +11,18 @@ type GetClusterMetricParams = {
   cloudProvider: 'aws' | 'gcp';
   metricName: string;
   periodInSeconds: number;
-  asUserId?: string;
 };
 
-export async function getClusterMetricRDS({
-  connection,
-  metricName,
-  periodInSeconds,
-  asUserId
-}: Omit<GetClusterMetricParams, 'cloudProvider'>): Promise<string> {
-  const awsCredentials = await getIntegration(connection.projectId, 'aws', asUserId);
+export async function getClusterMetricRDS(
+  dbAccess: DBAccess,
+  { connection, metricName, periodInSeconds }: Omit<GetClusterMetricParams, 'cloudProvider'>
+): Promise<string> {
+  const awsCredentials = await getIntegration(dbAccess, connection.projectId, 'aws');
   if (!awsCredentials) {
     return 'AWS credentials not configured';
   }
 
-  const cluster = await getClusterByConnection(connection.id, asUserId);
+  const cluster = await getClusterByConnection(dbAccess, connection.id);
   if (!cluster) {
     return 'Cluster not found';
   }
@@ -64,14 +62,12 @@ export async function getClusterMetricRDS({
   }
 }
 
-export async function getClusterMetricGCP({
-  connection,
-  metricName,
-  periodInSeconds,
-  asUserId
-}: Omit<GetClusterMetricParams, 'cloudProvider'>): Promise<string> {
+export async function getClusterMetricGCP(
+  dbAccess: DBAccess,
+  { connection, metricName, periodInSeconds }: Omit<GetClusterMetricParams, 'cloudProvider'>
+): Promise<string> {
   console.log('called getClusterMetricGCP');
-  const gcpCredentials = await getIntegration(connection.projectId, 'gcp', asUserId);
+  const gcpCredentials = await getIntegration(dbAccess, connection.projectId, 'gcp');
   if (!gcpCredentials) {
     return 'GCP credentials not configured';
   }
@@ -87,7 +83,7 @@ export async function getClusterMetricGCP({
   );
   console.log('Client created');
 
-  const instance = await getInstanceByConnection(connection.id, asUserId);
+  const instance = await getInstanceByConnection(dbAccess, connection.id);
   if (!instance) {
     return 'Instance not found';
   }

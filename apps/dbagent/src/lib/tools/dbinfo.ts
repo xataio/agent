@@ -1,12 +1,13 @@
+import { DBAccess } from '~/lib/db/db';
 import { getConnectionInfo } from '../db/connection-info';
 import { Connection } from '../db/connections';
 import { getProjectById } from '../db/projects';
 import { ClientBase, findTableSchema, getPerformanceSettings, getVacuumSettings } from '../targetdb/db';
 
-export async function getTablesAndInstanceInfo(connection: Connection, asUserId?: string): Promise<string> {
+export async function getTablesAndInstanceInfo(dbAccess: DBAccess, connection: Connection): Promise<string> {
   try {
-    const tables = await getConnectionInfo(connection.id, 'tables', asUserId);
-    const project = await getProjectById(connection.projectId, asUserId);
+    const tables = await getConnectionInfo(dbAccess, connection.id, 'tables');
+    const project = await getProjectById(dbAccess, connection.projectId);
 
     return `
 Here are the tables, their sizes, and usage counts:
@@ -33,8 +34,8 @@ Vacuum settings: ${JSON.stringify(vacuumSettings)}
 `;
 }
 
-export async function getPostgresExtensions(connection: Connection, asUserId?: string): Promise<string> {
-  const extensions = await getConnectionInfo(connection.id, 'extensions', asUserId);
+export async function getPostgresExtensions(dbAccess: DBAccess, connection: Connection): Promise<string> {
+  const extensions = await getConnectionInfo(dbAccess, connection.id, 'extensions');
   return `Extensions: ${JSON.stringify(extensions)}`;
 }
 

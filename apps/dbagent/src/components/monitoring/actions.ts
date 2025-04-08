@@ -3,6 +3,7 @@
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { auth } from '~/auth';
+import { getUserDBAccess, getUserSessionDBAccess } from '~/lib/db/db';
 import { getScheduleRuns, ScheduleRun } from '~/lib/db/schedule-runs';
 import {
   deleteSchedule,
@@ -35,17 +36,20 @@ export async function actionCreateSchedule(schedule: Omit<Schedule, 'id' | 'user
     schedule.status = 'scheduled';
     schedule.nextRun = scheduleGetNextRun({ ...schedule, userId }, new Date()).toISOString();
   }
-  return insertSchedule({ ...schedule, userId });
+  const db = await getUserSessionDBAccess();
+  return insertSchedule(db, { ...schedule, userId });
 }
 
 export async function actionUpdateSchedule(schedule: Omit<Schedule, 'userId'>): Promise<Schedule> {
   const session = await auth();
   const userId = session?.user?.id ?? '';
-  return updateSchedule({ ...schedule, userId });
+  const db = await getUserDBAccess(userId);
+  return updateSchedule(db, { ...schedule, userId });
 }
 
 export async function actionGetSchedules(): Promise<Schedule[]> {
-  const schedules = await getSchedules();
+  const db = await getUserSessionDBAccess();
+  const schedules = await getSchedules(db);
   // Ensure last_run is serialized as string
   schedules.forEach((schedule) => {
     if (schedule.lastRun) {
@@ -59,11 +63,13 @@ export async function actionGetSchedules(): Promise<Schedule[]> {
 }
 
 export async function actionGetSchedule(id: string): Promise<Schedule> {
-  return getSchedule(id);
+  const db = await getUserSessionDBAccess();
+  return getSchedule(db, id);
 }
 
 export async function actionDeleteSchedule(id: string): Promise<void> {
-  return deleteSchedule(id);
+  const db = await getUserSessionDBAccess();
+  return deleteSchedule(db, id);
 }
 
 export async function actionListPlaybooks(): Promise<string[]> {
@@ -71,22 +77,24 @@ export async function actionListPlaybooks(): Promise<string[]> {
 }
 
 export async function actionUpdateScheduleEnabled(scheduleId: string, enabled: boolean) {
+  const db = await getUserSessionDBAccess();
   if (enabled) {
-    const schedule = await getSchedule(scheduleId);
+    const schedule = await getSchedule(db, scheduleId);
     schedule.enabled = true;
     schedule.status = 'scheduled';
     schedule.nextRun = scheduleGetNextRun(schedule, new Date()).toUTCString();
     console.log('nextRun', schedule.nextRun);
-    await updateScheduleRunData(schedule);
+    await updateScheduleRunData(db, schedule);
   } else {
-    const schedule = await getSchedule(scheduleId);
+    const schedule = await getSchedule(db, scheduleId);
     schedule.enabled = false;
     schedule.status = 'disabled';
     schedule.nextRun = undefined;
-    await updateScheduleRunData(schedule);
+    await updateScheduleRunData(db, schedule);
   }
 }
 
 export async function actionGetScheduleRuns(scheduleId: string): Promise<ScheduleRun[]> {
-  return getScheduleRuns(scheduleId);
+  const db = await getUserSessionDBAccess();
+  return getScheduleRuns(db, scheduleId);
 }

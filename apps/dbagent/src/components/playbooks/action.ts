@@ -5,6 +5,8 @@ import { generateText } from 'ai';
 import { auth } from '~/auth';
 
 import { dbCreatePlaybook, dbDeletePlaybook, dbUpdatePlaybook } from '~/lib/db/custom-playbooks';
+import { getUserDBAccess } from '~/lib/db/db';
+import { getSchedulesByUserIdAndProjectId, Schedule } from '~/lib/db/schedules';
 import {
   customPlaybook,
   getCustomPlaybook,
@@ -57,7 +59,8 @@ export async function actionGeneratePlaybookContent(name: string, description: s
 
 //playbook db get
 export async function actionGetCustomPlaybooks(projectId: string, asUserId?: string): Promise<customPlaybook[]> {
-  return getCustomPlaybooks(projectId, asUserId);
+  const dbAccess = await getUserDBAccess(asUserId);
+  return getCustomPlaybooks(dbAccess, projectId);
 }
 
 //get a custom playbook by id
@@ -66,12 +69,14 @@ export async function actionGetCustomPlaybook(
   id: string,
   asUserId?: string
 ): Promise<customPlaybook> {
-  return getCustomPlaybook(projectId, id, asUserId);
+  const dbAccess = await getUserDBAccess(asUserId);
+  return getCustomPlaybook(dbAccess, projectId, id);
 }
 
 //get a list of custom playbook names
 export async function actionListCustomPlaybooksNames(projectId: string, asUserId?: string): Promise<string[] | null> {
-  return getListOfCustomPlaybooksNames(projectId, asUserId);
+  const dbAccess = await getUserDBAccess(asUserId);
+  return getListOfCustomPlaybooksNames(dbAccess, projectId);
 }
 
 //playbook db insert
@@ -79,7 +84,8 @@ export async function actionCreatePlaybook(input: customPlaybook): Promise<Playb
   const session = await auth();
   const userId = session?.user?.id ?? '';
   console.log('Creating playbook {input: ', input, '}');
-  return await dbCreatePlaybook({ ...input, createdBy: userId });
+  const dbAccess = await getUserDBAccess();
+  return await dbCreatePlaybook(dbAccess, { ...input, createdBy: userId });
 }
 
 //playbook db update
@@ -88,11 +94,18 @@ export async function actionUpdatePlaybook(
   input: { description?: string; content?: string }
 ): Promise<Playbook | null> {
   console.log('Updating playbook {id: ', id, '} with {input: ', input, '}');
-  return await dbUpdatePlaybook(id, input);
+  const dbAccess = await getUserDBAccess();
+  return await dbUpdatePlaybook(dbAccess, id, input);
 }
 
 //playbook db delete
 export async function actionDeletePlaybook(id: string): Promise<void> {
   console.log('Deleting playbook {id: ', id, '}');
-  return await dbDeletePlaybook(id);
+  const dbAccess = await getUserDBAccess();
+  return await dbDeletePlaybook(dbAccess, id);
+}
+
+export async function actionGetSchedulesByUserIdAndProjectId(userId: string, projectId: string): Promise<Schedule[]> {
+  const dbAccess = await getUserDBAccess(userId);
+  return await getSchedulesByUserIdAndProjectId(dbAccess, userId, projectId);
 }

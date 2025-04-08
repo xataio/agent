@@ -18,8 +18,7 @@ import {
 import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { getIntegration } from '~/lib/db/integrations';
-import { saveWebhookUrl } from './actions';
+import { actionGetWebhookUrl, actionSaveWebhookUrl } from './actions';
 
 export function SlackIntegration({ projectId }: { projectId: string }) {
   const [isLoading, setIsLoading] = useState(true);
@@ -38,7 +37,7 @@ export function SlackIntegration({ projectId }: { projectId: string }) {
   useEffect(() => {
     const fetchWebhookUrl = async () => {
       try {
-        const data = await getIntegration(projectId, 'slack');
+        const data = await actionGetWebhookUrl(projectId);
         if (data) {
           setValue('webhookUrl', data.webhookUrl);
         }
@@ -54,7 +53,7 @@ export function SlackIntegration({ projectId }: { projectId: string }) {
 
   const onSubmit = async (data: { webhookUrl: string }) => {
     try {
-      const response = await saveWebhookUrl(projectId, data.webhookUrl);
+      const response = await actionSaveWebhookUrl(projectId, data.webhookUrl);
       if (response.success) {
         toast('Slack webhook URL saved successfully');
       } else {

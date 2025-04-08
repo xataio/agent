@@ -1,30 +1,30 @@
 import { getRDSClusterLogs, getRDSInstanceLogs, initializeRDSClient } from '../aws/rds';
 import { getClusterByConnection } from '../db/aws-clusters';
 import { Connection } from '../db/connections';
+import { DBAccess } from '../db/db';
 import { getInstanceByConnection } from '../db/gcp-instances';
 import { getIntegration } from '../db/integrations';
 import { getCloudSQLPostgresLogs, initializeLoggingClient } from '../gcp/cloudsql';
-
 type GetInstanceLogsParams = {
   connection: Connection;
   periodInSeconds: number;
   grep?: string;
-  asUserId?: string;
 };
 
-export async function getInstanceLogsRDS({
-  connection,
-  periodInSeconds,
-  grep,
-  asUserId
-}: GetInstanceLogsParams): Promise<string> {
+export async function getInstanceLogsRDS(
+  dbAccess: DBAccess,
+  {
+    connection,
+    periodInSeconds,
+    grep,
+  }: GetInstanceLogsParams): Promise<string> {
   // Get AWS credentials from integrations
-  const awsCredentials = await getIntegration(connection.projectId, 'aws', asUserId);
+  const awsCredentials = await getIntegration(dbAccess, connection.projectId, 'aws');
   if (!awsCredentials) {
     return 'AWS credentials not configured';
   }
 
-  const cluster = await getClusterByConnection(connection.id, asUserId);
+  const cluster = await getClusterByConnection(dbAccess, connection.id);
   if (!cluster) {
     return 'Cluster not found';
   }
@@ -71,13 +71,14 @@ export async function getInstanceLogsRDS({
   return logs.join('\n\n');
 }
 
-export async function getInstanceLogsGCP({
-  connection,
-  periodInSeconds,
-  grep,
-  asUserId
-}: GetInstanceLogsParams): Promise<string> {
-  const gcpCredentials = await getIntegration(connection.projectId, 'gcp', asUserId);
+export async function getInstanceLogsGCP(
+  dbAccess: DBAccess,
+  {
+    connection,
+    periodInSeconds,
+    grep,
+  }: GetInstanceLogsParams): Promise<string> {
+  const gcpCredentials = await getIntegration(dbAccess, connection.projectId, 'gcp');
   if (!gcpCredentials) {
     return 'GCP credentials not configured';
   }
@@ -86,7 +87,7 @@ export async function getInstanceLogsGCP({
 
   const startTime = new Date(Date.now() - periodInSeconds * 1000);
 
-  const instance = await getInstanceByConnection(connection.id, asUserId);
+  const instance = await getInstanceByConnection(dbAccess, connection.id);
   if (!instance) {
     return 'Instance not found';
   }
