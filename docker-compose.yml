@@ -5,11 +5,11 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-dbagent}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
       POSTGRES_DB: ${POSTGRES_DB:-dbagent}
-    ports:
-      - '5432:5432'
     volumes:
       - agent_postgres_data:/var/lib/postgresql/data
       - ./apps/dbagent/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - db_network
 
   xata-agent:
     image: xataio/agent:0.1.2
@@ -22,6 +22,12 @@ services:
       - '8080:8080'
     depends_on:
       - postgres
+    networks:
+      - db_network
 
 volumes:
   agent_postgres_data:
+
+networks:
+  db_network:
+    driver: bridge
