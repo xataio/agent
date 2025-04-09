@@ -29,12 +29,12 @@ function errorHandler(error: unknown) {
 export async function POST(req: Request) {
   const { messages, connectionId, model } = await req.json();
 
-  const db = await getUserSessionDBAccess();
-  const connection = await getConnection(db, connectionId);
+  const dbAccess = await getUserSessionDBAccess();
+  const connection = await getConnection(dbAccess, connectionId);
   if (!connection) {
     return new Response('Connection not found', { status: 404 });
   }
-  const project = await getProjectById(db, connection.projectId);
+  const project = await getProjectById(dbAccess, connection.projectId);
   if (!project) {
     return new Response('Project not found', { status: 404 });
   }
