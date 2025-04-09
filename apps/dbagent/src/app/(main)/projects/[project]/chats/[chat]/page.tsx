@@ -1,4 +1,4 @@
-import { Attachment, UIMessage } from 'ai';
+import { UIMessage } from 'ai';
 import { cookies } from 'next/headers';
 import { Chat } from '~/components/chat/chat';
 import { DataStreamHandler } from '~/components/chat/data-stream-handler';
@@ -48,8 +48,7 @@ export default async function Page({ params }: { params: Promise<PageParams> }) 
       role: message.role as UIMessage['role'],
       // Note: content will soon be deprecated in @ai-sdk/react
       content: '',
-      createdAt: message.createdAt,
-      experimental_attachments: (message.attachments as Array<Attachment>) ?? []
+      createdAt: message.createdAt
     }));
   }
 

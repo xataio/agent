@@ -392,7 +392,6 @@ export const messages = pgTable(
     chatId: uuid('chat_id').notNull(),
     role: varchar('role').notNull(),
     parts: jsonb('parts').notNull(),
-    attachments: jsonb('attachments').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull()
   },
   (table) => [

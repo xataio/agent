@@ -2,7 +2,7 @@
 
 import { useChat } from '@ai-sdk/react';
 import { toast } from '@internal/components';
-import type { Attachment, UIMessage } from 'ai';
+import type { UIMessage } from 'ai';
 import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { Connection, Vote } from '~/lib/db/schema';
@@ -50,7 +50,6 @@ export function Chat({
 
   const { data: votes } = useSWR<Array<Vote>>(messages.length >= 2 ? `/api/vote?chatId=${id}` : null, fetcher);
 
-  const [attachments, setAttachments] = useState<Array<Attachment>>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   return (
@@ -79,8 +78,6 @@ export function Chat({
               handleSubmit={handleSubmit}
               status={status}
               stop={stop}
-              attachments={attachments}
-              setAttachments={setAttachments}
               messages={messages}
               setMessages={setMessages}
               append={append}
@@ -96,8 +93,6 @@ export function Chat({
         handleSubmit={handleSubmit}
         status={status}
         stop={stop}
-        attachments={attachments}
-        setAttachments={setAttachments}
         append={append}
         messages={messages}
         setMessages={setMessages}

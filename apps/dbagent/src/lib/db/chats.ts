@@ -50,7 +50,7 @@ export async function getChatById({ id }: { id: string }) {
   });
 }
 
-export async function saveMessages({ items }: { items: Array<Message> }) {
+export async function saveMessages({ messages: items }: { messages: Array<Message> }) {
   return queryDb(async ({ db }) => {
     return await db.insert(messages).values(items);
   });

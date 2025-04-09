@@ -13,7 +13,6 @@ import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { MessageEditor } from './message-editor';
 import { MessageReasoning } from './message-reasoning';
-import { PreviewAttachment } from './preview-attachment';
 
 const PurePreviewMessage = ({
   chatId,
@@ -61,14 +60,6 @@ const PurePreviewMessage = ({
           )}
 
           <div className="flex w-full flex-col gap-4">
-            {message.experimental_attachments && (
-              <div data-testid="message-attachments" className="flex flex-row justify-end gap-2">
-                {message.experimental_attachments.map((attachment) => (
-                  <PreviewAttachment key={attachment.url} attachment={attachment} />
-                ))}
-              </div>
-            )}
-
             {message.parts?.map((part, index) => {
               const { type } = part;
               const key = `message-${message.id}-part-${index}`;

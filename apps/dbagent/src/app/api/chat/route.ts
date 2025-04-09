@@ -1,60 +1,168 @@
-import { streamText } from 'ai';
+import { UIMessage, appendResponseMessages, createDataStreamResponse, smoothStream, streamText } from 'ai';
+import { generateTitleFromUserMessage } from '~/app/(main)/projects/[project]/chats/actions';
+import { auth } from '~/auth';
+import { generateUUID } from '~/components/chat/utils';
 import { chatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
+import { deleteChatById, getChatById, saveChat, saveMessages } from '~/lib/db/chats';
 import { getConnection } from '~/lib/db/connections';
 
-export const runtime = 'nodejs';
-export const maxDuration = 30;
+export const maxDuration = 60;
 
-function errorHandler(error: unknown) {
-  if (error == null) {
-    return 'unknown error';
-  }
-
-  if (typeof error === 'string') {
-    return error;
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  console.log(JSON.stringify(error));
-
-  return JSON.stringify(error);
-}
-
-export async function POST(req: Request) {
-  const { messages, connectionId, model } = await req.json();
-
-  const connection = await getConnection(connectionId);
-  if (!connection) {
-    return new Response('Connection not found', { status: 400 });
-  }
+export async function POST(request: Request) {
   try {
-    const context = chatSystemPrompt;
+    const { id, messages, connectionId, model } = await request.json();
 
-    console.log(context);
+    const connection = await getConnection(connectionId);
+    if (!connection) {
+      return new Response('Connection not found', { status: 404 });
+    }
+
+    const session = await auth();
+
+    if (!session || !session.user || !session.user.id) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+
+    const userMessage = getMostRecentUserMessage(messages);
+
+    if (!userMessage) {
+      return new Response('No user message found', { status: 400 });
+    }
+
+    const chat = await getChatById({ id });
+
+    if (!chat) {
+      const title = await generateTitleFromUserMessage({
+        message: userMessage
+      });
+
+      await saveChat({ id, userId: session.user.id, projectId: connection.projectId, title });
+    } else {
+      if (chat.userId !== session.user.id) {
+        return new Response('Unauthorized', { status: 401 });
+      }
+    }
+
+    await saveMessages({
+      messages: [
+        {
+          chatId: id,
+          id: userMessage.id,
+          projectId: connection.projectId,
+          role: 'user',
+          parts: userMessage.parts,
+          createdAt: new Date()
+        }
+      ]
+    });
 
     const modelInstance = getModelInstance(model);
-
     const { tools, end } = await getTools(connection);
-    const result = streamText({
-      model: modelInstance,
-      messages,
-      system: context,
-      tools: tools,
-      maxSteps: 20,
-      toolCallStreaming: true,
-      onFinish: async (_result) => {
-        await end();
+
+    return createDataStreamResponse({
+      execute: (dataStream) => {
+        const result = streamText({
+          model: modelInstance,
+          system: chatSystemPrompt,
+          messages,
+          maxSteps: 5,
+          experimental_transform: smoothStream({ chunking: 'word' }),
+          experimental_generateMessageId: generateUUID,
+          tools,
+          onFinish: async ({ response }) => {
+            try {
+              const assistantId = getTrailingMessageId({
+                messages: response.messages.filter((message) => message.role === 'assistant')
+              });
+
+              if (!assistantId) {
+                throw new Error('No assistant message found!');
+              }
+
+              const [, assistantMessage] = appendResponseMessages({
+                messages: [userMessage],
+                responseMessages: response.messages
+              });
+
+              if (!assistantMessage) {
+                throw new Error('No assistant message found!');
+              }
+
+              await saveMessages({
+                messages: [
+                  {
+                    id: assistantId,
+                    projectId: connection.projectId,
+                    chatId: id,
+                    role: assistantMessage.role,
+                    parts: assistantMessage.parts,
+                    createdAt: new Date()
+                  }
+                ]
+              });
+            } catch (_) {
+              console.error('Failed to save chat');
+            }
+
+            await end();
+          }
+        });
+
+        result.consumeStream();
+
+        result.mergeIntoDataStream(dataStream, { sendReasoning: true });
+      },
+      onError: () => {
+        return 'Oops, an error occurred!';
       }
     });
-
-    return result.toDataStreamResponse({
-      getErrorMessage: errorHandler
-    });
   } catch (error) {
-    console.error('Error in chat', error);
-    return new Response('Error in chat', { status: 500 });
+    return new Response('An error occurred while processing your request!', {
+      status: 404
+    });
   }
+}
+
+export async function DELETE(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+
+  if (!id) {
+    return new Response('Not Found', { status: 404 });
+  }
+
+  const session = await auth();
+
+  if (!session || !session.user) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  try {
+    const chat = await getChatById({ id });
+
+    if (chat?.userId !== session.user.id) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+
+    await deleteChatById({ id });
+
+    return new Response('Chat deleted', { status: 200 });
+  } catch (error) {
+    return new Response('An error occurred while processing your request!', {
+      status: 500
+    });
+  }
+}
+
+function getMostRecentUserMessage(messages: Array<UIMessage>) {
+  const userMessages = messages.filter((message) => message.role === 'user');
+  return userMessages.at(-1);
+}
+
+export function getTrailingMessageId({ messages }: { messages: Array<{ id: string }> }): string | null {
+  const trailingMessage = messages.at(-1);
+
+  if (!trailingMessage) return null;
+
+  return trailingMessage.id;
 }

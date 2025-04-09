@@ -1,10 +1,10 @@
 import { UseChatHelpers } from '@ai-sdk/react';
 import { useSidebar } from '@internal/components';
-import type { Attachment, UIMessage } from 'ai';
+import type { UIMessage } from 'ai';
 import { formatDistance } from 'date-fns';
 import equal from 'fast-deep-equal';
 import { AnimatePresence, motion } from 'framer-motion';
-import { type Dispatch, memo, type SetStateAction, useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
 import { Document, Vote } from '~/lib/db/schema';
@@ -46,8 +46,6 @@ function PureArtifact({
   handleSubmit,
   status,
   stop,
-  attachments,
-  setAttachments,
   append,
   messages,
   setMessages,
@@ -60,8 +58,6 @@ function PureArtifact({
   setInput: UseChatHelpers['setInput'];
   status: UseChatHelpers['status'];
   stop: UseChatHelpers['stop'];
-  attachments: Array<Attachment>;
-  setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
   messages: Array<UIMessage>;
   setMessages: UseChatHelpers['setMessages'];
   votes: Array<Vote> | undefined;
@@ -309,8 +305,6 @@ function PureArtifact({
                     handleSubmit={handleSubmit}
                     status={status}
                     stop={stop}
-                    attachments={attachments}
-                    setAttachments={setAttachments}
                     messages={messages}
                     append={append}
                     className="bg-background dark:bg-muted"
