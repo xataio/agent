@@ -1,4 +1,5 @@
 import { UIMessage, appendResponseMessages, createDataStreamResponse, smoothStream, streamText } from 'ai';
+import { NextRequest } from 'next/server';
 import { generateTitleFromUserMessage } from '~/app/(main)/projects/[project]/chats/actions';
 import { auth } from '~/auth';
 import { generateUUID } from '~/components/chat/utils';
@@ -11,13 +12,18 @@ import { getTargetDbPool } from '~/lib/targetdb/db';
 
 export const maxDuration = 60;
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const chats = await getChatsByUserId({ id: session.user.id });
+  const { searchParams } = new URL(request.url);
+  const limit = parseInt(searchParams.get('limit') || '10', 10);
+
+  const dbAccess = await getUserSessionDBAccess();
+
+  const chats = await getChatsByUserId(dbAccess, { id: session.user.id, limit });
 
   return Response.json({ chats });
 }
@@ -49,21 +55,21 @@ export async function POST(request: Request) {
       return new Response('No user message found', { status: 400 });
     }
 
-    const chat = await getChatById({ id });
+    const chat = await getChatById(dbAccess, { id });
 
     if (!chat) {
       const title = await generateTitleFromUserMessage({
         message: userMessage
       });
 
-      await saveChat({ id, userId: session.user.id, projectId: connection.projectId, title });
+      await saveChat(dbAccess, { id, userId: session.user.id, projectId: connection.projectId, title });
     } else {
       if (chat.userId !== session.user.id) {
         return new Response('Unauthorized', { status: 401 });
       }
     }
 
-    await saveMessages({
+    await saveMessages(dbAccess, {
       messages: [
         {
           chatId: id,
@@ -111,7 +117,7 @@ export async function POST(request: Request) {
                 throw new Error('No assistant message found!');
               }
 
-              await saveMessages({
+              await saveMessages(dbAccess, {
                 messages: [
                   {
                     id: assistantId,
@@ -155,19 +161,20 @@ export async function DELETE(request: Request) {
   }
 
   const session = await auth();
-
   if (!session || !session.user) {
     return new Response('Unauthorized', { status: 401 });
   }
 
+  const dbAccess = await getUserSessionDBAccess();
+
   try {
-    const chat = await getChatById({ id });
+    const chat = await getChatById(dbAccess, { id });
 
     if (chat?.userId !== session.user.id) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    await deleteChatById({ id });
+    await deleteChatById(dbAccess, { id });
 
     return new Response('Chat deleted', { status: 200 });
   } catch (error) {

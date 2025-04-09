@@ -5,6 +5,7 @@ import { DataStreamHandler } from '~/components/chat/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '~/lib/ai/models';
 import { getMessagesByChatId } from '~/lib/db/chats';
 import { listConnections } from '~/lib/db/connections';
+import { getUserSessionDBAccess } from '~/lib/db/db';
 import { Message } from '~/lib/db/schema';
 
 type PageParams = {
@@ -37,9 +38,10 @@ export default async function Page({ params }: { params: Promise<PageParams> }) 
     }
   ];
 
-  const connections = await listConnections(project);
+  const dbAccess = await getUserSessionDBAccess();
+  const connections = await listConnections(dbAccess, project);
 
-  const messagesFromDb = await getMessagesByChatId({ id: chat });
+  const messagesFromDb = await getMessagesByChatId(dbAccess, { id: chat });
 
   function convertToUIMessages(messages: Array<Message>): Array<UIMessage> {
     return messages.map((message) => ({

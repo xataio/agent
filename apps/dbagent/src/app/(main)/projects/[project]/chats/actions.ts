@@ -4,6 +4,7 @@ import { generateText, Message } from 'ai';
 import { cookies } from 'next/headers';
 import { myProvider } from '~/lib/ai/providers';
 import { deleteMessagesByChatIdAfterTimestamp, getMessageById } from '~/lib/db/chats';
+import { getUserSessionDBAccess } from '~/lib/db/db';
 
 export async function saveChatModelAsCookie(model: string) {
   const cookieStore = await cookies();
@@ -25,12 +26,14 @@ export async function generateTitleFromUserMessage({ message }: { message: Messa
 }
 
 export async function deleteTrailingMessages({ id }: { id: string }) {
-  const [message] = await getMessageById({ id });
+  const dbAccess = await getUserSessionDBAccess();
+
+  const [message] = await getMessageById(dbAccess, { id });
   if (!message) {
     throw new Error('Message not found');
   }
 
-  await deleteMessagesByChatIdAfterTimestamp({
+  await deleteMessagesByChatIdAfterTimestamp(dbAccess, {
     chatId: message.chatId,
     timestamp: message.createdAt
   });

@@ -1,6 +1,7 @@
 import { DataStreamWriter } from 'ai';
 import { Session } from 'next-auth';
 import { saveDocument } from '~/lib/db/chats';
+import { DBAccess } from '~/lib/db/db';
 import { Document } from '~/lib/db/schema';
 import { ArtifactKind } from '../artifact';
 import { codeDocumentHandler } from './code/server';
@@ -22,6 +23,7 @@ export interface CreateDocumentCallbackProps {
   dataStream: DataStreamWriter;
   session: Session;
   projectId: string;
+  dbAccess: DBAccess;
 }
 
 export interface UpdateDocumentCallbackProps {
@@ -29,6 +31,7 @@ export interface UpdateDocumentCallbackProps {
   description: string;
   dataStream: DataStreamWriter;
   session: Session;
+  dbAccess: DBAccess;
 }
 
 export interface DocumentHandler<T = ArtifactKind> {
@@ -50,11 +53,12 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         title: args.title,
         dataStream: args.dataStream,
         session: args.session,
-        projectId: args.projectId
+        projectId: args.projectId,
+        dbAccess: args.dbAccess
       });
 
       if (args.session?.user?.id) {
-        await saveDocument({
+        await saveDocument(args.dbAccess, {
           id: args.id,
           title: args.title,
           content: draftContent,
@@ -71,11 +75,12 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         document: args.document,
         description: args.description,
         dataStream: args.dataStream,
-        session: args.session
+        session: args.session,
+        dbAccess: args.dbAccess
       });
 
       if (args.session?.user?.id) {
-        await saveDocument({
+        await saveDocument(args.dbAccess, {
           id: args.document.id,
           title: args.document.title,
           content: draftContent,

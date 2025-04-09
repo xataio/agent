@@ -1,5 +1,6 @@
 import { auth } from '~/auth';
 import { getChatById, getVotesByChatId, voteMessage } from '~/lib/db/chats';
+import { getUserSessionDBAccess } from '~/lib/db/db';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -10,12 +11,13 @@ export async function GET(request: Request) {
   }
 
   const session = await auth();
-
   if (!session || !session.user || !session.user.email) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const chat = await getChatById({ id: chatId });
+  const dbAccess = await getUserSessionDBAccess();
+
+  const chat = await getChatById(dbAccess, { id: chatId });
 
   if (!chat) {
     return new Response('Chat not found', { status: 404 });
@@ -25,7 +27,7 @@ export async function GET(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const votes = await getVotesByChatId({ id: chatId });
+  const votes = await getVotesByChatId(dbAccess, { id: chatId });
 
   return Response.json(votes, { status: 200 });
 }
@@ -38,13 +40,13 @@ export async function PATCH(request: Request) {
   }
 
   const session = await auth();
-
-  if (!session || !session.user || !session.user.email) {
+  if (!session?.user?.id) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const chat = await getChatById({ id: chatId });
+  const dbAccess = await getUserSessionDBAccess();
 
+  const chat = await getChatById(dbAccess, { id: chatId });
   if (!chat) {
     return new Response('Chat not found', { status: 404 });
   }
@@ -53,7 +55,7 @@ export async function PATCH(request: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  await voteMessage({
+  await voteMessage(dbAccess, {
     projectId: chat.projectId,
     userId: session.user.id,
     chatId,
