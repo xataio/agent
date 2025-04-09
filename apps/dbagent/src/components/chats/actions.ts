@@ -1,5 +1,6 @@
 'use server';
 
+import { getDefaultLanguageModel, listLanguageModels } from '~/lib/ai/providers';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 import { getScheduleRun } from '~/lib/db/schedule-runs';
 import { getSchedule } from '~/lib/db/schedules';
@@ -15,4 +16,12 @@ export async function actionGetScheduleRun(runId?: string) {
   } catch (error) {
     return null;
   }
+}
+
+export async function actionGetLanguageModels() {
+  return listLanguageModels().map((m) => m.info());
+}
+
+export async function actionGetDefaultLanguageModel() {
+  return getDefaultLanguageModel().info();
 }
