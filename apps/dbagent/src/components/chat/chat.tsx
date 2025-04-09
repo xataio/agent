@@ -2,9 +2,9 @@
 
 import { useChat } from '@ai-sdk/react';
 import { toast } from '@internal/components';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
 import { useState } from 'react';
-import useSWR, { useSWRConfig } from 'swr';
 import { Connection, Vote } from '~/lib/db/schema';
 import { Artifact } from './artifact';
 import { Messages } from './messages';
@@ -28,8 +28,7 @@ export function Chat({
   selectedChatModel: string;
   isReadonly: boolean;
 }) {
-  const { mutate } = useSWRConfig();
-
+  const queryClient = useQueryClient();
   const defaultConnection = connections.find((c) => c.isDefault);
   const [connectionId, setConnectionId] = useState<string>(defaultConnection?.id || '');
 
@@ -41,14 +40,18 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      mutate('/api/history');
+      queryClient.invalidateQueries({ queryKey: ['history'] });
     },
     onError: () => {
       toast.error('An error occured, please try again!');
     }
   });
 
-  const { data: votes } = useSWR<Array<Vote>>(messages.length >= 2 ? `/api/vote?chatId=${id}` : null, fetcher);
+  const { data: votes } = useQuery<Vote[]>({
+    queryKey: ['votes', id],
+    queryFn: () => fetcher(`/api/vote?chatId=${id}`),
+    enabled: messages.length >= 2
+  });
 
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 

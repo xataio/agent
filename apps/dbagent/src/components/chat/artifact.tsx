@@ -1,11 +1,11 @@
 import { UseChatHelpers } from '@ai-sdk/react';
 import { useSidebar } from '@internal/components';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
 import { formatDistance } from 'date-fns';
 import equal from 'fast-deep-equal';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useEffect, useState } from 'react';
-import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
 import { Document, Vote } from '~/lib/db/schema';
 import { ArtifactActions } from './artifact-actions';
@@ -67,17 +67,13 @@ function PureArtifact({
   isReadonly: boolean;
 }) {
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
+  const queryClient = useQueryClient();
 
-  const {
-    data: documents,
-    isLoading: isDocumentsFetching,
-    mutate: mutateDocuments
-  } = useSWR<Array<Document>>(
-    artifact.documentId !== 'init' && artifact.status !== 'streaming'
-      ? `/api/document?id=${artifact.documentId}`
-      : null,
-    fetcher
-  );
+  const { data: documents, isLoading: isDocumentsFetching } = useQuery({
+    queryKey: ['documents', artifact.documentId],
+    queryFn: () => fetcher(`/api/document?id=${artifact.documentId}`),
+    enabled: artifact.documentId !== 'init' && artifact.status !== 'streaming'
+  });
 
   const [mode, setMode] = useState<'edit' | 'diff'>('edit');
   const [document, setDocument] = useState<Document | null>(null);
@@ -101,54 +97,46 @@ function PureArtifact({
   }, [documents, setArtifact]);
 
   useEffect(() => {
-    mutateDocuments();
-  }, [artifact.status, mutateDocuments]);
+    queryClient.invalidateQueries({ queryKey: ['documents', artifact.documentId] });
+  }, [artifact.status, queryClient, artifact.documentId]);
 
-  const { mutate } = useSWRConfig();
   const [isContentDirty, setIsContentDirty] = useState(false);
 
   const handleContentChange = useCallback(
-    (updatedContent: string) => {
+    async (updatedContent: string) => {
       if (!artifact) return;
 
-      mutate<Array<Document>>(
-        `/api/document?id=${artifact.documentId}`,
-        async (currentDocuments) => {
-          if (!currentDocuments) return undefined;
+      const currentDocuments = queryClient.getQueryData<Array<Document>>(['documents', artifact.documentId]);
+      if (!currentDocuments) return;
 
-          const currentDocument = currentDocuments.at(-1);
+      const currentDocument = currentDocuments.at(-1);
+      if (!currentDocument || !currentDocument.content) {
+        setIsContentDirty(false);
+        return;
+      }
 
-          if (!currentDocument || !currentDocument.content) {
-            setIsContentDirty(false);
-            return currentDocuments;
-          }
+      if (currentDocument.content !== updatedContent) {
+        await fetch(`/api/document?id=${artifact.documentId}`, {
+          method: 'POST',
+          body: JSON.stringify({
+            title: artifact.title,
+            content: updatedContent,
+            kind: artifact.kind
+          })
+        });
 
-          if (currentDocument.content !== updatedContent) {
-            await fetch(`/api/document?id=${artifact.documentId}`, {
-              method: 'POST',
-              body: JSON.stringify({
-                title: artifact.title,
-                content: updatedContent,
-                kind: artifact.kind
-              })
-            });
+        setIsContentDirty(false);
 
-            setIsContentDirty(false);
+        const newDocument = {
+          ...currentDocument,
+          content: updatedContent,
+          createdAt: new Date()
+        };
 
-            const newDocument = {
-              ...currentDocument,
-              content: updatedContent,
-              createdAt: new Date()
-            };
-
-            return [...currentDocuments, newDocument];
-          }
-          return currentDocuments;
-        },
-        { revalidate: false }
-      );
+        queryClient.setQueryData(['documents', artifact.documentId], [...currentDocuments, newDocument]);
+      }
     },
-    [artifact, mutate]
+    [artifact, queryClient]
   );
 
   const debouncedHandleContentChange = useDebounceCallback(handleContentChange, 2000);

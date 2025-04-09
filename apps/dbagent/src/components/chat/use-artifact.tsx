@@ -1,7 +1,7 @@
 'use client';
 
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
-import useSWR from 'swr';
 import { UIArtifact } from './artifact';
 
 export const initialArtifactData: UIArtifact = {
@@ -22,8 +22,10 @@ export const initialArtifactData: UIArtifact = {
 type Selector<T> = (state: UIArtifact) => T;
 
 export function useArtifactSelector<Selected>(selector: Selector<Selected>) {
-  const { data: localArtifact } = useSWR<UIArtifact>('artifact', null, {
-    fallbackData: initialArtifactData
+  const { data: localArtifact } = useQuery({
+    queryKey: ['artifact'],
+    queryFn: () => null,
+    initialData: initialArtifactData
   });
 
   const selectedValue = useMemo(() => {
@@ -35,8 +37,11 @@ export function useArtifactSelector<Selected>(selector: Selector<Selected>) {
 }
 
 export function useArtifact() {
-  const { data: localArtifact, mutate: setLocalArtifact } = useSWR<UIArtifact>('artifact', null, {
-    fallbackData: initialArtifactData
+  const queryClient = useQueryClient();
+  const { data: localArtifact } = useQuery({
+    queryKey: ['artifact'],
+    queryFn: () => null,
+    initialData: initialArtifactData
   });
 
   const artifact = useMemo(() => {
@@ -46,7 +51,7 @@ export function useArtifact() {
 
   const setArtifact = useCallback(
     (updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact)) => {
-      setLocalArtifact((currentArtifact) => {
+      queryClient.setQueryData(['artifact'], (currentArtifact: UIArtifact | undefined) => {
         const artifactToUpdate = currentArtifact || initialArtifactData;
 
         if (typeof updaterFn === 'function') {
@@ -56,15 +61,21 @@ export function useArtifact() {
         return updaterFn;
       });
     },
-    [setLocalArtifact]
+    [queryClient]
   );
 
-  const { data: localArtifactMetadata, mutate: setLocalArtifactMetadata } = useSWR<any>(
-    () => (artifact.documentId ? `artifact-metadata-${artifact.documentId}` : null),
-    null,
-    {
-      fallbackData: null
-    }
+  const { data: localArtifactMetadata } = useQuery<any>({
+    queryKey: ['artifact-metadata', artifact.documentId],
+    queryFn: () => null,
+    enabled: !!artifact.documentId,
+    initialData: null
+  });
+
+  const setLocalArtifactMetadata = useCallback(
+    (metadata: any) => {
+      queryClient.setQueryData(['artifact-metadata', artifact.documentId], metadata);
+    },
+    [queryClient, artifact.documentId]
   );
 
   return useMemo(

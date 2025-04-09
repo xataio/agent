@@ -1,11 +1,11 @@
 import { Button, toast, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@internal/components';
+import { useQueryClient } from '@tanstack/react-query';
 import type { Message } from 'ai';
 import equal from 'fast-deep-equal';
 import { CopyIcon } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useParams } from 'next/navigation';
 import { memo } from 'react';
-import { useSWRConfig } from 'swr';
 import { useCopyToClipboard } from 'usehooks-ts';
 import { Vote } from '~/lib/db/schema';
 import { ThumbDownIcon, ThumbUpIcon } from '../icons';
@@ -23,8 +23,7 @@ export function PureMessageActions({
 }) {
   const { data: session } = useSession();
   const { project: projectId } = useParams<{ project: string }>();
-
-  const { mutate } = useSWRConfig();
+  const queryClient = useQueryClient();
   const [_, copyToClipboard] = useCopyToClipboard();
 
   if (isLoading) return null;
@@ -80,27 +79,23 @@ export function PureMessageActions({
                 toast.promise(upvote, {
                   loading: 'Upvoting Response...',
                   success: () => {
-                    mutate<Array<Vote>>(
-                      `/api/vote?chatId=${chatId}`,
-                      (currentVotes) => {
-                        if (!currentVotes) return [];
+                    queryClient.setQueryData<Array<Vote>>(['votes', chatId], (currentVotes) => {
+                      if (!currentVotes) return [];
 
-                        const votesWithoutCurrent = currentVotes.filter((vote) => vote.messageId !== message.id);
+                      const votesWithoutCurrent = currentVotes.filter((vote) => vote.messageId !== message.id);
 
-                        return [
-                          ...votesWithoutCurrent,
-                          {
-                            projectId,
-                            createdAt: new Date(),
-                            userId: session?.user?.id!,
-                            chatId,
-                            messageId: message.id,
-                            isUpvoted: true
-                          }
-                        ];
-                      },
-                      { revalidate: false }
-                    );
+                      return [
+                        ...votesWithoutCurrent,
+                        {
+                          projectId,
+                          createdAt: new Date(),
+                          userId: session?.user?.id!,
+                          chatId,
+                          messageId: message.id,
+                          isUpvoted: true
+                        }
+                      ];
+                    });
 
                     return 'Upvoted Response!';
                   },
@@ -134,27 +129,23 @@ export function PureMessageActions({
                 toast.promise(downvote, {
                   loading: 'Downvoting Response...',
                   success: () => {
-                    mutate<Array<Vote>>(
-                      `/api/vote?chatId=${chatId}`,
-                      (currentVotes) => {
-                        if (!currentVotes) return [];
+                    queryClient.setQueryData<Array<Vote>>(['votes', chatId], (currentVotes) => {
+                      if (!currentVotes) return [];
 
-                        const votesWithoutCurrent = currentVotes.filter((vote) => vote.messageId !== message.id);
+                      const votesWithoutCurrent = currentVotes.filter((vote) => vote.messageId !== message.id);
 
-                        return [
-                          ...votesWithoutCurrent,
-                          {
-                            projectId,
-                            createdAt: new Date(),
-                            userId: session?.user?.id!,
-                            chatId,
-                            messageId: message.id,
-                            isUpvoted: false
-                          }
-                        ];
-                      },
-                      { revalidate: false }
-                    );
+                      return [
+                        ...votesWithoutCurrent,
+                        {
+                          projectId,
+                          createdAt: new Date(),
+                          userId: session?.user?.id!,
+                          chatId,
+                          messageId: message.id,
+                          isUpvoted: false
+                        }
+                      ];
+                    });
 
                     return 'Downvoted Response!';
                   },

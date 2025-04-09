@@ -1,11 +1,11 @@
 'use client';
 
 import { Button } from '@internal/components';
+import { useQueryClient } from '@tanstack/react-query';
 import { isAfter } from 'date-fns';
 import { motion } from 'framer-motion';
 import { LoaderIcon } from 'lucide-react';
 import { useState } from 'react';
-import { useSWRConfig } from 'swr';
 import { useWindowSize } from 'usehooks-ts';
 import { Document } from '~/lib/db/schema';
 import { useArtifact } from './use-artifact';
@@ -19,11 +19,11 @@ interface VersionFooterProps {
 
 export const VersionFooter = ({ handleVersionChange, documents, currentVersionIndex }: VersionFooterProps) => {
   const { artifact } = useArtifact();
+  const queryClient = useQueryClient();
 
   const { width } = useWindowSize();
   const isMobile = width < 768;
 
-  const { mutate } = useSWRConfig();
   const [isMutating, setIsMutating] = useState(false);
 
   if (!documents) return;
@@ -47,27 +47,28 @@ export const VersionFooter = ({ handleVersionChange, documents, currentVersionIn
           onClick={async () => {
             setIsMutating(true);
 
-            mutate(
-              `/api/document?id=${artifact.documentId}`,
-              await fetch(`/api/document?id=${artifact.documentId}`, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                  timestamp: getDocumentTimestampByIndex(documents, currentVersionIndex)
-                })
-              }),
-              {
-                optimisticData: documents
-                  ? [
-                      ...documents.filter((document) =>
-                        isAfter(
-                          new Date(document.createdAt),
-                          new Date(getDocumentTimestampByIndex(documents, currentVersionIndex))
-                        )
+            const response = await fetch(`/api/document?id=${artifact.documentId}`, {
+              method: 'PATCH',
+              body: JSON.stringify({
+                timestamp: getDocumentTimestampByIndex(documents, currentVersionIndex)
+              })
+            });
+
+            if (response.ok) {
+              queryClient.setQueryData(
+                ['documents', artifact.documentId],
+                documents
+                  ? documents.filter((document) =>
+                      isAfter(
+                        new Date(document.createdAt),
+                        new Date(getDocumentTimestampByIndex(documents, currentVersionIndex))
                       )
-                    ]
+                    )
                   : []
-              }
-            );
+              );
+            }
+
+            setIsMutating(false);
           }}
         >
           <div>Restore this version</div>
