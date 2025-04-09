@@ -8,6 +8,7 @@ import { getProjectById, Project } from '../db/projects';
 import { insertScheduleRunLimitHistory, ScheduleRun } from '../db/schedule-runs';
 import { Schedule } from '../db/schedules';
 import { sendScheduleNotification } from '../notifications/slack-webhook';
+import { getTargetDbPool } from '../targetdb/db';
 import { listPlaybooks } from '../tools/playbooks';
 
 type RunModelPlaybookParams = {
@@ -38,8 +39,9 @@ async function runModelPlaybook({
 
   const monitoringSystemPrompt = getMonitoringSystemPrompt(project);
 
-  const { tools, end } = await getTools(project, connection, schedule.userId);
+  const targetDb = getTargetDbPool(connection.connectionString);
   try {
+    const tools = await getTools(project, connection, targetDb, schedule.userId);
     const result = await generateText({
       model: modelInstance,
       system: monitoringSystemPrompt,
@@ -57,7 +59,7 @@ async function runModelPlaybook({
 
     return result;
   } finally {
-    await end();
+    await targetDb.end();
   }
 }
 

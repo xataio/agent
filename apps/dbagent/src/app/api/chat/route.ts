@@ -3,6 +3,7 @@ import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba'
 import { getConnection } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 import { getProjectById } from '~/lib/db/projects';
+import { getTargetDbPool } from '~/lib/targetdb/db';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -44,7 +45,8 @@ export async function POST(req: Request) {
 
     const modelInstance = getModelInstance(model);
 
-    const { tools, end } = await getTools(project, connection);
+    const targetDb = getTargetDbPool(connection.connectionString);
+    const tools = await getTools(project, connection, targetDb);
     const result = streamText({
       model: modelInstance,
       messages,
@@ -53,7 +55,7 @@ export async function POST(req: Request) {
       maxSteps: 20,
       toolCallStreaming: true,
       onFinish: async (_result) => {
-        await end();
+        await targetDb.end();
       }
     });
 

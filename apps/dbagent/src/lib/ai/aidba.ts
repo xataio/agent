@@ -3,6 +3,7 @@ import { deepseek } from '@ai-sdk/deepseek';
 import { google } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
 import { LanguageModelV1, Tool } from 'ai';
+import { Pool } from 'pg';
 import { Connection } from '~/lib/db/connections';
 import { getUserDBAccess } from '~/lib/db/db';
 import { Project } from '../db/projects';
@@ -55,29 +56,18 @@ export function getChatSystemPrompt(project: Project): string {
   }
 }
 
-interface DBTools {
-  tools: Record<string, Tool>;
-  end: () => Promise<void>;
-}
-
 export async function getTools(
   project: Project,
   connection: Connection,
-  asUserId?: string,
-  asProjectId?: string
-): Promise<DBTools> {
-  const projectId = asProjectId || connection.projectId;
+  targetDb: Pool,
+  asUserId?: string
+): Promise<Record<string, Tool>> {
   const dbAccess = await getUserDBAccess(asUserId);
 
-  const dbTools = getDBSQLTools(connection.connectionString);
-  const clusterTools = getDBClusterTools(dbAccess, project, connection);
-  const playbookToolset = getPlaybookToolset(dbAccess, projectId);
-  return {
-    tools: mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools),
-    end: async () => {
-      await dbTools.end();
-    }
-  };
+  const dbTools = getDBSQLTools(targetDb);
+  const clusterTools = getDBClusterTools(dbAccess, connection, project.cloudProvider);
+  const playbookToolset = getPlaybookToolset(dbAccess, project.id);
+  return mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools);
 }
 
 export function getModelInstance(model: string): LanguageModelV1 {

@@ -2,19 +2,23 @@ import { tool, Tool } from 'ai';
 import { z } from 'zod';
 import { Connection } from '~/lib/db/connections';
 import { DBAccess } from '~/lib/db/db';
-import { Project } from '~/lib/db/projects';
+import { CloudProviderType } from '~/lib/db/projects';
 import { getPostgresExtensions, getTablesAndInstanceInfo } from '~/lib/tools/dbinfo';
 import { getInstanceLogsGCP, getInstanceLogsRDS } from '~/lib/tools/logs';
 import { getClusterMetricGCP, getClusterMetricRDS } from '~/lib/tools/metrics';
 import { mergeToolsets, Toolset, ToolsetGroup } from './types';
 
-export function getDBClusterTools(dbAccess: DBAccess, project: Project, connection: Connection): Record<string, Tool> {
+export function getDBClusterTools(
+  dbAccess: DBAccess,
+  connection: Connection,
+  cloudProvider: CloudProviderType
+): Record<string, Tool> {
   const connectionGetter = () => Promise.resolve({ connection });
   const toolset: Toolset[] = [new CommonDBClusterTools(dbAccess, connectionGetter)];
 
-  if (project.cloudProvider === 'aws') {
+  if (cloudProvider === 'aws') {
     toolset.push(new AWSDBClusterTools(dbAccess, connectionGetter));
-  } else if (project.cloudProvider === 'gcp') {
+  } else if (cloudProvider === 'gcp') {
     toolset.push(new GCPDBClusterTools(dbAccess, connectionGetter));
   }
   return mergeToolsets(...toolset);
