@@ -4,7 +4,6 @@ import { ExpectStatic } from 'vitest';
 import { chatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
 import { Connection } from '~/lib/db/connections';
 import { env } from '~/lib/env/eval';
-import { getTargetDbConnection } from '~/lib/targetdb/db';
 import { traceVercelAiResponse } from './trace';
 
 export const evalChat = async ({
@@ -23,18 +22,19 @@ export const evalChat = async ({
     projectId: 'projectId',
     isDefault: true
   };
-  const targetClient = await getTargetDbConnection(dbConnection);
+
+  const { tools, end } = await getTools(connection);
   try {
     const response = await generateText({
       model: getModelInstance(env.CHAT_MODEL),
       system: chatSystemPrompt,
-      tools: await getTools(connection),
-      messages,
-      maxSteps: 20
+      maxSteps: 20,
+      tools,
+      messages
     });
     traceVercelAiResponse(response, expect);
     return response;
   } finally {
-    await targetClient.end();
+    await end();
   }
 };

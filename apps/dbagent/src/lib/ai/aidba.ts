@@ -3,7 +3,7 @@ import { deepseek } from '@ai-sdk/deepseek';
 import { openai } from '@ai-sdk/openai';
 import { LanguageModelV1, Tool } from 'ai';
 import { Connection } from '~/lib/db/connections';
-import { commonToolset, getDBClusterTools, getDBSQLTools, mergeToolsets, playbookToolset } from './tools';
+import { commonToolset, getDBClusterTools, getDBSQLTools, getPlaybookToolset, mergeToolsets } from './tools';
 
 export const commonSystemPrompt = `
 You are an AI assistant expert in PostgreSQL and database administration.
@@ -30,10 +30,21 @@ Then use the contents of the playbook as an action plan. Execute the plan step b
 At the end of your execution, print a summary of the results.
 `;
 
-export async function getTools(connection: Connection, asUserId?: string): Promise<Record<string, Tool>> {
+interface DBTools {
+  tools: Record<string, Tool>;
+  end: () => Promise<void>;
+}
+
+export async function getTools(connection: Connection, asUserId?: string, asProjectId?: string): Promise<DBTools> {
   const dbTools = getDBSQLTools(connection.connectionString);
   const clusterTools = getDBClusterTools(connection, asUserId);
-  return mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools);
+  const playbookToolset = getPlaybookToolset(connection.projectId, asUserId, asProjectId);
+  return {
+    tools: mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools),
+    end: async () => {
+      await dbTools.end();
+    }
+  };
 }
 
 export function getModelInstance(model: string): LanguageModelV1 {

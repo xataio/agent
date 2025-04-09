@@ -541,3 +541,34 @@ export const suggestions = pgTable(
 );
 
 export type Suggestion = InferSelectModel<typeof suggestions>;
+
+export const playbooks = pgTable(
+  'playbooks',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    projectId: uuid('project_id').notNull(),
+    name: varchar('name', { length: 255 }).notNull(),
+    description: text('description'),
+    content: jsonb('content').notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdBy: text('created_by').notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_playbooks_project'
+    }).onDelete('cascade'),
+    unique('uq_playbooks_name').on(table.projectId, table.name),
+    index('idx_playbooks_project_id').on(table.projectId),
+    pgPolicy('playbooks_policy', {
+      to: authenticatedUser,
+      for: 'all',
+      using: sql`EXISTS (
+        SELECT 1 FROM project_members
+        WHERE project_id = playbooks.project_id AND user_id = current_setting('app.current_user', true)::TEXT
+      )`
+    })
+  ]
+);

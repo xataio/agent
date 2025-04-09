@@ -37,13 +37,17 @@ export async function POST(req: Request) {
 
     const modelInstance = getModelInstance(model);
 
+    const { tools, end } = await getTools(connection);
     const result = streamText({
       model: modelInstance,
       messages,
       system: context,
-      tools: await getTools(connection),
+      tools: tools,
       maxSteps: 20,
-      toolCallStreaming: true
+      toolCallStreaming: true,
+      onFinish: async (_result) => {
+        await end();
+      }
     });
 
     return result.toDataStreamResponse({
