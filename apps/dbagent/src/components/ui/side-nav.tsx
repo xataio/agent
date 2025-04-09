@@ -101,12 +101,6 @@ export function SideNav({ className, projectId, onboardingComplete }: SideNavPro
       className: 'text-sm'
     },
     {
-      title: 'Old Chats',
-      url: `${basePath}/chats-old`,
-      icon: Bot,
-      className: 'text-sm'
-    },
-    {
       title: 'Playbooks',
       url: `${basePath}/playbooks`,
       icon: NotebookPen,
