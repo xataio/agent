@@ -3,50 +3,57 @@
 import { Button } from '@internal/components';
 import confetti from 'canvas-confetti';
 import { Activity, Check, Database, GitBranch, Server } from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Project } from '~/lib/db/projects';
 import { getCompletedTasks } from './actions';
 import { OnboardingProgress } from './onboarding-progress';
 import { OnboardingTask } from './onboarding-task';
 
-export const onboardingTasks = [
-  {
-    id: 'connect',
-    title: 'Connect to Database',
-    description: `Add at least a database connection. You'd normally configure your production database connection here. Don't worry, I won't run any destructive queries.`,
-    icon: <Database className="text-primary h-5 w-5" />,
-    navigateTo: '/start/connect'
-  },
-  {
-    id: 'collect',
-    title: 'Collect Database Info',
-    description: `Let's check that I have proper access and that I can collect some basic information about your database.`,
-    icon: <Server className="text-primary h-5 w-5" />,
-    navigateTo: '/start/collect'
-  },
-  {
-    id: 'cloud',
-    title: 'Connect cloud management',
-    description: `Use an integration to allow me to read your relevant instance and observability data.`,
-    icon: <Activity className="text-primary h-5 w-5" />,
-    navigateTo: '/start/cloud'
-  },
-  {
-    id: 'notifications',
-    title: 'Setup Slack notifications',
-    description: 'Configure a Slack integration so I can notify you if I find any issues with your database.',
-    icon: <GitBranch className="text-primary h-5 w-5" />,
-    navigateTo: '/start/notifications'
-  }
-];
+export const getOnboardingTasks = (project: Project) => {
+  return [
+    {
+      id: 'connect',
+      title: 'Connect to Database',
+      description: `Add at least a database connection. You'd normally configure your production database connection here. Don't worry, I won't run any destructive queries.`,
+      icon: <Database className="text-primary h-5 w-5" />,
+      navigateTo: '/start/connect'
+    },
+    {
+      id: 'collect',
+      title: 'Collect Database Info',
+      description: `Let's check that I have proper access and that I can collect some basic information about your database.`,
+      icon: <Server className="text-primary h-5 w-5" />,
+      navigateTo: '/start/collect'
+    },
+    ...(project.cloudProvider === 'aws' || project.cloudProvider === 'gcp'
+      ? [
+          {
+            id: 'cloud',
+            title: 'Connect cloud management',
+            description: `Use an integration to allow me to read your relevant instance and observability data.`,
+            icon: <Activity className="text-primary h-5 w-5" />,
+            navigateTo: '/start/cloud'
+          }
+        ]
+      : []),
+    {
+      id: 'notifications',
+      title: 'Setup Slack notifications',
+      description: 'Configure a Slack integration so I can notify you if I find any issues with your database.',
+      icon: <GitBranch className="text-primary h-5 w-5" />,
+      navigateTo: '/start/notifications'
+    }
+  ];
+};
 
-export function Onboarding() {
+export function Onboarding({ project }: { project: Project }) {
   const router = useRouter();
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
-  const { project } = useParams<{ project: string }>();
+  const onboardingTasks = getOnboardingTasks(project);
 
   useEffect(() => {
-    getCompletedTasks(project)
+    getCompletedTasks(project.id)
       .then((tasks) => {
         if (tasks.length === onboardingTasks.length && completedTasks.length < onboardingTasks.length) {
           void confetti({
@@ -69,7 +76,7 @@ export function Onboarding() {
   }, []);
 
   const handleTaskAction = async (navigateTo: string) => {
-    router.push(`/projects/${project}/${navigateTo}`);
+    router.push(`/projects/${project.id}/${navigateTo}`);
   };
 
   return (
@@ -114,10 +121,10 @@ export function Onboarding() {
                   </p>
                 </div>
                 <div className="flex gap-4">
-                  <Button onClick={() => router.push(`/projects/${project}/chats?start=report`)}>
+                  <Button onClick={() => router.push(`/projects/${project.id}/chats?start=report`)}>
                     Get Initial Assessment
                   </Button>
-                  <Button onClick={() => router.push(`/projects/${project}/monitoring`)} variant="outline">
+                  <Button onClick={() => router.push(`/projects/${project.id}/monitoring`)} variant="outline">
                     Setup Periodic Monitoring
                   </Button>
                 </div>

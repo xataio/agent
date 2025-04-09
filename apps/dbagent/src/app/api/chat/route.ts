@@ -2,9 +2,12 @@ import { UIMessage, appendResponseMessages, createDataStreamResponse, smoothStre
 import { generateTitleFromUserMessage } from '~/app/(main)/projects/[project]/chats/actions';
 import { auth } from '~/auth';
 import { generateUUID } from '~/components/chat/utils';
-import { chatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
+import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
 import { deleteChatById, getChatById, getChatsByUserId, saveChat, saveMessages } from '~/lib/db/chats';
 import { getConnection } from '~/lib/db/connections';
+import { getUserSessionDBAccess } from '~/lib/db/db';
+import { getProjectById } from '~/lib/db/projects';
+import { getTargetDbPool } from '~/lib/targetdb/db';
 
 export const maxDuration = 60;
 
@@ -23,9 +26,15 @@ export async function POST(request: Request) {
   try {
     const { id, messages, connectionId, model } = await request.json();
 
-    const connection = await getConnection(connectionId);
+    const dbAccess = await getUserSessionDBAccess();
+    const connection = await getConnection(dbAccess, connectionId);
     if (!connection) {
       return new Response('Connection not found', { status: 404 });
+    }
+
+    const project = await getProjectById(dbAccess, connection.projectId);
+    if (!project) {
+      return new Response('Project not found', { status: 404 });
     }
 
     const session = await auth();
@@ -67,16 +76,19 @@ export async function POST(request: Request) {
       ]
     });
 
+    const targetDb = getTargetDbPool(connection.connectionString);
+    const context = getChatSystemPrompt(project);
     const modelInstance = getModelInstance(model);
-    const { tools, end } = await getTools(connection);
+    const tools = await getTools(project, connection, targetDb);
 
     return createDataStreamResponse({
       execute: (dataStream) => {
         const result = streamText({
           model: modelInstance,
-          system: chatSystemPrompt,
+          system: context,
           messages,
-          maxSteps: 5,
+          maxSteps: 20,
+          toolCallStreaming: true,
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
           tools,
@@ -115,7 +127,7 @@ export async function POST(request: Request) {
               console.error('Failed to save chat');
             }
 
-            await end();
+            await targetDb.end();
           }
         });
 

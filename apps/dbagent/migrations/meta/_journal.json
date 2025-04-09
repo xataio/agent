@@ -29,6 +29,20 @@
       "when": 1744175762650,
       "tag": "0003_chats_ui",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1744136109718,
+      "tag": "0003_cloud_providers",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1744190884400,
+      "tag": "0004_drop_project_default",
+      "breakpoints": true
     }
   ]
 }

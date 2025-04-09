@@ -31,17 +31,17 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Project } from '~/lib/db/projects';
 import { Chat } from '~/lib/db/schema';
 import { fetcher } from '../chat/utils';
 import { Bot } from '../icons/bot';
-
 interface SideNavProps {
   className?: string;
-  projectId: string;
+  project: Project;
   onboardingComplete: number;
 }
 
-export function SideNav({ className, projectId, onboardingComplete }: SideNavProps) {
+export function SideNav({ className, project, onboardingComplete }: SideNavProps) {
   const pathname = usePathname();
   const { toggleSidebar } = useSidebar();
 
@@ -69,7 +69,7 @@ export function SideNav({ className, projectId, onboardingComplete }: SideNavPro
     };
   }, []);
 
-  const basePath = `/projects/${projectId}`;
+  const basePath = `/projects/${project.id}`;
 
   const items = [
     {
@@ -90,12 +90,16 @@ export function SideNav({ className, projectId, onboardingComplete }: SideNavPro
           icon: Server,
           className: 'text-xs'
         },
-        {
-          title: 'Cloud connect',
-          url: `${basePath}/start/cloud`,
-          icon: CloudIcon,
-          className: 'text-xs'
-        },
+        ...(project.cloudProvider === 'aws' || project.cloudProvider === 'gcp'
+          ? [
+              {
+                title: 'Cloud connect',
+                url: `${basePath}/start/cloud`,
+                icon: CloudIcon,
+                className: 'text-xs'
+              }
+            ]
+          : []),
         {
           title: 'Setup notifications',
           url: `${basePath}/start/notifications`,

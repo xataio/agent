@@ -2,7 +2,7 @@
 
 import { and, eq } from 'drizzle-orm';
 import { PerformanceSetting, PgExtension, TableStat } from '../targetdb/db';
-import { queryDb } from './db';
+import { DBAccess } from './db';
 import { connectionInfo } from './schema';
 
 type ConnectionInfoTypes =
@@ -28,8 +28,8 @@ type ConnectionInfo = {
   connectionId: string;
 } & ConnectionInfoTypes;
 
-export async function saveConnectionInfo({ projectId, connectionId, type, data }: ConnectionInfo) {
-  return queryDb(async ({ db }) => {
+export async function saveConnectionInfo(dbAccess: DBAccess, { projectId, connectionId, type, data }: ConnectionInfo) {
+  return dbAccess.query(async ({ db }) => {
     await db
       .insert(connectionInfo)
       .values({ projectId, connectionId, type, data })
@@ -44,18 +44,13 @@ export async function saveConnectionInfo({ projectId, connectionId, type, data }
 export async function getConnectionInfo<
   Key extends ConnectionInfoTypes['type'],
   Value extends ConnectionInfoTypes & { type: Key }
->(connectionId: string, key: Key, asUserId?: string): Promise<Value['data'] | null> {
-  return queryDb(
-    async ({ db }) => {
-      const result = await db
-        .select({ data: connectionInfo.data })
-        .from(connectionInfo)
-        .where(and(eq(connectionInfo.connectionId, connectionId), eq(connectionInfo.type, key)))
-        .execute();
-      return (result[0]?.data as Value['data']) ?? null;
-    },
-    {
-      asUserId: asUserId
-    }
-  );
+>(dbAccess: DBAccess, connectionId: string, key: Key): Promise<Value['data'] | null> {
+  return dbAccess.query(async ({ db }) => {
+    const result = await db
+      .select({ data: connectionInfo.data })
+      .from(connectionInfo)
+      .where(and(eq(connectionInfo.connectionId, connectionId), eq(connectionInfo.type, key)))
+      .execute();
+    return (result[0]?.data as Value['data']) ?? null;
+  });
 }

@@ -1,4 +1,5 @@
 import { dbGetCustomPlaybooks } from '../db/custom-playbooks';
+import { DBAccess } from '../db/db';
 import { getPlaybook, listPlaybooks } from './playbooks';
 export interface customPlaybook {
   name: string;
@@ -11,12 +12,12 @@ export interface customPlaybook {
 }
 
 //get a list of custom playbooks using projectId
-export async function getCustomPlaybooks(projectId: string, asUserId?: string): Promise<customPlaybook[]> {
+export async function getCustomPlaybooks(dbAccess: DBAccess, projectId: string): Promise<customPlaybook[]> {
   if (!projectId) {
     throw new Error('[INVALID_INPUT] Project ID is required');
   }
   try {
-    return await dbGetCustomPlaybooks(projectId, asUserId);
+    return await dbGetCustomPlaybooks(dbAccess, projectId);
   } catch (error) {
     console.error('Error in actionGetCustomPlaybooks:', error);
     throw new Error('Failed to get custom playbooks');
@@ -24,8 +25,8 @@ export async function getCustomPlaybooks(projectId: string, asUserId?: string): 
 }
 
 //get a custom playbook by id
-export async function getCustomPlaybook(projectId: string, id: string, asUserId?: string): Promise<customPlaybook> {
-  const customPlaybooks = await getCustomPlaybooks(projectId, asUserId);
+export async function getCustomPlaybook(dbAccess: DBAccess, projectId: string, id: string): Promise<customPlaybook> {
+  const customPlaybooks = await getCustomPlaybooks(dbAccess, projectId);
   const customPlaybook = customPlaybooks.find((playbook) => playbook.id === id);
   if (!customPlaybook) {
     throw new Error('Custom playbook not found');
@@ -35,9 +36,9 @@ export async function getCustomPlaybook(projectId: string, id: string, asUserId?
 
 //get a custom playbook by name
 export async function getCustomPlaybookByName(
+  dbAccess: DBAccess,
   projectId: string,
-  name: string,
-  asUserId?: string
+  name: string
 ): Promise<customPlaybook | null> {
   if (!projectId) {
     throw new Error('Project ID is required');
@@ -47,7 +48,7 @@ export async function getCustomPlaybookByName(
   }
 
   try {
-    const customPlaybooks = await getCustomPlaybooks(projectId, asUserId);
+    const customPlaybooks = await getCustomPlaybooks(dbAccess, projectId);
     const customPlaybook = customPlaybooks.find((playbook) => playbook.name === name);
 
     if (!customPlaybook) {
@@ -62,9 +63,9 @@ export async function getCustomPlaybookByName(
 }
 
 //get a list of custom playbooks names
-export async function getListOfCustomPlaybooksNames(projectId: string, asUserId?: string): Promise<string[] | null> {
+export async function getListOfCustomPlaybooksNames(dbAccess: DBAccess, projectId: string): Promise<string[] | null> {
   try {
-    const customPlaybooks = await getCustomPlaybooks(projectId, asUserId);
+    const customPlaybooks = await getCustomPlaybooks(dbAccess, projectId);
     const customPlaybooksNames = customPlaybooks.map((playbook) => playbook.name);
     return customPlaybooksNames.length === 0 ? null : customPlaybooksNames;
   } catch (error) {
@@ -75,12 +76,12 @@ export async function getListOfCustomPlaybooksNames(projectId: string, asUserId?
 
 //get a custom playbook content by name
 export async function getCustomPlaybookContent(
+  dbAccess: DBAccess,
   projectId: string,
-  name: string,
-  asUserId?: string
+  name: string
 ): Promise<string | null> {
   try {
-    const playbookWithDesc = await getCustomPlaybookByName(projectId, name, asUserId);
+    const playbookWithDesc = await getCustomPlaybookByName(dbAccess, projectId, name);
     return playbookWithDesc?.content ?? null;
   } catch (error) {
     console.error('Error in getCustomPlaybookContent:', error);
@@ -89,29 +90,16 @@ export async function getCustomPlaybookContent(
 }
 
 //gets content for either a custom playbook or a built in playbook
-export async function getCustomPlaybookAndPlaybookTool(
-  name: string,
-  connProjectId: string,
-  asUserId?: string,
-  asProjectId?: string
-): Promise<string> {
+export async function getCustomPlaybookAndPlaybookTool(db: DBAccess, name: string, projectId: string): Promise<string> {
   const playBookContent = getPlaybook(name);
-  //im not sure this is needed as asProjectId and connProjectId might be the same when ran in runners.ts
-  const projectId = asProjectId || connProjectId;
-  const customPlaybookContent = await getCustomPlaybookContent(projectId, name, asUserId);
-
+  const customPlaybookContent = await getCustomPlaybookContent(db, projectId, name);
   return customPlaybookContent !== null ? customPlaybookContent : playBookContent;
 }
 
 //gets a list of custom playbooks and built in playbooks
-export async function listCustomPlaybooksAndPlaybookTool(
-  connProjectId: string,
-  asUserId?: string,
-  asProjectId?: string
-): Promise<string[]> {
+export async function listCustomPlaybooksAndPlaybookTool(dbAccess: DBAccess, projectId: string): Promise<string[]> {
   const playbookNames = listPlaybooks();
-  const projectId = asProjectId || connProjectId;
-  const customPlaybookNames = await getListOfCustomPlaybooksNames(projectId, asUserId);
+  const customPlaybookNames = await getListOfCustomPlaybooksNames(dbAccess, projectId);
 
   return customPlaybookNames !== null ? [...playbookNames, ...customPlaybookNames] : playbookNames;
 }

@@ -6,7 +6,7 @@ import {
   updateScheduleRunData
 } from '~/lib/db/schedules';
 import { PartialBy } from '~/utils/types';
-import { queryDb } from '../db/db';
+import { DBAccess, DBUserAccess, getAdminAccess } from '../db/db';
 import { schedules as schedulesSchema } from '../db/schema';
 import { env } from '../env/server';
 import { runSchedule } from './runner';
@@ -53,12 +53,11 @@ export function shouldRunSchedule(schedule: Schedule, now: Date): boolean {
 export async function checkAndRunJobsAsAdmin() {
   console.log('Checking and running jobs as admin');
   try {
-    const schedules = await queryDb(
-      async ({ db }) => {
-        return await db.select().from(schedulesSchema);
-      },
-      { admin: true }
-    );
+    // Use DBAdminAccess to fetch all schedules
+    const adminAccess = getAdminAccess();
+    const schedules = await adminAccess.query(async ({ db }) => {
+      return await db.select().from(schedulesSchema);
+    });
 
     const now = new Date();
 
@@ -80,19 +79,24 @@ export async function checkAndRunJobsAsAdmin() {
       console.log(`Deferring ${schedulesToRun.length - env.MAX_PARALLEL_RUNS} jobs until next wake up`);
     }
 
-    // Run selected jobs in parallel
-    await Promise.all(schedulesToRunNow.map((schedule) => runJob(schedule, now)));
+    // Run selected jobs in parallel, each with its own DBUserAccess instance
+    await Promise.all(
+      schedulesToRunNow.map((schedule) => {
+        const userAccess = new DBUserAccess(schedule.userId);
+        return runJob(userAccess, schedule, now);
+      })
+    );
   } catch (error) {
     console.error('Error in scheduler:', error);
   }
 }
 
-async function runJob(schedule: Schedule, now: Date) {
+async function runJob(dbAccess: DBAccess, schedule: Schedule, now: Date) {
   console.log(`Running playbook ${schedule.playbook} for schedule ${schedule.id}`);
 
   if (schedule.status === 'scheduled') {
     try {
-      await setScheduleStatusRunning(schedule);
+      await setScheduleStatusRunning(dbAccess, schedule);
     } catch (error) {
       // I'm going to assume that some other worker has just picked this up
       // and will do the job
@@ -102,16 +106,16 @@ async function runJob(schedule: Schedule, now: Date) {
   }
 
   try {
-    await runSchedule(schedule, now);
+    await runSchedule(dbAccess, schedule, now);
   } catch (error) {
     console.error(`Error running playbook ${schedule.playbook}:`, error);
-    await incrementScheduleFailures(schedule);
+    await incrementScheduleFailures(dbAccess, schedule);
   }
 
   // Schedule the next run (also in case of errors)
   schedule.status = 'scheduled';
   schedule.lastRun = now.toUTCString();
   schedule.nextRun = scheduleGetNextRun(schedule, now).toUTCString();
-  await updateScheduleRunData(schedule);
+  await updateScheduleRunData(dbAccess, schedule);
   console.log(`Wrote back ${JSON.stringify(schedule)} to the DB`);
 }

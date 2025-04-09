@@ -1,6 +1,6 @@
 {
-  "id": "84ed400f-173d-425c-b2fa-4766949e6770",
-  "prevId": "f56e92f3-1dcd-495b-8948-8f1cc1c1331c",
+  "id": "c6f03a09-b8d9-4dec-9185-cb8ecb299177",
+  "prevId": "84ed400f-173d-425c-b2fa-4766949e6770",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -902,8 +902,7 @@
           "type": "cloud_provider",
           "typeSchema": "public",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'aws'"
+          "notNull": true
         }
       },
       "indexes": {},

@@ -18,12 +18,14 @@ import {
   varchar
 } from 'drizzle-orm/pg-core';
 import { RDSClusterDetailedInfo } from '../aws/rds';
+import { CloudSQLInstanceInfo } from '../gcp/cloudsql';
 
 export const authenticatedUser = pgRole('authenticated_user', { inherit: true });
 
 export const scheduleStatus = pgEnum('schedule_status', ['disabled', 'scheduled', 'running']);
 export const notificationLevel = pgEnum('notification_level', ['info', 'warning', 'alert']);
 export const memberRole = pgEnum('member_role', ['owner', 'member']);
+export const cloudProvider = pgEnum('cloud_provider', ['aws', 'gcp', 'other']);
 
 export const awsClusters = pgTable(
   'aws_clusters',
@@ -191,6 +193,72 @@ export const awsClusterConnections = pgTable(
 
 export type AWSClusterConnection = InferSelectModel<typeof awsClusterConnections>;
 
+export const gcpInstances = pgTable(
+  'gcp_instances',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    projectId: uuid('project_id').notNull(),
+    instanceName: text('instance_name').notNull(),
+    gcpProjectId: text('gcp_project_id').notNull(),
+    data: jsonb('data').$type<CloudSQLInstanceInfo>().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_gcp_instances_project'
+    }).onDelete('cascade'),
+    index('idx_gcp_instances_project_id').on(table.projectId),
+    unique('uq_gcp_instances_instance_name').on(table.projectId, table.gcpProjectId, table.instanceName),
+    pgPolicy('gcp_instances_policy', {
+      to: authenticatedUser,
+      for: 'all',
+      using: sql`EXISTS (
+        SELECT 1 FROM project_members
+        WHERE project_id = gcp_instances.project_id AND user_id = current_setting('app.current_user', true)::TEXT
+      )`
+    })
+  ]
+);
+
+export const gcpInstanceConnections = pgTable(
+  'gcp_instance_connections',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    projectId: uuid('project_id').notNull(),
+    instanceId: uuid('instance_id').notNull(),
+    connectionId: uuid('connection_id').notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_gcp_instance_connections_project'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.instanceId],
+      foreignColumns: [gcpInstances.id],
+      name: 'fk_gcp_instance_connections_instance'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.connectionId],
+      foreignColumns: [connections.id],
+      name: 'fk_gcp_instance_connections_connection'
+    }).onDelete('cascade'),
+    index('idx_gcp_instance_connections_instance_id').on(table.instanceId),
+    index('idx_gcp_instance_connections_connection_id').on(table.connectionId),
+    index('idx_gcp_instance_connections_project_id').on(table.projectId),
+    pgPolicy('gcp_instance_connections_policy', {
+      to: authenticatedUser,
+      for: 'all',
+      using: sql`EXISTS (
+        SELECT 1 FROM project_members
+        WHERE project_id = gcp_instance_connections.project_id AND user_id = current_setting('app.current_user', true)::TEXT
+      )`
+    })
+  ]
+);
+
 export const schedules = pgTable(
   'schedules',
   {
@@ -288,7 +356,8 @@ export const projects = pgTable(
   'projects',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
-    name: text('name').notNull()
+    name: text('name').notNull(),
+    cloudProvider: cloudProvider('cloud_provider').notNull()
   },
   () => [
     pgPolicy('projects_view_policy', {
