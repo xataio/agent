@@ -77,7 +77,7 @@ export async function getUserSessionDBAccess(): Promise<DBAccess> {
   return new DBUserAccess(session.user.id!);
 }
 
-export async function getUserDBAccess(userId?: string): Promise<DBAccess> {
+export async function getUserDBAccess(userId: string | undefined | null): Promise<DBAccess> {
   if (!userId) {
     return getUserSessionDBAccess();
   }
