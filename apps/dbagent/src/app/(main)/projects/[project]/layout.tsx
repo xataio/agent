@@ -26,7 +26,7 @@ export default async function Layout({
 
   return (
     <div className="flex h-full w-full">
-      <SideNav projectId={projectId} onboardingComplete={onboardingComplete} />
+      <SideNav project={project} onboardingComplete={onboardingComplete} />
 
       <SidebarInset className="w-full">
         <div className="main-content mx-auto flex w-full max-w-6xl flex-col">

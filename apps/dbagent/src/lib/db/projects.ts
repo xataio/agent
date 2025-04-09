@@ -4,9 +4,12 @@ import { eq } from 'drizzle-orm';
 import { queryDb } from './db';
 import { projectMembers, projects } from './schema';
 
+export type CloudProviderType = 'aws' | 'gcp' | 'other';
+
 export type Project = {
   id: string;
   name: string;
+  cloudProvider: CloudProviderType;
 };
 
 export async function generateProjectId(): Promise<string> {

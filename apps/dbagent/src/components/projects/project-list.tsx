@@ -22,20 +22,34 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Skeleton,
   toast
 } from '@internal/components';
 import { Database, MoreVertical, PlusCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Suspense, useState } from 'react';
-import { createProject, deleteProject, Project, updateProject } from '~/lib/db/projects';
+import { CloudProviderType, createProject, deleteProject, Project, updateProject } from '~/lib/db/projects';
 
 interface ProjectListProps {
   projects: Project[];
 }
 
+const CloudProviders = [
+  { name: 'AWS', value: 'aws' as CloudProviderType },
+  { name: 'GCP', value: 'gcp' as CloudProviderType },
+  { name: 'Other', value: 'other' as CloudProviderType }
+];
+
 function CreateProjectButton() {
   const [projectName, setProjectName] = useState('');
+  const [cloudProvider, setCloudProvider] = useState<CloudProviderType>(
+    (CloudProviders[0]?.value as CloudProviderType) || 'aws'
+  );
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -46,7 +60,10 @@ function CreateProjectButton() {
     setIsLoading(true);
 
     try {
-      const projectId = await createProject({ name: projectName });
+      const projectId = await createProject({
+        name: projectName,
+        cloudProvider
+      });
       router.push(`/projects/${projectId}/start`);
     } catch (error: any) {
       toast.error(error.message);
@@ -79,6 +96,23 @@ function CreateProjectButton() {
                 className="border-primary/20 focus-visible:ring-primary/30"
               />
             </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="cloudProvider" className="text-sm font-medium">
+                Cloud Provider
+              </Label>
+              <Select value={cloudProvider} onValueChange={(value) => setCloudProvider(value as CloudProviderType)}>
+                <SelectTrigger className="border-primary/20 focus-visible:ring-primary/30">
+                  <SelectValue placeholder="Select a cloud provider" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CloudProviders.map((provider) => (
+                    <SelectItem key={provider.value} value={provider.value}>
+                      {provider.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="mt-4 flex justify-end space-x-2">
             <Button type="submit" disabled={isLoading || !projectName.trim()}>
@@ -100,8 +134,10 @@ export function ProjectsList({ projects }: ProjectListProps) {
         <div>
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Database Projects</h1>
-              <p className="text-muted-foreground mt-1">Manage your postgres database projects</p>
+              <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
+              <p className="text-muted-foreground mt-1">
+                A project can monitor several databases with shared cloud and notification settings.
+              </p>
             </div>
             <CreateProjectButton />
           </div>
@@ -262,7 +298,10 @@ function ProjectCard({ project }: { project: Project }) {
 function CreateProjectOnboarding() {
   const router = useRouter();
 
-  const [projectName, setProjectName] = useState('');
+  const [projectName, setProjectName] = useState('My Project');
+  const [cloudProvider, setCloudProvider] = useState<CloudProviderType>(
+    (CloudProviders[0]?.value as CloudProviderType) || 'aws'
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -272,7 +311,10 @@ function CreateProjectOnboarding() {
     setIsLoading(true);
 
     try {
-      const projectId = await createProject({ name: projectName });
+      const projectId = await createProject({
+        name: projectName,
+        cloudProvider
+      });
       router.push(`/projects/${projectId}/start`);
     } catch (error: any) {
       toast.error(error.message);
@@ -297,7 +339,7 @@ function CreateProjectOnboarding() {
         ))}
       </div>
 
-      <Card className="border-primary/20 shadow-primary/5 bg-background/80 shadow-lg backdrop-blur-sm">
+      <Card className="border-primary/20 shadow-primary/5 bg-background/80 max-w-120 shadow-lg backdrop-blur-sm">
         <form onSubmit={handleSubmit}>
           <CardContent className="pt-4">
             <div className="grid w-full items-center gap-4">
@@ -305,6 +347,9 @@ function CreateProjectOnboarding() {
                 <Label htmlFor="projectName" className="text-sm font-medium">
                   Create a new project
                 </Label>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  Each project can monitor several databases with shared cloud and notification settings.
+                </p>
                 <Input
                   id="projectName"
                   placeholder="My Project"
@@ -313,6 +358,27 @@ function CreateProjectOnboarding() {
                   required
                   className="border-primary/20 focus-visible:ring-primary/30"
                 />
+              </div>
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="cloudProvider" className="text-sm font-medium">
+                  Cloud Provider
+                </Label>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  We’ll tailor your onboarding to your cloud provider. If you choose “Other,” you can monitor any
+                  Postgres, but the Agent won&apos;t get metrics or logs unless you set up custom tools.
+                </p>
+                <Select value={cloudProvider} onValueChange={(value) => setCloudProvider(value as CloudProviderType)}>
+                  <SelectTrigger className="border-primary/20 focus-visible:ring-primary/30">
+                    <SelectValue placeholder="Select a cloud provider" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CloudProviders.map((provider) => (
+                      <SelectItem key={provider.value} value={provider.value}>
+                        {provider.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardContent>

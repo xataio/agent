@@ -1,6 +1,7 @@
 import { streamText } from 'ai';
-import { chatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
+import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
 import { getConnection } from '~/lib/db/connections';
+import { getProjectById } from '~/lib/db/projects';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -30,14 +31,18 @@ export async function POST(req: Request) {
   if (!connection) {
     return new Response('Connection not found', { status: 404 });
   }
+  const project = await getProjectById(connection.projectId);
+  if (!project) {
+    return new Response('Project not found', { status: 404 });
+  }
   try {
-    const context = chatSystemPrompt;
+    const context = getChatSystemPrompt(project);
 
     console.log(context);
 
     const modelInstance = getModelInstance(model);
 
-    const { tools, end } = await getTools(connection);
+    const { tools, end } = await getTools(project, connection);
     const result = streamText({
       model: modelInstance,
       messages,
