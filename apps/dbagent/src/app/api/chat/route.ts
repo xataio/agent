@@ -3,10 +3,21 @@ import { generateTitleFromUserMessage } from '~/app/(main)/projects/[project]/ch
 import { auth } from '~/auth';
 import { generateUUID } from '~/components/chat/utils';
 import { chatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
-import { deleteChatById, getChatById, saveChat, saveMessages } from '~/lib/db/chats';
+import { deleteChatById, getChatById, getChatsByUserId, saveChat, saveMessages } from '~/lib/db/chats';
 import { getConnection } from '~/lib/db/connections';
 
 export const maxDuration = 60;
+
+export async function GET() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  const chats = await getChatsByUserId({ id: session.user.id });
+
+  return Response.json({ chats });
+}
 
 export async function POST(request: Request) {
   try {
