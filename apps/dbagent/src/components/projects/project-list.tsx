@@ -40,17 +40,15 @@ interface ProjectListProps {
   projects: Project[];
 }
 
-const CloudProviders = [
-  { name: 'AWS', value: 'aws' as CloudProviderType },
-  { name: 'GCP', value: 'gcp' as CloudProviderType },
-  { name: 'Other', value: 'other' as CloudProviderType }
+const CloudProviders: Array<{ name: string; value: CloudProviderType }> = [
+  { name: 'AWS', value: 'aws' },
+  { name: 'GCP', value: 'gcp' },
+  { name: 'Other', value: 'other' }
 ];
 
 function CreateProjectButton() {
   const [projectName, setProjectName] = useState('');
-  const [cloudProvider, setCloudProvider] = useState<CloudProviderType>(
-    (CloudProviders[0]?.value as CloudProviderType) || 'aws'
-  );
+  const [cloudProvider, setCloudProvider] = useState<CloudProviderType>(CloudProviders[0]?.value ?? 'aws');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
