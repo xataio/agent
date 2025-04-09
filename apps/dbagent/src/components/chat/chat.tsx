@@ -57,7 +57,7 @@ export function Chat({
 
   return (
     <>
-      <div className="bg-background flex h-screen flex-col">
+      <div className="bg-background flex h-full flex-col">
         <div className="flex-1 space-y-2 overflow-y-auto px-4 pt-24">
           <Messages
             chatId={id}
