@@ -1,55 +1,39 @@
 import { tool, Tool } from 'ai';
 import { z } from 'zod';
 import { Connection } from '~/lib/db/connections';
-import { Project } from '~/lib/db/projects';
 import { DBAccess } from '~/lib/db/db';
+import { Project } from '~/lib/db/projects';
 import { getPostgresExtensions, getTablesAndInstanceInfo } from '~/lib/tools/dbinfo';
 import { getInstanceLogsGCP, getInstanceLogsRDS } from '~/lib/tools/logs';
 import { getClusterMetricGCP, getClusterMetricRDS } from '~/lib/tools/metrics';
-import { ToolsetGroup } from './types';
+import { mergeToolsets, Toolset, ToolsetGroup } from './types';
 
 export function getDBClusterTools(dbAccess: DBAccess, project: Project, connection: Connection): Record<string, Tool> {
-  return new DBClusterTools(dbAccess, project, () => Promise.resolve({ project, connection })).toolset();
+  const connectionGetter = () => Promise.resolve({ connection });
+  const toolset: Toolset[] = [new CommonDBClusterTools(dbAccess, connectionGetter)];
+
+  if (project.cloudProvider === 'aws') {
+    toolset.push(new AWSDBClusterTools(dbAccess, connectionGetter));
+  } else if (project.cloudProvider === 'gcp') {
+    toolset.push(new GCPDBClusterTools(dbAccess, connectionGetter));
+  }
+  return mergeToolsets(...toolset);
 }
 
-// The DBClusterTools toolset provides agent tools for accessing information about the cloud cluster or instance.
-export class DBClusterTools implements ToolsetGroup {
-  #project: Project;
+export class CommonDBClusterTools implements ToolsetGroup {
   #dbAccess: DBAccess;
-  #getter: () => Promise<{ project: Project; connection: Connection; asUserId?: string }>;
+  #getter: () => Promise<{ connection: Connection }>;
 
-
-  constructor(
-    dbAccess: DBAccess,
-    project: Project,
-    getter: () => Promise<{ project: Project; connection: Connection; asUserId?: string }>
-  ) {
+  constructor(dbAccess: DBAccess, getter: () => Promise<{ connection: Connection }>) {
     this.#dbAccess = dbAccess;
-    this.#project = project;
     this.#getter = getter;
   }
 
   toolset(): Record<string, Tool> {
-    if (this.#project.cloudProvider === 'aws') {
-      return {
-        getTablesAndInstanceInfo: this.getTablesAndInstanceInfo(),
-        getPostgresExtensions: this.getPostgresExtensions(),
-        getInstanceLogs: this.getInstanceLogsRDS(),
-        getInstanceMetric: this.getInstanceMetricRDS()
-      };
-    } else if (this.#project.cloudProvider === 'gcp') {
-      return {
-        getTablesAndInstanceInfo: this.getTablesAndInstanceInfo(),
-        getPostgresExtensions: this.getPostgresExtensions(),
-        getInstanceLogs: this.getInstanceLogsGCP(),
-        getInstanceMetric: this.getInstanceMetricGCP()
-      };
-    } else {
-      return {
-        getTablesAndInstanceInfo: this.getTablesAndInstanceInfo(),
-        getPostgresExtensions: this.getPostgresExtensions()
-      };
-    }
+    return {
+      getTablesAndInstanceInfo: this.getTablesAndInstanceInfo(),
+      getPostgresExtensions: this.getPostgresExtensions()
+    };
   }
 
   private getTablesAndInstanceInfo(): Tool {
@@ -79,6 +63,23 @@ export class DBClusterTools implements ToolsetGroup {
       }
     });
   }
+}
+
+export class AWSDBClusterTools implements ToolsetGroup {
+  #dbAccess: DBAccess;
+  #getter: () => Promise<{ connection: Connection }>;
+
+  constructor(dbAccess: DBAccess, getter: () => Promise<{ connection: Connection }>) {
+    this.#dbAccess = dbAccess;
+    this.#getter = getter;
+  }
+
+  toolset(): Record<string, Tool> {
+    return {
+      getInstanceLogs: this.getInstanceLogsRDS(),
+      getInstanceMetric: this.getInstanceMetricRDS()
+    };
+  }
 
   private getInstanceLogsRDS(): Tool {
     const getter = this.#getter;
@@ -96,23 +97,6 @@ export class DBClusterTools implements ToolsetGroup {
       }
     });
   }
-  
-  private getInstanceLogsGCP(): Tool {
-    const getter = this.#getter;
-    const db = this.#dbAccess;
-    return tool({
-      description: `Get the recent logs from a GCP CloudSQL instance. You can specify the period in seconds and optionally grep for a substring.`,
-      parameters: z.object({
-        periodInSeconds: z.number(),
-        grep: z.string().optional()
-      }),
-      execute: async ({ periodInSeconds, grep }) => {
-        console.log('getInstanceLogs', periodInSeconds, grep);
-        const { connection } = await getter();
-        return await getInstanceLogsGCP(db, { connection, periodInSeconds, grep });
-      }
-    });
-  }
 
   private getInstanceMetricRDS(): Tool {
     const getter = this.#getter;
@@ -127,6 +111,40 @@ export class DBClusterTools implements ToolsetGroup {
         console.log('getClusterMetric', metricName, periodInSeconds);
         const { connection } = await getter();
         return await getClusterMetricRDS(db, { connection, metricName, periodInSeconds });
+      }
+    });
+  }
+}
+
+export class GCPDBClusterTools implements ToolsetGroup {
+  #dbAccess: DBAccess;
+  #getter: () => Promise<{ connection: Connection }>;
+
+  constructor(dbAccess: DBAccess, getter: () => Promise<{ connection: Connection }>) {
+    this.#dbAccess = dbAccess;
+    this.#getter = getter;
+  }
+
+  toolset(): Record<string, Tool> {
+    return {
+      getInstanceLogs: this.getInstanceLogsGCP(),
+      getInstanceMetric: this.getInstanceMetricGCP()
+    };
+  }
+
+  private getInstanceLogsGCP(): Tool {
+    const getter = this.#getter;
+    const db = this.#dbAccess;
+    return tool({
+      description: `Get the recent logs from a GCP CloudSQL instance. You can specify the period in seconds and optionally grep for a substring.`,
+      parameters: z.object({
+        periodInSeconds: z.number(),
+        grep: z.string().optional()
+      }),
+      execute: async ({ periodInSeconds, grep }) => {
+        console.log('getInstanceLogs', periodInSeconds, grep);
+        const { connection } = await getter();
+        return await getInstanceLogsGCP(db, { connection, periodInSeconds, grep });
       }
     });
   }
@@ -160,5 +178,4 @@ export class DBClusterTools implements ToolsetGroup {
       }
     });
   }
-
 }
