@@ -116,7 +116,7 @@ function PureArtifact({
       }
 
       if (currentDocument.content !== updatedContent) {
-        await fetch(`/api/document?id=${artifact.documentId}`, {
+        await fetch(`/api/document?id=${artifact.documentId}&projectId=${chatId}`, {
           method: 'POST',
           body: JSON.stringify({
             title: artifact.title,
