@@ -1,6 +1,7 @@
 import { SidebarInset } from '@internal/components';
 import { notFound } from 'next/navigation';
 import { getCompletedTaskPercentage } from '~/components/onboarding/actions';
+import { Container } from '~/components/ui/container';
 import { SideNav } from '~/components/ui/side-nav';
 import { getProject } from './actions';
 
@@ -28,7 +29,9 @@ export default async function Layout({
     <div className="flex h-full w-full">
       <SideNav project={project} onboardingComplete={onboardingComplete} />
 
-      <SidebarInset>{children}</SidebarInset>
+      <SidebarInset>
+        <Container>{children}</Container>
+      </SidebarInset>
     </div>
   );
 }
