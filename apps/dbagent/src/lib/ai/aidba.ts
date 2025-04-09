@@ -1,5 +1,6 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { deepseek } from '@ai-sdk/deepseek';
+import { google } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
 import { LanguageModelV1, Tool } from 'ai';
 import { Connection } from '~/lib/db/connections';
@@ -82,6 +83,8 @@ export function getModelInstance(model: string): LanguageModelV1 {
     return deepseek(model);
   } else if (model.startsWith('anthropic-')) {
     return anthropic(model.replace('anthropic-', ''));
+  } else if (model.startsWith('gemini-')) {
+    return google(model);
   } else {
     throw new Error('Invalid model');
   }
