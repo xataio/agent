@@ -1,7 +1,8 @@
 import { Message } from '@ai-sdk/ui-utils';
 import { generateId, generateObject, generateText, LanguageModelV1 } from 'ai';
 import { z } from 'zod';
-import { getModelInstance, getMonitoringSystemPrompt, getTools } from '../ai/aidba';
+import { getMonitoringSystemPrompt, getTools } from '../ai/aidba';
+import { modelProvider } from '../ai/provider';
 import { Connection, getConnectionFromSchedule } from '../db/connections';
 import { DBAccess } from '../db/db';
 import { getProjectById, Project } from '../db/projects';
@@ -194,7 +195,7 @@ export async function runSchedule(dbAccess: DBAccess, schedule: Schedule, now: D
   if (!connection) {
     throw new Error(`Connection ${schedule.connectionId} not found`);
   }
-  const modelInstance = getModelInstance(schedule.model);
+  const modelInstance = modelProvider.languageModel(schedule.model);
   const messages: Message[] = [];
   const project = await getProjectById(dbAccess, connection.projectId);
   if (!project) {

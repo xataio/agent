@@ -1,5 +1,6 @@
 import { streamText } from 'ai';
-import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
+import { getChatSystemPrompt, getTools } from '~/lib/ai/aidba';
+import { modelProvider } from '~/lib/ai/provider';
 import { getConnection } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 import { getProjectById } from '~/lib/db/projects';
@@ -43,12 +44,10 @@ export async function POST(req: Request) {
 
     console.log(context);
 
-    const modelInstance = getModelInstance(model);
-
     const targetDb = getTargetDbPool(connection.connectionString);
     const tools = await getTools(project, connection, targetDb);
     const result = streamText({
-      model: modelInstance,
+      model: modelProvider.languageModel(model),
       messages,
       system: context,
       tools: tools,

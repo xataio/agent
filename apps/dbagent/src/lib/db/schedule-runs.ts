@@ -3,7 +3,7 @@
 import { Message } from '@ai-sdk/ui-utils';
 import { desc, eq, lt } from 'drizzle-orm';
 import { DBAccess } from './db';
-import { scheduleRuns } from './schema';
+import { NotificationLevel, scheduleRuns } from './schema';
 
 export type ScheduleRun = {
   id: string;
@@ -12,7 +12,7 @@ export type ScheduleRun = {
   createdAt: string;
   result: string;
   summary: string | null;
-  notificationLevel: 'info' | 'warning' | 'alert';
+  notificationLevel: NotificationLevel;
   messages: Message[];
 };
 

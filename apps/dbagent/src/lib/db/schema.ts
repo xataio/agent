@@ -6,6 +6,7 @@ import {
   index,
   integer,
   jsonb,
+  PgEnum,
   pgEnum,
   pgPolicy,
   pgRole,
@@ -21,9 +22,27 @@ import { CloudSQLInstanceInfo } from '../gcp/cloudsql';
 
 export const authenticatedUser = pgRole('authenticated_user', { inherit: true });
 
+type InferEnumType<T extends PgEnum<any>> = T extends PgEnum<infer U> ? U[number] : never;
+
 export const scheduleStatus = pgEnum('schedule_status', ['disabled', 'scheduled', 'running']);
+export type ScheduleStatus = InferEnumType<typeof scheduleStatus>;
+
 export const notificationLevel = pgEnum('notification_level', ['info', 'warning', 'alert']);
+export type NotificationLevel = InferEnumType<typeof notificationLevel>;
+
 export const memberRole = pgEnum('member_role', ['owner', 'member']);
+export type MemberRole = InferEnumType<typeof memberRole>;
+
+export const model = pgEnum('models', [
+  'gpt-4o',
+  'gpt-4-turbo',
+  'deepseek-chat',
+  'claude-3-5-haiku',
+  'claude-3-7-sonnet',
+  'gemini-2-0-flash',
+  'gemini-2-0-flash-lite'
+]);
+export type Model = InferEnumType<typeof model>;
 
 export const awsClusters = pgTable(
   'aws_clusters',
@@ -266,7 +285,7 @@ export const schedules = pgTable(
     status: scheduleStatus('status').default('disabled').notNull(),
     failures: integer('failures').default(0),
     keepHistory: integer('keep_history').default(300).notNull(),
-    model: text('model').default('openai-gpt-4o').notNull(),
+    model: model('model').default('gpt-4o').notNull(),
     maxSteps: integer('max_steps'),
     notifyLevel: notificationLevel('notify_level').default('alert').notNull(),
     extraNotificationText: text('extra_notification_text')

@@ -3,9 +3,8 @@ import { DBAccess } from '../db/db';
 import { getIntegration } from '../db/integrations';
 import { ScheduleRun } from '../db/schedule-runs';
 import { Schedule } from '../db/schedules';
+import { NotificationLevel } from '../db/schema';
 import { env } from '../env/client';
-
-export type NotificationLevel = 'info' | 'warning' | 'alert';
 
 export async function sendScheduleNotification(
   dbAccess: DBAccess,

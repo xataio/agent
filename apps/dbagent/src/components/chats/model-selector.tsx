@@ -1,4 +1,5 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@internal/components';
+import { modelNames } from '~/lib/ai/provider';
 
 interface ModelSelectorProps {
   value: string;
@@ -12,12 +13,11 @@ export function ModelSelector({ value, onValueChange }: ModelSelectorProps) {
         <SelectValue placeholder="Select model" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="openai-gpt-4o">GPT-4o</SelectItem>
-        <SelectItem value="openai-gpt-4-turbo">GPT-4 Turbo</SelectItem>
-        <SelectItem value="deepseek-chat">DeepSeek Chat</SelectItem>
-        <SelectItem value="anthropic-claude-3-7-sonnet-20250219">Claude 3.7 Sonnet</SelectItem>
-        <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash</SelectItem>
-        <SelectItem value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite</SelectItem>
+        {Object.entries(modelNames).map(([key, name]) => (
+          <SelectItem key={key} value={key}>
+            {name}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );
