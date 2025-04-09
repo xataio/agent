@@ -15,7 +15,7 @@ const baseModels = {
   'gemini-2-0-flash-lite': google('gemini-2.0-flash-lite')
 } satisfies Record<Model, LanguageModelV1>;
 
-export const modelNames = {
+export const availableModels = {
   'gpt-4o': 'GPT-4o',
   'gpt-4-turbo': 'GPT-4 Turbo',
   'deepseek-chat': 'DeepSeek Chat',

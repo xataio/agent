@@ -1,5 +1,5 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@internal/components';
-import { modelNames } from '~/lib/ai/provider';
+import { availableModels } from '~/lib/ai/provider';
 
 interface ModelSelectorProps {
   value: string;
@@ -13,7 +13,7 @@ export function ModelSelector({ value, onValueChange }: ModelSelectorProps) {
         <SelectValue placeholder="Select model" />
       </SelectTrigger>
       <SelectContent>
-        {Object.entries(modelNames).map(([key, name]) => (
+        {Object.entries(availableModels).map(([key, name]) => (
           <SelectItem key={key} value={key}>
             {name}
           </SelectItem>
