@@ -1,4 +1,4 @@
-import { getProjectConnectionList, getProject } from '~/app/(main)/projects/[project]/actions';
+import { getProject, getProjectConnectionList } from '~/app/(main)/projects/[project]/actions';
 import { AWSIntegration } from '~/components/aws-integration/aws-integration';
 import { GCPIntegration } from '~/components/gcp-integration/gcp-integration';
 

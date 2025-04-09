@@ -13,11 +13,8 @@ type GetInstanceLogsParams = {
 
 export async function getInstanceLogsRDS(
   dbAccess: DBAccess,
-  {
-    connection,
-    periodInSeconds,
-    grep,
-  }: GetInstanceLogsParams): Promise<string> {
+  { connection, periodInSeconds, grep }: GetInstanceLogsParams
+): Promise<string> {
   // Get AWS credentials from integrations
   const awsCredentials = await getIntegration(dbAccess, connection.projectId, 'aws');
   if (!awsCredentials) {
@@ -73,11 +70,8 @@ export async function getInstanceLogsRDS(
 
 export async function getInstanceLogsGCP(
   dbAccess: DBAccess,
-  {
-    connection,
-    periodInSeconds,
-    grep,
-  }: GetInstanceLogsParams): Promise<string> {
+  { connection, periodInSeconds, grep }: GetInstanceLogsParams
+): Promise<string> {
   const gcpCredentials = await getIntegration(dbAccess, connection.projectId, 'gcp');
   if (!gcpCredentials) {
     return 'GCP credentials not configured';

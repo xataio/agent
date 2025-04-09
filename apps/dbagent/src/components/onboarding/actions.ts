@@ -3,8 +3,8 @@
 import { getClusters } from '~/lib/db/aws-clusters';
 import { getConnectionInfo } from '~/lib/db/connection-info';
 import { getDefaultConnection } from '~/lib/db/connections';
-import { getInstances } from '~/lib/db/gcp-instances';
 import { getUserSessionDBAccess } from '~/lib/db/db';
+import { getInstances } from '~/lib/db/gcp-instances';
 import { getIntegration } from '~/lib/db/integrations';
 import { getProjectById } from '~/lib/db/projects';
 

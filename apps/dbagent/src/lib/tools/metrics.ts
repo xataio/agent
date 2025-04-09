@@ -1,8 +1,8 @@
 import { getRDSClusterMetric, getRDSInstanceMetric } from '../aws/rds';
 import { getClusterByConnection } from '../db/aws-clusters';
 import { Connection } from '../db/connections';
-import { getInstanceByConnection } from '../db/gcp-instances';
 import { DBAccess } from '../db/db';
+import { getInstanceByConnection } from '../db/gcp-instances';
 import { getIntegration } from '../db/integrations';
 import { getCloudSQLInstanceMetric, initializeMonitoringClient } from '../gcp/cloudsql';
 

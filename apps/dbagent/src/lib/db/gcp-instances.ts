@@ -32,15 +32,18 @@ export async function saveInstance(dbAccess: DBAccess, instance: Omit<GCPInstanc
   });
 }
 
-export async function associateInstanceConnection(dbAccess: DBAccess, {
-  projectId,
-  instanceId,
-  connectionId
-}: {
-  projectId: string;
-  instanceId: string;
-  connectionId: string;
-}): Promise<void> {
+export async function associateInstanceConnection(
+  dbAccess: DBAccess,
+  {
+    projectId,
+    instanceId,
+    connectionId
+  }: {
+    projectId: string;
+    instanceId: string;
+    connectionId: string;
+  }
+): Promise<void> {
   return dbAccess.query(async ({ db }) => {
     await db.insert(gcpInstanceConnections).values({
       projectId,

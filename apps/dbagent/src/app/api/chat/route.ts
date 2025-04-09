@@ -1,8 +1,8 @@
 import { streamText } from 'ai';
 import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
 import { getConnection } from '~/lib/db/connections';
-import { getProjectById } from '~/lib/db/projects';
 import { getUserSessionDBAccess } from '~/lib/db/db';
+import { getProjectById } from '~/lib/db/projects';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;

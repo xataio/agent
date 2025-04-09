@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
-import { Onboarding } from '~/components/onboarding/onboarding';
 import { getProject } from '~/app/(main)/projects/[project]/actions';
+import { Onboarding } from '~/components/onboarding/onboarding';
 
 type PageParams = {
   project: string;
