@@ -11,11 +11,10 @@ import {
 } from '~/lib/tools/stats';
 import { ToolsetGroup } from './types';
 
-import { getTargetDbPool, Pool, withPoolConnection } from '~/lib/targetdb/db';
+import { Pool, withPoolConnection } from '~/lib/targetdb/db';
 
-export function getDBSQLTools(connString: string): DBSQLTools {
-  const pool = getTargetDbPool(connString);
-  return new DBSQLTools(pool);
+export function getDBSQLTools(targetDb: Pool): DBSQLTools {
+  return new DBSQLTools(targetDb);
 }
 
 // The DBSQLTools toolset provides tools for querying the postgres database
@@ -25,11 +24,6 @@ export class DBSQLTools implements ToolsetGroup {
 
   constructor(pool: Pool | (() => Promise<Pool>)) {
     this.#pool = pool;
-  }
-
-  async end() {
-    const pool = typeof this.#pool === 'function' ? await this.#pool() : this.#pool;
-    await pool.end();
   }
 
   toolset(): Record<string, Tool> {

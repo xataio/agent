@@ -23,18 +23,18 @@ function translateError(error: string) {
 }
 
 export async function actionGetConnection(id: string) {
-  const db = await getUserSessionDBAccess();
-  return getConnection(db, id);
+  const dbAccess = await getUserSessionDBAccess();
+  return getConnection(dbAccess, id);
 }
 
 export async function actionDeleteConnection(id: string) {
-  const db = await getUserSessionDBAccess();
-  return deleteConnection(db, id);
+  const dbAccess = await getUserSessionDBAccess();
+  return deleteConnection(dbAccess, id);
 }
 
 export async function actionListConnections(projectId: string) {
-  const db = await getUserSessionDBAccess();
-  return listConnections(db, projectId);
+  const dbAccess = await getUserSessionDBAccess();
+  return listConnections(dbAccess, projectId);
 }
 
 export async function actionSaveConnection({
@@ -48,7 +48,7 @@ export async function actionSaveConnection({
   name: string;
   connectionString: string;
 }) {
-  const db = await getUserSessionDBAccess();
+  const dbAccess = await getUserSessionDBAccess();
 
   try {
     const validateResult = await validateConnection(connectionString);
@@ -57,10 +57,10 @@ export async function actionSaveConnection({
     }
 
     if (id) {
-      await updateConnection(db, { id, name, connectionString });
+      await updateConnection(dbAccess, { id, name, connectionString });
       return { success: true, message: 'Connection updated successfully' };
     } else {
-      await addConnection(db, { projectId, name, connectionString });
+      await addConnection(dbAccess, { projectId, name, connectionString });
       return { success: true, message: 'Connection added successfully' };
     }
   } catch (error) {
@@ -70,9 +70,9 @@ export async function actionSaveConnection({
 }
 
 export async function actionMakeConnectionDefault(id: string) {
-  const db = await getUserSessionDBAccess();
+  const dbAccess = await getUserSessionDBAccess();
   try {
-    const result = await makeConnectionDefault(db, id);
+    const result = await makeConnectionDefault(dbAccess, id);
     revalidatePath('/connections');
     return result;
   } catch (error) {

@@ -33,31 +33,31 @@ export async function getProjectConnection(connectionId: string) {
 }
 
 export async function getProjectConnectionByName(projectId: string, name: string) {
-  const db = await getUserSessionDBAccess();
-  return getConnectionByName(db, projectId, name);
+  const dbAccess = await getUserSessionDBAccess();
+  return getConnectionByName(dbAccess, projectId, name);
 }
 
 export async function getProjectSchedules(projectId: string) {
-  const db = await getUserSessionDBAccess();
-  return await getSchedulesByProjectId(db, projectId);
+  const dbAccess = await getUserSessionDBAccess();
+  return await getSchedulesByProjectId(dbAccess, projectId);
 }
 
 export async function getProjectSchedule(scheduleId: string) {
-  const db = await getUserSessionDBAccess();
-  return getSchedule(db, scheduleId);
+  const dbAccess = await getUserSessionDBAccess();
+  return getSchedule(dbAccess, scheduleId);
 }
 
 export async function createProjectSchedule(schedule: Omit<Schedule, 'id'>) {
-  const db = await getUserSessionDBAccess();
-  return insertSchedule(db, schedule);
+  const dbAccess = await getUserSessionDBAccess();
+  return insertSchedule(dbAccess, schedule);
 }
 
 export async function updateProjectSchedule(schedule: Schedule) {
-  const db = await getUserSessionDBAccess();
-  return updateSchedule(db, schedule);
+  const dbAccess = await getUserSessionDBAccess();
+  return updateSchedule(dbAccess, schedule);
 }
 
 export async function deleteProjectSchedule(scheduleId: string) {
-  const db = await getUserSessionDBAccess();
-  return deleteSchedule(db, scheduleId);
+  const dbAccess = await getUserSessionDBAccess();
+  return deleteSchedule(dbAccess, scheduleId);
 }

@@ -1,7 +1,9 @@
 import { streamText } from 'ai';
-import { chatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
+import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
 import { getConnection } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
+import { getProjectById } from '~/lib/db/projects';
+import { getTargetDbPool } from '~/lib/targetdb/db';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -27,16 +29,24 @@ function errorHandler(error: unknown) {
 export async function POST(req: Request) {
   const { messages, connectionId, model } = await req.json();
 
-  const db = await getUserSessionDBAccess();
-  const connection = await getConnection(db, connectionId);
+  const dbAccess = await getUserSessionDBAccess();
+  const connection = await getConnection(dbAccess, connectionId);
   if (!connection) {
     return new Response('Connection not found', { status: 404 });
   }
+  const project = await getProjectById(dbAccess, connection.projectId);
+  if (!project) {
+    return new Response('Project not found', { status: 404 });
+  }
   try {
-    const context = chatSystemPrompt;
+    const context = getChatSystemPrompt(project);
+
+    console.log(context);
+
     const modelInstance = getModelInstance(model);
 
-    const { tools, end } = await getTools(connection);
+    const targetDb = getTargetDbPool(connection.connectionString);
+    const tools = await getTools(project, connection, targetDb);
     const result = streamText({
       model: modelInstance,
       messages,
@@ -45,7 +55,7 @@ export async function POST(req: Request) {
       maxSteps: 20,
       toolCallStreaming: true,
       onFinish: async (_result) => {
-        await end();
+        await targetDb.end();
       }
     });
 

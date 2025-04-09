@@ -16,6 +16,8 @@ export function ModelSelector({ value, onValueChange }: ModelSelectorProps) {
         <SelectItem value="openai-gpt-4-turbo">GPT-4 Turbo</SelectItem>
         <SelectItem value="deepseek-chat">DeepSeek Chat</SelectItem>
         <SelectItem value="anthropic-claude-3-7-sonnet-20250219">Claude 3.7 Sonnet</SelectItem>
+        <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash</SelectItem>
+        <SelectItem value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite</SelectItem>
       </SelectContent>
     </Select>
   );

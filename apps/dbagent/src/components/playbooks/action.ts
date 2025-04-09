@@ -5,7 +5,7 @@ import { generateText } from 'ai';
 import { auth } from '~/auth';
 
 import { dbCreatePlaybook, dbDeletePlaybook, dbUpdatePlaybook } from '~/lib/db/custom-playbooks';
-import { getUserDBAccess } from '~/lib/db/db';
+import { getUserDBAccess, getUserSessionDBAccess } from '~/lib/db/db';
 import { getSchedulesByUserIdAndProjectId, Schedule } from '~/lib/db/schedules';
 import {
   customPlaybook,
@@ -84,7 +84,7 @@ export async function actionCreatePlaybook(input: customPlaybook): Promise<Playb
   const session = await auth();
   const userId = session?.user?.id ?? '';
   console.log('Creating playbook {input: ', input, '}');
-  const dbAccess = await getUserDBAccess();
+  const dbAccess = await getUserSessionDBAccess();
   return await dbCreatePlaybook(dbAccess, { ...input, createdBy: userId });
 }
 
@@ -94,14 +94,14 @@ export async function actionUpdatePlaybook(
   input: { description?: string; content?: string }
 ): Promise<Playbook | null> {
   console.log('Updating playbook {id: ', id, '} with {input: ', input, '}');
-  const dbAccess = await getUserDBAccess();
+  const dbAccess = await getUserSessionDBAccess();
   return await dbUpdatePlaybook(dbAccess, id, input);
 }
 
 //playbook db delete
 export async function actionDeletePlaybook(id: string): Promise<void> {
   console.log('Deleting playbook {id: ', id, '}');
-  const dbAccess = await getUserDBAccess();
+  const dbAccess = await getUserSessionDBAccess();
   return await dbDeletePlaybook(dbAccess, id);
 }
 

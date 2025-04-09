@@ -4,8 +4,8 @@ import { getUserSessionDBAccess } from '~/lib/db/db';
 import { getIntegration, saveIntegration } from '~/lib/db/integrations';
 
 export async function actionGetWebhookUrl(projectId: string) {
-  const db = await getUserSessionDBAccess();
-  return getIntegration(db, projectId, 'slack');
+  const dbAccess = await getUserSessionDBAccess();
+  return getIntegration(dbAccess, projectId, 'slack');
 }
 
 export async function actionSaveWebhookUrl(
@@ -21,9 +21,9 @@ export async function actionSaveWebhookUrl(
     return { success: false, message: 'Invalid webhook URL' };
   }
 
-  const db = await getUserSessionDBAccess();
+  const dbAccess = await getUserSessionDBAccess();
   try {
-    await saveIntegration(db, projectId, 'slack', { webhookUrl });
+    await saveIntegration(dbAccess, projectId, 'slack', { webhookUrl });
   } catch (error) {
     console.error('Failed to save webhook URL:', error);
     return { success: false, message: `Failed to save webhook URL.` };

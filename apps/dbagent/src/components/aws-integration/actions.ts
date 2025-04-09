@@ -41,8 +41,8 @@ export async function fetchRDSClusters(
     }));
     clusters.push(...standaloneAsClusters);
 
-    const db = await getUserSessionDBAccess();
-    await saveIntegration(db, projectId, 'aws', { accessKeyId, secretAccessKey, region });
+    const dbAccess = await getUserSessionDBAccess();
+    await saveIntegration(dbAccess, projectId, 'aws', { accessKeyId, secretAccessKey, region });
     return { success: true, message: 'RDS instances fetched successfully', data: clusters };
   } catch (error) {
     console.error('Error fetching RDS instances:', error);
@@ -54,8 +54,8 @@ export async function fetchRDSClusterDetails(
   projectId: string,
   clusterInfo: RDSClusterInfo
 ): Promise<{ success: boolean; message: string; data: RDSClusterDetailedInfo | null }> {
-  const db = await getUserSessionDBAccess();
-  const aws = await getIntegration(db, projectId, 'aws');
+  const dbAccess = await getUserSessionDBAccess();
+  const aws = await getIntegration(dbAccess, projectId, 'aws');
   if (!aws) {
     return { success: false, message: 'AWS integration not found', data: null };
   }
@@ -87,9 +87,9 @@ export async function fetchRDSClusterDetails(
 export async function getAWSIntegration(
   projectId: string
 ): Promise<{ success: boolean; message: string; data: AwsIntegration | null }> {
-  const db = await getUserSessionDBAccess();
+  const dbAccess = await getUserSessionDBAccess();
   try {
-    const aws = await getIntegration(db, projectId, 'aws');
+    const aws = await getIntegration(dbAccess, projectId, 'aws');
     if (!aws) {
       return { success: false, message: 'AWS integration not found', data: null };
     }
@@ -105,8 +105,8 @@ export async function saveClusterDetails(
   region: string,
   connection: Connection
 ): Promise<{ success: boolean; message: string }> {
-  const db = await getUserSessionDBAccess();
-  const aws = await getIntegration(db, connection.projectId, 'aws');
+  const dbAccess = await getUserSessionDBAccess();
+  const aws = await getIntegration(dbAccess, connection.projectId, 'aws');
   if (!aws) {
     return { success: false, message: 'AWS integration not found' };
   }
@@ -117,13 +117,13 @@ export async function saveClusterDetails(
   });
   const cluster = await getRDSClusterInfo(clusterIdentifier, client);
   if (cluster) {
-    const instanceId = await saveCluster(db, {
+    const instanceId = await saveCluster(dbAccess, {
       projectId: connection.projectId,
       clusterIdentifier,
       region,
       data: cluster
     });
-    await associateClusterConnection(db, {
+    await associateClusterConnection(dbAccess, {
       projectId: connection.projectId,
       clusterId: instanceId,
       connectionId: connection.id
@@ -134,7 +134,7 @@ export async function saveClusterDetails(
     if (!instance) {
       return { success: false, message: 'RDS instance not found' };
     }
-    const instanceId = await saveCluster(db, {
+    const instanceId = await saveCluster(dbAccess, {
       projectId: connection.projectId,
       clusterIdentifier,
       region,
@@ -152,7 +152,7 @@ export async function saveClusterDetails(
         isStandaloneInstance: true
       }
     });
-    await associateClusterConnection(db, {
+    await associateClusterConnection(dbAccess, {
       projectId: connection.projectId,
       clusterId: instanceId,
       connectionId: connection.id
