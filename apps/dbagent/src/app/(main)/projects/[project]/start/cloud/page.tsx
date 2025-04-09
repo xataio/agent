@@ -1,7 +1,6 @@
+import { getProject, getProjectConnectionList } from '~/app/(main)/projects/[project]/actions';
 import { AWSIntegration } from '~/components/aws-integration/aws-integration';
 import { GCPIntegration } from '~/components/gcp-integration/gcp-integration';
-import { listConnections } from '~/lib/db/connections';
-import { getProjectById } from '~/lib/db/projects';
 
 type PageParams = {
   project: string;
@@ -9,8 +8,8 @@ type PageParams = {
 
 export default async function Page({ params }: { params: Promise<PageParams> }) {
   const { project: projectId } = await params;
-  const project = await getProjectById(projectId);
-  const connections = await listConnections(projectId);
+  const project = await getProject(projectId);
+  const connections = await getProjectConnectionList(projectId);
 
   return (
     <div className="container mx-auto p-4">

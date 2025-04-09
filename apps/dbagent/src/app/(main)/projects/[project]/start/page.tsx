@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
+import { getProject } from '~/app/(main)/projects/[project]/actions';
 import { Onboarding } from '~/components/onboarding/onboarding';
-import { getProjectById } from '~/lib/db/projects';
 
 type PageParams = {
   project: string;
@@ -8,7 +8,7 @@ type PageParams = {
 
 export default async function Page({ params }: { params: Promise<PageParams> }) {
   const { project: projectId } = await params;
-  const project = await getProjectById(projectId);
+  const project = await getProject(projectId);
   if (!project) {
     return notFound();
   }

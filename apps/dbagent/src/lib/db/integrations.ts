@@ -1,7 +1,7 @@
 'use server';
 
 import { and, eq } from 'drizzle-orm';
-import { queryDb } from './db';
+import { DBAccess } from './db';
 import { integrations } from './schema';
 
 export type AwsIntegration = {
@@ -37,8 +37,8 @@ type IntegrationTypes =
 export async function saveIntegration<
   Key extends IntegrationTypes['type'],
   Value extends IntegrationTypes & { type: Key }
->(projectId: string, name: Key, data: Value['data']) {
-  return queryDb(async ({ db }) => {
+>(dbAccess: DBAccess, projectId: string, name: Key, data: Value['data']) {
+  return dbAccess.query(async ({ db }) => {
     await db
       .insert(integrations)
       .values({
@@ -58,18 +58,13 @@ export async function saveIntegration<
 export async function getIntegration<
   Key extends IntegrationTypes['type'],
   Value extends IntegrationTypes & { type: Key }
->(projectId: string, name: Key, asUserId?: string): Promise<Value['data'] | null> {
-  return queryDb(
-    async ({ db }) => {
-      const result = await db
-        .select()
-        .from(integrations)
-        .where(and(eq(integrations.projectId, projectId), eq(integrations.name, name)));
+>(dbAccess: DBAccess, projectId: string, name: Key): Promise<Value['data'] | null> {
+  return dbAccess.query(async ({ db }) => {
+    const result = await db
+      .select()
+      .from(integrations)
+      .where(and(eq(integrations.projectId, projectId), eq(integrations.name, name)));
 
-      return (result[0]?.data as Value['data']) || null;
-    },
-    {
-      asUserId: asUserId
-    }
-  );
+    return (result[0]?.data as Value['data']) || null;
+  });
 }
