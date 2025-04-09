@@ -7,8 +7,17 @@ export function getDocumentTimestampByIndex(documents: Array<Document>, index: n
   return documents[index]?.createdAt || new Date();
 }
 
-export const fetcher = async (url: string) => {
-  const res = await fetch(url);
+type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
+
+export const fetcher = async (url: string, method: Method = 'GET', body?: BodyInit) => {
+  const res = await fetch(url, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
 
   if (!res.ok) {
     const error = new Error('An error occurred while fetching the data.') as Error & {
