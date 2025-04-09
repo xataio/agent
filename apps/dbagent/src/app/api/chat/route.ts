@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     return new Response('Project not found', { status: 404 });
   }
   try {
-    const context = getChatSystemPrompt(project);
+    const context = getChatSystemPrompt(project.cloudProvider);
 
     console.log(context);
 

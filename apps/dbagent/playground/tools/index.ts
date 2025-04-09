@@ -2,21 +2,22 @@ import { Tool } from 'ai';
 import {
   builtinPlaybookToolset,
   commonToolset,
-  DBClusterTools,
   DBSQLTools,
+  getDBClusterTools,
   mergeToolsets,
   playbookTools,
   Toolset
 } from '~/lib/ai/tools';
 import { Connection, getConnectionByName, getDefaultConnection } from '~/lib/db/connections';
 import { DBUserAccess } from '~/lib/db/db';
-import { getProjectByName } from '~/lib/db/projects';
+import { CloudProviderType, getProjectByName } from '~/lib/db/projects';
 import { getTargetDbPool, Pool } from '~/lib/targetdb/db';
 
 type PlaygroundToolsConfig = {
   projectConnection?: string;
   dbUrl?: string;
   userId?: string;
+  cloudProvider?: CloudProviderType;
 };
 
 export function buildPlaygroundTools(config: PlaygroundToolsConfig): Record<string, Tool> {
@@ -36,7 +37,9 @@ export function buildPlaygroundTools(config: PlaygroundToolsConfig): Record<stri
 
       const db = new DBUserAccess(config.userId);
       const connGetter = createConnectionGetter(config.userId, projectName, connectionName);
-      toolsets.push(new DBClusterTools(db, async () => await connGetter()));
+      if (config.cloudProvider) {
+        toolsets.push(getDBClusterTools(db, connGetter, config.cloudProvider));
+      }
 
       const playbookToolset = new playbookTools(db, async () => {
         const conn = await connGetter();

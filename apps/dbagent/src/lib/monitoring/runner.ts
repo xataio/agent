@@ -37,7 +37,7 @@ async function runModelPlaybook({
     createdAt: new Date()
   });
 
-  const monitoringSystemPrompt = getMonitoringSystemPrompt(project);
+  const monitoringSystemPrompt = getMonitoringSystemPrompt(project.cloudProvider);
 
   const targetDb = getTargetDbPool(connection.connectionString);
   try {
@@ -200,7 +200,7 @@ export async function runSchedule(dbAccess: DBAccess, schedule: Schedule, now: D
   if (!project) {
     throw new Error(`Project ${connection.projectId} not found`);
   }
-  const monitoringSystemPrompt = getMonitoringSystemPrompt(project);
+  const monitoringSystemPrompt = getMonitoringSystemPrompt(project.cloudProvider);
 
   const result = await runModelPlaybook({
     messages,

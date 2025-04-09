@@ -6,7 +6,7 @@ import { LanguageModelV1, Tool } from 'ai';
 import { Pool } from 'pg';
 import { Connection } from '~/lib/db/connections';
 import { getUserDBAccess } from '~/lib/db/db';
-import { Project } from '../db/projects';
+import { CloudProviderType, Project } from '../db/projects';
 import { commonToolset, getDBClusterTools, getDBSQLTools, getPlaybookToolset, mergeToolsets } from './tools';
 
 const commonSystemPrompt = `
@@ -34,8 +34,8 @@ Then use the contents of the playbook as an action plan. Execute the plan step b
 At the end of your execution, print a summary of the results.
 `;
 
-export function getMonitoringSystemPrompt(project: Project): string {
-  switch (project.cloudProvider) {
+export function getMonitoringSystemPrompt(cloudProvider: CloudProviderType): string {
+  switch (cloudProvider) {
     case 'aws':
       return monitoringSystemPrompt + `All instances in this project are AWS instances.`;
     case 'gcp':
@@ -45,8 +45,8 @@ export function getMonitoringSystemPrompt(project: Project): string {
   }
 }
 
-export function getChatSystemPrompt(project: Project): string {
-  switch (project.cloudProvider) {
+export function getChatSystemPrompt(cloudProvider: CloudProviderType): string {
+  switch (cloudProvider) {
     case 'aws':
       return chatSystemPrompt + `All instances in this project are AWS instances.`;
     case 'gcp':
