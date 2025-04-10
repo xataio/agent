@@ -1,9 +1,8 @@
-import { CoreMessage, generateText, Message } from 'ai';
+import { CoreMessage, generateText, Message as SDKMessage } from 'ai';
 import { randomUUID } from 'crypto';
 import { ExpectStatic } from 'vitest';
 import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
-import { Connection } from '~/lib/db/connections';
-import { Project } from '~/lib/db/projects';
+import { Connection, Project } from '~/lib/db/schema';
 import { env } from '~/lib/env/eval';
 import { getTargetDbPool } from '~/lib/targetdb/db';
 import { traceVercelAiResponse } from './trace';
@@ -13,7 +12,7 @@ export const evalChat = async ({
   dbConnection,
   expect
 }: {
-  messages: CoreMessage[] | Omit<Message, 'id'>[];
+  messages: CoreMessage[] | Omit<SDKMessage, 'id'>[];
   dbConnection: string;
   expect: ExpectStatic;
 }) => {

@@ -25,7 +25,7 @@ import {
 import { AlertCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Connection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/schema';
 import { CloudSQLInstanceInfo } from '~/lib/gcp/cloudsql';
 import { fetchCloudSQLInstances, getGCPIntegration, processGCPCredentialsFile } from './actions';
 import { DatabaseConnectionSelector } from './db-instance-connector';

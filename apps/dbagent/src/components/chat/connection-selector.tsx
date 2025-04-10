@@ -10,7 +10,7 @@ import {
 } from '@internal/components';
 import { ChevronDownIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { Connection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/schema';
 import { CheckCircleFillIcon } from '../icons';
 
 export function ConnectionSelector({

@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import { Activity, Check, Database, GitBranch, Server } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Project } from '~/lib/db/projects';
+import { Project } from '~/lib/db/schema';
 import { getCompletedTasks } from './actions';
 import { OnboardingProgress } from './onboarding-progress';
 import { OnboardingTask } from './onboarding-task';

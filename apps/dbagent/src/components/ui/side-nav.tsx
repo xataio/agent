@@ -31,10 +31,10 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Project } from '~/lib/db/projects';
-import { Chat } from '~/lib/db/schema';
+import { Chat, Project } from '~/lib/db/schema';
 import { fetcher } from '../chat/utils';
 import { Bot } from '../icons/bot';
+
 interface SideNavProps {
   className?: string;
   project: Project;

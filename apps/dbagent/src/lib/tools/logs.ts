@@ -1,10 +1,11 @@
 import { getRDSClusterLogs, getRDSInstanceLogs, initializeRDSClient } from '../aws/rds';
 import { getClusterByConnection } from '../db/aws-clusters';
-import { Connection } from '../db/connections';
 import { DBAccess } from '../db/db';
 import { getInstanceByConnection } from '../db/gcp-instances';
 import { getIntegration } from '../db/integrations';
+import { Connection } from '../db/schema';
 import { getCloudSQLPostgresLogs, initializeLoggingClient } from '../gcp/cloudsql';
+
 type GetInstanceLogsParams = {
   connection: Connection;
   periodInSeconds: number;

@@ -14,7 +14,7 @@ import {
   toast
 } from '@internal/components';
 import { useEffect, useState } from 'react';
-import { Connection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/schema';
 import { PerformanceSetting } from '~/lib/targetdb/db';
 import { collectPerformanceSettings } from './actions';
 import { Skeleton } from './skeleton';

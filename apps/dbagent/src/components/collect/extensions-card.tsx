@@ -14,7 +14,7 @@ import {
   toast
 } from '@internal/components';
 import { useEffect, useState } from 'react';
-import { Connection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/schema';
 import { PgExtension } from '~/lib/targetdb/db';
 import { collectExtensions } from './actions';
 import { Skeleton } from './skeleton';
