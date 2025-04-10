@@ -29,7 +29,7 @@ export async function getProviderRegistry(): Promise<ProviderRegistry> {
 
 export async function listLanguageModels(): Promise<Model[]> {
   const registry = await getProviderRegistry();
-  return registry.listLanguageModels();
+  return registry.listLanguageModels().filter((model) => !model.info().private);
 }
 
 export async function getDefaultLanguageModel(): Promise<Model> {

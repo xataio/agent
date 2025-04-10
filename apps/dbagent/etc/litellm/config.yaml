@@ -1,28 +1,67 @@
 model_list:
-  - model_name: Chat - default
-    litellm_params:
-      model: openai/gpt-4o
-      api_key: os.environ/OPENAI_API_KEY
-
   - model_name: GPT-4o
     litellm_params:
       model: openai/gpt-4o
-      api_key: os.environ/OPENAI_API_KEY
+    model_info:
+      xata_agent:
+        group_fallback: openai
 
   - model_name: GPT-4 Turbo
     litellm_params:
       model: openai/gpt-4-turbo
-      api_key: os.environ/OPENAI_API_KEY
 
   - model_name: DeepSeek Chat
     litellm_params:
       model: deepseek/deepseek-chat
-      api_key: os.environ/DEEPSEEK_API_KEY
+    model_info:
+      xata_agent:
+        model_id: deepseek-chat
+        group_fallback: deepseek
 
   - model_name: Claude 3.7 Sonnet
     litellm_params:
       model: anthropic/claude-3-7-sonnet-20250219
-      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      mode: chat
+      xata_agent:
+        model_id: anthropic-claude-3-7-sonnet
+        default: [chat]
+        group_fallback: anthropic
+
+  - model_name: Gemini 2.0 Flash
+    litellm_params:
+      model: gemini/gemini-2.0-flash
+      api_key: os.environ/GOOGLE_GENERATIVE_AI_API_KEY
+    model_info:
+      xata_agent:
+        model_id: google-gemini-2.0-flash
+        group_fallback: google
+
+  - model_name: Gemini 2.0 Flash Lite
+    litellm_params:
+      model: gemini/gemini-2.0-flash-lite
+      api_key: os.environ/GOOGLE_GENERATIVE_AI_API_KEY
+    model_info:
+      xata_agent:
+        model_id: google-gemini-2.0-flash-lite
+        group_fallback: google
+
+  # internal models
+  - model_name: title
+    litellm_params:
+      model: openai/gpt-4o
+    model_info:
+      xata_agent:
+        model_id: title
+        private: true
+
+  - model_name: summary
+    litellm_params:
+      model: openai/gpt-4o
+    model_info:
+      xata_agent:
+        model_id: summary
+        private: true
 
 general_settings:
   master_key: os.environ/MASTER_KEY

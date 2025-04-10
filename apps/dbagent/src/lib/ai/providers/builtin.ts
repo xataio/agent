@@ -78,7 +78,8 @@ const builtinDeepseekModels: Provider = {
   },
   models: [
     {
-      id: 'deepseek-chat',
+      id: 'chat',
+      providerId: 'deepseek-chat',
       name: 'DeepSeek Chat'
     }
   ]
