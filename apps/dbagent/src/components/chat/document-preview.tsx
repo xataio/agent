@@ -26,7 +26,7 @@ export function DocumentPreview({ projectId, result, args }: DocumentPreviewProp
   const { artifact, setArtifact } = useArtifact();
 
   const { data: documents, isLoading: isDocumentsFetching } = useQuery<Array<Document>>({
-    queryKey: ['document', result.id],
+    queryKey: ['document', result?.id],
     queryFn: () => {
       if (!result) return [];
       return fetcher(`/api/document?id=${result.id}`);

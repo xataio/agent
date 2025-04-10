@@ -36,7 +36,7 @@ export function Chat({
 
   const { messages, setMessages, handleSubmit, input, setInput, append, status, stop, reload } = useChat({
     id,
-    body: { id, connectionId, model },
+    body: { id, connectionId, model, useArtifacts: true },
     initialMessages,
     experimental_throttle: 100,
     sendExtraMessageFields: true,

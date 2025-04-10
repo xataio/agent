@@ -82,7 +82,7 @@ export async function POST(request: Request) {
     });
 
     const targetDb = getTargetDbPool(connection.connectionString);
-    const context = getChatSystemPrompt(project);
+    const context = getChatSystemPrompt({ project, useArtifacts });
     const modelInstance = getModelInstance(model);
 
     return createDataStreamResponse({

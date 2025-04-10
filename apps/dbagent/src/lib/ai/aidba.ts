@@ -2,6 +2,7 @@ import { DataStreamWriter, LanguageModel, Tool } from 'ai';
 import { Pool } from 'pg';
 import { getUserDBAccess } from '~/lib/db/db';
 import { Connection, Project } from '~/lib/db/schema';
+import { artifactsPrompt } from './prompts';
 import { getLanguageModel } from './providers';
 import { commonToolset, getDBClusterTools, getDBSQLTools, getPlaybookTools, mergeToolsets } from './tools';
 import { getArtifactTools } from './tools/artifacts';
@@ -42,15 +43,27 @@ export function getMonitoringSystemPrompt(project: Project): string {
   }
 }
 
-export function getChatSystemPrompt(project: Project): string {
-  switch (project.cloudProvider) {
+function getCloudProviderPrompt(cloudProvider: string): string {
+  switch (cloudProvider) {
     case 'aws':
-      return chatSystemPrompt + `All instances in this project are AWS instances.`;
+      return `All instances in this project are AWS instances.`;
     case 'gcp':
-      return chatSystemPrompt + `All instances in this project are GCP Cloud SQL instances.`;
+      return `All instances in this project are GCP Cloud SQL instances.`;
     default:
-      return chatSystemPrompt;
+      return '';
   }
+}
+
+export function getChatSystemPrompt({
+  project,
+  useArtifacts = false
+}: {
+  project: Project;
+  useArtifacts?: boolean;
+}): string {
+  return [chatSystemPrompt, getCloudProviderPrompt(project.cloudProvider), useArtifacts ? artifactsPrompt : '']
+    .filter(Boolean)
+    .join('\n');
 }
 
 export async function getTools({
