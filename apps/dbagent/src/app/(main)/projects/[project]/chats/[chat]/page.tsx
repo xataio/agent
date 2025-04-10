@@ -41,10 +41,15 @@ export default async function Page({ params }: { params: Promise<PageParams> }) 
   function convertToUIMessages(messages: Array<Message>): Array<UIMessage> {
     return messages.map((message) => ({
       id: message.id,
-      parts: message.parts as UIMessage['parts'],
-      role: message.role as UIMessage['role'],
+      parts: message.parts ?? [],
+      role: message.role,
       // Note: content will soon be deprecated in @ai-sdk/react
-      content: '',
+      content:
+        message.parts
+          ?.filter((part) => part.type === 'text')
+          .map((part) => part.text)
+          .join('\n')
+          .trim() ?? '',
       createdAt: message.createdAt
     }));
   }

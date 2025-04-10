@@ -485,8 +485,8 @@ export const messages = pgTable(
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     projectId: uuid('project_id').notNull(),
     chatId: uuid('chat_id').notNull(),
-    role: varchar('role').notNull(),
-    parts: jsonb('parts').notNull(),
+    role: varchar('role').$type<SDKMessage['role']>().notNull(),
+    parts: jsonb('parts').$type<SDKMessage['parts']>().notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull()
   },
   (table) => [
