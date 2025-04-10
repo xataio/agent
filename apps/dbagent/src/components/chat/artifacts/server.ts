@@ -5,7 +5,6 @@ import { DBAccess } from '~/lib/db/db';
 import { Document } from '~/lib/db/schema';
 import { ArtifactKind } from '../artifact';
 import { codeDocumentHandler } from './code/server';
-import { imageDocumentHandler } from './image/server';
 import { sheetDocumentHandler } from './sheet/server';
 import { textDocumentHandler } from './text/server';
 
@@ -101,7 +100,6 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
 export const documentHandlersByArtifactKind: Array<DocumentHandler> = [
   textDocumentHandler,
   codeDocumentHandler,
-  imageDocumentHandler,
   sheetDocumentHandler
 ];
 

@@ -1,7 +1,7 @@
 import { streamObject } from 'ai';
 import { z } from 'zod';
+import { getModelInstance } from '~/lib/ai/aidba';
 import { codePrompt, updateDocumentPrompt } from '~/lib/ai/prompts';
-import { myProvider } from '~/lib/ai/providers';
 import { createDocumentHandler } from '../server';
 
 export const codeDocumentHandler = createDocumentHandler<'code'>({
@@ -10,7 +10,7 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
     let draftContent = '';
 
     const { fullStream } = streamObject({
-      model: myProvider.languageModel('artifact-model'),
+      model: getModelInstance('gpt-4o'),
       system: codePrompt,
       prompt: title,
       schema: z.object({
@@ -42,7 +42,7 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
     let draftContent = '';
 
     const { fullStream } = streamObject({
-      model: myProvider.languageModel('artifact-model'),
+      model: getModelInstance('gpt-4o'),
       system: updateDocumentPrompt(document.content, 'code'),
       prompt: description,
       schema: z.object({

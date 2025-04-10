@@ -12,7 +12,6 @@ import { ArtifactActions } from './artifact-actions';
 import { ArtifactCloseButton } from './artifact-close-button';
 import { ArtifactMessages } from './artifact-messages';
 import { codeArtifact } from './artifacts/code/client';
-import { imageArtifact } from './artifacts/image/client';
 import { sheetArtifact } from './artifacts/sheet/client';
 import { textArtifact } from './artifacts/text/client';
 import { MultimodalInput } from './multimodal-input';
@@ -21,7 +20,7 @@ import { useArtifact } from './use-artifact';
 import { fetcher } from './utils';
 import { VersionFooter } from './version-footer';
 
-export const artifactDefinitions = [textArtifact, codeArtifact, imageArtifact, sheetArtifact];
+export const artifactDefinitions = [textArtifact, codeArtifact, sheetArtifact];
 export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
 
 export interface UIArtifact {

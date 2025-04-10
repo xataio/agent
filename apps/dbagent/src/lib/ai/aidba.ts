@@ -67,7 +67,7 @@ export async function getTools(
   return mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools);
 }
 
-export function getModelInstance(model_name: string): LanguageModel {
-  const model = getLanguageModel(model_name);
+export function getModelInstance(name: string): LanguageModel {
+  const model = getLanguageModel(name);
   return model.instance();
 }

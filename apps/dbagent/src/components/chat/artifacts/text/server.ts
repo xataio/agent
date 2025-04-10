@@ -1,6 +1,6 @@
 import { smoothStream, streamText } from 'ai';
+import { getModelInstance } from '~/lib/ai/aidba';
 import { updateDocumentPrompt } from '~/lib/ai/prompts';
-import { myProvider } from '~/lib/ai/providers';
 import { createDocumentHandler } from '../server';
 
 export const textDocumentHandler = createDocumentHandler<'text'>({
@@ -9,7 +9,7 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
     let draftContent = '';
 
     const { fullStream } = streamText({
-      model: myProvider.languageModel('artifact-model'),
+      model: getModelInstance('gpt-4o'),
       system: 'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
       experimental_transform: smoothStream({ chunking: 'word' }),
       prompt: title
@@ -36,7 +36,7 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
     let draftContent = '';
 
     const { fullStream } = streamText({
-      model: myProvider.languageModel('artifact-model'),
+      model: getModelInstance('gpt-4o'),
       system: updateDocumentPrompt(document.content, 'text'),
       experimental_transform: smoothStream({ chunking: 'word' }),
       prompt: description,

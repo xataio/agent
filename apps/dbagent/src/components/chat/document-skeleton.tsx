@@ -2,12 +2,8 @@
 
 import { ArtifactKind } from './artifact';
 
-export const DocumentSkeleton = ({ artifactKind }: { artifactKind: ArtifactKind }) => {
-  return artifactKind === 'image' ? (
-    <div className="flex h-[calc(100dvh-60px)] w-full flex-col items-center justify-center gap-4">
-      <div className="bg-muted-foreground/20 size-96 animate-pulse rounded-lg" />
-    </div>
-  ) : (
+export const DocumentSkeleton = ({}: { artifactKind: ArtifactKind }) => {
+  return (
     <div className="flex w-full flex-col gap-4">
       <div className="bg-muted-foreground/20 h-12 w-1/2 animate-pulse rounded-lg" />
       <div className="bg-muted-foreground/20 h-5 w-full animate-pulse rounded-lg" />
