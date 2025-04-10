@@ -3,9 +3,9 @@
 import { and, eq } from 'drizzle-orm';
 import { PerformanceSetting, PgExtension, TableStat } from '../targetdb/db';
 import { DBAccess } from './db';
-import { connectionInfo } from './schema';
+import { ConnectionInfo, connectionInfo } from './schema';
 
-type ConnectionInfoTypes =
+type ConnectionInfoDataTypes =
   | {
       type: 'tables';
       data: TableStat[];
@@ -23,12 +23,10 @@ type ConnectionInfoTypes =
       data: PerformanceSetting[];
     };
 
-type ConnectionInfo = {
-  projectId: string;
-  connectionId: string;
-} & ConnectionInfoTypes;
-
-export async function saveConnectionInfo(dbAccess: DBAccess, { projectId, connectionId, type, data }: ConnectionInfo) {
+export async function saveConnectionInfo(
+  dbAccess: DBAccess,
+  { projectId, connectionId, type, data }: Omit<ConnectionInfo & ConnectionInfoDataTypes, 'id'>
+) {
   return dbAccess.query(async ({ db }) => {
     await db
       .insert(connectionInfo)
@@ -42,8 +40,8 @@ export async function saveConnectionInfo(dbAccess: DBAccess, { projectId, connec
 }
 
 export async function getConnectionInfo<
-  Key extends ConnectionInfoTypes['type'],
-  Value extends ConnectionInfoTypes & { type: Key }
+  Key extends ConnectionInfoDataTypes['type'],
+  Value extends ConnectionInfoDataTypes & { type: Key }
 >(dbAccess: DBAccess, connectionId: string, key: Key): Promise<Value['data'] | null> {
   return dbAccess.query(async ({ db }) => {
     const result = await db

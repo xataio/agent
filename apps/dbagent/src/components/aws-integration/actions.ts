@@ -10,9 +10,9 @@ import {
   RDSClusterInfo
 } from '~/lib/aws/rds';
 import { associateClusterConnection, saveCluster } from '~/lib/db/aws-clusters';
-import { Connection } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 import { AwsIntegration, getIntegration, saveIntegration } from '~/lib/db/integrations';
+import { Connection } from '~/lib/db/schema';
 
 export async function fetchRDSClusters(
   projectId: string,

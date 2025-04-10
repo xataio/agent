@@ -2,7 +2,7 @@
 
 import { and, eq, sql } from 'drizzle-orm';
 import { DBAccess } from './db';
-import { schedules } from './schema';
+import { NotificationLevel, schedules, ScheduleStatus } from './schema';
 
 export type Schedule = {
   id: string;
@@ -19,11 +19,11 @@ export type Schedule = {
   lastRun?: string | null;
   nextRun?: string | null;
   failures?: number | null;
-  status: 'disabled' | 'scheduled' | 'running';
+  status: ScheduleStatus;
   keepHistory: number;
   enabled: boolean;
   maxSteps?: number | null;
-  notifyLevel: 'alert' | 'warning' | 'info';
+  notifyLevel: NotificationLevel;
   extraNotificationText?: string | null;
 };
 

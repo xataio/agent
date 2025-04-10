@@ -2,14 +2,12 @@
 
 import { eq } from 'drizzle-orm';
 import { DBAccess } from './db';
-import { projectMembers, projects } from './schema';
-
-export type CloudProviderType = 'aws' | 'gcp' | 'other';
+import { CloudProvider, projectMembers, projects } from './schema';
 
 export type Project = {
   id: string;
   name: string;
-  cloudProvider: CloudProviderType;
+  cloudProvider: CloudProvider;
 };
 
 export async function generateProjectId(): Promise<string> {

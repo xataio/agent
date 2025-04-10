@@ -36,6 +36,7 @@ import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { ScheduleRun } from '~/lib/db/schedule-runs';
 import { Schedule } from '~/lib/db/schedules';
+import { NotificationLevel } from '~/lib/db/schema';
 import { actionGetScheduleRuns } from './actions';
 
 export function ScheduleRunsTable({ schedule }: { schedule: Schedule }) {
@@ -64,7 +65,7 @@ export function ScheduleRunsTable({ schedule }: { schedule: Schedule }) {
     }));
   };
 
-  const getLevelIcon = (level: 'info' | 'warning' | 'alert') => {
+  const getLevelIcon = (level: NotificationLevel) => {
     switch (level) {
       case 'info':
         return <Info className="h-5 w-5 text-blue-500" />;

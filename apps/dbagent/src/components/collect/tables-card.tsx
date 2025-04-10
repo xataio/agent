@@ -15,7 +15,7 @@ import {
 } from '@internal/components';
 import bytes from 'bytes';
 import { useEffect, useState } from 'react';
-import { Connection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/schema';
 import { TableStat } from '~/lib/targetdb/db';
 import { collectTables } from './actions';
 import { Skeleton } from './skeleton';

@@ -23,7 +23,7 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { RDSClusterDetailedInfo, RDSClusterInfo } from '~/lib/aws/rds';
-import { Connection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/schema';
 import { fetchRDSClusterDetails, fetchRDSClusters, getAWSIntegration } from './actions';
 import { DatabaseConnectionSelector } from './db-instance-connector';
 import { RDSClusterCard } from './rds-instance-card';

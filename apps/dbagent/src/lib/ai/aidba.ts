@@ -4,8 +4,8 @@ import { google } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
 import { LanguageModelV1, Tool } from 'ai';
 import { Pool } from 'pg';
-import { Connection } from '~/lib/db/connections';
 import { getUserDBAccess } from '~/lib/db/db';
+import { Connection } from '~/lib/db/schema';
 import { Project } from '../db/projects';
 import { commonToolset, getDBClusterTools, getDBSQLTools, getPlaybookToolset, mergeToolsets } from './tools';
 
