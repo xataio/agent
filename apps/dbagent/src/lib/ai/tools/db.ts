@@ -69,9 +69,12 @@ If you know the schema, pass it in as well.`,
         schema: z.string(),
         query: z.string()
       }),
-      execute: async ({ schema = "public", query }) => {
+      execute: async ({ schema = 'public', query }) => {
         try {
-          const explain = await withPoolConnection(pool, async (client) => await toolExplainQuery(client, schema, query));
+          const explain = await withPoolConnection(
+            pool,
+            async (client) => await toolExplainQuery(client, schema, query)
+          );
           if (!explain) return 'Could not run EXPLAIN on the query';
 
           return explain;
@@ -90,13 +93,12 @@ If you know the schema, pass it in as well.`,
         schema: z.string(),
         table: z.string()
       }),
-      execute: async ({ schema = "public", table }) => {
+      execute: async ({ schema = 'public', table }) => {
         try {
           return await withPoolConnection(pool, async (client) => await toolDescribeTable(client, schema, table));
         } catch (error) {
           return `Error describing table: ${error}`;
         }
-
       }
     });
   }
