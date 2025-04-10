@@ -1,6 +1,7 @@
 import { streamText } from 'ai';
 import { auth } from '~/auth';
-import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/agent';
+import { getChatSystemPrompt, getModelInstance } from '~/lib/ai/agent';
+import { getTools } from '~/lib/ai/tools';
 import { getConnection } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 import { getProjectById } from '~/lib/db/projects';
