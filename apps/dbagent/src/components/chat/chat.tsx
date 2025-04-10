@@ -20,8 +20,7 @@ export function Chat({
   defaultLanguageModel,
   connections,
   initialMessages,
-  suggestedActions,
-  isReadonly
+  suggestedActions
 }: {
   id: string;
   projectId: string;
@@ -29,7 +28,6 @@ export function Chat({
   connections: Connection[];
   initialMessages: Array<UIMessage>;
   suggestedActions?: SuggestedAction[];
-  isReadonly: boolean;
 }) {
   const queryClient = useQueryClient();
   const defaultConnection = connections.find((c) => c.isDefault);
@@ -80,26 +78,23 @@ export function Chat({
             messages={messages}
             setMessages={setMessages}
             reload={reload}
-            isReadonly={isReadonly}
             isArtifactVisible={isArtifactVisible}
           />
         </div>
 
         <form className="bg-background mx-auto flex w-full gap-2 px-4 pb-4 pt-2 md:max-w-3xl md:pb-6">
-          {!isReadonly && (
-            <MultimodalInput
-              suggestedActions={suggestedActions}
-              chatId={id}
-              input={input}
-              setInput={setInput}
-              handleSubmit={handleSubmit}
-              status={status}
-              stop={stop}
-              messages={messages}
-              setMessages={setMessages}
-              append={append}
-            />
-          )}
+          <MultimodalInput
+            suggestedActions={suggestedActions}
+            chatId={id}
+            input={input}
+            setInput={setInput}
+            handleSubmit={handleSubmit}
+            status={status}
+            stop={stop}
+            messages={messages}
+            setMessages={setMessages}
+            append={append}
+          />
         </form>
       </div>
 
@@ -116,7 +111,6 @@ export function Chat({
         setMessages={setMessages}
         reload={reload}
         votes={votes}
-        isReadonly={isReadonly}
       />
     </>
   );

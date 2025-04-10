@@ -1,6 +1,5 @@
 import { memo } from 'react';
 
-import { toast } from '@internal/components';
 import { FileIcon, LoaderIcon } from 'lucide-react';
 import { MessageIcon, PencilEditIcon } from '../icons';
 import type { ArtifactKind } from './artifact';
@@ -22,10 +21,9 @@ const getActionText = (type: 'create' | 'update' | 'request-suggestions', tense:
 interface DocumentToolResultProps {
   type: 'create' | 'update' | 'request-suggestions';
   result: { id: string; title: string; kind: ArtifactKind };
-  isReadonly: boolean;
 }
 
-function PureDocumentToolResult({ type, result, isReadonly }: DocumentToolResultProps) {
+function PureDocumentToolResult({ type, result }: DocumentToolResultProps) {
   const { setArtifact } = useArtifact();
 
   return (
@@ -33,11 +31,6 @@ function PureDocumentToolResult({ type, result, isReadonly }: DocumentToolResult
       type="button"
       className="bg-background flex w-fit cursor-pointer flex-row items-start gap-3 rounded-xl border px-3 py-2"
       onClick={(event) => {
-        if (isReadonly) {
-          toast.error('Viewing files in shared chats is currently not supported.');
-          return;
-        }
-
         const rect = event.currentTarget.getBoundingClientRect();
 
         const boundingBox = {
@@ -77,10 +70,9 @@ export const DocumentToolResult = memo(PureDocumentToolResult, () => true);
 interface DocumentToolCallProps {
   type: 'create' | 'update' | 'request-suggestions';
   args: { title: string };
-  isReadonly: boolean;
 }
 
-function PureDocumentToolCall({ type, args, isReadonly }: DocumentToolCallProps) {
+function PureDocumentToolCall({ type, args }: DocumentToolCallProps) {
   const { setArtifact } = useArtifact();
 
   return (
@@ -88,11 +80,6 @@ function PureDocumentToolCall({ type, args, isReadonly }: DocumentToolCallProps)
       type="button"
       className="cursor pointer flex w-fit flex-row items-start justify-between gap-3 rounded-xl border px-3 py-2"
       onClick={(event) => {
-        if (isReadonly) {
-          toast.error('Viewing files in shared chats is currently not supported.');
-          return;
-        }
-
         const rect = event.currentTarget.getBoundingClientRect();
 
         const boundingBox = {

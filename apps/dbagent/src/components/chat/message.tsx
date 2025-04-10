@@ -23,8 +23,7 @@ const PurePreviewMessage = ({
   vote,
   isLoading,
   setMessages,
-  reload,
-  isReadonly
+  reload
 }: {
   projectId: string;
   chatId: string;
@@ -33,7 +32,6 @@ const PurePreviewMessage = ({
   isLoading: boolean;
   setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
-  isReadonly: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
@@ -76,7 +74,7 @@ const PurePreviewMessage = ({
                 if (mode === 'view') {
                   return (
                     <div key={key} className="flex flex-row items-start">
-                      {message.role === 'user' && !isReadonly && (
+                      {message.role === 'user' && (
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
@@ -139,11 +137,11 @@ const PurePreviewMessage = ({
                   return (
                     <div key={toolCallId}>
                       {toolName === 'createDocument' ? (
-                        <DocumentPreview projectId={projectId} isReadonly={isReadonly} args={args} />
+                        <DocumentPreview projectId={projectId} args={args} />
                       ) : toolName === 'updateDocument' ? (
-                        <DocumentToolCall type="update" args={args} isReadonly={isReadonly} />
+                        <DocumentToolCall type="update" args={args} />
                       ) : toolName === 'requestSuggestions' ? (
-                        <DocumentToolCall type="request-suggestions" args={args} isReadonly={isReadonly} />
+                        <DocumentToolCall type="request-suggestions" args={args} />
                       ) : (
                         <div className="text-muted-foreground mt-1 text-xs">
                           <Clock className="mr-1 inline-block h-4 w-4" />
@@ -160,11 +158,11 @@ const PurePreviewMessage = ({
                   return (
                     <div key={toolCallId}>
                       {toolName === 'createDocument' ? (
-                        <DocumentPreview projectId={projectId} isReadonly={isReadonly} result={result} />
+                        <DocumentPreview projectId={projectId} result={result} />
                       ) : toolName === 'updateDocument' ? (
-                        <DocumentToolResult type="update" result={result} isReadonly={isReadonly} />
+                        <DocumentToolResult type="update" result={result} />
                       ) : toolName === 'requestSuggestions' ? (
-                        <DocumentToolResult type="request-suggestions" result={result} isReadonly={isReadonly} />
+                        <DocumentToolResult type="request-suggestions" result={result} />
                       ) : (
                         <div className="text-muted-foreground mt-1 text-xs">
                           <Clock className="mr-1 inline-block h-4 w-4" />
@@ -177,15 +175,13 @@ const PurePreviewMessage = ({
               }
             })}
 
-            {!isReadonly && (
-              <MessageActions
-                key={`action-${message.id}`}
-                chatId={chatId}
-                message={message}
-                vote={vote}
-                isLoading={isLoading}
-              />
-            )}
+            <MessageActions
+              key={`action-${message.id}`}
+              chatId={chatId}
+              message={message}
+              vote={vote}
+              isLoading={isLoading}
+            />
           </div>
         </div>
       </motion.div>

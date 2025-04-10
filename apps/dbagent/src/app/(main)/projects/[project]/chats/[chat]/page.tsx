@@ -66,7 +66,6 @@ export default async function Page({ params }: { params: Promise<PageParams> }) 
         connections={connections}
         initialMessages={convertToUIMessages(messagesFromDb)}
         suggestedActions={suggestedActions}
-        isReadonly={false}
       />
 
       <DataStreamHandler id={chat} />

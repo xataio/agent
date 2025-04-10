@@ -50,8 +50,7 @@ function PureArtifact({
   messages,
   setMessages,
   reload,
-  votes,
-  isReadonly
+  votes
 }: {
   chatId: string;
   projectId: string;
@@ -65,7 +64,6 @@ function PureArtifact({
   append: UseChatHelpers['append'];
   handleSubmit: UseChatHelpers['handleSubmit'];
   reload: UseChatHelpers['reload'];
-  isReadonly: boolean;
 }) {
   const { artifact, setArtifact, metadata, setMetadata } = useArtifact();
   const queryClient = useQueryClient();
@@ -283,7 +281,6 @@ function PureArtifact({
                   messages={messages}
                   setMessages={setMessages}
                   reload={reload}
-                  isReadonly={isReadonly}
                   artifactStatus={artifact.status}
                 />
 

@@ -15,7 +15,6 @@ interface ArtifactMessagesProps {
   messages: Array<UIMessage>;
   setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
-  isReadonly: boolean;
   artifactStatus: UIArtifact['status'];
 }
 
@@ -26,8 +25,7 @@ function PureArtifactMessages({
   votes,
   messages,
   setMessages,
-  reload,
-  isReadonly
+  reload
 }: ArtifactMessagesProps) {
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
@@ -43,7 +41,6 @@ function PureArtifactMessages({
           vote={votes ? votes.find((vote) => vote.messageId === message.id) : undefined}
           setMessages={setMessages}
           reload={reload}
-          isReadonly={isReadonly}
         />
       ))}
 

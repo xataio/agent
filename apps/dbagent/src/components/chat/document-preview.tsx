@@ -18,12 +18,11 @@ import { fetcher } from './utils';
 
 interface DocumentPreviewProps {
   projectId: string;
-  isReadonly: boolean;
   result?: any;
   args?: any;
 }
 
-export function DocumentPreview({ projectId, isReadonly, result, args }: DocumentPreviewProps) {
+export function DocumentPreview({ projectId, result, args }: DocumentPreviewProps) {
   const { artifact, setArtifact } = useArtifact();
 
   const { data: documents, isLoading: isDocumentsFetching } = useQuery<Array<Document>>({
@@ -56,17 +55,11 @@ export function DocumentPreview({ projectId, isReadonly, result, args }: Documen
 
   if (artifact.isVisible) {
     if (result) {
-      return (
-        <DocumentToolResult
-          type="create"
-          result={{ id: result.id, title: result.title, kind: result.kind }}
-          isReadonly={isReadonly}
-        />
-      );
+      return <DocumentToolResult type="create" result={{ id: result.id, title: result.title, kind: result.kind }} />;
     }
 
     if (args) {
-      return <DocumentToolCall type="create" args={{ title: args.title }} isReadonly={isReadonly} />;
+      return <DocumentToolCall type="create" args={{ title: args.title }} />;
     }
   }
 

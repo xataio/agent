@@ -15,11 +15,10 @@ interface MessagesProps {
   messages: Array<UIMessage>;
   setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];
-  isReadonly: boolean;
   isArtifactVisible: boolean;
 }
 
-function PureMessages({ projectId, chatId, status, votes, messages, setMessages, reload, isReadonly }: MessagesProps) {
+function PureMessages({ projectId, chatId, status, votes, messages, setMessages, reload }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
   return (
@@ -40,7 +39,6 @@ function PureMessages({ projectId, chatId, status, votes, messages, setMessages,
           vote={votes ? votes.find((vote) => vote.messageId === message.id) : undefined}
           setMessages={setMessages}
           reload={reload}
-          isReadonly={isReadonly}
         />
       ))}
 
