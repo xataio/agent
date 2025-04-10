@@ -31,16 +31,6 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 Do not update document right after creating it. Wait for user feedback or request to update it.
 `;
 
-export const regularPrompt = 'You are a friendly assistant! Keep your responses concise and helpful.';
-
-export const systemPrompt = ({ selectedChatModel }: { selectedChatModel: string }) => {
-  if (selectedChatModel === 'chat-model-reasoning') {
-    return regularPrompt;
-  } else {
-    return `${regularPrompt}\n\n${artifactsPrompt}`;
-  }
-};
-
 export const codePrompt = `
 You are a Python code generator that creates self-contained, executable code snippets. When writing code:
 

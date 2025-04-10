@@ -1,20 +1,23 @@
 'use client';
 
 import { UseChatHelpers } from '@ai-sdk/react';
-import { Button, cn, Tooltip, TooltipContent, TooltipTrigger, Typography } from '@internal/components';
+import { Button, cn, Code, Tooltip, TooltipContent, TooltipTrigger, Typography } from '@internal/components';
 import type { UIMessage } from 'ai';
 import equal from 'fast-deep-equal';
 import { AnimatePresence, motion } from 'framer-motion';
-import { SparklesIcon } from 'lucide-react';
+import { Clock, SparklesIcon } from 'lucide-react';
 import { memo, useState } from 'react';
 import { Vote } from '~/lib/db/schema';
 import { PencilEditIcon } from '../icons';
+import { DocumentToolCall, DocumentToolResult } from './document';
+import { DocumentPreview } from './document-preview';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { MessageEditor } from './message-editor';
 import { MessageReasoning } from './message-reasoning';
 
 const PurePreviewMessage = ({
+  projectId,
   chatId,
   message,
   vote,
@@ -23,6 +26,7 @@ const PurePreviewMessage = ({
   reload,
   isReadonly
 }: {
+  projectId: string;
   chatId: string;
   message: UIMessage;
   vote: Vote | undefined;
@@ -132,20 +136,41 @@ const PurePreviewMessage = ({
                 if (state === 'call') {
                   const { args } = toolInvocation;
 
-                  // TODO: add support for tools
-                  console.log(`Tool invocation: ${toolName}`, args);
-
-                  return <div key={toolCallId}></div>;
+                  return (
+                    <div key={toolCallId}>
+                      {toolName === 'createDocument' ? (
+                        <DocumentPreview projectId={projectId} isReadonly={isReadonly} args={args} />
+                      ) : toolName === 'updateDocument' ? (
+                        <DocumentToolCall type="update" args={args} isReadonly={isReadonly} />
+                      ) : toolName === 'requestSuggestions' ? (
+                        <DocumentToolCall type="request-suggestions" args={args} isReadonly={isReadonly} />
+                      ) : (
+                        <div className="text-muted-foreground mt-1 text-xs">
+                          <Clock className="mr-1 inline-block h-4 w-4" />
+                          Tool called: <Code>{part.toolInvocation.toolName}</Code>
+                        </div>
+                      )}
+                    </div>
+                  );
                 }
 
                 if (state === 'result') {
                   const { result } = toolInvocation;
 
                   return (
-                    <div key={toolCallId} className="tool-invocation flex w-full flex-col items-start gap-2">
-                      <pre className="prose prose-sm w-full max-w-full whitespace-pre-wrap break-all">
-                        {JSON.stringify(result, null, 2)}
-                      </pre>
+                    <div key={toolCallId}>
+                      {toolName === 'createDocument' ? (
+                        <DocumentPreview projectId={projectId} isReadonly={isReadonly} result={result} />
+                      ) : toolName === 'updateDocument' ? (
+                        <DocumentToolResult type="update" result={result} isReadonly={isReadonly} />
+                      ) : toolName === 'requestSuggestions' ? (
+                        <DocumentToolResult type="request-suggestions" result={result} isReadonly={isReadonly} />
+                      ) : (
+                        <div className="text-muted-foreground mt-1 text-xs">
+                          <Clock className="mr-1 inline-block h-4 w-4" />
+                          Tool called: <Code>{part.toolInvocation.toolName}</Code>
+                        </div>
+                      )}
                     </div>
                   );
                 }
@@ -171,6 +196,7 @@ const PurePreviewMessage = ({
 export const PreviewMessage = memo(PurePreviewMessage, (prevProps, nextProps) => {
   if (prevProps.isLoading !== nextProps.isLoading) return false;
   if (prevProps.message.id !== nextProps.message.id) return false;
+  if (prevProps.projectId !== nextProps.projectId) return false;
   if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
   if (!equal(prevProps.vote, nextProps.vote)) return false;
 
