@@ -18,14 +18,14 @@ import { BookOpenIcon, ClockIcon, CopyIcon, MoreVerticalIcon, PencilIcon, PlayIc
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { customPlaybook } from '~/lib/tools/custom-playbooks';
+import { CustomPlaybook } from '~/lib/tools/custom-playbooks';
 import { Playbook, getBuiltInPlaybooks } from '~/lib/tools/playbooks';
 import { actionGetCustomPlaybooks } from './action';
 
 export function PlaybooksTable() {
   const router = useRouter();
   const [playbooks, setPlaybooks] = useState<Playbook[]>([]);
-  const [customPlaybooks, setCustomPlaybooks] = useState<customPlaybook[]>([]);
+  const [customPlaybooks, setCustomPlaybooks] = useState<CustomPlaybook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { project } = useParams<{ project: string }>();
 

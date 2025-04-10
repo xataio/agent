@@ -1,7 +1,7 @@
 import { DBAccess } from '~/lib/db/db';
 import { getConnectionInfo } from '../db/connection-info';
-import { Connection } from '../db/connections';
 import { getProjectById } from '../db/projects';
+import { Connection } from '../db/schema';
 import { ClientBase, findTableSchema, getPerformanceSettings, getVacuumSettings } from '../targetdb/db';
 
 export async function getTablesAndInstanceInfo(dbAccess: DBAccess, connection: Connection): Promise<string> {

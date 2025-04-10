@@ -5,7 +5,7 @@ import { CheckIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Connection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/schema';
 import { actionListConnections, actionMakeConnectionDefault } from './actions';
 
 function maskConnectionString(connString: string): string {

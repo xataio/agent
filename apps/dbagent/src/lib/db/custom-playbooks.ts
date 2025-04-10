@@ -3,7 +3,7 @@
 import { and, eq } from 'drizzle-orm';
 import { DBAccess } from '~/lib/db/db';
 import { playbooks } from '~/lib/db/schema';
-import { customPlaybook } from '~/lib/tools/custom-playbooks';
+import { CustomPlaybook } from '~/lib/tools/custom-playbooks';
 import { Playbook } from '~/lib/tools/playbooks';
 
 export async function dbGetCustomPlaybooks(dbAccess: DBAccess, projectId: string) {
@@ -22,7 +22,7 @@ export async function dbGetCustomPlaybooks(dbAccess: DBAccess, projectId: string
   });
 }
 
-export async function dbCreatePlaybook(dbAccess: DBAccess, input: customPlaybook): Promise<Playbook> {
+export async function dbCreatePlaybook(dbAccess: DBAccess, input: CustomPlaybook): Promise<Playbook> {
   return await dbAccess.query(async ({ db, userId }) => {
     //checks if playbooks with same name and id in db
     const existingPlaybook = await db

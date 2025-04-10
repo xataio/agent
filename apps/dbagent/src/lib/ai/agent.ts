@@ -1,11 +1,7 @@
-import { LanguageModel, Tool } from 'ai';
-import { Pool } from 'pg';
-import { Connection } from '~/lib/db/connections';
-import { getUserDBAccess } from '~/lib/db/db';
-import { Project } from '../db/projects';
+import { LanguageModel } from 'ai';
+import { Project } from '../db/schema';
 import { chatSystemPrompt, commonSystemPrompt, monitoringSystemPrompt } from './prompts';
 import { getLanguageModel } from './providers';
-import { commonToolset, getDBClusterTools, getDBSQLTools, getPlaybookToolset, mergeToolsets } from './tools';
 
 function getCloudProviderPrompt(cloudProvider: string): string {
   switch (cloudProvider) {
@@ -28,25 +24,6 @@ export function getMonitoringSystemPrompt({ project }: { project: Project }): st
   return [commonSystemPrompt, monitoringSystemPrompt, getCloudProviderPrompt(project.cloudProvider)]
     .filter((item) => item?.trim().length > 0)
     .join('\n');
-}
-
-export async function getTools({
-  project,
-  connection,
-  targetDb,
-  userId
-}: {
-  project: Project;
-  connection: Connection;
-  targetDb: Pool;
-  userId: string;
-}): Promise<Record<string, Tool>> {
-  const dbAccess = await getUserDBAccess(userId);
-
-  const dbTools = getDBSQLTools(targetDb);
-  const clusterTools = getDBClusterTools(dbAccess, connection, project.cloudProvider);
-  const playbookToolset = getPlaybookToolset(dbAccess, project.id);
-  return mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools);
 }
 
 export function getModelInstance(name: string): LanguageModel {
