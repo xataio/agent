@@ -1,7 +1,7 @@
 'use client';
 import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, toast } from '@internal/components';
 import { useState } from 'react';
-import { Connection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/schema';
 import { saveClusterDetails } from './actions';
 
 interface DatabaseConnectionSelectorProps {

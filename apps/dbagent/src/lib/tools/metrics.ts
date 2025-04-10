@@ -1,14 +1,14 @@
 import { getRDSClusterMetric, getRDSInstanceMetric } from '../aws/rds';
 import { getClusterByConnection } from '../db/aws-clusters';
-import { Connection } from '../db/connections';
 import { DBAccess } from '../db/db';
 import { getInstanceByConnection } from '../db/gcp-instances';
 import { getIntegration } from '../db/integrations';
+import { CloudProvider, Connection } from '../db/schema';
 import { getCloudSQLInstanceMetric, initializeMonitoringClient } from '../gcp/cloudsql';
 
 type GetClusterMetricParams = {
   connection: Connection;
-  cloudProvider: 'aws' | 'gcp';
+  cloudProvider: CloudProvider;
   metricName: string;
   periodInSeconds: number;
 };

@@ -1,8 +1,8 @@
 'use server';
 
 import { getConnectionInfo, saveConnectionInfo } from '~/lib/db/connection-info';
-import { Connection } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
+import { Connection } from '~/lib/db/schema';
 import {
   getExtensions,
   getPerformanceSettings,

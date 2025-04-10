@@ -1,7 +1,8 @@
 import { dbGetCustomPlaybooks } from '../db/custom-playbooks';
 import { DBAccess } from '../db/db';
 import { getPlaybook, listPlaybooks } from './playbooks';
-export interface customPlaybook {
+
+export interface CustomPlaybook {
   name: string;
   description: string;
   content: string;
@@ -12,7 +13,7 @@ export interface customPlaybook {
 }
 
 //get a list of custom playbooks using projectId
-export async function getCustomPlaybooks(dbAccess: DBAccess, projectId: string): Promise<customPlaybook[]> {
+export async function getCustomPlaybooks(dbAccess: DBAccess, projectId: string): Promise<CustomPlaybook[]> {
   if (!projectId) {
     throw new Error('[INVALID_INPUT] Project ID is required');
   }
@@ -25,7 +26,7 @@ export async function getCustomPlaybooks(dbAccess: DBAccess, projectId: string):
 }
 
 //get a custom playbook by id
-export async function getCustomPlaybook(dbAccess: DBAccess, projectId: string, id: string): Promise<customPlaybook> {
+export async function getCustomPlaybook(dbAccess: DBAccess, projectId: string, id: string): Promise<CustomPlaybook> {
   const customPlaybooks = await getCustomPlaybooks(dbAccess, projectId);
   const customPlaybook = customPlaybooks.find((playbook) => playbook.id === id);
   if (!customPlaybook) {
@@ -39,7 +40,7 @@ export async function getCustomPlaybookByName(
   dbAccess: DBAccess,
   projectId: string,
   name: string
-): Promise<customPlaybook | null> {
+): Promise<CustomPlaybook | null> {
   if (!projectId) {
     throw new Error('Project ID is required');
   }

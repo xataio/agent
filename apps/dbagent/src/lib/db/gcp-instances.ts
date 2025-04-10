@@ -3,7 +3,7 @@
 import { eq } from 'drizzle-orm';
 import { CloudSQLInstanceInfo } from '../gcp/cloudsql';
 import { DBAccess } from './db';
-import { gcpInstanceConnections, gcpInstances } from './schema';
+import { gcpInstanceConnections, GCPInstanceInsert, gcpInstances } from './schema';
 
 export type GCPInstance = {
   id: string;
@@ -13,7 +13,7 @@ export type GCPInstance = {
   data: CloudSQLInstanceInfo;
 };
 
-export async function saveInstance(dbAccess: DBAccess, instance: Omit<GCPInstance, 'id'>): Promise<string> {
+export async function saveInstance(dbAccess: DBAccess, instance: GCPInstanceInsert): Promise<string> {
   return dbAccess.query(async ({ db }) => {
     const result = await db
       .insert(gcpInstances)

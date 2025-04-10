@@ -1,8 +1,7 @@
 import { LanguageModel, Tool } from 'ai';
 import { Pool } from 'pg';
-import { Connection } from '~/lib/db/connections';
 import { getUserDBAccess } from '~/lib/db/db';
-import { Project } from '../db/projects';
+import { Connection, Project } from '~/lib/db/schema';
 import { getLanguageModel } from './providers';
 import { commonToolset, getDBClusterTools, getDBSQLTools, getPlaybookToolset, mergeToolsets } from './tools';
 

@@ -1,5 +1,5 @@
 import { CronExpressionParser } from 'cron-parser';
-import { Schedule } from '~/lib/db/schedules';
+import { Schedule } from '~/lib/db/schema';
 import { PartialBy } from '~/utils/types';
 
 export function shouldRunSchedule(schedule: Schedule, now: Date): boolean {

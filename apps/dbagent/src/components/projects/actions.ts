@@ -1,9 +1,10 @@
 'use server';
 
 import { getUserSessionDBAccess } from '~/lib/db/db';
-import { CloudProviderType, createProject, deleteProject, Project, updateProject } from '~/lib/db/projects';
+import { createProject, deleteProject, updateProject } from '~/lib/db/projects';
+import { CloudProvider, Project } from '~/lib/db/schema';
 
-export async function actionCreateProject(name: string, cloudProvider: CloudProviderType) {
+export async function actionCreateProject(name: string, cloudProvider: CloudProvider) {
   const dbAccess = await getUserSessionDBAccess();
   return createProject(dbAccess, { name, cloudProvider });
 }

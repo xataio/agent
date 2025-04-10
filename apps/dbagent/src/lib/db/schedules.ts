@@ -2,32 +2,9 @@
 
 import { and, eq, sql } from 'drizzle-orm';
 import { DBAccess } from './db';
-import { schedules } from './schema';
+import { Schedule, ScheduleInsert, schedules } from './schema';
 
-export type Schedule = {
-  id: string;
-  projectId: string;
-  userId: string;
-  connectionId: string;
-  playbook: string;
-  model: string;
-  scheduleType: string;
-  cronExpression?: string | null;
-  additionalInstructions?: string | null;
-  minInterval?: number | null;
-  maxInterval?: number | null;
-  lastRun?: string | null;
-  nextRun?: string | null;
-  failures?: number | null;
-  status: 'disabled' | 'scheduled' | 'running';
-  keepHistory: number;
-  enabled: boolean;
-  maxSteps?: number | null;
-  notifyLevel: 'alert' | 'warning' | 'info';
-  extraNotificationText?: string | null;
-};
-
-export async function insertSchedule(dbAccess: DBAccess, schedule: Omit<Schedule, 'id'>): Promise<Schedule> {
+export async function insertSchedule(dbAccess: DBAccess, schedule: ScheduleInsert): Promise<Schedule> {
   return await dbAccess.query(async ({ db }) => {
     const result = await db.insert(schedules).values(schedule).returning();
     if (!result[0]) {
