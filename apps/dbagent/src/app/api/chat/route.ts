@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     return new Response('Project not found', { status: 404 });
   }
   try {
-    const context = getChatSystemPrompt({ project });
+    const context = getChatSystemPrompt({ cloudProvider: project.cloudProvider });
     const modelInstance = getModelInstance(model);
 
     const targetDb = getTargetDbPool(connection.connectionString);

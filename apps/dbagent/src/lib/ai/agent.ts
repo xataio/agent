@@ -1,5 +1,5 @@
 import { LanguageModel } from 'ai';
-import { Project } from '../db/schema';
+import { CloudProvider } from '../db/schema';
 import { chatSystemPrompt, commonSystemPrompt, monitoringSystemPrompt } from './prompts';
 import { getLanguageModel } from './providers';
 
@@ -14,14 +14,14 @@ function getCloudProviderPrompt(cloudProvider: string): string {
   }
 }
 
-export function getChatSystemPrompt({ project }: { project: Project }): string {
-  return [commonSystemPrompt, chatSystemPrompt, getCloudProviderPrompt(project.cloudProvider)]
+export function getChatSystemPrompt({ cloudProvider }: { cloudProvider: CloudProvider }): string {
+  return [commonSystemPrompt, chatSystemPrompt, getCloudProviderPrompt(cloudProvider)]
     .filter((item) => item?.trim().length > 0)
     .join('\n');
 }
 
-export function getMonitoringSystemPrompt({ project }: { project: Project }): string {
-  return [commonSystemPrompt, monitoringSystemPrompt, getCloudProviderPrompt(project.cloudProvider)]
+export function getMonitoringSystemPrompt({ cloudProvider }: { cloudProvider: CloudProvider }): string {
+  return [commonSystemPrompt, monitoringSystemPrompt, getCloudProviderPrompt(cloudProvider)]
     .filter((item) => item?.trim().length > 0)
     .join('\n');
 }

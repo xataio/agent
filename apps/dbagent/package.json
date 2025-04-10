@@ -14,7 +14,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:generate": "drizzle-kit generate",
     "load-test": "tsx scripts/load-testing/musicbrainz-loader.ts",
-    "dev-scheduler": "tsx scripts/scheduler.ts"
+    "dev-scheduler": "tsx scripts/scheduler.ts",
+    "playground": "mastra dev -d playground"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.9",
@@ -32,6 +33,8 @@
     "@google-cloud/monitoring": "^5.0.1",
     "@googleapis/sqladmin": "^27.0.0",
     "@internal/theme": "workspace:*",
+    "@mastra/core": "^0.8.1",
+    "@mastra/evals": "^0.1.16",
     "@tailwindcss/postcss": "^4.1.3",
     "@tanstack/react-query": "^5.72.2",
     "@vercel/functions": "^2.0.0",
@@ -79,6 +82,7 @@
     "dockerode": "^4.0.5",
     "dotenv": "^16.4.7",
     "filenamify": "^6.0.0",
+    "mastra": "^0.4.3",
     "papaparse": "^5.5.2",
     "pg": "^8.14.1",
     "postcss": "^8.5.3",
