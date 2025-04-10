@@ -1,4 +1,7 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@internal/components';
+import { useEffect, useState } from 'react';
+import { ModelInfo } from '~/lib/ai/providers/types';
+import { actionGetLanguageModels } from './actions';
 
 interface ModelSelectorProps {
   value: string;
@@ -6,18 +9,27 @@ interface ModelSelectorProps {
 }
 
 export function ModelSelector({ value, onValueChange }: ModelSelectorProps) {
+  const [models, setModels] = useState<ModelInfo[]>([]);
+
+  useEffect(() => {
+    async function loadModels() {
+      const models = await actionGetLanguageModels();
+      setModels(models);
+    }
+    void loadModels();
+  }, []);
+
   return (
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger className="w-[180px]">
         <SelectValue placeholder="Select model" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="openai-gpt-4o">GPT-4o</SelectItem>
-        <SelectItem value="openai-gpt-4-turbo">GPT-4 Turbo</SelectItem>
-        <SelectItem value="deepseek-chat">DeepSeek Chat</SelectItem>
-        <SelectItem value="anthropic-claude-3-7-sonnet-20250219">Claude 3.7 Sonnet</SelectItem>
-        <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash</SelectItem>
-        <SelectItem value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite</SelectItem>
+        {models.map((model) => (
+          <SelectItem key={model.id} value={model.id}>
+            {model.name}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );
