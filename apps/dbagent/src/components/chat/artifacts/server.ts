@@ -1,5 +1,4 @@
 import { DataStreamWriter } from 'ai';
-import { Session } from 'next-auth';
 import { saveDocument } from '~/lib/db/chats';
 import { DBAccess } from '~/lib/db/db';
 import { Document } from '~/lib/db/schema';
@@ -20,7 +19,7 @@ export interface CreateDocumentCallbackProps {
   id: string;
   title: string;
   dataStream: DataStreamWriter;
-  session: Session;
+  userId: string;
   projectId: string;
   dbAccess: DBAccess;
 }
@@ -29,7 +28,8 @@ export interface UpdateDocumentCallbackProps {
   document: Document;
   description: string;
   dataStream: DataStreamWriter;
-  session: Session;
+  userId: string;
+  projectId: string;
   dbAccess: DBAccess;
 }
 
@@ -51,21 +51,19 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         id: args.id,
         title: args.title,
         dataStream: args.dataStream,
-        session: args.session,
+        userId: args.userId,
         projectId: args.projectId,
         dbAccess: args.dbAccess
       });
 
-      if (args.session?.user?.id) {
-        await saveDocument(args.dbAccess, {
-          id: args.id,
-          title: args.title,
-          content: draftContent,
-          kind: config.kind,
-          projectId: args.projectId,
-          userId: args.session.user.id
-        });
-      }
+      await saveDocument(args.dbAccess, {
+        id: args.id,
+        title: args.title,
+        content: draftContent,
+        kind: config.kind,
+        projectId: args.projectId,
+        userId: args.userId
+      });
 
       return;
     },
@@ -74,20 +72,19 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
         document: args.document,
         description: args.description,
         dataStream: args.dataStream,
-        session: args.session,
+        userId: args.userId,
+        projectId: args.projectId,
         dbAccess: args.dbAccess
       });
 
-      if (args.session?.user?.id) {
-        await saveDocument(args.dbAccess, {
-          id: args.document.id,
-          title: args.document.title,
-          content: draftContent,
-          kind: config.kind,
-          projectId: args.document.projectId,
-          userId: args.session.user.id
-        });
-      }
+      await saveDocument(args.dbAccess, {
+        id: args.document.id,
+        title: args.document.title,
+        content: draftContent,
+        kind: config.kind,
+        projectId: args.projectId,
+        userId: args.userId
+      });
 
       return;
     }

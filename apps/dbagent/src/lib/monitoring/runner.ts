@@ -41,7 +41,7 @@ async function runModelPlaybook({
 
   const targetDb = getTargetDbPool(connection.connectionString);
   try {
-    const tools = await getTools(project, connection, targetDb, schedule.userId);
+    const tools = await getTools({ project, connection, targetDb, userId: schedule.userId });
     const result = await generateText({
       model: modelInstance,
       system: monitoringSystemPrompt,

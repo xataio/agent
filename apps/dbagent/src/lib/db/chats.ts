@@ -173,7 +173,7 @@ export async function deleteDocumentsByIdAfterTimestamp(
   });
 }
 
-export async function saveSuggestions(dbAccess: DBAccess, { items }: { items: Array<Suggestion> }) {
+export async function saveSuggestions(dbAccess: DBAccess, { suggestions: items }: { suggestions: Array<Suggestion> }) {
   return dbAccess.query(async ({ db }) => {
     return await db.insert(suggestions).values(items);
   });

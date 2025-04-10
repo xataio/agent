@@ -1,9 +1,10 @@
-import { LanguageModel, Tool } from 'ai';
+import { DataStreamWriter, LanguageModel, Tool } from 'ai';
 import { Pool } from 'pg';
 import { getUserDBAccess } from '~/lib/db/db';
 import { Connection, Project } from '~/lib/db/schema';
 import { getLanguageModel } from './providers';
-import { commonToolset, getDBClusterTools, getDBSQLTools, getPlaybookToolset, mergeToolsets } from './tools';
+import { commonToolset, getDBClusterTools, getDBSQLTools, getPlaybookTools, mergeToolsets } from './tools';
+import { getArtifactTools } from './tools/artifacts';
 
 const commonSystemPrompt = `
 You are an AI assistant expert in PostgreSQL and database administration.
@@ -52,18 +53,30 @@ export function getChatSystemPrompt(project: Project): string {
   }
 }
 
-export async function getTools(
-  project: Project,
-  connection: Connection,
-  targetDb: Pool,
-  asUserId?: string
-): Promise<Record<string, Tool>> {
-  const dbAccess = await getUserDBAccess(asUserId);
+export async function getTools({
+  project,
+  connection,
+  targetDb,
+  userId,
+  useArtifacts = false,
+  dataStream
+}: {
+  project: Project;
+  connection: Connection;
+  targetDb: Pool;
+  userId: string;
+  useArtifacts?: boolean;
+  dataStream?: DataStreamWriter;
+}): Promise<Record<string, Tool>> {
+  const dbAccess = await getUserDBAccess(userId);
 
   const dbTools = getDBSQLTools(targetDb);
   const clusterTools = getDBClusterTools(dbAccess, connection, project.cloudProvider);
-  const playbookToolset = getPlaybookToolset(dbAccess, project.id);
-  return mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools);
+  const playbookToolset = getPlaybookTools(dbAccess, project.id);
+  const artifactsToolset =
+    useArtifacts && dataStream ? getArtifactTools({ dbAccess, userId, projectId: project.id, dataStream }) : {};
+
+  return mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools, artifactsToolset);
 }
 
 export function getModelInstance(name: string): LanguageModel {

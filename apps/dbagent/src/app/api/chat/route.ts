@@ -30,10 +30,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: Request) {
   try {
-    const { id, messages, connectionId, model } = await request.json();
+    const { id, messages, connectionId, model, useArtifacts } = await request.json();
 
     const session = await auth();
-    if (!session || !session.user || !session.user.id) {
+    const userId = session?.user?.id;
+    if (!userId) {
       return new Response('Unauthorized', { status: 401 });
     }
 
@@ -50,21 +51,19 @@ export async function POST(request: Request) {
     }
 
     const userMessage = getMostRecentUserMessage(messages);
-
     if (!userMessage) {
       return new Response('No user message found', { status: 400 });
     }
 
     const chat = await getChatById(dbAccess, { id });
-
     if (!chat) {
       const title = await generateTitleFromUserMessage({
         message: userMessage
       });
 
-      await saveChat(dbAccess, { id, userId: session.user.id, projectId: connection.projectId, title });
+      await saveChat(dbAccess, { id, userId, projectId: connection.projectId, title });
     } else {
-      if (chat.userId !== session.user.id) {
+      if (chat.userId !== userId) {
         return new Response('Unauthorized', { status: 401 });
       }
     }
@@ -85,10 +84,11 @@ export async function POST(request: Request) {
     const targetDb = getTargetDbPool(connection.connectionString);
     const context = getChatSystemPrompt(project);
     const modelInstance = getModelInstance(model);
-    const tools = await getTools(project, connection, targetDb);
 
     return createDataStreamResponse({
-      execute: (dataStream) => {
+      execute: async (dataStream) => {
+        const tools = await getTools({ project, connection, targetDb, useArtifacts, userId, dataStream });
+
         const result = streamText({
           model: modelInstance,
           system: context,
