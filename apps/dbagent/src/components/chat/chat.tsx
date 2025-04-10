@@ -34,7 +34,7 @@ export function Chat({
 
   const { messages, setMessages, handleSubmit, input, setInput, append, status, stop, reload } = useChat({
     id,
-    body: { id, connectionId, model: 'openai-gpt-4o' },
+    body: { id, connectionId, model },
     initialMessages,
     experimental_throttle: 100,
     sendExtraMessageFields: true,
@@ -42,7 +42,8 @@ export function Chat({
     onFinish: () => {
       void queryClient.invalidateQueries({ queryKey: ['history'] });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error(error.message);
       toast.error('An error occured, please try again!');
     }
   });

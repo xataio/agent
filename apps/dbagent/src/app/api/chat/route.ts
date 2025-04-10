@@ -32,21 +32,21 @@ export async function POST(request: Request) {
   try {
     const { id, messages, connectionId, model } = await request.json();
 
+    const session = await auth();
+    if (!session || !session.user || !session.user.id) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+
     const dbAccess = await getUserSessionDBAccess();
     const connection = await getConnection(dbAccess, connectionId);
     if (!connection) {
-      return new Response('Connection not found', { status: 404 });
+      console.error('Connection not found', connectionId);
+      return new Response('Connection not found', { status: 400 });
     }
 
     const project = await getProjectById(dbAccess, connection.projectId);
     if (!project) {
-      return new Response('Project not found', { status: 404 });
-    }
-
-    const session = await auth();
-
-    if (!session || !session.user || !session.user.id) {
-      return new Response('Unauthorized', { status: 401 });
+      return new Response('Project not found', { status: 400 });
     }
 
     const userMessage = getMostRecentUserMessage(messages);
@@ -146,8 +146,9 @@ export async function POST(request: Request) {
       }
     });
   } catch (error) {
+    console.error('Error in chat API:', error);
     return new Response('An error occurred while processing your request!', {
-      status: 404
+      status: 500
     });
   }
 }

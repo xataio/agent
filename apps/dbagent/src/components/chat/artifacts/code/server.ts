@@ -10,7 +10,7 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
     let draftContent = '';
 
     const { fullStream } = streamObject({
-      model: getModelInstance('gpt-4o'),
+      model: getModelInstance('chat'),
       system: codePrompt,
       prompt: title,
       schema: z.object({
@@ -42,7 +42,7 @@ export const codeDocumentHandler = createDocumentHandler<'code'>({
     let draftContent = '';
 
     const { fullStream } = streamObject({
-      model: getModelInstance('gpt-4o'),
+      model: getModelInstance('chat'),
       system: updateDocumentPrompt(document.content, 'code'),
       prompt: description,
       schema: z.object({

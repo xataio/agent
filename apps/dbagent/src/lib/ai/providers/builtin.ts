@@ -116,7 +116,7 @@ const builtinProviderModels: Record<string, BuiltinModel> = Object.fromEntries(
       return [
         fullId,
         new BuiltinModel(p.info.kind, {
-          id: fullId,
+          id: m.id,
           name: m.name
         })
       ];
