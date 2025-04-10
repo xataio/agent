@@ -22,15 +22,14 @@ export const initialArtifactData: UIArtifact = {
 type Selector<T> = (state: UIArtifact) => T;
 
 export function useArtifactSelector<Selected>(selector: Selector<Selected>) {
-  const { data: localArtifact } = useQuery({
+  const { data: localArtifact } = useQuery<UIArtifact>({
     queryKey: ['artifact'],
-    queryFn: () => null,
-    initialData: initialArtifactData
+    queryFn: () => initialArtifactData,
+    staleTime: Infinity
   });
 
   const selectedValue = useMemo(() => {
-    if (!localArtifact) return selector(initialArtifactData);
-    return selector(localArtifact);
+    return selector(localArtifact ?? initialArtifactData);
   }, [localArtifact, selector]);
 
   return selectedValue;
@@ -38,53 +37,47 @@ export function useArtifactSelector<Selected>(selector: Selector<Selected>) {
 
 export function useArtifact() {
   const queryClient = useQueryClient();
-  const { data: localArtifact } = useQuery({
+
+  const { data: artifact = initialArtifactData } = useQuery<UIArtifact>({
     queryKey: ['artifact'],
-    queryFn: () => null,
-    initialData: initialArtifactData
+    queryFn: () => initialArtifactData,
+    staleTime: Infinity
   });
 
-  const artifact = useMemo(() => {
-    if (!localArtifact) return initialArtifactData;
-    return localArtifact;
-  }, [localArtifact]);
-
   const setArtifact = useCallback(
-    (updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact)) => {
-      queryClient.setQueryData(['artifact'], (currentArtifact: UIArtifact | undefined) => {
-        const artifactToUpdate = currentArtifact || initialArtifactData;
-
-        if (typeof updaterFn === 'function') {
-          return updaterFn(artifactToUpdate);
-        }
-
-        return updaterFn;
+    (updaterFn: UIArtifact | ((current: UIArtifact) => UIArtifact)) => {
+      queryClient.setQueryData<UIArtifact>(['artifact'], (currentArtifact) => {
+        const current = currentArtifact ?? initialArtifactData;
+        return typeof updaterFn === 'function' ? (updaterFn as Function)(current) : updaterFn;
       });
     },
     [queryClient]
   );
 
-  const { data: localArtifactMetadata } = useQuery<any>({
-    queryKey: ['artifact-metadata', artifact.documentId],
+  const { data: metadata } = useQuery<any>({
+    queryKey: artifact.documentId ? ['artifact-metadata', artifact.documentId] : [],
     queryFn: () => null,
     enabled: !!artifact.documentId,
-    initialData: null
+    staleTime: Infinity
   });
 
-  const setLocalArtifactMetadata = useCallback(
-    (metadata: any) => {
-      queryClient.setQueryData(['artifact-metadata', artifact.documentId], metadata);
+  const setMetadata = useCallback(
+    (newMetadata: any | ((current: any) => any)) => {
+      if (!artifact.documentId) return;
+      queryClient.setQueryData(['artifact-metadata', artifact.documentId], (currentMetadata) => {
+        return typeof newMetadata === 'function' ? newMetadata(currentMetadata) : newMetadata;
+      });
     },
-    [queryClient, artifact.documentId]
+    [artifact.documentId, queryClient]
   );
 
   return useMemo(
     () => ({
       artifact,
       setArtifact,
-      metadata: localArtifactMetadata,
-      setMetadata: setLocalArtifactMetadata
+      metadata,
+      setMetadata
     }),
-    [artifact, setArtifact, localArtifactMetadata, setLocalArtifactMetadata]
+    [artifact, setArtifact, metadata, setMetadata]
   );
 }
