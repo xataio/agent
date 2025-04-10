@@ -26,22 +26,28 @@ type ProviderModel = {
 };
 
 class BuiltinModel implements Model {
-  #info: ModelInfo;
-  #provider: ProviderV1;
-  #providerId: string;
+  #model: ProviderModel;
+  #provider: ProviderInfo;
 
-  constructor(provider: ProviderV1, providerId: string, info: ModelInfo) {
-    this.#info = info;
+  constructor(provider: ProviderInfo, model: ProviderModel) {
+    this.#model = model;
     this.#provider = provider;
-    this.#providerId = providerId;
+  }
+
+  fullId(): string {
+    return `${this.#provider.id}-${this.#model.id}`;
   }
 
   info(): ModelInfo {
-    return this.#info;
+    return {
+      id: this.#model.providerId || this.#model.id,
+      name: this.#model.name
+    };
   }
 
   instance(): LanguageModel {
-    return this.#provider.languageModel(this.#providerId);
+    const model = this.info();
+    return this.#provider.kind.languageModel(model.id);
   }
 }
 
@@ -113,15 +119,9 @@ const builtinGoogleModels: Provider = {
 
 const builtinProviderModels: Record<string, BuiltinModel> = Object.fromEntries(
   [builtinOpenAIModels, builtinDeepseekModels, builtinAnthropicModels, builtinGoogleModels].flatMap((p) => {
-    return p.models.map((m) => {
-      const fullId = `${p.info.id}-${m.id}`;
-      return [
-        fullId,
-        new BuiltinModel(p.info.kind, m.providerId || m.id, {
-          id: fullId,
-          name: m.name
-        })
-      ];
+    return p.models.map((model) => {
+      const modelInstance = new BuiltinModel(p.info, model);
+      return [modelInstance.fullId(), modelInstance];
     });
   })
 );

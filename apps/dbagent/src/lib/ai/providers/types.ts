@@ -7,12 +7,14 @@ export interface ProviderRegistry {
 }
 
 export interface Model {
+  fullId(): string;
+
   info(): ModelInfo;
 
   instance(): LanguageModel;
 }
 
 export type ModelInfo = {
-  name: string;
   id: string;
+  name: string;
 };
