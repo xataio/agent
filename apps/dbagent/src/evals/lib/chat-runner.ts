@@ -1,7 +1,8 @@
 import { CoreMessage, generateText, Message as SDKMessage } from 'ai';
 import { randomUUID } from 'crypto';
 import { ExpectStatic } from 'vitest';
-import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
+import { getChatSystemPrompt, getModelInstance } from '~/lib/ai/agent';
+import { getTools } from '~/lib/ai/tools';
 import { Connection, Project } from '~/lib/db/schema';
 import { env } from '~/lib/env/eval';
 import { getTargetDbPool } from '~/lib/targetdb/db';
@@ -32,10 +33,10 @@ export const evalChat = async ({
 
   const targetDb = getTargetDbPool(connection.connectionString);
   try {
-    const tools = await getTools(project, connection, targetDb);
+    const tools = await getTools({ project, connection, targetDb, userId: 'evalUser' });
     const response = await generateText({
       model: getModelInstance(env.CHAT_MODEL),
-      system: getChatSystemPrompt(project),
+      system: getChatSystemPrompt({ project }),
       maxSteps: 20,
       tools,
       messages
