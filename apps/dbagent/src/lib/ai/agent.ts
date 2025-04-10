@@ -24,19 +24,24 @@ export function getChatSystemPrompt({ project }: { project: Project }): string {
     .join('\n');
 }
 
-export function getMonitoringSystemPrompt(project: Project): string {
+export function getMonitoringSystemPrompt({ project }: { project: Project }): string {
   return [commonSystemPrompt, monitoringSystemPrompt, getCloudProviderPrompt(project.cloudProvider)]
     .filter((item) => item?.trim().length > 0)
     .join('\n');
 }
 
-export async function getTools(
-  project: Project,
-  connection: Connection,
-  targetDb: Pool,
-  asUserId?: string
-): Promise<Record<string, Tool>> {
-  const dbAccess = await getUserDBAccess(asUserId);
+export async function getTools({
+  project,
+  connection,
+  targetDb,
+  userId
+}: {
+  project: Project;
+  connection: Connection;
+  targetDb: Pool;
+  userId: string;
+}): Promise<Record<string, Tool>> {
+  const dbAccess = await getUserDBAccess(userId);
 
   const dbTools = getDBSQLTools(targetDb);
   const clusterTools = getDBClusterTools(dbAccess, connection, project.cloudProvider);

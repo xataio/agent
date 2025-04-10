@@ -33,7 +33,7 @@ export const evalChat = async ({
 
   const targetDb = getTargetDbPool(connection.connectionString);
   try {
-    const tools = await getTools(project, connection, targetDb);
+    const tools = await getTools({ project, connection, targetDb, userId: 'evalUser' });
     const response = await generateText({
       model: getModelInstance(env.CHAT_MODEL),
       system: getChatSystemPrompt({ project }),

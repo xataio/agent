@@ -1,4 +1,5 @@
 import { streamText } from 'ai';
+import { auth } from '~/auth';
 import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/agent';
 import { getConnection } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
@@ -29,6 +30,12 @@ function errorHandler(error: unknown) {
 export async function POST(req: Request) {
   const { messages, connectionId, model } = await req.json();
 
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
   const dbAccess = await getUserSessionDBAccess();
   const connection = await getConnection(dbAccess, connectionId);
   if (!connection) {
@@ -40,13 +47,10 @@ export async function POST(req: Request) {
   }
   try {
     const context = getChatSystemPrompt({ project });
-
-    console.log(context);
-
     const modelInstance = getModelInstance(model);
 
     const targetDb = getTargetDbPool(connection.connectionString);
-    const tools = await getTools(project, connection, targetDb);
+    const tools = await getTools({ project, connection, targetDb, userId });
     const result = streamText({
       model: modelInstance,
       messages,
