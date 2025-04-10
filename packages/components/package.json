@@ -67,7 +67,7 @@
     "@internal/eslint-config": "workspace:*",
     "@internal/tsconfig": "workspace:*",
     "@types/react": "^19.1.0",
-    "@types/react-dom": "^19.1.1",
+    "@types/react-dom": "^19.1.2",
     "typescript": "^5.8.3"
   }
 }
