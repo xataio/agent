@@ -54,8 +54,11 @@ function PureMessages({ chatId, status, votes, messages, setMessages, reload, is
 export const Messages = memo(PureMessages, (prevProps, nextProps) => {
   if (prevProps.isArtifactVisible && nextProps.isArtifactVisible) return true;
 
+  const prevIsLoading = prevProps.status === 'submitted' || prevProps.status === 'streaming';
+  const nextIsLoading = nextProps.status === 'submitted' || nextProps.status === 'streaming';
+
   if (prevProps.status !== nextProps.status) return false;
-  if (prevProps.status && nextProps.status) return false;
+  if (prevIsLoading && nextIsLoading) return false;
   if (prevProps.messages.length !== nextProps.messages.length) return false;
   if (!equal(prevProps.messages, nextProps.messages)) return false;
   if (!equal(prevProps.votes, nextProps.votes)) return false;
