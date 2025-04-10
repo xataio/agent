@@ -7,6 +7,7 @@ import type { UIMessage } from 'ai';
 import { useState } from 'react';
 import { Connection, Vote } from '~/lib/db/schema';
 import { Artifact } from './artifact';
+import { ChatHeader } from './chat-header';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 import { SuggestedAction } from './suggested-actions';
@@ -18,19 +19,18 @@ export function Chat({
   connections,
   initialMessages,
   suggestedActions,
-  selectedChatModel,
   isReadonly
 }: {
   id: string;
   connections: Connection[];
   initialMessages: Array<UIMessage>;
   suggestedActions?: SuggestedAction[];
-  selectedChatModel: string;
   isReadonly: boolean;
 }) {
   const queryClient = useQueryClient();
   const defaultConnection = connections.find((c) => c.isDefault);
   const [connectionId, setConnectionId] = useState<string>(defaultConnection?.id || '');
+  const [model, setModel] = useState<string>('openai-gpt-4o');
 
   const { messages, setMessages, handleSubmit, input, setInput, append, status, stop, reload } = useChat({
     id,
@@ -58,6 +58,14 @@ export function Chat({
   return (
     <>
       <div className="bg-background flex h-full flex-col">
+        <ChatHeader
+          connections={connections}
+          model={model}
+          setModel={setModel}
+          connectionId={connectionId}
+          setConnectionId={setConnectionId}
+        />
+
         <div className="flex-1 space-y-2 overflow-y-auto px-4 pt-24">
           <Messages
             chatId={id}

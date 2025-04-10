@@ -1,15 +1,9 @@
 'use server';
 
 import { generateText, Message } from 'ai';
-import { cookies } from 'next/headers';
 import { getModelInstance } from '~/lib/ai/aidba';
 import { deleteMessagesByChatIdAfterTimestamp, getMessageById } from '~/lib/db/chats';
 import { getUserSessionDBAccess } from '~/lib/db/db';
-
-export async function saveChatModelAsCookie(model: string) {
-  const cookieStore = await cookies();
-  cookieStore.set('chat-model', model);
-}
 
 export async function generateTitleFromUserMessage({ message }: { message: Message }) {
   const { text: title } = await generateText({

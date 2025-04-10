@@ -1,7 +1,5 @@
 'use client';
 
-import { startTransition, useEffect, useMemo, useState } from 'react';
-
 import {
   Button,
   cn,
@@ -11,59 +9,59 @@ import {
   DropdownMenuTrigger
 } from '@internal/components';
 import { ChevronDownIcon } from 'lucide-react';
-import { ModelInfo } from '~/lib/ai/providers/types';
+import { useEffect, useMemo, useState } from 'react';
+import { Connection } from '~/lib/db/connections';
 import { CheckCircleFillIcon } from '../icons';
-import { actionGetLanguageModels } from './actions';
 
-interface ModelSelectorProps {
-  value: string;
-  onValueChange: (value: string) => void;
-  className?: string;
-}
-
-export function ModelSelector({ value, onValueChange, className }: ModelSelectorProps) {
+export function ConnectionSelector({
+  connections,
+  setConnectionId,
+  connectionId
+}: {
+  connections: Connection[];
+  setConnectionId: (id: string) => void;
+  connectionId?: string;
+}) {
   const [open, setOpen] = useState(false);
-  const [models, setModels] = useState<ModelInfo[]>([]);
-  const [modelId, setModelId] = useState(value);
+
+  const selectedConnection = useMemo(
+    () => connections.find((conn) => conn.id === connectionId),
+    [connections, connectionId]
+  );
 
   useEffect(() => {
-    async function loadModels() {
-      const fetchedModels = await actionGetLanguageModels();
-      setModels(fetchedModels);
+    if (!connectionId) {
+      const defaultConnection = connections.find((conn) => conn.isDefault);
+      if (defaultConnection) {
+        setConnectionId(defaultConnection.id);
+      }
     }
-    void loadModels();
-  }, []);
-
-  const selectedChatModel = useMemo(() => models.find((model) => model.id === modelId), [models, modelId]);
+  }, [connectionId, connections]);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
         asChild
-        className={cn('data-[state=open]:bg-accent data-[state=open]:text-accent-foreground w-fit', className)}
+        className={cn('data-[state=open]:bg-accent data-[state=open]:text-accent-foreground w-fit')}
       >
-        <Button data-testid="model-selector" variant="outline" className="md:h-[34px] md:px-2">
-          {selectedChatModel?.name || 'Select model'}
+        <Button data-testid="connection-selector" variant="outline" className="md:h-[34px] md:px-2">
+          {selectedConnection?.name || 'Select a database connection'}
           <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[300px]">
-        {models.map((model) => {
-          const { id, name } = model;
+        {connections.map((conn) => {
+          const { id, name } = conn;
 
           return (
             <DropdownMenuItem
-              data-testid={`model-selector-item-${id}`}
+              data-testid={`connection-selector-item-${id}`}
               key={id}
               onSelect={() => {
                 setOpen(false);
-
-                startTransition(() => {
-                  setModelId(id);
-                  onValueChange(id);
-                });
+                setConnectionId(id);
               }}
-              data-active={id === modelId}
+              data-active={id === connectionId}
               asChild
             >
               <button type="button" className="group/item flex w-full flex-row items-center justify-between gap-4">

@@ -13,6 +13,6 @@ export interface Model {
 }
 
 export type ModelInfo = {
-  name: string;
   id: string;
+  name: string;
 };

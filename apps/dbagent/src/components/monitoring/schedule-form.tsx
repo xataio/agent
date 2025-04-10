@@ -31,7 +31,7 @@ import { useEffect, useState } from 'react';
 import * as z from 'zod';
 import { Connection } from '~/lib/db/connections';
 import { Schedule } from '~/lib/db/schedules';
-import { ModelSelector } from '../chats/model-selector';
+import { ModelSelector } from '../chat/model-selector';
 import { actionCreateSchedule, actionDeleteSchedule, actionGetSchedule, actionUpdateSchedule } from './actions';
 import { CronExpressionModal } from './cron-expression-modal';
 

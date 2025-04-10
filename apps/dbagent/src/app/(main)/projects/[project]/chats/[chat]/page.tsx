@@ -1,8 +1,6 @@
 import { UIMessage } from 'ai';
-import { cookies } from 'next/headers';
 import { Chat } from '~/components/chat/chat';
 import { DataStreamHandler } from '~/components/chat/data-stream-handler';
-import { DEFAULT_CHAT_MODEL } from '~/lib/ai/models';
 import { getMessagesByChatId } from '~/lib/db/chats';
 import { listConnections } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
@@ -15,9 +13,6 @@ type PageParams = {
 
 export default async function Page({ params }: { params: Promise<PageParams> }) {
   const { project, chat } = await params;
-
-  const cookieStore = await cookies();
-  const modelIdFromCookie = cookieStore.get('chat-model');
 
   const suggestedActions = [
     {
@@ -61,7 +56,6 @@ export default async function Page({ params }: { params: Promise<PageParams> }) 
         id={chat}
         connections={connections}
         initialMessages={convertToUIMessages(messagesFromDb)}
-        selectedChatModel={modelIdFromCookie?.value || DEFAULT_CHAT_MODEL}
         suggestedActions={suggestedActions}
         isReadonly={false}
       />
