@@ -19,9 +19,11 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Bot } from '~/components/icons/bot';
+import { ModelInfo } from '~/lib/ai/providers/types';
 import { Connection } from '~/lib/db/connections';
 import { ScheduleRun } from '~/lib/db/schedule-runs';
 import { Schedule } from '~/lib/db/schedules';
+import { actionGetDefaultLanguageModel } from './actions';
 import { ChatSidebar } from './chat-sidebar';
 import { ConnectionSelector } from './conn-selector';
 import { mockChats } from './mock-data';
@@ -55,7 +57,8 @@ function ChatsUIContent({
   const [connectionId, setConnectionId] = useState<string>(
     scheduleRun?.schedule.connectionId || defaultConnection?.id || ''
   );
-  const [model, setModel] = useState(scheduleRun?.schedule.model || 'openai-gpt-4o');
+  const [defaultModel, setDefaultModel] = useState<ModelInfo>();
+  const [model, setModel] = useState(scheduleRun?.schedule.model || defaultModel?.id || '');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { messages, input, handleInputChange, handleSubmit, setInput, status, setMessages } = useChat({
@@ -65,6 +68,20 @@ function ChatsUIContent({
     },
     initialMessages: scheduleRun?.run.messages
   });
+
+  useEffect(() => {
+    async function loadModels() {
+      const defaultModelInfo = await actionGetDefaultLanguageModel();
+      setDefaultModel(defaultModelInfo);
+      console.log('defaultModelInfo', defaultModelInfo);
+    }
+    void loadModels();
+  }, []);
+  useEffect(() => {
+    if (defaultModel) {
+      setModel(defaultModel.id);
+    }
+  }, [defaultModel]);
 
   useEffect(() => {
     const startParam = searchParams.get('start');
@@ -109,7 +126,7 @@ function ChatsUIContent({
 
   /*useEffect(() => {
     const fetchScheduleRun = async (runId: string) => {
-      const { schedule, run } = await actionGetScheduleRun(runId)      
+      const { schedule, run } = await actionGetScheduleRun(runId)
       const newChat = {
         id: `new-${Date.now()}`,
         title: `Scheduled run followup`,

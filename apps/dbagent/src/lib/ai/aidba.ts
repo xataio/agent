@@ -1,12 +1,9 @@
-import { anthropic } from '@ai-sdk/anthropic';
-import { deepseek } from '@ai-sdk/deepseek';
-import { google } from '@ai-sdk/google';
-import { openai } from '@ai-sdk/openai';
-import { LanguageModelV1, Tool } from 'ai';
+import { LanguageModel, Tool } from 'ai';
 import { Pool } from 'pg';
 import { Connection } from '~/lib/db/connections';
 import { getUserDBAccess } from '~/lib/db/db';
 import { Project } from '../db/projects';
+import { getLanguageModel } from './providers';
 import { commonToolset, getDBClusterTools, getDBSQLTools, getPlaybookToolset, mergeToolsets } from './tools';
 
 const commonSystemPrompt = `
@@ -70,16 +67,7 @@ export async function getTools(
   return mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools);
 }
 
-export function getModelInstance(model: string): LanguageModelV1 {
-  if (model.startsWith('openai-')) {
-    return openai(model.replace('openai-', ''));
-  } else if (model.startsWith('deepseek-')) {
-    return deepseek(model);
-  } else if (model.startsWith('anthropic-')) {
-    return anthropic(model.replace('anthropic-', ''));
-  } else if (model.startsWith('gemini-')) {
-    return google(model);
-  } else {
-    throw new Error('Invalid model');
-  }
+export function getModelInstance(model_name: string): LanguageModel {
+  const model = getLanguageModel(model_name);
+  return model.instance();
 }
