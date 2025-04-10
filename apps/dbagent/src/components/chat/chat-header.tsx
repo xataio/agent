@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@internal/components';
+import { Button, cn } from '@internal/components';
 import { useParams, useRouter } from 'next/navigation';
 import { memo } from 'react';
 import { Connection } from '~/lib/db/schema';
@@ -13,19 +13,21 @@ function PureChatHeader({
   model,
   setModel,
   connectionId,
-  setConnectionId
+  setConnectionId,
+  className
 }: {
   model: string;
   setModel: (model: string) => void;
   connections: Connection[];
   connectionId: string;
   setConnectionId: (connectionId: string) => void;
+  className?: string;
 }) {
   const router = useRouter();
   const { project } = useParams<{ project: string }>();
 
   return (
-    <header className="bg-background sticky top-0 flex items-center gap-2 px-2 py-1.5 md:px-2">
+    <header className={cn('flex items-center gap-2 px-2 py-1.5 md:px-2', className)}>
       <Button
         variant="outline"
         className="ml-auto px-2 md:ml-0 md:h-fit md:px-2"

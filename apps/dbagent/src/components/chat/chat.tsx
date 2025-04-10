@@ -57,19 +57,23 @@ export function Chat({
   });
 
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+  // corresponds to the top padding of the main layout container: /src/components/ui/container.tsx
+  const layoutTopPadding = 'calc(var(--spacing)* 24)';
+  const heightScreen = `calc(100vh - ${layoutTopPadding})`;
 
   return (
     <>
-      <div className="bg-background flex h-full flex-col">
-        <ChatHeader
-          connections={connections}
-          model={model}
-          setModel={setModel}
-          connectionId={connectionId}
-          setConnectionId={setConnectionId}
-        />
-
-        <div className="flex-1 space-y-2 overflow-y-auto px-4 pt-6">
+      <div className="relative flex flex-col" style={{ height: heightScreen }}>
+        <div className="sticky top-0">
+          <ChatHeader
+            connections={connections}
+            model={model}
+            setModel={setModel}
+            connectionId={connectionId}
+            setConnectionId={setConnectionId}
+          />
+        </div>
+        <div className="scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-zinc-50 flex-1 space-y-2 overflow-y-auto px-4 pt-6">
           <Messages
             projectId={projectId}
             chatId={id}
