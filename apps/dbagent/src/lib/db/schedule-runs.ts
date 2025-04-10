@@ -2,11 +2,11 @@
 
 import { desc, eq, lt } from 'drizzle-orm';
 import { DBAccess } from './db';
-import { ScheduleRun, scheduleRuns } from './schema';
+import { ScheduleRun, ScheduleRunInsert, scheduleRuns } from './schema';
 
 export async function insertScheduleRunLimitHistory(
   dbAccess: DBAccess,
-  scheduleRun: Omit<ScheduleRun, 'id'>,
+  scheduleRun: ScheduleRunInsert,
   keepHistory: number
 ): Promise<ScheduleRun> {
   return dbAccess.query(async ({ db }) => {

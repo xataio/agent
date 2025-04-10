@@ -1,8 +1,7 @@
 import { CronExpressionParser } from 'cron-parser';
 import { incrementScheduleFailures, setScheduleStatusRunning, updateScheduleRunData } from '~/lib/db/schedules';
-import { PartialBy } from '~/utils/types';
 import { DBAccess, DBUserAccess, getAdminAccess } from '../db/db';
-import { Schedule, schedules as schedulesSchema } from '../db/schema';
+import { Schedule, ScheduleInsert, schedules as schedulesSchema } from '../db/schema';
 import { env } from '../env/server';
 import { runSchedule } from './runner';
 
@@ -12,7 +11,7 @@ export function utcToLocalDate(utcString: string): Date {
   return new Date(date.getTime() - offset);
 }
 
-export function scheduleGetNextRun(schedule: PartialBy<Schedule, 'id'>, now: Date): Date {
+export function scheduleGetNextRun(schedule: ScheduleInsert, now: Date): Date {
   if (schedule.scheduleType === 'cron' && schedule.cronExpression) {
     const interval = CronExpressionParser.parse(schedule.cronExpression);
     return interval.next().toDate();

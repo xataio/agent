@@ -10,7 +10,7 @@ import {
   insertSchedule,
   updateSchedule
 } from '~/lib/db/schedules';
-import { Schedule } from '~/lib/db/schema';
+import { Schedule, ScheduleInsert } from '~/lib/db/schema';
 
 export async function getProject(projectId: string) {
   const dbAccess = await getUserSessionDBAccess();
@@ -47,7 +47,7 @@ export async function getProjectSchedule(scheduleId: string) {
   return getSchedule(dbAccess, scheduleId);
 }
 
-export async function createProjectSchedule(schedule: Omit<Schedule, 'id'>) {
+export async function createProjectSchedule(schedule: ScheduleInsert) {
   const dbAccess = await getUserSessionDBAccess();
   return insertSchedule(dbAccess, schedule);
 }

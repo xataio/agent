@@ -13,7 +13,7 @@ import {
   updateSchedule,
   updateScheduleRunData
 } from '~/lib/db/schedules';
-import { Schedule, ScheduleRun } from '~/lib/db/schema';
+import { Schedule, ScheduleInsert, ScheduleRun } from '~/lib/db/schema';
 import { scheduleGetNextRun, utcToLocalDate } from '~/lib/monitoring/scheduler';
 import { listPlaybooks } from '~/lib/tools/playbooks';
 
@@ -29,7 +29,7 @@ export async function generateCronExpression(description: string): Promise<strin
   return text.trim();
 }
 
-export async function actionCreateSchedule(schedule: Omit<Schedule, 'id' | 'userId'>): Promise<Schedule> {
+export async function actionCreateSchedule(schedule: Omit<ScheduleInsert, 'userId'>): Promise<Schedule> {
   const session = await auth();
   const userId = session?.user?.id ?? '';
   if (schedule.enabled) {

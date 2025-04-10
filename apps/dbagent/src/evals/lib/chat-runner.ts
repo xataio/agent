@@ -1,4 +1,4 @@
-import { CoreMessage, generateText, Message } from 'ai';
+import { CoreMessage, generateText, Message as SDKMessage } from 'ai';
 import { randomUUID } from 'crypto';
 import { ExpectStatic } from 'vitest';
 import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
@@ -12,7 +12,7 @@ export const evalChat = async ({
   dbConnection,
   expect
 }: {
-  messages: CoreMessage[] | Omit<Message, 'id'>[];
+  messages: CoreMessage[] | Omit<SDKMessage, 'id'>[];
   dbConnection: string;
   expect: ExpectStatic;
 }) => {

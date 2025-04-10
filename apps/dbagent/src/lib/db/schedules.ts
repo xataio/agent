@@ -2,9 +2,9 @@
 
 import { and, eq, sql } from 'drizzle-orm';
 import { DBAccess } from './db';
-import { Schedule, schedules } from './schema';
+import { Schedule, ScheduleInsert, schedules } from './schema';
 
-export async function insertSchedule(dbAccess: DBAccess, schedule: Omit<Schedule, 'id'>): Promise<Schedule> {
+export async function insertSchedule(dbAccess: DBAccess, schedule: ScheduleInsert): Promise<Schedule> {
   return await dbAccess.query(async ({ db }) => {
     const result = await db.insert(schedules).values(schedule).returning();
     if (!result[0]) {

@@ -2,13 +2,13 @@
 
 import { eq } from 'drizzle-orm';
 import { DBAccess } from './db';
-import { Project, projectMembers, projects } from './schema';
+import { Project, ProjectInsert, projectMembers, projects } from './schema';
 
 export async function generateProjectId(): Promise<string> {
   return crypto.randomUUID();
 }
 
-export async function createProject(dbAccess: DBAccess, project: Omit<Project, 'id'>): Promise<string> {
+export async function createProject(dbAccess: DBAccess, project: ProjectInsert): Promise<string> {
   const projectId = await generateProjectId();
   return await dbAccess.query(async ({ db, userId }) => {
     // Create the project
