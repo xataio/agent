@@ -73,7 +73,7 @@ export function Chat({
             setConnectionId={setConnectionId}
           />
         </div>
-        <div className="scrollbar-thin scrollbar-thumb-zinc-300 scrollbar-track-zinc-50 flex-1 space-y-2 overflow-y-auto px-4 pt-6">
+        <div className="flex-1 space-y-2 overflow-y-auto px-4 pt-6">
           <Messages
             projectId={projectId}
             chatId={id}

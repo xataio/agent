@@ -7,7 +7,6 @@ let css = `
 
 @plugin 'tailwindcss-animate';
 @plugin '@tailwindcss/typography';
-@plugin 'tailwind-scrollbar';
 
 @custom-variant dark (&:is(.dark *));
 
