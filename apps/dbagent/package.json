@@ -33,6 +33,7 @@
     "@google-cloud/monitoring": "^5.0.1",
     "@googleapis/sqladmin": "^27.0.0",
     "@internal/theme": "workspace:*",
+    "@internal/litellm-client": "workspace:*",
     "@mastra/core": "^0.8.1",
     "@mastra/evals": "^0.1.16",
     "@tailwindcss/postcss": "^4.1.3",

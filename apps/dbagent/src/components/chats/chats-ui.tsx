@@ -58,7 +58,6 @@ function ChatsUIContent({
   const [defaultModel, setDefaultModel] = useState<ModelInfo>();
   const [model, setModel] = useState(scheduleRun?.schedule.model || defaultModel?.id || '');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
   const { messages, input, handleInputChange, handleSubmit, setInput, status, setMessages } = useChat({
     id: selectedChatId || undefined,
     body: {

@@ -1,0 +1,24 @@
+{
+  "name": "@internal/litellm-client",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "lint": "eslint ./src",
+    "test": "vitest --passWithNoTests",
+    "tsc": "tsc --noEmit",
+    "gen": "openapi-codegen gen client"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@openapi-codegen/cli": "^3.1.0",
+    "@openapi-codegen/typescript": "^11.0.1",
+    "openapi3-ts": "^2.0.1"
+  },
+  "devDependencies": {
+    "@internal/eslint-config": "workspace:*",
+    "@internal/tsconfig": "workspace:*",
+    "typescript": "^5.8.2"
+  }
+}

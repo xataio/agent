@@ -26,7 +26,7 @@ export function getMonitoringSystemPrompt({ cloudProvider }: { cloudProvider: Cl
     .join('\n');
 }
 
-export function getModelInstance(name: string): LanguageModel {
-  const model = getLanguageModel(name);
+export async function getModelInstance(name: string): Promise<LanguageModel> {
+  const model = await getLanguageModel(name);
   return model.instance();
 }

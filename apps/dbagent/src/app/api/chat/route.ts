@@ -48,7 +48,7 @@ export async function POST(req: Request) {
   }
   try {
     const context = getChatSystemPrompt({ cloudProvider: project.cloudProvider });
-    const modelInstance = getModelInstance(model);
+    const modelInstance = await getModelInstance(model);
 
     const targetDb = getTargetDbPool(connection.connectionString);
     const tools = await getTools({ project, connection, targetDb, userId });

@@ -17,4 +17,5 @@ export interface Model {
 export type ModelInfo = {
   id: string;
   name: string;
+  private?: boolean;
 };
