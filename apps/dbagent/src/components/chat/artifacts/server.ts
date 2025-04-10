@@ -3,7 +3,6 @@ import { saveDocument } from '~/lib/db/chats';
 import { DBAccess } from '~/lib/db/db';
 import { Document } from '~/lib/db/schema';
 import { ArtifactKind } from '../artifact';
-import { codeDocumentHandler } from './code/server';
 import { sheetDocumentHandler } from './sheet/server';
 import { textDocumentHandler } from './text/server';
 
@@ -94,10 +93,6 @@ export function createDocumentHandler<T extends ArtifactKind>(config: {
 /*
  * Use this array to define the document handlers for each artifact kind.
  */
-export const documentHandlersByArtifactKind: Array<DocumentHandler> = [
-  textDocumentHandler,
-  codeDocumentHandler,
-  sheetDocumentHandler
-];
+export const documentHandlersByArtifactKind: Array<DocumentHandler> = [textDocumentHandler, sheetDocumentHandler];
 
-export const artifactKinds = ['text', 'code', 'image', 'sheet'] as const;
+export const artifactKinds = ['text', 'sheet'] as const;

@@ -25,8 +25,7 @@ export const ArtifactSuggestion = ({
       {!isExpanded ? (
         <motion.div
           className={cn('text-muted-foreground cursor-pointer p-1', {
-            'absolute -right-8': artifactKind === 'text',
-            'sticky right-4 top-0': artifactKind === 'code'
+            'absolute -right-8': artifactKind === 'text'
           })}
           onClick={() => {
             setIsExpanded(true);

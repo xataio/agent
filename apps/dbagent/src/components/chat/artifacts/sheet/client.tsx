@@ -1,5 +1,5 @@
 import { toast } from '@internal/components';
-import { CopyIcon, LineChartIcon, SparklesIcon, UndoIcon } from 'lucide-react';
+import { CopyIcon, SparklesIcon, UndoIcon } from 'lucide-react';
 import { parse, unparse } from 'papaparse';
 import { RedoIcon } from '~/components/icons';
 import { Artifact } from '../../create-artifact';
@@ -86,16 +86,16 @@ export const sheetArtifact = new Artifact<'sheet', Metadata>({
           content: 'Can you please format and clean the data?'
         });
       }
-    },
-    {
-      description: 'Analyze and visualize data',
-      icon: <LineChartIcon />,
-      onClick: ({ appendMessage }) => {
-        void appendMessage({
-          role: 'user',
-          content: 'Can you please analyze and visualize the data by creating a new code artifact in python?'
-        });
-      }
     }
+    // {
+    //   description: 'Analyze and visualize data',
+    //   icon: <LineChartIcon />,
+    //   onClick: ({ appendMessage }) => {
+    //     void appendMessage({
+    //       role: 'user',
+    //       content: 'Can you please analyze and visualize the data by creating a chart?'
+    //     });
+    //   }
+    // }
   ]
 });

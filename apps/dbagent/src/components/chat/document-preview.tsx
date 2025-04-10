@@ -7,10 +7,8 @@ import { FileIcon, FullscreenIcon, LoaderIcon } from 'lucide-react';
 import { memo, MouseEvent, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Document } from '~/lib/db/schema';
 import { ArtifactKind, UIArtifact } from './artifact';
-import { CodeEditor } from './code-editor';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { InlineDocumentSkeleton } from './document-skeleton';
-import { ImageEditor } from './image-editor';
 import { SpreadsheetEditor } from './sheet-editor';
 import { Editor } from './text-editor';
 import { useArtifact } from './use-artifact';
@@ -199,8 +197,7 @@ const DocumentContent = ({ document }: { document: Document }) => {
   const containerClassName = cn(
     'h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700',
     {
-      'p-4 sm:px-14 sm:py-16': document.kind === 'text',
-      'p-0': document.kind === 'code'
+      'p-4 sm:px-14 sm:py-16': document.kind === 'text'
     }
   );
 
@@ -217,27 +214,12 @@ const DocumentContent = ({ document }: { document: Document }) => {
     <div className={containerClassName}>
       {document.kind === 'text' ? (
         <Editor {...commonProps} onSaveContent={() => {}} />
-      ) : document.kind === 'code' ? (
-        <div className="relative flex w-full flex-1">
-          <div className="absolute inset-0">
-            <CodeEditor {...commonProps} onSaveContent={() => {}} />
-          </div>
-        </div>
       ) : document.kind === 'sheet' ? (
         <div className="relative flex size-full flex-1 p-4">
           <div className="absolute inset-0">
             <SpreadsheetEditor {...commonProps} />
           </div>
         </div>
-      ) : document.kind === 'image' ? (
-        <ImageEditor
-          title={document.title}
-          content={document.content ?? ''}
-          isCurrentVersion={true}
-          currentVersionIndex={0}
-          status={artifact.status}
-          isInline={true}
-        />
       ) : null}
     </div>
   );
