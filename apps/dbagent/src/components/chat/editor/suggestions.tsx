@@ -73,15 +73,13 @@ export function createSuggestionWidget(
   });
 
   const onApply = () => {
-    const { state, dispatch } = view;
-
-    const decorationTransaction = state.tr;
-    const currentState = suggestionsPluginKey.getState(state);
+    const decorationTransaction = view.state.tr;
+    const currentState = suggestionsPluginKey.getState(view.state);
     const currentDecorations = currentState?.decorations;
 
     if (currentDecorations) {
       const newDecorations = DecorationSet.create(
-        state.doc,
+        view.state.doc,
         currentDecorations.find().filter((decoration: Decoration) => {
           return decoration.spec.suggestionId !== suggestion.id;
         })
@@ -91,18 +89,18 @@ export function createSuggestionWidget(
         decorations: newDecorations,
         selected: null
       });
-      dispatch(decorationTransaction);
+      view.dispatch(decorationTransaction);
     }
 
     const textTransaction = view.state.tr.replaceWith(
       suggestion.selectionStart,
       suggestion.selectionEnd,
-      state.schema.text(suggestion.suggestedText)
+      view.state.schema.text(suggestion.suggestedText)
     );
 
     textTransaction.setMeta('no-debounce', true);
 
-    dispatch(textTransaction);
+    view.dispatch(textTransaction);
   };
 
   root.render(<ArtifactSuggestion suggestion={suggestion} onApply={onApply} artifactKind={artifactKind} />);

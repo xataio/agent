@@ -2,7 +2,7 @@
 
 import { ArtifactKind } from './artifact';
 
-export const DocumentSkeleton = ({}: { artifactKind: ArtifactKind }) => {
+export const DocumentSkeleton = (_props: { artifactKind: ArtifactKind }) => {
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="bg-muted-foreground/20 h-12 w-1/2 animate-pulse rounded-lg" />

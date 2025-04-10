@@ -94,7 +94,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       onClick: ({ handleVersionChange }) => {
         handleVersionChange('toggle');
       },
-      isDisabled: ({ currentVersionIndex, setMetadata }) => {
+      isDisabled: ({ currentVersionIndex }) => {
         if (currentVersionIndex === 0) {
           return true;
         }
@@ -134,7 +134,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       icon: <CopyIcon size={18} />,
       description: 'Copy to clipboard',
       onClick: ({ content }) => {
-        navigator.clipboard.writeText(content);
+        void navigator.clipboard.writeText(content);
         toast.success('Copied to clipboard!');
       }
     }
@@ -144,7 +144,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       icon: <PenIcon />,
       description: 'Add final polish',
       onClick: ({ appendMessage }) => {
-        appendMessage({
+        void appendMessage({
           role: 'user',
           content:
             'Please add final polish and check for grammar, add section titles for better structure, and ensure everything reads smoothly.'
@@ -155,7 +155,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       icon: <MessageIcon />,
       description: 'Request suggestions',
       onClick: ({ appendMessage }) => {
-        appendMessage({
+        void appendMessage({
           role: 'user',
           content: 'Please add suggestions you have that could improve the writing.'
         });

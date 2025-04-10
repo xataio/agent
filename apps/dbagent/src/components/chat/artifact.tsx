@@ -96,7 +96,7 @@ function PureArtifact({
   }, [documents, setArtifact]);
 
   useEffect(() => {
-    queryClient.invalidateQueries({ queryKey: ['documents', artifact.documentId] });
+    void queryClient.invalidateQueries({ queryKey: ['documents', artifact.documentId] });
   }, [artifact.status, queryClient, artifact.documentId]);
 
   const [isContentDirty, setIsContentDirty] = useState(false);
@@ -146,9 +146,9 @@ function PureArtifact({
         setIsContentDirty(true);
 
         if (debounce) {
-          debouncedHandleContentChange(updatedContent);
+          void debouncedHandleContentChange(updatedContent);
         } else {
-          handleContentChange(updatedContent);
+          void handleContentChange(updatedContent);
         }
       }
     },

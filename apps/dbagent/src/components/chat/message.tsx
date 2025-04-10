@@ -133,6 +133,7 @@ const PurePreviewMessage = ({
                   const { args } = toolInvocation;
 
                   // TODO: add support for tools
+                  console.log(`Tool invocation: ${toolName}`, args);
 
                   return <div key={toolCallId}></div>;
                 }

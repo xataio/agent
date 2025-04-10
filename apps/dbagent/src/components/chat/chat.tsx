@@ -40,7 +40,7 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      queryClient.invalidateQueries({ queryKey: ['history'] });
+      void queryClient.invalidateQueries({ queryKey: ['history'] });
     },
     onError: () => {
       toast.error('An error occured, please try again!');

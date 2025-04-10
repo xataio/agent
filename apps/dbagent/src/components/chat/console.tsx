@@ -76,6 +76,7 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
         style={{ bottom: height - 4 }}
         role="slider"
         aria-valuenow={minHeight}
+        tabIndex={0}
       />
 
       <div

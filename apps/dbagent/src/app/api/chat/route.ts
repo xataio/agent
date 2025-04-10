@@ -137,7 +137,7 @@ export async function POST(request: Request) {
           }
         });
 
-        result.consumeStream();
+        void result.consumeStream();
 
         result.mergeIntoDataStream(dataStream, { sendReasoning: true });
       },

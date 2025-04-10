@@ -222,7 +222,7 @@ export const codeArtifact = new Artifact<'code', Metadata>({
       icon: <CopyIcon size={18} />,
       description: 'Copy code to clipboard',
       onClick: ({ content }) => {
-        navigator.clipboard.writeText(content);
+        void navigator.clipboard.writeText(content);
         toast.success('Copied to clipboard!');
       }
     }
@@ -232,7 +232,7 @@ export const codeArtifact = new Artifact<'code', Metadata>({
       icon: <MessageIcon />,
       description: 'Add comments',
       onClick: ({ appendMessage }) => {
-        appendMessage({
+        void appendMessage({
           role: 'user',
           content: 'Add comments to the code snippet for understanding'
         });
@@ -242,7 +242,7 @@ export const codeArtifact = new Artifact<'code', Metadata>({
       icon: <LogsIcon />,
       description: 'Add logs',
       onClick: ({ appendMessage }) => {
-        appendMessage({
+        void appendMessage({
           role: 'user',
           content: 'Add logs to the code snippet for debugging'
         });

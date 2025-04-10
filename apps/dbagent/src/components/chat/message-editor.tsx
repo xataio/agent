@@ -85,7 +85,7 @@ export function MessageEditor({ message, setMode, setMessages, reload }: Message
             });
 
             setMode('view');
-            reload();
+            void reload();
           }}
         >
           {isSubmitting ? 'Sending...' : 'Send'}

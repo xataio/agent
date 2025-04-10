@@ -39,7 +39,7 @@ async function deleteChat(id: string) {
 export default function ChatsPage() {
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const queryClient = useQueryClient();
-  const { project: projectId } = useParams() as { project: string };
+  const { project: projectId } = useParams<{ project: string }>();
 
   const { data: { chats = [] } = {}, isLoading } = useQuery<{ chats: Chat[] }>({
     queryKey: ['chats'],
@@ -55,7 +55,7 @@ export default function ChatsPage() {
     try {
       await deleteChat(chatId);
       toast.success('Chat deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['chats'] });
+      void queryClient.invalidateQueries({ queryKey: ['chats'] });
     } catch (error) {
       toast.error('Failed to delete chat');
       console.error(error);

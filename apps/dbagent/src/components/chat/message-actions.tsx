@@ -24,7 +24,7 @@ export function PureMessageActions({
   const { data: session } = useSession();
   const { project: projectId } = useParams<{ project: string }>();
   const queryClient = useQueryClient();
-  const [_, copyToClipboard] = useCopyToClipboard();
+  const [, copyToClipboard] = useCopyToClipboard();
 
   if (isLoading) return null;
   if (message.role === 'user') return null;
@@ -80,7 +80,7 @@ export function PureMessageActions({
                   loading: 'Upvoting Response...',
                   success: () => {
                     queryClient.setQueryData<Array<Vote>>(['votes', chatId], (currentVotes) => {
-                      if (!currentVotes) return [];
+                      if (!currentVotes || !session?.user?.id) return [];
 
                       const votesWithoutCurrent = currentVotes.filter((vote) => vote.messageId !== message.id);
 
@@ -89,7 +89,7 @@ export function PureMessageActions({
                         {
                           projectId,
                           createdAt: new Date(),
-                          userId: session?.user?.id!,
+                          userId: session.user.id,
                           chatId,
                           messageId: message.id,
                           isUpvoted: true
@@ -130,7 +130,7 @@ export function PureMessageActions({
                   loading: 'Downvoting Response...',
                   success: () => {
                     queryClient.setQueryData<Array<Vote>>(['votes', chatId], (currentVotes) => {
-                      if (!currentVotes) return [];
+                      if (!currentVotes || !session?.user?.id) return [];
 
                       const votesWithoutCurrent = currentVotes.filter((vote) => vote.messageId !== message.id);
 
@@ -139,7 +139,7 @@ export function PureMessageActions({
                         {
                           projectId,
                           createdAt: new Date(),
-                          userId: session?.user?.id!,
+                          userId: session.user.id,
                           chatId,
                           messageId: message.id,
                           isUpvoted: false

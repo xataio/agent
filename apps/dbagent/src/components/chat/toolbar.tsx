@@ -107,7 +107,7 @@ const Tool = ({
   );
 };
 
-const randomArr = [...Array(6)].map((x) => nanoid(5));
+const randomArr = [...Array(6)].map(() => nanoid(5));
 
 const ReadingLevelSelector = ({
   setSelectedTool,
@@ -182,7 +182,7 @@ const ReadingLevelSelector = ({
               }}
               onClick={() => {
                 if (currentLevel !== 2 && hasUserSelectedLevel) {
-                  append({
+                  void append({
                     role: 'user',
                     content: `Please adjust the reading level to ${LEVELS[currentLevel]} level.`
                   });

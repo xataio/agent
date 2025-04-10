@@ -33,7 +33,7 @@ function PureSuggestedActions({ suggestedActions = [], append }: SuggestedAction
           <Button
             variant="ghost"
             onClick={async () => {
-              append({
+              void append({
                 role: 'user',
                 content: suggestedAction.action
               });
