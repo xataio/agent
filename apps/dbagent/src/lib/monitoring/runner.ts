@@ -1,7 +1,8 @@
 import { Message } from '@ai-sdk/ui-utils';
 import { generateId, generateObject, generateText, LanguageModelV1 } from 'ai';
 import { z } from 'zod';
-import { getModelInstance, getMonitoringSystemPrompt, getTools } from '../ai/aidba';
+import { getModelInstance, getMonitoringSystemPrompt } from '../ai/agent';
+import { getTools } from '../ai/tools';
 import { getConnectionFromSchedule } from '../db/connections';
 import { DBAccess } from '../db/db';
 import { getProjectById } from '../db/projects';
@@ -37,7 +38,7 @@ async function runModelPlaybook({
     createdAt: new Date()
   });
 
-  const monitoringSystemPrompt = getMonitoringSystemPrompt(project);
+  const monitoringSystemPrompt = getMonitoringSystemPrompt({ project });
 
   const targetDb = getTargetDbPool(connection.connectionString);
   try {
@@ -200,7 +201,7 @@ export async function runSchedule(dbAccess: DBAccess, schedule: Schedule, now: D
   if (!project) {
     throw new Error(`Project ${connection.projectId} not found`);
   }
-  const monitoringSystemPrompt = getMonitoringSystemPrompt(project);
+  const monitoringSystemPrompt = getMonitoringSystemPrompt({ project });
 
   const result = await runModelPlaybook({
     messages,

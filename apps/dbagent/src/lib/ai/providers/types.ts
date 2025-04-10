@@ -9,7 +9,7 @@ export interface ProviderRegistry {
 export interface Model {
   fullId(): string;
 
-  model(): ModelInfo;
+  info(): ModelInfo;
 
   instance(): LanguageModel;
 }

@@ -26,10 +26,10 @@ type ProviderModel = {
 };
 
 class BuiltinModel implements Model {
-  #model: ModelInfo;
+  #model: ProviderModel;
   #provider: ProviderInfo;
 
-  constructor(provider: ProviderInfo, model: ModelInfo) {
+  constructor(provider: ProviderInfo, model: ProviderModel) {
     this.#model = model;
     this.#provider = provider;
   }
@@ -38,12 +38,16 @@ class BuiltinModel implements Model {
     return `${this.#provider.id}-${this.#model.id}`;
   }
 
-  model(): ModelInfo {
-    return this.#model;
+  info(): ModelInfo {
+    return {
+      id: this.#model.providerId || this.#model.id,
+      name: this.#model.name
+    };
   }
 
   instance(): LanguageModel {
-    return this.#provider.kind.languageModel(this.#model.id);
+    const model = this.info();
+    return this.#provider.kind.languageModel(model.id);
   }
 }
 
@@ -115,15 +119,9 @@ const builtinGoogleModels: Provider = {
 
 const builtinProviderModels: Record<string, BuiltinModel> = Object.fromEntries(
   [builtinOpenAIModels, builtinDeepseekModels, builtinAnthropicModels, builtinGoogleModels].flatMap((p) => {
-    return p.models.map((m) => {
-      const fullId = `${p.info.id}-${m.providerId || m.id}`;
-      return [
-        fullId,
-        new BuiltinModel(p.info, {
-          id: m.id,
-          name: m.name
-        })
-      ];
+    return p.models.map((model) => {
+      const modelInstance = new BuiltinModel(p.info, model);
+      return [modelInstance.fullId(), modelInstance];
     });
   })
 );

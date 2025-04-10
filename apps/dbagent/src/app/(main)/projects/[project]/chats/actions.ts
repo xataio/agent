@@ -1,7 +1,7 @@
 'use server';
 
 import { generateText, Message } from 'ai';
-import { getModelInstance } from '~/lib/ai/aidba';
+import { getModelInstance } from '~/lib/ai/agent';
 import { deleteMessagesByChatIdAfterTimestamp, getMessageById } from '~/lib/db/chats';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 

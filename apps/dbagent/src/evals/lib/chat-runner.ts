@@ -1,7 +1,8 @@
 import { CoreMessage, generateText, Message as SDKMessage } from 'ai';
 import { randomUUID } from 'crypto';
 import { ExpectStatic } from 'vitest';
-import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
+import { getChatSystemPrompt, getModelInstance } from '~/lib/ai/agent';
+import { getTools } from '~/lib/ai/tools';
 import { Connection, Project } from '~/lib/db/schema';
 import { env } from '~/lib/env/eval';
 import { getTargetDbPool } from '~/lib/targetdb/db';

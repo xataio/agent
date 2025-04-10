@@ -1,6 +1,6 @@
 import { streamObject } from 'ai';
 import { z } from 'zod';
-import { getModelInstance } from '~/lib/ai/aidba';
+import { getModelInstance } from '~/lib/ai/agent';
 import { codePrompt, updateDocumentPrompt } from '~/lib/ai/prompts';
 import { createDocumentHandler } from '../server';
 

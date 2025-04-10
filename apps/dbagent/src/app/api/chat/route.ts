@@ -3,7 +3,8 @@ import { NextRequest } from 'next/server';
 import { generateTitleFromUserMessage } from '~/app/(main)/projects/[project]/chats/actions';
 import { auth } from '~/auth';
 import { generateUUID } from '~/components/chat/utils';
-import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
+import { getChatSystemPrompt, getModelInstance } from '~/lib/ai/agent';
+import { getTools } from '~/lib/ai/tools';
 import { deleteChatById, getChatById, getChatsByUserId, saveChat, saveMessages } from '~/lib/db/chats';
 import { getConnection } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
@@ -13,17 +14,18 @@ import { getTargetDbPool } from '~/lib/targetdb/db';
 export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
   const { searchParams } = new URL(request.url);
   const limit = parseInt(searchParams.get('limit') || '10', 10);
 
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
   const dbAccess = await getUserSessionDBAccess();
 
-  const chats = await getChatsByUserId(dbAccess, { id: session.user.id, limit });
+  const chats = await getChatsByUserId(dbAccess, { id: userId, limit });
 
   return Response.json({ chats });
 }

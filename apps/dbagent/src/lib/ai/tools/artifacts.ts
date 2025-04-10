@@ -5,7 +5,7 @@ import { generateUUID } from '~/components/chat/utils';
 import { getDocumentById, saveSuggestions } from '~/lib/db/chats';
 import { DBAccess } from '~/lib/db/db';
 import { Suggestion } from '~/lib/db/schema';
-import { getModelInstance } from '../aidba';
+import { getModelInstance } from '../agent';
 
 interface ArtifactToolProps {
   userId: string;

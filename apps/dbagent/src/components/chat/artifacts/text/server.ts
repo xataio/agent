@@ -1,5 +1,5 @@
 import { smoothStream, streamText } from 'ai';
-import { getModelInstance } from '~/lib/ai/aidba';
+import { getModelInstance } from '~/lib/ai/agent';
 import { updateDocumentPrompt } from '~/lib/ai/prompts';
 import { createDocumentHandler } from '../server';
 
