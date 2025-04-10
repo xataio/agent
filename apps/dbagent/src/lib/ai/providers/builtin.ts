@@ -26,20 +26,24 @@ type ProviderModel = {
 };
 
 class BuiltinModel implements Model {
-  #info: ModelInfo;
-  #provider: ProviderV1;
+  #model: ModelInfo;
+  #provider: ProviderInfo;
 
-  constructor(provider: ProviderV1, info: ModelInfo) {
-    this.#info = info;
+  constructor(provider: ProviderInfo, model: ModelInfo) {
+    this.#model = model;
     this.#provider = provider;
   }
 
-  info(): ModelInfo {
-    return this.#info;
+  fullId(): string {
+    return `${this.#provider.id}-${this.#model.id}`;
+  }
+
+  model(): ModelInfo {
+    return this.#model;
   }
 
   instance(): LanguageModel {
-    return this.#provider.languageModel(this.#info.id);
+    return this.#provider.kind.languageModel(this.#model.id);
   }
 }
 
@@ -115,7 +119,7 @@ const builtinProviderModels: Record<string, BuiltinModel> = Object.fromEntries(
       const fullId = `${p.info.id}-${m.providerId || m.id}`;
       return [
         fullId,
-        new BuiltinModel(p.info.kind, {
+        new BuiltinModel(p.info, {
           id: m.id,
           name: m.name
         })

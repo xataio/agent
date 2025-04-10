@@ -16,6 +16,7 @@ import { fetcher, generateUUID } from './utils';
 
 export function Chat({
   id,
+  projectId,
   defaultLanguageModel,
   connections,
   initialMessages,
@@ -23,6 +24,7 @@ export function Chat({
   isReadonly
 }: {
   id: string;
+  projectId: string;
   defaultLanguageModel: string;
   connections: Connection[];
   initialMessages: Array<UIMessage>;
@@ -71,6 +73,7 @@ export function Chat({
 
         <div className="flex-1 space-y-2 overflow-y-auto px-4 pt-24">
           <Messages
+            projectId={projectId}
             chatId={id}
             status={status}
             votes={votes}
@@ -101,6 +104,7 @@ export function Chat({
       </div>
 
       <Artifact
+        projectId={projectId}
         chatId={id}
         input={input}
         setInput={setInput}

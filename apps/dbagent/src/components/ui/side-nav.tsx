@@ -148,8 +148,8 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+              {items.map((item, itemIndex) => (
+                <SidebarMenuItem key={`sidebar-item-${itemIndex}`}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
                     <Link href={item.url}>
                       <item.icon />
@@ -159,8 +159,8 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
 
                   {item.subItems && (
                     <SidebarMenuSub>
-                      {item.subItems.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title} className="text-sm">
+                      {item.subItems.map((subItem, subIndex) => (
+                        <SidebarMenuSubItem key={`sidebar-subitem-${itemIndex}-${subIndex}`} className="text-sm">
                           <SidebarMenuSubButton asChild>
                             <Link href={subItem.url}>
                               {subItem.icon ? <subItem.icon /> : null}

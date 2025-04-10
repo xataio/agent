@@ -61,7 +61,8 @@ export default async function Page({ params }: { params: Promise<PageParams> }) 
       <Chat
         key={`${chat}-${chat}`}
         id={chat}
-        defaultLanguageModel={defaultLanguageModel.info().id}
+        projectId={project}
+        defaultLanguageModel={defaultLanguageModel.fullId()}
         connections={connections}
         initialMessages={convertToUIMessages(messagesFromDb)}
         suggestedActions={suggestedActions}

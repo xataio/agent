@@ -40,6 +40,7 @@ export interface UIArtifact {
 
 function PureArtifact({
   chatId,
+  projectId,
   input,
   setInput,
   handleSubmit,
@@ -53,6 +54,7 @@ function PureArtifact({
   isReadonly
 }: {
   chatId: string;
+  projectId: string;
   input: string;
   setInput: UseChatHelpers['setInput'];
   status: UseChatHelpers['status'];
@@ -274,6 +276,7 @@ function PureArtifact({
 
               <div className="flex h-full flex-col items-center justify-between gap-4">
                 <ArtifactMessages
+                  projectId={projectId}
                   chatId={chatId}
                   status={status}
                   votes={votes}

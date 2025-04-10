@@ -8,6 +8,7 @@ import { PreviewMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 
 interface ArtifactMessagesProps {
+  projectId: string;
   chatId: string;
   status: UseChatHelpers['status'];
   votes: Array<Vote> | undefined;
@@ -19,6 +20,7 @@ interface ArtifactMessagesProps {
 }
 
 function PureArtifactMessages({
+  projectId,
   chatId,
   status,
   votes,
@@ -33,6 +35,7 @@ function PureArtifactMessages({
     <div ref={messagesContainerRef} className="flex h-full flex-col items-center gap-4 overflow-y-scroll px-4 pt-20">
       {messages.map((message, index) => (
         <PreviewMessage
+          projectId={projectId}
           chatId={chatId}
           key={message.id}
           message={message}

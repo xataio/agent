@@ -8,6 +8,7 @@ import { PreviewMessage, ThinkingMessage } from './message';
 import { useScrollToBottom } from './use-scroll-to-bottom';
 
 interface MessagesProps {
+  projectId: string;
   chatId: string;
   status: UseChatHelpers['status'];
   votes: Array<Vote> | undefined;
@@ -18,7 +19,7 @@ interface MessagesProps {
   isArtifactVisible: boolean;
 }
 
-function PureMessages({ chatId, status, votes, messages, setMessages, reload, isReadonly }: MessagesProps) {
+function PureMessages({ projectId, chatId, status, votes, messages, setMessages, reload, isReadonly }: MessagesProps) {
   const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
 
   return (
@@ -32,6 +33,7 @@ function PureMessages({ chatId, status, votes, messages, setMessages, reload, is
       {messages.map((message, index) => (
         <PreviewMessage
           key={message.id}
+          projectId={projectId}
           chatId={chatId}
           message={message}
           isLoading={status === 'streaming' && messages.length - 1 === index}
