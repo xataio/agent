@@ -141,8 +141,9 @@ export async function POST(request: Request) {
 
         result.mergeIntoDataStream(dataStream, { sendReasoning: true });
       },
-      onError: () => {
-        return 'Oops, an error occurred!';
+      onError: (error) => {
+        console.error('Error in data stream:', error);
+        return 'An error occurred while processing your request';
       }
     });
   } catch (error) {
