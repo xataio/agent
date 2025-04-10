@@ -1,24 +1,12 @@
 'use server';
 
-import { Message } from '@ai-sdk/ui-utils';
 import { desc, eq, lt } from 'drizzle-orm';
 import { DBAccess } from './db';
-import { scheduleRuns } from './schema';
-
-export type ScheduleRun = {
-  id: string;
-  projectId: string;
-  scheduleId: string;
-  createdAt: string;
-  result: string;
-  summary: string | null;
-  notificationLevel: 'info' | 'warning' | 'alert';
-  messages: Message[];
-};
+import { ScheduleRun, ScheduleRunInsert, scheduleRuns } from './schema';
 
 export async function insertScheduleRunLimitHistory(
   dbAccess: DBAccess,
-  scheduleRun: Omit<ScheduleRun, 'id'>,
+  scheduleRun: ScheduleRunInsert,
   keepHistory: number
 ): Promise<ScheduleRun> {
   return dbAccess.query(async ({ db }) => {

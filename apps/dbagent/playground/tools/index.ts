@@ -8,16 +8,17 @@ import {
   playbookTools,
   Toolset
 } from '~/lib/ai/tools';
-import { Connection, getConnectionByName, getDefaultConnection } from '~/lib/db/connections';
+import { getConnectionByName, getDefaultConnection } from '~/lib/db/connections';
 import { DBUserAccess } from '~/lib/db/db';
-import { CloudProviderType, getProjectByName } from '~/lib/db/projects';
+import { getProjectByName } from '~/lib/db/projects';
+import { CloudProvider, Connection } from '~/lib/db/schema';
 import { getTargetDbPool, Pool } from '~/lib/targetdb/db';
 
 type PlaygroundToolsConfig = {
   projectConnection?: string;
   dbUrl?: string;
   userId?: string;
-  cloudProvider?: CloudProviderType;
+  cloudProvider?: CloudProvider;
 };
 
 export function buildPlaygroundTools(config: PlaygroundToolsConfig): Record<string, Tool> {

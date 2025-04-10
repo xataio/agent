@@ -1,15 +1,15 @@
 import { Agent } from '@mastra/core/agent';
 import { AnswerRelevancyMetric, PromptAlignmentMetric } from '@mastra/evals/llm';
 import { CompletenessMetric } from '@mastra/evals/nlp';
-import { CloudProviderType } from '~/lib/db/projects';
+import { CloudProvider } from '~/lib/db/schema';
 
 import { openai } from '@ai-sdk/openai';
-import { getChatSystemPrompt, getModelInstance, getMonitoringSystemPrompt } from '~/lib/ai/aidba';
+import { getChatSystemPrompt, getModelInstance, getMonitoringSystemPrompt } from '~/lib/ai/agent';
 import { buildPlaygroundTools } from '../tools';
 
 /* eslint-disable no-process-env */
-const defaultModel = getModelInstance(process.env.MASTRA_MODEL ?? 'openai-gpt-4o-mini');
-const cloudProvider = (process.env.MASTRA_CLOUD_PROVIDER ?? 'aws') as CloudProviderType;
+const defaultModel = getModelInstance(process.env.MASTRA_MODEL ?? 'openai-gpt-4o');
+const cloudProvider = (process.env.MASTRA_CLOUD_PROVIDER ?? 'aws') as CloudProvider;
 const defaultTools = buildPlaygroundTools({
   projectConnection: process.env.MASTRA_PROJECT_CONNECTION ?? undefined,
   dbUrl: process.env.MASTRA_DB_URL ?? undefined,
@@ -17,8 +17,8 @@ const defaultTools = buildPlaygroundTools({
 });
 /* eslint-enable no-process-env */
 
-const chatPrompt = getChatSystemPrompt(cloudProvider);
-const monitoringPrompt = getMonitoringSystemPrompt(cloudProvider);
+const chatPrompt = getChatSystemPrompt({ cloudProvider });
+const monitoringPrompt = getMonitoringSystemPrompt({ cloudProvider });
 
 export function createAgents() {
   const evals = {

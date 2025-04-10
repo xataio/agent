@@ -1,12 +1,13 @@
 import { Message } from '@ai-sdk/ui-utils';
 import { generateId, generateObject, generateText, LanguageModelV1 } from 'ai';
 import { z } from 'zod';
-import { getModelInstance, getMonitoringSystemPrompt, getTools } from '../ai/aidba';
-import { Connection, getConnectionFromSchedule } from '../db/connections';
+import { getModelInstance, getMonitoringSystemPrompt } from '../ai/agent';
+import { getTools } from '../ai/tools';
+import { getConnectionFromSchedule } from '../db/connections';
 import { DBAccess } from '../db/db';
-import { getProjectById, Project } from '../db/projects';
-import { insertScheduleRunLimitHistory, ScheduleRun } from '../db/schedule-runs';
-import { Schedule } from '../db/schedules';
+import { getProjectById } from '../db/projects';
+import { insertScheduleRunLimitHistory } from '../db/schedule-runs';
+import { Connection, Project, Schedule } from '../db/schema';
 import { sendScheduleNotification } from '../notifications/slack-webhook';
 import { getTargetDbPool } from '../targetdb/db';
 import { listPlaybooks } from '../tools/playbooks';
@@ -37,11 +38,10 @@ async function runModelPlaybook({
     createdAt: new Date()
   });
 
-  const monitoringSystemPrompt = getMonitoringSystemPrompt(project.cloudProvider);
-
+  const monitoringSystemPrompt = getMonitoringSystemPrompt({ cloudProvider: project.cloudProvider });
   const targetDb = getTargetDbPool(connection.connectionString);
   try {
-    const tools = await getTools(project, connection, targetDb, schedule.userId);
+    const tools = await getTools({ project, connection, targetDb, userId: schedule.userId });
     const result = await generateText({
       model: modelInstance,
       system: monitoringSystemPrompt,
@@ -200,8 +200,7 @@ export async function runSchedule(dbAccess: DBAccess, schedule: Schedule, now: D
   if (!project) {
     throw new Error(`Project ${connection.projectId} not found`);
   }
-  const monitoringSystemPrompt = getMonitoringSystemPrompt(project.cloudProvider);
-
+  const monitoringSystemPrompt = getMonitoringSystemPrompt({ cloudProvider: project.cloudProvider });
   const result = await runModelPlaybook({
     messages,
     modelInstance,
@@ -251,16 +250,19 @@ export async function runSchedule(dbAccess: DBAccess, schedule: Schedule, now: D
   const resultText = await summarizeResult(messages, modelInstance, monitoringSystemPrompt);
 
   // save the result in the database with all messages
-  const scheduleRun: Omit<ScheduleRun, 'id'> = {
-    projectId: connection.projectId,
-    scheduleId: schedule.id,
-    result: resultText,
-    summary: notificationResult.summary,
-    notificationLevel: notificationResult.notificationLevel,
-    messages: messages,
-    createdAt: now.toISOString() // using the start time
-  };
-  const run = await insertScheduleRunLimitHistory(dbAccess, scheduleRun, schedule.keepHistory);
+  const run = await insertScheduleRunLimitHistory(
+    dbAccess,
+    {
+      projectId: connection.projectId,
+      scheduleId: schedule.id,
+      result: resultText,
+      summary: notificationResult.summary,
+      notificationLevel: notificationResult.notificationLevel,
+      messages: messages,
+      createdAt: now.toISOString() // using the start time
+    },
+    schedule.keepHistory
+  );
 
   if (shouldNotify(schedule.notifyLevel, notificationResult.notificationLevel)) {
     await sendScheduleNotification(

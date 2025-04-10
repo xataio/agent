@@ -1,9 +1,9 @@
-import { CoreMessage, generateText, Message } from 'ai';
+import { CoreMessage, generateText, Message as SDKMessage } from 'ai';
 import { randomUUID } from 'crypto';
 import { ExpectStatic } from 'vitest';
-import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
-import { Connection } from '~/lib/db/connections';
-import { Project } from '~/lib/db/projects';
+import { getChatSystemPrompt, getModelInstance } from '~/lib/ai/agent';
+import { getTools } from '~/lib/ai/tools';
+import { Connection, Project } from '~/lib/db/schema';
 import { env } from '~/lib/env/eval';
 import { getTargetDbPool } from '~/lib/targetdb/db';
 import { traceVercelAiResponse } from './trace';
@@ -13,7 +13,7 @@ export const evalChat = async ({
   dbConnection,
   expect
 }: {
-  messages: CoreMessage[] | Omit<Message, 'id'>[];
+  messages: CoreMessage[] | Omit<SDKMessage, 'id'>[];
   dbConnection: string;
   expect: ExpectStatic;
 }) => {
@@ -33,10 +33,10 @@ export const evalChat = async ({
 
   const targetDb = getTargetDbPool(connection.connectionString);
   try {
-    const tools = await getTools(project, connection, targetDb);
+    const tools = await getTools({ project, connection, targetDb, userId: 'evalUser' });
     const response = await generateText({
       model: getModelInstance(env.CHAT_MODEL),
-      system: getChatSystemPrompt(project.cloudProvider),
+      system: getChatSystemPrompt({ cloudProvider: project.cloudProvider }),
       maxSteps: 20,
       tools,
       messages

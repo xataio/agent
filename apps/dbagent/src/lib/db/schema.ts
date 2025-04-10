@@ -1,11 +1,12 @@
-import { Message } from '@ai-sdk/ui-utils';
-import { sql } from 'drizzle-orm';
+import { Message as SDKMessage } from '@ai-sdk/ui-utils';
+import { InferInsertModel, InferSelectModel, sql } from 'drizzle-orm';
 import {
   boolean,
   foreignKey,
   index,
   integer,
   jsonb,
+  PgEnum,
   pgEnum,
   pgPolicy,
   pgRole,
@@ -21,9 +22,19 @@ import { CloudSQLInstanceInfo } from '../gcp/cloudsql';
 
 export const authenticatedUser = pgRole('authenticated_user', { inherit: true });
 
+type InferEnumType<T extends PgEnum<any>> = T extends PgEnum<infer U> ? U[number] : never;
+
 export const scheduleStatus = pgEnum('schedule_status', ['disabled', 'scheduled', 'running']);
+export type ScheduleStatus = InferEnumType<typeof scheduleStatus>;
+
 export const notificationLevel = pgEnum('notification_level', ['info', 'warning', 'alert']);
+export type NotificationLevel = InferEnumType<typeof notificationLevel>;
+
 export const memberRole = pgEnum('member_role', ['owner', 'member']);
+export type MemberRole = InferEnumType<typeof memberRole>;
+
+export const cloudProvider = pgEnum('cloud_provider', ['aws', 'gcp', 'other']);
+export type CloudProvider = InferEnumType<typeof cloudProvider>;
 
 export const awsClusters = pgTable(
   'aws_clusters',
@@ -53,6 +64,9 @@ export const awsClusters = pgTable(
   ]
 );
 
+export type AWSCluster = InferSelectModel<typeof awsClusters>;
+export type AWSClusterInsert = InferInsertModel<typeof awsClusters>;
+
 export const connections = pgTable(
   'connections',
   {
@@ -81,6 +95,9 @@ export const connections = pgTable(
     })
   ]
 );
+
+export type Connection = InferSelectModel<typeof connections>;
+export type ConnectionInsert = InferInsertModel<typeof connections>;
 
 export const connectionInfo = pgTable(
   'connection_info',
@@ -116,6 +133,9 @@ export const connectionInfo = pgTable(
   ]
 );
 
+export type ConnectionInfo = InferSelectModel<typeof connectionInfo>;
+export type ConnectionInfoInsert = InferInsertModel<typeof connectionInfo>;
+
 export const integrations = pgTable(
   'integrations',
   {
@@ -142,6 +162,9 @@ export const integrations = pgTable(
     })
   ]
 );
+
+export type Integration = InferSelectModel<typeof integrations>;
+export type IntegrationInsert = InferInsertModel<typeof integrations>;
 
 export const awsClusterConnections = pgTable(
   'aws_cluster_connections',
@@ -181,6 +204,9 @@ export const awsClusterConnections = pgTable(
   ]
 );
 
+export type AWSClusterConnection = InferSelectModel<typeof awsClusterConnections>;
+export type AWSClusterConnectionInsert = InferInsertModel<typeof awsClusterConnections>;
+
 export const gcpInstances = pgTable(
   'gcp_instances',
   {
@@ -208,6 +234,9 @@ export const gcpInstances = pgTable(
     })
   ]
 );
+
+export type GCPInstance = InferSelectModel<typeof gcpInstances>;
+export type GCPInstanceInsert = InferInsertModel<typeof gcpInstances>;
 
 export const gcpInstanceConnections = pgTable(
   'gcp_instance_connections',
@@ -246,6 +275,9 @@ export const gcpInstanceConnections = pgTable(
     })
   ]
 );
+
+export type GCPInstanceConnection = InferSelectModel<typeof gcpInstanceConnections>;
+export type GCPInstanceConnectionInsert = InferInsertModel<typeof gcpInstanceConnections>;
 
 export const schedules = pgTable(
   'schedules',
@@ -298,6 +330,9 @@ export const schedules = pgTable(
   ]
 );
 
+export type Schedule = InferSelectModel<typeof schedules>;
+export type ScheduleInsert = InferInsertModel<typeof schedules>;
+
 export const scheduleRuns = pgTable(
   'schedule_runs',
   {
@@ -308,7 +343,7 @@ export const scheduleRuns = pgTable(
     result: text('result').notNull(),
     summary: text('summary'),
     notificationLevel: notificationLevel('notification_level').default('info').notNull(),
-    messages: jsonb('messages').$type<Message[]>().notNull()
+    messages: jsonb('messages').$type<SDKMessage[]>().notNull()
   },
   (table) => [
     foreignKey({
@@ -336,7 +371,8 @@ export const scheduleRuns = pgTable(
   ]
 );
 
-export const cloudProvider = pgEnum('cloud_provider', ['aws', 'gcp', 'other']);
+export type ScheduleRun = InferSelectModel<typeof scheduleRuns>;
+export type ScheduleRunInsert = InferInsertModel<typeof scheduleRuns>;
 
 export const projects = pgTable(
   'projects',
@@ -378,6 +414,9 @@ export const projects = pgTable(
   ]
 );
 
+export type Project = InferSelectModel<typeof projects>;
+export type ProjectInsert = InferInsertModel<typeof projects>;
+
 export const projectMembers = pgTable(
   'project_members',
   {
@@ -404,6 +443,9 @@ export const projectMembers = pgTable(
     })
   ]
 );
+
+export type ProjectMember = InferSelectModel<typeof projectMembers>;
+export type ProjectMemberInsert = InferInsertModel<typeof projectMembers>;
 
 export const playbooks = pgTable(
   'playbooks',
@@ -435,3 +477,6 @@ export const playbooks = pgTable(
     })
   ]
 );
+
+export type Playbook = InferSelectModel<typeof playbooks>;
+export type PlaybookInsert = InferInsertModel<typeof playbooks>;

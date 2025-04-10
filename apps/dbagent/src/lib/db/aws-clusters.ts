@@ -3,7 +3,7 @@
 import { eq } from 'drizzle-orm';
 import { RDSClusterDetailedInfo } from '../aws/rds';
 import { DBAccess } from './db';
-import { awsClusterConnections, awsClusters } from './schema';
+import { awsClusterConnections, AWSClusterInsert, awsClusters } from './schema';
 
 export type AWSCluster = {
   id: string;
@@ -13,7 +13,7 @@ export type AWSCluster = {
   data: RDSClusterDetailedInfo;
 };
 
-export async function saveCluster(dbAccess: DBAccess, cluster: Omit<AWSCluster, 'id'>): Promise<string> {
+export async function saveCluster(dbAccess: DBAccess, cluster: AWSClusterInsert): Promise<string> {
   return dbAccess.query(async ({ db }) => {
     const result = await db
       .insert(awsClusters)

@@ -1,5 +1,7 @@
 import { streamText } from 'ai';
-import { getChatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
+import { auth } from '~/auth';
+import { getChatSystemPrompt, getModelInstance } from '~/lib/ai/agent';
+import { getTools } from '~/lib/ai/tools';
 import { getConnection } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 import { getProjectById } from '~/lib/db/projects';
@@ -29,6 +31,12 @@ function errorHandler(error: unknown) {
 export async function POST(req: Request) {
   const { messages, connectionId, model } = await req.json();
 
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
   const dbAccess = await getUserSessionDBAccess();
   const connection = await getConnection(dbAccess, connectionId);
   if (!connection) {
@@ -39,14 +47,11 @@ export async function POST(req: Request) {
     return new Response('Project not found', { status: 404 });
   }
   try {
-    const context = getChatSystemPrompt(project.cloudProvider);
-
-    console.log(context);
-
+    const context = getChatSystemPrompt({ cloudProvider: project.cloudProvider });
     const modelInstance = getModelInstance(model);
 
     const targetDb = getTargetDbPool(connection.connectionString);
-    const tools = await getTools(project, connection, targetDb);
+    const tools = await getTools({ project, connection, targetDb, userId });
     const result = streamText({
       model: modelInstance,
       messages,
