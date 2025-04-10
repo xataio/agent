@@ -49,10 +49,11 @@ the max execution time in seconds, the mean execution time in seconds, the total
 (all calls together) in seconds, and the query itself.`,
       parameters: z.object({}),
       execute: async () => {
-        console.log('getSlowQueries');
-        const slowQueries = await withPoolConnection(pool, async (client) => await toolGetSlowQueries(client, 2000));
-        console.log('slowQueries', JSON.stringify(slowQueries));
-        return JSON.stringify(slowQueries);
+        try {
+          return await withPoolConnection(pool, async (client) => await toolGetSlowQueries(client, 2000));
+        } catch (error) {
+          return `Error getting slow queries: ${error}`;
+        }
       }
     });
   }
@@ -68,15 +69,17 @@ If you know the schema, pass it in as well.`,
         schema: z.string(),
         query: z.string()
       }),
-      execute: async ({ schema, query }) => {
-        if (!schema) {
-          schema = 'public';
-        }
-        const explain = await withPoolConnection(pool, async (client) => await toolExplainQuery(client, schema, query));
-        if (explain) {
+      execute: async ({ schema = 'public', query }) => {
+        try {
+          const explain = await withPoolConnection(
+            pool,
+            async (client) => await toolExplainQuery(client, schema, query)
+          );
+          if (!explain) return 'Could not run EXPLAIN on the query';
+
           return explain;
-        } else {
-          return 'Could not run EXPLAIN on the query';
+        } catch (error) {
+          return `Error running EXPLAIN on the query: ${error}`;
         }
       }
     });
@@ -90,11 +93,12 @@ If you know the schema, pass it in as well.`,
         schema: z.string(),
         table: z.string()
       }),
-      execute: async ({ schema, table }) => {
-        if (!schema) {
-          schema = 'public';
+      execute: async ({ schema = 'public', table }) => {
+        try {
+          return await withPoolConnection(pool, async (client) => await toolDescribeTable(client, schema, table));
+        } catch (error) {
+          return `Error describing table: ${error}`;
         }
-        return await withPoolConnection(pool, async (client) => await toolDescribeTable(client, schema, table));
       }
     });
   }
@@ -107,7 +111,11 @@ If you know the schema, pass it in as well.`,
         table: z.string()
       }),
       execute: async ({ table }) => {
-        return await withPoolConnection(pool, async (client) => await toolFindTableSchema(client, table));
+        try {
+          return await withPoolConnection(pool, async (client) => await toolFindTableSchema(client, table));
+        } catch (error) {
+          return `Error finding table schema: ${error}`;
+        }
       }
     });
   }
@@ -118,7 +126,11 @@ If you know the schema, pass it in as well.`,
       description: `Get the currently active queries.`,
       parameters: z.object({}),
       execute: async () => {
-        return await withPoolConnection(pool, toolCurrentActiveQueries);
+        try {
+          return await withPoolConnection(pool, toolCurrentActiveQueries);
+        } catch (error) {
+          return `Error getting current active queries: ${error}`;
+        }
       }
     });
   }
@@ -129,7 +141,11 @@ If you know the schema, pass it in as well.`,
       description: `Get the queries that are currently blocked waiting on locks.`,
       parameters: z.object({}),
       execute: async () => {
-        return await withPoolConnection(pool, toolGetQueriesWaitingOnLocks);
+        try {
+          return await withPoolConnection(pool, toolGetQueriesWaitingOnLocks);
+        } catch (error) {
+          return `Error getting queries waiting on locks: ${error}`;
+        }
       }
     });
   }
@@ -140,7 +156,11 @@ If you know the schema, pass it in as well.`,
       description: `Get the vacuum stats for the top tables in the database. They are sorted by the number of dead tuples descending.`,
       parameters: z.object({}),
       execute: async () => {
-        return await withPoolConnection(pool, toolGetVacuumStats);
+        try {
+          return await withPoolConnection(pool, toolGetVacuumStats);
+        } catch (error) {
+          return `Error getting vacuum stats: ${error}`;
+        }
       }
     });
   }
@@ -151,7 +171,11 @@ If you know the schema, pass it in as well.`,
       description: `Get the connections stats for the database.`,
       parameters: z.object({}),
       execute: async () => {
-        return await withPoolConnection(pool, toolGetConnectionsStats);
+        try {
+          return await withPoolConnection(pool, toolGetConnectionsStats);
+        } catch (error) {
+          return `Error getting connections stats: ${error}`;
+        }
       }
     });
   }
@@ -162,7 +186,11 @@ If you know the schema, pass it in as well.`,
       description: `Get the connections groups for the database. This is a view in the pg_stat_activity table, grouped by (state, user, application_name, client_addr, wait_event_type, wait_event).`,
       parameters: z.object({}),
       execute: async () => {
-        return await withPoolConnection(pool, toolGetConnectionsGroups);
+        try {
+          return await withPoolConnection(pool, toolGetConnectionsGroups);
+        } catch (error) {
+          return `Error getting connections groups: ${error}`;
+        }
       }
     });
   }
@@ -173,7 +201,11 @@ If you know the schema, pass it in as well.`,
       description: `Get the performance and vacuum settings for the database.`,
       parameters: z.object({}),
       execute: async () => {
-        return await withPoolConnection(pool, getPerformanceAndVacuumSettings);
+        try {
+          return await withPoolConnection(pool, getPerformanceAndVacuumSettings);
+        } catch (error) {
+          return `Error getting performance and vacuum settings: ${error}`;
+        }
       }
     });
   }
