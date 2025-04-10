@@ -1,7 +1,7 @@
 import { Message } from '@ai-sdk/ui-utils';
 import { generateId, generateObject, generateText, LanguageModelV1 } from 'ai';
 import { z } from 'zod';
-import { getModelInstance, getMonitoringSystemPrompt, getTools } from '../ai/aidba';
+import { getModelInstance, getMonitoringSystemPrompt, getTools } from '../ai/agent';
 import { Connection, getConnectionFromSchedule } from '../db/connections';
 import { DBAccess } from '../db/db';
 import { getProjectById, Project } from '../db/projects';
