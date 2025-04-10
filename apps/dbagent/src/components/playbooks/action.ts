@@ -9,7 +9,7 @@ import { getUserDBAccess, getUserSessionDBAccess } from '~/lib/db/db';
 import { getSchedulesByUserIdAndProjectId } from '~/lib/db/schedules';
 import { Schedule } from '~/lib/db/schema';
 import {
-  customPlaybook,
+  CustomPlaybook,
   getCustomPlaybook,
   getCustomPlaybooks,
   getListOfCustomPlaybooksNames
@@ -59,7 +59,7 @@ export async function actionGeneratePlaybookContent(name: string, description: s
 }
 
 //playbook db get
-export async function actionGetCustomPlaybooks(projectId: string, asUserId?: string): Promise<customPlaybook[]> {
+export async function actionGetCustomPlaybooks(projectId: string, asUserId?: string): Promise<CustomPlaybook[]> {
   const dbAccess = await getUserDBAccess(asUserId);
   return getCustomPlaybooks(dbAccess, projectId);
 }
@@ -69,7 +69,7 @@ export async function actionGetCustomPlaybook(
   projectId: string,
   id: string,
   asUserId?: string
-): Promise<customPlaybook> {
+): Promise<CustomPlaybook> {
   const dbAccess = await getUserDBAccess(asUserId);
   return getCustomPlaybook(dbAccess, projectId, id);
 }
@@ -81,7 +81,7 @@ export async function actionListCustomPlaybooksNames(projectId: string, asUserId
 }
 
 //playbook db insert
-export async function actionCreatePlaybook(input: customPlaybook): Promise<Playbook> {
+export async function actionCreatePlaybook(input: CustomPlaybook): Promise<Playbook> {
   const session = await auth();
   const userId = session?.user?.id ?? '';
   console.log('Creating playbook {input: ', input, '}');

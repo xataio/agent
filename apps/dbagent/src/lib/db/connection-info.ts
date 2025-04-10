@@ -3,7 +3,7 @@
 import { and, eq } from 'drizzle-orm';
 import { PerformanceSetting, PgExtension, TableStat } from '../targetdb/db';
 import { DBAccess } from './db';
-import { ConnectionInfo, connectionInfo } from './schema';
+import { connectionInfo, ConnectionInfoInsert } from './schema';
 
 type ConnectionInfoDataTypes =
   | {
@@ -25,7 +25,7 @@ type ConnectionInfoDataTypes =
 
 export async function saveConnectionInfo(
   dbAccess: DBAccess,
-  { projectId, connectionId, type, data }: Omit<ConnectionInfo & ConnectionInfoDataTypes, 'id'>
+  { projectId, connectionId, type, data }: ConnectionInfoInsert & ConnectionInfoDataTypes
 ) {
   return dbAccess.query(async ({ db }) => {
     await db
