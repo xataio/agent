@@ -1,12 +1,13 @@
+import { DBAccess } from '~/lib/db/db';
 import { getConnectionInfo } from '../db/connection-info';
-import { Connection } from '../db/connections';
 import { getProjectById } from '../db/projects';
-import { findTableSchema, getPerformanceSettings, getVacuumSettings } from '../targetdb/db';
+import { Connection } from '../db/schema';
+import { ClientBase, findTableSchema, getPerformanceSettings, getVacuumSettings } from '../targetdb/db';
 
-export async function getTablesAndInstanceInfo(connection: Connection, asUserId?: string): Promise<string> {
+export async function getTablesAndInstanceInfo(dbAccess: DBAccess, connection: Connection): Promise<string> {
   try {
-    const tables = await getConnectionInfo(connection.id, 'tables', asUserId);
-    const project = await getProjectById(connection.projectId, asUserId);
+    const tables = await getConnectionInfo(dbAccess, connection.id, 'tables');
+    const project = await getProjectById(dbAccess, connection.projectId);
 
     return `
 Here are the tables, their sizes, and usage counts:
@@ -23,9 +24,9 @@ ${JSON.stringify(project)}
   }
 }
 
-export async function getPerformanceAndVacuumSettings(connString: string): Promise<string> {
-  const performanceSettings = await getPerformanceSettings(connString);
-  const vacuumSettings = await getVacuumSettings(connString);
+export async function getPerformanceAndVacuumSettings(client: ClientBase): Promise<string> {
+  const performanceSettings = await getPerformanceSettings(client);
+  const vacuumSettings = await getVacuumSettings(client);
 
   return `
 Performance settings: ${JSON.stringify(performanceSettings)}
@@ -33,14 +34,14 @@ Vacuum settings: ${JSON.stringify(vacuumSettings)}
 `;
 }
 
-export async function getPostgresExtensions(connection: Connection, asUserId?: string): Promise<string> {
-  const extensions = await getConnectionInfo(connection.id, 'extensions', asUserId);
+export async function getPostgresExtensions(dbAccess: DBAccess, connection: Connection): Promise<string> {
+  const extensions = await getConnectionInfo(dbAccess, connection.id, 'extensions');
   return `Extensions: ${JSON.stringify(extensions)}`;
 }
 
-export async function toolFindTableSchema(connString: string, tableName: string): Promise<string> {
+export async function toolFindTableSchema(client: ClientBase, tableName: string): Promise<string> {
   try {
-    const result = await findTableSchema(connString, tableName);
+    const result = await findTableSchema(client, tableName);
     return result;
   } catch (error) {
     console.error('Error finding schema for table', error);

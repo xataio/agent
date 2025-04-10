@@ -2,8 +2,8 @@
 
 import { eq } from 'drizzle-orm';
 import { RDSClusterDetailedInfo } from '../aws/rds';
-import { queryDb } from './db';
-import { awsClusterConnections, awsClusters } from './schema';
+import { DBAccess } from './db';
+import { awsClusterConnections, AWSClusterInsert, awsClusters } from './schema';
 
 export type AWSCluster = {
   id: string;
@@ -13,8 +13,8 @@ export type AWSCluster = {
   data: RDSClusterDetailedInfo;
 };
 
-export async function saveCluster(cluster: Omit<AWSCluster, 'id'>): Promise<string> {
-  return queryDb(async ({ db }) => {
+export async function saveCluster(dbAccess: DBAccess, cluster: AWSClusterInsert): Promise<string> {
+  return dbAccess.query(async ({ db }) => {
     const result = await db
       .insert(awsClusters)
       .values(cluster)
@@ -33,16 +33,19 @@ export async function saveCluster(cluster: Omit<AWSCluster, 'id'>): Promise<stri
   });
 }
 
-export async function associateClusterConnection({
-  projectId,
-  clusterId,
-  connectionId
-}: {
-  projectId: string;
-  clusterId: string;
-  connectionId: string;
-}): Promise<void> {
-  return queryDb(async ({ db }) => {
+export async function associateClusterConnection(
+  dbAccess: DBAccess,
+  {
+    projectId,
+    clusterId,
+    connectionId
+  }: {
+    projectId: string;
+    clusterId: string;
+    connectionId: string;
+  }
+): Promise<void> {
+  return dbAccess.query(async ({ db }) => {
     await db.insert(awsClusterConnections).values({
       projectId,
       clusterId,
@@ -51,25 +54,20 @@ export async function associateClusterConnection({
   });
 }
 
-export async function getClusterByConnection(connectionId: string, asUserId?: string): Promise<AWSCluster | null> {
-  return queryDb(
-    async ({ db }) => {
-      const result = await db
-        .select()
-        .from(awsClusters)
-        .innerJoin(awsClusterConnections, eq(awsClusterConnections.clusterId, awsClusters.id))
-        .where(eq(awsClusterConnections.connectionId, connectionId))
-        .limit(1);
-      return result[0]?.aws_clusters ?? null;
-    },
-    {
-      asUserId: asUserId
-    }
-  );
+export async function getClusterByConnection(dbAccess: DBAccess, connectionId: string): Promise<AWSCluster | null> {
+  return dbAccess.query(async ({ db }) => {
+    const result = await db
+      .select()
+      .from(awsClusters)
+      .innerJoin(awsClusterConnections, eq(awsClusterConnections.clusterId, awsClusters.id))
+      .where(eq(awsClusterConnections.connectionId, connectionId))
+      .limit(1);
+    return result[0]?.aws_clusters ?? null;
+  });
 }
 
-export async function getClusters(projectId: string): Promise<AWSCluster[]> {
-  return queryDb(async ({ db }) => {
+export async function getClusters(dbAccess: DBAccess, projectId: string): Promise<AWSCluster[]> {
+  return dbAccess.query(async ({ db }) => {
     return await db.select().from(awsClusters).where(eq(awsClusters.projectId, projectId));
   });
 }

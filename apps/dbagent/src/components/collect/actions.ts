@@ -1,31 +1,31 @@
 'use server';
 
 import { getConnectionInfo, saveConnectionInfo } from '~/lib/db/connection-info';
-import { Connection } from '~/lib/db/connections';
+import { getUserSessionDBAccess } from '~/lib/db/db';
+import { Connection } from '~/lib/db/schema';
 import {
   getExtensions,
   getPerformanceSettings,
   getTableStats,
-  getTargetDbConnection,
   getVacuumSettings,
   PerformanceSetting,
   PgExtension,
-  TableStat
+  TableStat,
+  withTargetDbConnection
 } from '~/lib/targetdb/db';
 
 export async function collectInfo(connection: Connection | undefined) {
   if (!connection) {
     return { success: false, message: 'No connection selected' };
   }
-  const client = await getTargetDbConnection(connection.connectionString);
-  try {
-    const result = await client.query('SELECT * FROM public.test');
-    return { success: true, message: 'Info collected successfully', data: result.rows };
-  } catch (error) {
-    return { success: false, message: `Error collecting info: ${error}` };
-  } finally {
-    await client.end();
-  }
+  return await withTargetDbConnection(connection.connectionString, async (client) => {
+    try {
+      const result = await client.query('SELECT * FROM public.test');
+      return { success: true, message: 'Info collected successfully', data: result.rows };
+    } catch (error) {
+      return { success: false, message: `Error collecting info: ${error}` };
+    }
+  });
 }
 
 export async function collectTables(
@@ -36,12 +36,18 @@ export async function collectTables(
   }
   let data: TableStat[] = [];
   try {
-    data = await getTableStats(connection.connectionString);
+    data = await withTargetDbConnection(connection.connectionString, getTableStats);
   } catch (error) {
     return { success: false, message: `Error collecting tables: ${error}`, data: [] };
   }
+  const dbAccess = await getUserSessionDBAccess();
   try {
-    await saveConnectionInfo({ projectId: connection.projectId, connectionId: connection.id, type: 'tables', data });
+    await saveConnectionInfo(dbAccess, {
+      projectId: connection.projectId,
+      connectionId: connection.id,
+      type: 'tables',
+      data
+    });
   } catch (error) {
     return { success: false, message: `Error saving tables: ${error}`, data: [] };
   }
@@ -60,12 +66,13 @@ export async function collectExtensions(
   }
   let data: PgExtension[] = [];
   try {
-    data = await getExtensions(connection.connectionString);
+    data = await withTargetDbConnection(connection.connectionString, getExtensions);
   } catch (error) {
     return { success: false, message: `Error collecting extensions: ${error}`, data: [] };
   }
+  const dbAccess = await getUserSessionDBAccess();
   try {
-    await saveConnectionInfo({
+    await saveConnectionInfo(dbAccess, {
       projectId: connection.projectId,
       connectionId: connection.id,
       type: 'extensions',
@@ -85,12 +92,13 @@ export async function collectPerformanceSettings(
   }
   let data: PerformanceSetting[] = [];
   try {
-    data = await getPerformanceSettings(connection.connectionString);
+    data = await withTargetDbConnection(connection.connectionString, getPerformanceSettings);
   } catch (error) {
     return { success: false, message: `Error collecting performance settings: ${error}`, data: [] };
   }
+  const dbAccess = await getUserSessionDBAccess();
   try {
-    await saveConnectionInfo({
+    await saveConnectionInfo(dbAccess, {
       projectId: connection.projectId,
       connectionId: connection.id,
       type: 'performance_settings',
@@ -110,12 +118,13 @@ export async function collectVacuumData(
   }
   let data: PerformanceSetting[] = [];
   try {
-    data = await getVacuumSettings(connection.connectionString);
+    data = await withTargetDbConnection(connection.connectionString, getVacuumSettings);
   } catch (error) {
     return { success: false, message: `Error collecting vacuum data: ${error}`, data: [] };
   }
+  const dbAccess = await getUserSessionDBAccess();
   try {
-    await saveConnectionInfo({
+    await saveConnectionInfo(dbAccess, {
       projectId: connection.projectId,
       connectionId: connection.id,
       type: 'vacuum_settings',
@@ -140,11 +149,13 @@ export async function getCollectInfo(
   if (!connection) {
     return { success: false, message: 'No connection selected', data: null };
   }
+
+  const dbAccess = await getUserSessionDBAccess();
   try {
-    const tables = await getConnectionInfo(connection.id, 'tables');
-    const extensions = await getConnectionInfo(connection.id, 'extensions');
-    const performance_settings = await getConnectionInfo(connection.id, 'performance_settings');
-    const vacuum_settings = await getConnectionInfo(connection.id, 'vacuum_settings');
+    const tables = await getConnectionInfo(dbAccess, connection.id, 'tables');
+    const extensions = await getConnectionInfo(dbAccess, connection.id, 'extensions');
+    const performance_settings = await getConnectionInfo(dbAccess, connection.id, 'performance_settings');
+    const vacuum_settings = await getConnectionInfo(dbAccess, connection.id, 'vacuum_settings');
     if (!tables || !extensions || !performance_settings || !vacuum_settings) {
       return { success: true, message: 'No data found', data: null };
     }

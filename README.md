@@ -90,6 +90,7 @@ While it's still early days, we are using the agent ourself in our day-to-day op
   - [x] investigate high connection count
   - [ ] investigate locks
   - [ ] investigate vacuuming
+  - [x] Support for custom playbooks
   - Other playbooks (please let us know)
 - MCP integrations:
   - [ ] Act as an MCP server for other agents
@@ -97,7 +98,7 @@ While it's still early days, we are using the agent ourself in our day-to-day op
 - Support for more cloud providers:
   - [x] AWS RDS
   - [x] AWS Aurora
-  - [ ] Google Cloud SQL
+  - [x] Google Cloud SQL
   - [ ] Azure Database for PostgreSQL
   - [ ] Digital Ocean Managed Databases
   - [ ] Other (please let us know)
@@ -107,7 +108,7 @@ While it's still early days, we are using the agent ourself in our day-to-day op
   - [ ] Discord integration
   - [ ] Other (please let us know)
 - Eval & testing:
-  - [ ] Add eval testing for the interaction with LLMs (https://github.com/xataio/agent/pull/38)
+  - [x] Add eval testing for the interaction with LLMs
 - Approval workflow:
   - [ ] Add an approval workflow for the agent to run potentially dangerous statements
   - [ ] Allow configuration of the tools that can be defined per monitoring schedule

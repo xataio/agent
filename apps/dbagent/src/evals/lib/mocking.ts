@@ -3,15 +3,15 @@ import * as connectionInfoExports from '~/lib/db/connection-info';
 import * as projectsExports from '~/lib/db/projects';
 
 export const mockGetProjectsById = () => {
-  vi.spyOn(projectsExports, 'getProjectById').mockImplementation(async (id) => {
-    return { id, name: 'project name' };
+  vi.spyOn(projectsExports, 'getProjectById').mockImplementation(async (db, id) => {
+    return { id, name: 'project name', cloudProvider: 'aws' };
   });
 };
 
 type GetConnectionInfoFunc = typeof connectionInfoExports.getConnectionInfo;
 
 // @ts-expect-error
-const defaultMock: GetConnectionInfoFunc = async (_connectionId, key) => {
+const defaultMock: GetConnectionInfoFunc = async (_db, _connectionId, key) => {
   if (key === 'tables') {
     return [
       {

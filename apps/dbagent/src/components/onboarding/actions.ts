@@ -3,28 +3,41 @@
 import { getClusters } from '~/lib/db/aws-clusters';
 import { getConnectionInfo } from '~/lib/db/connection-info';
 import { getDefaultConnection } from '~/lib/db/connections';
+import { getUserSessionDBAccess } from '~/lib/db/db';
+import { getInstances } from '~/lib/db/gcp-instances';
 import { getIntegration } from '~/lib/db/integrations';
+import { getProjectById } from '~/lib/db/projects';
 
 // Server action to get completed tasks
 export async function getCompletedTasks(projectId: string): Promise<string[]> {
+  const dbAccess = await getUserSessionDBAccess();
+
   const completedTasks: string[] = [];
-  const connection = await getDefaultConnection(projectId);
+  const connection = await getDefaultConnection(dbAccess, projectId);
   if (!connection) {
     return [];
   }
   completedTasks.push('connect');
 
-  const tables = await getConnectionInfo(connection.id, 'tables');
+  const tables = await getConnectionInfo(dbAccess, connection.id, 'tables');
   if (tables) {
     completedTasks.push('collect');
   }
 
-  const clusters = await getClusters(projectId);
-  if (clusters.length > 0) {
-    completedTasks.push('cloud');
+  const project = await getProjectById(dbAccess, projectId);
+  if (project?.cloudProvider === 'aws') {
+    const clusters = await getClusters(dbAccess, projectId);
+    if (clusters.length > 0) {
+      completedTasks.push('cloud');
+    }
+  } else if (project?.cloudProvider === 'gcp') {
+    const instances = await getInstances(dbAccess, projectId);
+    if (instances.length > 0) {
+      completedTasks.push('cloud');
+    }
   }
 
-  const slack = await getIntegration(projectId, 'slack');
+  const slack = await getIntegration(dbAccess, projectId, 'slack');
   if (slack) {
     completedTasks.push('notifications');
   }

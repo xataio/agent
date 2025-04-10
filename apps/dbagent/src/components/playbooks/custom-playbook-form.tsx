@@ -5,13 +5,13 @@ import { ArrowLeft, TrashIcon, Wand2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { getSchedulesByUserIdAndProjectId } from '~/lib/db/schedules';
 import { Playbook } from '~/lib/tools/playbooks';
 import {
   actionCreatePlaybook,
   actionDeletePlaybook,
   actionGeneratePlaybookContent,
   actionGetCustomPlaybook,
+  actionGetSchedulesByUserIdAndProjectId,
   actionUpdatePlaybook
 } from './action';
 
@@ -73,7 +73,7 @@ export function CustomPlaybookForm({ initialData, isEditing = false }: CustomPla
       //if it does, do not delete the playbook
       //if it does not, delete the playbook
       const playbookToDelete = await actionGetCustomPlaybook(project, initialData.id);
-      const schedules = await getSchedulesByUserIdAndProjectId(playbookToDelete.createdBy, project);
+      const schedules = await actionGetSchedulesByUserIdAndProjectId(playbookToDelete.createdBy, project);
       const doesScheduleExistForCustomPlaybook = schedules.find(
         (schedule) => schedule.playbook === playbookToDelete.name
       );

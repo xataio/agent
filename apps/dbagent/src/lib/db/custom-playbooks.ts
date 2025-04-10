@@ -1,32 +1,29 @@
 'use server';
 
 import { and, eq } from 'drizzle-orm';
-import { queryDb } from '~/lib/db/db';
+import { DBAccess } from '~/lib/db/db';
 import { playbooks } from '~/lib/db/schema';
-import { customPlaybook } from '~/lib/tools/custom-playbooks';
+import { CustomPlaybook } from '~/lib/tools/custom-playbooks';
 import { Playbook } from '~/lib/tools/playbooks';
 
-export async function dbGetCustomPlaybooks(projectId: string, asUserId?: string) {
-  return await queryDb(
-    async ({ db }) => {
-      const results = await db.select().from(playbooks).where(eq(playbooks.projectId, projectId));
+export async function dbGetCustomPlaybooks(dbAccess: DBAccess, projectId: string) {
+  return await dbAccess.query(async ({ db }) => {
+    const results = await db.select().from(playbooks).where(eq(playbooks.projectId, projectId));
 
-      return results.map((playbook) => ({
-        name: playbook.name,
-        description: playbook.description || '',
-        content: playbook.content as string,
-        id: playbook.id,
-        projectId: playbook.projectId,
-        isBuiltIn: false,
-        createdBy: playbook.createdBy
-      }));
-    },
-    { asUserId }
-  );
+    return results.map((playbook) => ({
+      name: playbook.name,
+      description: playbook.description || '',
+      content: playbook.content as string,
+      id: playbook.id,
+      projectId: playbook.projectId,
+      isBuiltIn: false,
+      createdBy: playbook.createdBy
+    }));
+  });
 }
 
-export async function dbCreatePlaybook(input: customPlaybook): Promise<Playbook> {
-  return await queryDb(async ({ db, userId }) => {
+export async function dbCreatePlaybook(dbAccess: DBAccess, input: CustomPlaybook): Promise<Playbook> {
+  return await dbAccess.query(async ({ db, userId }) => {
     //checks if playbooks with same name and id in db
     const existingPlaybook = await db
       .select()
@@ -67,10 +64,11 @@ export async function dbCreatePlaybook(input: customPlaybook): Promise<Playbook>
 }
 
 export async function dbUpdatePlaybook(
+  dbAccess: DBAccess,
   id: string,
   input: { description?: string; content?: string }
 ): Promise<Playbook | null> {
-  return await queryDb(async ({ db }) => {
+  return await dbAccess.query(async ({ db }) => {
     const result = await db
       .update(playbooks)
       .set({
@@ -95,8 +93,8 @@ export async function dbUpdatePlaybook(
   });
 }
 
-export async function dbDeletePlaybook(id: string): Promise<void> {
-  return await queryDb(async ({ db }) => {
+export async function dbDeletePlaybook(dbAccess: DBAccess, id: string): Promise<void> {
+  return await dbAccess.query(async ({ db }) => {
     const result = await db.delete(playbooks).where(eq(playbooks.id, id)).returning();
 
     if (result.length === 0) {
