@@ -5,8 +5,8 @@ import { CheckIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Connection, listConnections } from '~/lib/db/connections';
-import { actionMakeConnectionDefault } from './actions';
+import { Connection } from '~/lib/db/schema';
+import { actionListConnections, actionMakeConnectionDefault } from './actions';
 
 function maskConnectionString(connString: string): string {
   // Handle URL format for both postgresql:// and postgres:// prefixes
@@ -23,7 +23,7 @@ export function ConnectionsList() {
 
   useEffect(() => {
     const loadConnections = async () => {
-      const connections = await listConnections(project);
+      const connections = await actionListConnections(project);
       if (connections.length === 0) {
         router.push(`/projects/${project}/start/connect/add`);
         return;

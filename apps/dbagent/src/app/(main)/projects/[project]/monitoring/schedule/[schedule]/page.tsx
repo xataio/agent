@@ -1,17 +1,16 @@
+import { getProjectConnectionList } from '~/app/(main)/projects/[project]/actions';
 import { actionListPlaybooks } from '~/components/monitoring/actions';
 import { ScheduleForm } from '~/components/monitoring/schedule-form';
-import { listConnections } from '~/lib/db/connections';
+import { actionListCustomPlaybooksNames } from '~/components/playbooks/action';
 
-type PageParams = {
-  project: string;
-  schedule: string;
-};
-
-export default async function Page({ params }: { params: Promise<PageParams> }) {
+export default async function Page({ params }: { params: Promise<{ project: string; schedule: string }> }) {
   const { project, schedule } = await params;
 
-  const playbooks = await actionListPlaybooks();
-  const connections = await listConnections(project);
+  const builtInPlaybooks = await actionListPlaybooks();
+  const customPlaybooks = (await actionListCustomPlaybooksNames(project)) ?? [];
+  const playbooks = [...builtInPlaybooks, ...customPlaybooks];
+
+  const connections = await getProjectConnectionList(project);
 
   return (
     <div className="container">

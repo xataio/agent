@@ -1,0 +1,1390 @@
+{
+  "id": "84ed400f-173d-425c-b2fa-4766949e6770",
+  "prevId": "f56e92f3-1dcd-495b-8948-8f1cc1c1331c",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.aws_cluster_connections": {
+      "name": "aws_cluster_connections",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cluster_id": {
+          "name": "cluster_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_aws_cluster_conn_cluster_id": {
+          "name": "idx_aws_cluster_conn_cluster_id",
+          "columns": [
+            {
+              "expression": "cluster_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_aws_cluster_conn_connection_id": {
+          "name": "idx_aws_cluster_conn_connection_id",
+          "columns": [
+            {
+              "expression": "connection_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_aws_cluster_conn_project_id": {
+          "name": "idx_aws_cluster_conn_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_aws_cluster_connections_project": {
+          "name": "fk_aws_cluster_connections_project",
+          "tableFrom": "aws_cluster_connections",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "fk_aws_cluster_connections_cluster": {
+          "name": "fk_aws_cluster_connections_cluster",
+          "tableFrom": "aws_cluster_connections",
+          "tableTo": "aws_clusters",
+          "columnsFrom": ["cluster_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "fk_aws_cluster_connections_connection": {
+          "name": "fk_aws_cluster_connections_connection",
+          "tableFrom": "aws_cluster_connections",
+          "tableTo": "connections",
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "aws_cluster_connections_policy": {
+          "name": "aws_cluster_connections_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = aws_cluster_connections.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.aws_clusters": {
+      "name": "aws_clusters",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cluster_identifier": {
+          "name": "cluster_identifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "region": {
+          "name": "region",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'us-east-1'"
+        },
+        "data": {
+          "name": "data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_aws_clusters_project_id": {
+          "name": "idx_aws_clusters_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_aws_clusters_project": {
+          "name": "fk_aws_clusters_project",
+          "tableFrom": "aws_clusters",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uq_aws_clusters_integration_identifier": {
+          "name": "uq_aws_clusters_integration_identifier",
+          "nullsNotDistinct": false,
+          "columns": ["cluster_identifier"]
+        }
+      },
+      "policies": {
+        "aws_clusters_policy": {
+          "name": "aws_clusters_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = aws_clusters.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.connection_info": {
+      "name": "connection_info",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data": {
+          "name": "data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_connection_info_connection_id": {
+          "name": "idx_connection_info_connection_id",
+          "columns": [
+            {
+              "expression": "connection_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_connection_info_project_id": {
+          "name": "idx_connection_info_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_connection_info_project": {
+          "name": "fk_connection_info_project",
+          "tableFrom": "connection_info",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "fk_connections_info_connection": {
+          "name": "fk_connections_info_connection",
+          "tableFrom": "connection_info",
+          "tableTo": "connections",
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uq_connections_info": {
+          "name": "uq_connections_info",
+          "nullsNotDistinct": false,
+          "columns": ["connection_id", "type"]
+        }
+      },
+      "policies": {
+        "connection_info_policy": {
+          "name": "connection_info_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = connection_info.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.connections": {
+      "name": "connections",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_default": {
+          "name": "is_default",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "connection_string": {
+          "name": "connection_string",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_connections_project_id": {
+          "name": "idx_connections_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_connections_project": {
+          "name": "fk_connections_project",
+          "tableFrom": "connections",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uq_connections_name": {
+          "name": "uq_connections_name",
+          "nullsNotDistinct": false,
+          "columns": ["project_id", "name"]
+        },
+        "uq_connections_connection_string": {
+          "name": "uq_connections_connection_string",
+          "nullsNotDistinct": false,
+          "columns": ["project_id", "connection_string"]
+        }
+      },
+      "policies": {
+        "connections_policy": {
+          "name": "connections_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = connections.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.gcp_instance_connections": {
+      "name": "gcp_instance_connections",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "instance_id": {
+          "name": "instance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_gcp_instance_connections_instance_id": {
+          "name": "idx_gcp_instance_connections_instance_id",
+          "columns": [
+            {
+              "expression": "instance_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_gcp_instance_connections_connection_id": {
+          "name": "idx_gcp_instance_connections_connection_id",
+          "columns": [
+            {
+              "expression": "connection_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_gcp_instance_connections_project_id": {
+          "name": "idx_gcp_instance_connections_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_gcp_instance_connections_project": {
+          "name": "fk_gcp_instance_connections_project",
+          "tableFrom": "gcp_instance_connections",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "fk_gcp_instance_connections_instance": {
+          "name": "fk_gcp_instance_connections_instance",
+          "tableFrom": "gcp_instance_connections",
+          "tableTo": "gcp_instances",
+          "columnsFrom": ["instance_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "fk_gcp_instance_connections_connection": {
+          "name": "fk_gcp_instance_connections_connection",
+          "tableFrom": "gcp_instance_connections",
+          "tableTo": "connections",
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "gcp_instance_connections_policy": {
+          "name": "gcp_instance_connections_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = gcp_instance_connections.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.gcp_instances": {
+      "name": "gcp_instances",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "instance_name": {
+          "name": "instance_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "gcp_project_id": {
+          "name": "gcp_project_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data": {
+          "name": "data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_gcp_instances_project_id": {
+          "name": "idx_gcp_instances_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_gcp_instances_project": {
+          "name": "fk_gcp_instances_project",
+          "tableFrom": "gcp_instances",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uq_gcp_instances_instance_name": {
+          "name": "uq_gcp_instances_instance_name",
+          "nullsNotDistinct": false,
+          "columns": ["project_id", "gcp_project_id", "instance_name"]
+        }
+      },
+      "policies": {
+        "gcp_instances_policy": {
+          "name": "gcp_instances_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = gcp_instances.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.integrations": {
+      "name": "integrations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data": {
+          "name": "data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_integrations_project_id": {
+          "name": "idx_integrations_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_integrations_project": {
+          "name": "fk_integrations_project",
+          "tableFrom": "integrations",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uq_integrations_name": {
+          "name": "uq_integrations_name",
+          "nullsNotDistinct": false,
+          "columns": ["project_id", "name"]
+        }
+      },
+      "policies": {
+        "integrations_policy": {
+          "name": "integrations_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = integrations.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.playbooks": {
+      "name": "playbooks",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "content": {
+          "name": "content",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_playbooks_project_id": {
+          "name": "idx_playbooks_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_playbooks_project": {
+          "name": "fk_playbooks_project",
+          "tableFrom": "playbooks",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uq_playbooks_name": {
+          "name": "uq_playbooks_name",
+          "nullsNotDistinct": false,
+          "columns": ["project_id", "name"]
+        }
+      },
+      "policies": {
+        "playbooks_policy": {
+          "name": "playbooks_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = playbooks.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.project_members": {
+      "name": "project_members",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "member_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'member'"
+        },
+        "added_at": {
+          "name": "added_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_project_members_project_id": {
+          "name": "idx_project_members_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_project_members_project": {
+          "name": "fk_project_members_project",
+          "tableFrom": "project_members",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uq_project_members_user_project": {
+          "name": "uq_project_members_user_project",
+          "nullsNotDistinct": false,
+          "columns": ["project_id", "user_id"]
+        }
+      },
+      "policies": {
+        "projects_members_policy": {
+          "name": "projects_members_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "true"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.projects": {
+      "name": "projects",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cloud_provider": {
+          "name": "cloud_provider",
+          "type": "cloud_provider",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'aws'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "projects_view_policy": {
+          "name": "projects_view_policy",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n      SELECT 1 FROM project_members\n      WHERE project_id = projects.id AND user_id = current_setting('app.current_user', true)::TEXT\n    )"
+        },
+        "projects_create_policy": {
+          "name": "projects_create_policy",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": ["authenticated_user"],
+          "withCheck": "true"
+        },
+        "projects_update_policy": {
+          "name": "projects_update_policy",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n      SELECT 1 FROM project_members\n      WHERE project_id = projects.id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'\n    )"
+        },
+        "projects_delete_policy": {
+          "name": "projects_delete_policy",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n      SELECT 1 FROM project_members\n      WHERE project_id = projects.id AND user_id = current_setting('app.current_user', true)::TEXT AND role = 'owner'\n    )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.schedule_runs": {
+      "name": "schedule_runs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "schedule_id": {
+          "name": "schedule_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "result": {
+          "name": "result",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notification_level": {
+          "name": "notification_level",
+          "type": "notification_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'info'"
+        },
+        "messages": {
+          "name": "messages",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_schedule_runs_created_at": {
+          "name": "idx_schedule_runs_created_at",
+          "columns": [
+            {
+              "expression": "schedule_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_schedule_runs_schedule_id": {
+          "name": "idx_schedule_runs_schedule_id",
+          "columns": [
+            {
+              "expression": "schedule_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_schedule_runs_project_id": {
+          "name": "idx_schedule_runs_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_schedule_runs_notification_level": {
+          "name": "idx_schedule_runs_notification_level",
+          "columns": [
+            {
+              "expression": "notification_level",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_schedule_runs_project": {
+          "name": "fk_schedule_runs_project",
+          "tableFrom": "schedule_runs",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "fk_schedule_runs_schedule": {
+          "name": "fk_schedule_runs_schedule",
+          "tableFrom": "schedule_runs",
+          "tableTo": "schedules",
+          "columnsFrom": ["schedule_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "schedule_runs_policy": {
+          "name": "schedule_runs_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = schedule_runs.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.schedules": {
+      "name": "schedules",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "playbook": {
+          "name": "playbook",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "schedule_type": {
+          "name": "schedule_type",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cron_expression": {
+          "name": "cron_expression",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "additional_instructions": {
+          "name": "additional_instructions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "min_interval": {
+          "name": "min_interval",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_interval": {
+          "name": "max_interval",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "enabled": {
+          "name": "enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "last_run": {
+          "name": "last_run",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "next_run": {
+          "name": "next_run",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "schedule_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'disabled'"
+        },
+        "failures": {
+          "name": "failures",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "keep_history": {
+          "name": "keep_history",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 300
+        },
+        "model": {
+          "name": "model",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'openai-gpt-4o'"
+        },
+        "max_steps": {
+          "name": "max_steps",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notify_level": {
+          "name": "notify_level",
+          "type": "notification_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'alert'"
+        },
+        "extra_notification_text": {
+          "name": "extra_notification_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_schedules_project_id": {
+          "name": "idx_schedules_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_schedules_connection_id": {
+          "name": "idx_schedules_connection_id",
+          "columns": [
+            {
+              "expression": "connection_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_schedules_status": {
+          "name": "idx_schedules_status",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_schedules_next_run": {
+          "name": "idx_schedules_next_run",
+          "columns": [
+            {
+              "expression": "next_run",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_schedules_enabled": {
+          "name": "idx_schedules_enabled",
+          "columns": [
+            {
+              "expression": "enabled",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_schedules_project": {
+          "name": "fk_schedules_project",
+          "tableFrom": "schedules",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "fk_schedules_connection": {
+          "name": "fk_schedules_connection",
+          "tableFrom": "schedules",
+          "tableTo": "connections",
+          "columnsFrom": ["connection_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "schedules_policy": {
+          "name": "schedules_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = schedules.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.cloud_provider": {
+      "name": "cloud_provider",
+      "schema": "public",
+      "values": ["aws", "gcp", "other"]
+    },
+    "public.member_role": {
+      "name": "member_role",
+      "schema": "public",
+      "values": ["owner", "member"]
+    },
+    "public.notification_level": {
+      "name": "notification_level",
+      "schema": "public",
+      "values": ["info", "warning", "alert"]
+    },
+    "public.schedule_status": {
+      "name": "schedule_status",
+      "schema": "public",
+      "values": ["disabled", "scheduled", "running"]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {
+    "authenticated_user": {
+      "name": "authenticated_user",
+      "createDb": false,
+      "createRole": false,
+      "inherit": true
+    }
+  },
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

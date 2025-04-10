@@ -1,11 +1,15 @@
 import { Message } from '@ai-sdk/ui-utils';
 import { generateId, generateObject, generateText, LanguageModelV1 } from 'ai';
 import { z } from 'zod';
-import { getModelInstance, getTools, monitoringSystemPrompt } from '../ai/aidba';
-import { Connection, getConnectionFromSchedule } from '../db/connections';
-import { insertScheduleRunLimitHistory, ScheduleRun } from '../db/schedule-runs';
-import { Schedule } from '../db/schedules';
+import { getModelInstance, getMonitoringSystemPrompt } from '../ai/agent';
+import { getTools } from '../ai/tools';
+import { getConnectionFromSchedule } from '../db/connections';
+import { DBAccess } from '../db/db';
+import { getProjectById } from '../db/projects';
+import { insertScheduleRunLimitHistory } from '../db/schedule-runs';
+import { Connection, Project, Schedule } from '../db/schema';
 import { sendScheduleNotification } from '../notifications/slack-webhook';
+import { getTargetDbPool } from '../targetdb/db';
 import { listPlaybooks } from '../tools/playbooks';
 
 type RunModelPlaybookParams = {
@@ -15,6 +19,7 @@ type RunModelPlaybookParams = {
   schedule: Schedule;
   playbook: string;
   additionalInstructions?: string;
+  project: Project;
 };
 
 async function runModelPlaybook({
@@ -23,7 +28,8 @@ async function runModelPlaybook({
   connection,
   schedule,
   playbook,
-  additionalInstructions
+  additionalInstructions,
+  project
 }: RunModelPlaybookParams) {
   messages.push({
     id: generateId(),
@@ -32,25 +38,36 @@ async function runModelPlaybook({
     createdAt: new Date()
   });
 
-  const result = await generateText({
-    model: modelInstance,
-    system: monitoringSystemPrompt,
-    messages: messages,
-    tools: await getTools(connection, schedule.userId),
-    maxSteps: 20
-  });
+  const monitoringSystemPrompt = getMonitoringSystemPrompt({ cloudProvider: project.cloudProvider });
+  const targetDb = getTargetDbPool(connection.connectionString);
+  try {
+    const tools = await getTools({ project, connection, targetDb, userId: schedule.userId });
+    const result = await generateText({
+      model: modelInstance,
+      system: monitoringSystemPrompt,
+      maxSteps: 20,
+      tools,
+      messages
+    });
 
-  messages.push({
-    id: generateId(),
-    role: 'assistant',
-    content: result.text,
-    createdAt: new Date()
-  });
+    messages.push({
+      id: generateId(),
+      role: 'assistant',
+      content: result.text,
+      createdAt: new Date()
+    });
 
-  return result;
+    return result;
+  } finally {
+    await targetDb.end();
+  }
 }
 
-async function decideNotificationLevel(messages: Message[], modelInstance: LanguageModelV1) {
+async function decideNotificationLevel(
+  messages: Message[],
+  modelInstance: LanguageModelV1,
+  monitoringSystemPrompt: string
+) {
   const prompt = `Decide a level of notification for the previous result of the playbook run. Choose one of these levels:
 
 info: Everything is fine, no action is needed.
@@ -86,10 +103,15 @@ Also provide a one sentence summary of the result. It can be something like "No 
   return notificationResult.object;
 }
 
-async function decideNextPlaybook(messages: Message[], schedule: Schedule, modelInstance: LanguageModelV1) {
+async function decideNextPlaybook(
+  messages: Message[],
+  schedule: Schedule,
+  modelInstance: LanguageModelV1,
+  monitoringSystemPrompt: string
+) {
   const prompt = `Based on the previous conversation, would you recommend running another specific playbook.
 These are the playbooks you can choose from: ${listPlaybooks().join(', ')}.
-As you choose the next playbook remember your goals: if the root cause is not clear yet, try to drill down to the root cause. If the root cause is clear, 
+As you choose the next playbook remember your goals: if the root cause is not clear yet, try to drill down to the root cause. If the root cause is clear,
 get actionable steps to fix the issue.
 Return:
 - Whether we should run another playbook (boolean)
@@ -123,8 +145,8 @@ Return:
   return recommendPlaybookResult.object;
 }
 
-async function summarizeResult(messages: Message[], modelInstance: LanguageModelV1) {
-  const prompt = `Summarize the results above and highlight what made you investigate, the root cause, and the recommended actions. 
+async function summarizeResult(messages: Message[], modelInstance: LanguageModelV1, monitoringSystemPrompt: string) {
+  const prompt = `Summarize the results above and highlight what made you investigate, the root cause, and the recommended actions.
 Be as specific as possible, like including the DDL to run. Use the following headers:
 
 Trigger
@@ -165,23 +187,28 @@ function shouldNotify(notifyLevel: 'alert' | 'warning' | 'info', notificationLev
   return levelMap[notificationLevel] >= levelMap[notifyLevel];
 }
 
-export async function runSchedule(schedule: Schedule, now: Date) {
+export async function runSchedule(dbAccess: DBAccess, schedule: Schedule, now: Date) {
   console.log(`Running schedule ${schedule.id}`);
 
-  const connection = await getConnectionFromSchedule(schedule);
+  const connection = await getConnectionFromSchedule(dbAccess, schedule);
   if (!connection) {
     throw new Error(`Connection ${schedule.connectionId} not found`);
   }
-  const modelInstance = getModelInstance(schedule.model);
+  const modelInstance = await getModelInstance(schedule.model);
   const messages: Message[] = [];
-
+  const project = await getProjectById(dbAccess, connection.projectId);
+  if (!project) {
+    throw new Error(`Project ${connection.projectId} not found`);
+  }
+  const monitoringSystemPrompt = getMonitoringSystemPrompt({ cloudProvider: project.cloudProvider });
   const result = await runModelPlaybook({
     messages,
     modelInstance,
     connection,
     schedule,
     playbook: schedule.playbook,
-    additionalInstructions: schedule.additionalInstructions ?? ''
+    additionalInstructions: schedule.additionalInstructions ?? '',
+    project
   });
   messages.push({
     id: generateId(),
@@ -190,14 +217,19 @@ export async function runSchedule(schedule: Schedule, now: Date) {
     createdAt: new Date()
   });
 
-  const notificationResult = await decideNotificationLevel(messages, modelInstance);
+  const notificationResult = await decideNotificationLevel(messages, modelInstance, monitoringSystemPrompt);
   console.log('notificationResult', notificationResult);
 
   // drilling down to more actionable playbooks
   if (schedule.maxSteps && shouldNotify(schedule.notifyLevel, notificationResult.notificationLevel)) {
     let step = 1;
     while (step < schedule.maxSteps) {
-      const recommendPlaybookResult = await decideNextPlaybook(messages, schedule, modelInstance);
+      const recommendPlaybookResult = await decideNextPlaybook(
+        messages,
+        schedule,
+        modelInstance,
+        monitoringSystemPrompt
+      );
       if (!recommendPlaybookResult.shouldRunPlaybook || !recommendPlaybookResult.recommendedPlaybook) {
         break;
       }
@@ -208,28 +240,33 @@ export async function runSchedule(schedule: Schedule, now: Date) {
         connection,
         schedule,
         playbook: nextPlaybook,
-        additionalInstructions: ''
+        additionalInstructions: '',
+        project
       });
       step++;
     }
   }
 
-  const resultText = await summarizeResult(messages, modelInstance);
+  const resultText = await summarizeResult(messages, modelInstance, monitoringSystemPrompt);
 
   // save the result in the database with all messages
-  const scheduleRun: Omit<ScheduleRun, 'id'> = {
-    projectId: connection.projectId,
-    scheduleId: schedule.id,
-    result: resultText,
-    summary: notificationResult.summary,
-    notificationLevel: notificationResult.notificationLevel,
-    messages: messages,
-    createdAt: now.toISOString() // using the start time
-  };
-  const run = await insertScheduleRunLimitHistory(scheduleRun, schedule.keepHistory, schedule.userId);
+  const run = await insertScheduleRunLimitHistory(
+    dbAccess,
+    {
+      projectId: connection.projectId,
+      scheduleId: schedule.id,
+      result: resultText,
+      summary: notificationResult.summary,
+      notificationLevel: notificationResult.notificationLevel,
+      messages: messages,
+      createdAt: now.toISOString() // using the start time
+    },
+    schedule.keepHistory
+  );
 
   if (shouldNotify(schedule.notifyLevel, notificationResult.notificationLevel)) {
     await sendScheduleNotification(
+      dbAccess,
       run,
       schedule,
       connection,

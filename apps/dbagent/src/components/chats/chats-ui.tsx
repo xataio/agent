@@ -20,9 +20,7 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Bot } from '~/components/icons/bot';
 import { ModelInfo } from '~/lib/ai/providers/types';
-import { Connection } from '~/lib/db/connections';
-import { ScheduleRun } from '~/lib/db/schedule-runs';
-import { Schedule } from '~/lib/db/schedules';
+import { Connection, Schedule, ScheduleRun } from '~/lib/db/schema';
 import { actionGetDefaultLanguageModel } from './actions';
 import { ChatSidebar } from './chat-sidebar';
 import { ConnectionSelector } from './conn-selector';
@@ -125,7 +123,7 @@ function ChatsUIContent({
 
   /*useEffect(() => {
     const fetchScheduleRun = async (runId: string) => {
-      const { schedule, run } = await actionGetScheduleRun(runId)      
+      const { schedule, run } = await actionGetScheduleRun(runId)
       const newChat = {
         id: `new-${Date.now()}`,
         title: `Scheduled run followup`,

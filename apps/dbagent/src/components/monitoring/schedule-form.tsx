@@ -30,8 +30,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import * as z from 'zod';
 import { ModelInfo } from '~/lib/ai/providers/types';
-import { Connection } from '~/lib/db/connections';
-import { Schedule } from '~/lib/db/schedules';
+import { Connection, Schedule } from '~/lib/db/schema';
 import { actionGetDefaultLanguageModel } from '../chats/actions';
 import { ModelSelector } from '../chats/model-selector';
 import { actionCreateSchedule, actionDeleteSchedule, actionGetSchedule, actionUpdateSchedule } from './actions';
@@ -133,16 +132,19 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
       model: data.model,
       playbook: data.playbook,
       scheduleType: data.scheduleType,
-      cronExpression: data.cronExpression,
-      additionalInstructions: data.additionalInstructions,
+      cronExpression: data.cronExpression ?? null,
+      additionalInstructions: data.additionalInstructions ?? null,
       minInterval: Number(data.minInterval),
       maxInterval: Number(data.maxInterval),
       maxSteps: Number(data.maxSteps),
       notifyLevel: data.notifyLevel,
-      extraNotificationText: data.extraNotificationText,
+      extraNotificationText: data.extraNotificationText ?? null,
       enabled: data.enabled,
       keepHistory: 300,
-      status: data.enabled ? 'scheduled' : 'disabled'
+      status: data.enabled ? 'scheduled' : 'disabled',
+      lastRun: null,
+      nextRun: data.enabled ? new Date(Date.now() + 1000 * 60 * Number(data.minInterval)).toISOString() : null,
+      failures: 0
     };
     if (isEditMode) {
       await actionUpdateSchedule({ ...schedule, id: scheduleId });

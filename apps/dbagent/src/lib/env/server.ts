@@ -17,6 +17,7 @@ const schema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   DEEPSEEK_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
+  GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
 
   // LiteLLM settings
   LITELLM_BASE_URL: z.string().optional(),

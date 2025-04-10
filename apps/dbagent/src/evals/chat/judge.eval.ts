@@ -4,7 +4,7 @@ import path from 'path';
 import { afterAll, beforeAll, describe } from 'vitest';
 import { z } from 'zod';
 import { evalChat } from '~/evals/lib/chat-runner';
-import { getModelInstance } from '~/lib/ai/aidba';
+import { getModelInstance } from '~/lib/ai/agent';
 import { env } from '~/lib/env/eval';
 import { PostgresConfig, runSql, startPostgresContainer } from '../lib/eval-docker-db';
 import { mockGetConnectionInfo, mockGetProjectsById } from '../lib/mocking';
@@ -95,7 +95,7 @@ describe.concurrent('judge', () => {
     const humanSteps = result.steps.map(stepToHuman);
     const finalAnswer = result.text;
     const { object: judgeResponse } = await generateObject({
-      model: getModelInstance(env.JUDGE_MODEL),
+      model: await getModelInstance(env.JUDGE_MODEL),
       schema: z.object({
         result: evalResultEnum,
         critique: z.string()

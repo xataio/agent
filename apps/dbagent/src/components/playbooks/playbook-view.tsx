@@ -22,9 +22,7 @@ export function PlaybookView({ playbook }: { playbook: Playbook }) {
       <Card>
         <CardHeader>
           <CardTitle>Playbook:{playbook.name}</CardTitle>
-          <CardDescription>
-            <p className="text-muted-foreground">{playbook.description}</p>
-          </CardDescription>
+          <CardDescription>{playbook.description}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="bg-muted prose prose-sm whitespace-pre-wrap rounded-md p-4">{playbook.content}</div>

@@ -1,7 +1,7 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@internal/components';
 import * as React from 'react';
 
-import { Connection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/schema';
 
 export function ConnectionSelector({
   connections,

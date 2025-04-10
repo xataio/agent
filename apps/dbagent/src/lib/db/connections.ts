@@ -1,26 +1,17 @@
 'use server';
 
 import { and, eq } from 'drizzle-orm';
-import { queryDb } from './db';
-import { Schedule } from './schedules';
-import { connections } from './schema';
+import { DBAccess } from './db';
+import { Connection, connections, Schedule } from './schema';
 
-export type Connection = {
-  id: string;
-  projectId: string;
-  name: string;
-  isDefault: boolean;
-  connectionString: string;
-};
-
-export async function listConnections(projectId: string): Promise<Connection[]> {
-  return queryDb(async ({ db }) => {
+export async function listConnections(dbAccess: DBAccess, projectId: string): Promise<Connection[]> {
+  return dbAccess.query(async ({ db }) => {
     return await db.select().from(connections).where(eq(connections.projectId, projectId));
   });
 }
 
-export async function getDefaultConnection(projectId: string): Promise<Connection | null> {
-  return queryDb(async ({ db }) => {
+export async function getDefaultConnection(dbAccess: DBAccess, projectId: string): Promise<Connection | null> {
+  return dbAccess.query(async ({ db }) => {
     const result = await db
       .select()
       .from(connections)
@@ -29,27 +20,36 @@ export async function getDefaultConnection(projectId: string): Promise<Connectio
   });
 }
 
-export async function getConnection(id: string): Promise<Connection | null> {
-  return queryDb(async ({ db }) => {
+export async function getConnection(dbAccess: DBAccess, id: string): Promise<Connection | null> {
+  return dbAccess.query(async ({ db }) => {
     const result = await db.select().from(connections).where(eq(connections.id, id));
     return result[0] ?? null;
   });
 }
 
-export async function getConnectionFromSchedule(schedule: Schedule): Promise<Connection | null> {
-  return queryDb(
-    async ({ db }) => {
-      const result = await db.select().from(connections).where(eq(connections.id, schedule.connectionId));
-      return result[0] ?? null;
-    },
-    {
-      asUserId: schedule.userId
-    }
-  );
+export async function getConnectionByName(
+  dbAccess: DBAccess,
+  projectId: string,
+  name: string
+): Promise<Connection | null> {
+  return dbAccess.query(async ({ db }) => {
+    const result = await db
+      .select()
+      .from(connections)
+      .where(and(eq(connections.projectId, projectId), eq(connections.name, name)));
+    return result[0] ?? null;
+  });
 }
 
-export async function makeConnectionDefault(id: string): Promise<void> {
-  return queryDb(async ({ db }) => {
+export async function getConnectionFromSchedule(dbAccess: DBAccess, schedule: Schedule): Promise<Connection | null> {
+  return dbAccess.query(async ({ db }) => {
+    const result = await db.select().from(connections).where(eq(connections.id, schedule.connectionId));
+    return result[0] ?? null;
+  });
+}
+
+export async function makeConnectionDefault(dbAccess: DBAccess, id: string): Promise<void> {
+  return dbAccess.query(async ({ db }) => {
     await db.transaction(async (trx) => {
       await trx.update(connections).set({ isDefault: false }).where(eq(connections.isDefault, true));
       await trx.update(connections).set({ isDefault: true }).where(eq(connections.id, id));
@@ -57,8 +57,8 @@ export async function makeConnectionDefault(id: string): Promise<void> {
   });
 }
 
-export async function deleteConnection(id: string): Promise<void> {
-  return queryDb(async ({ db }) => {
+export async function deleteConnection(dbAccess: DBAccess, id: string): Promise<void> {
+  return dbAccess.query(async ({ db }) => {
     await db.transaction(async (trx) => {
       const wasDefault = await trx
         .select({ isDefault: connections.isDefault })
@@ -75,16 +75,19 @@ export async function deleteConnection(id: string): Promise<void> {
   });
 }
 
-export async function addConnection({
-  projectId,
-  name,
-  connectionString
-}: {
-  projectId: string;
-  name: string;
-  connectionString: string;
-}): Promise<Connection> {
-  return queryDb(async ({ db }) => {
+export async function addConnection(
+  dbAccess: DBAccess,
+  {
+    projectId,
+    name,
+    connectionString
+  }: {
+    projectId: string;
+    name: string;
+    connectionString: string;
+  }
+): Promise<Connection> {
+  return dbAccess.query(async ({ db }) => {
     const existingConnections = await db.select().from(connections).where(eq(connections.projectId, projectId));
     const result = await db
       .insert(connections)
@@ -102,16 +105,19 @@ export async function addConnection({
   });
 }
 
-export async function updateConnection({
-  id,
-  name,
-  connectionString
-}: {
-  id: string;
-  name: string;
-  connectionString: string;
-}): Promise<Connection> {
-  return queryDb(async ({ db }) => {
+export async function updateConnection(
+  dbAccess: DBAccess,
+  {
+    id,
+    name,
+    connectionString
+  }: {
+    id: string;
+    name: string;
+    connectionString: string;
+  }
+): Promise<Connection> {
+  return dbAccess.query(async ({ db }) => {
     const result = await db
       .update(connections)
       .set({ name, connectionString })

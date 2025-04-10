@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/.mastra
 /.pnp
 .pnp.js
 

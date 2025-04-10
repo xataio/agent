@@ -19,20 +19,20 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@eslint/compat": "^1.2.7",
+    "@eslint/compat": "^1.2.8",
     "@internal/tsconfig": "workspace:*",
-    "@types/node": "^22.13.14",
-    "@types/react": "^19.0.12",
-    "eslint": "^9.23.0",
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.1.0",
+    "eslint": "^9.24.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.0",
     "prettier": "^3.5.3",
     "prettier-plugin-organize-imports": "^4.1.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tsx": "^4.19.3",
-    "turbo": "^2.4.4",
-    "typescript": "^5.8.2",
-    "vitest": "^3.0.9"
+    "turbo": "^2.5.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.1"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
@@ -47,7 +47,10 @@
       "esbuild@<=0.24.2": ">=0.25.0",
       "prismjs@<1.30.0": ">=1.30.0",
       "@babel/runtime@<7.26.10": ">=7.26.10",
-      "vite@>=6.1.0 <6.1.2": ">=6.1.2"
+      "vite@>=6.1.0 <6.1.2": ">=6.1.2",
+      "tar-fs@>=2.0.0 <2.1.2": ">=2.1.2",
+      "vite@>=6.2.0 <6.2.4": ">=6.2.4",
+      "vite@>=6.2.0 <6.2.5": ">=6.2.5"
     }
   },
   "engines": {

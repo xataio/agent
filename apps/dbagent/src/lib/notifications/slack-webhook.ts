@@ -1,12 +1,10 @@
-import { Connection } from '../db/connections';
+import { DBAccess } from '../db/db';
 import { getIntegration } from '../db/integrations';
-import { ScheduleRun } from '../db/schedule-runs';
-import { Schedule } from '../db/schedules';
+import { Connection, NotificationLevel, Schedule, ScheduleRun } from '../db/schema';
 import { env } from '../env/client';
 
-export type NotificationLevel = 'info' | 'warning' | 'alert';
-
 export async function sendScheduleNotification(
+  dbAccess: DBAccess,
   run: ScheduleRun,
   schedule: Schedule,
   connection: Connection,
@@ -15,7 +13,7 @@ export async function sendScheduleNotification(
   message: string,
   extraNotificationText?: string
 ) {
-  const slack = await getIntegration(connection.projectId, 'slack', schedule.userId);
+  const slack = await getIntegration(dbAccess, connection.projectId, 'slack');
   if (!slack) {
     console.error('No Slack integration configured.');
     return;

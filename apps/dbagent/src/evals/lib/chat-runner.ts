@@ -1,10 +1,11 @@
-import { CoreMessage, generateText, Message } from 'ai';
+import { CoreMessage, generateText, Message as SDKMessage } from 'ai';
 import { randomUUID } from 'crypto';
 import { ExpectStatic } from 'vitest';
-import { chatSystemPrompt, getModelInstance, getTools } from '~/lib/ai/aidba';
-import { Connection } from '~/lib/db/connections';
+import { getChatSystemPrompt, getModelInstance } from '~/lib/ai/agent';
+import { getTools } from '~/lib/ai/tools';
+import { Connection, Project } from '~/lib/db/schema';
 import { env } from '~/lib/env/eval';
-import { getTargetDbConnection } from '~/lib/targetdb/db';
+import { getTargetDbPool } from '~/lib/targetdb/db';
 import { traceVercelAiResponse } from './trace';
 
 export const evalChat = async ({
@@ -12,29 +13,37 @@ export const evalChat = async ({
   dbConnection,
   expect
 }: {
-  messages: CoreMessage[] | Omit<Message, 'id'>[];
+  messages: CoreMessage[] | Omit<SDKMessage, 'id'>[];
   dbConnection: string;
   expect: ExpectStatic;
 }) => {
+  const project: Project = {
+    id: 'projectId',
+    name: 'projectName',
+    cloudProvider: 'aws'
+  };
+
   const connection: Connection = {
     id: randomUUID(),
     name: 'evaldb',
     connectionString: dbConnection,
-    projectId: 'projectId',
+    projectId: project.id,
     isDefault: true
   };
-  const targetClient = await getTargetDbConnection(dbConnection);
+
+  const targetDb = getTargetDbPool(connection.connectionString);
   try {
+    const tools = await getTools({ project, connection, targetDb, userId: 'evalUser' });
     const response = await generateText({
-      model: getModelInstance(env.CHAT_MODEL),
-      system: chatSystemPrompt,
-      tools: await getTools(connection),
-      messages,
-      maxSteps: 20
+      model: await getModelInstance(env.CHAT_MODEL),
+      system: getChatSystemPrompt({ cloudProvider: project.cloudProvider }),
+      maxSteps: 20,
+      tools,
+      messages
     });
     traceVercelAiResponse(response, expect);
     return response;
   } finally {
-    await targetClient.end();
+    await targetDb.end();
   }
 };

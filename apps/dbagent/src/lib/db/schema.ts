@@ -1,11 +1,12 @@
-import { Message } from '@ai-sdk/ui-utils';
-import { sql } from 'drizzle-orm';
+import { Message as SDKMessage } from '@ai-sdk/ui-utils';
+import { InferInsertModel, InferSelectModel, sql } from 'drizzle-orm';
 import {
   boolean,
   foreignKey,
   index,
   integer,
   jsonb,
+  PgEnum,
   pgEnum,
   pgPolicy,
   pgRole,
@@ -17,12 +18,23 @@ import {
   varchar
 } from 'drizzle-orm/pg-core';
 import { RDSClusterDetailedInfo } from '../aws/rds';
+import { CloudSQLInstanceInfo } from '../gcp/cloudsql';
 
 export const authenticatedUser = pgRole('authenticated_user', { inherit: true });
 
+type InferEnumType<T extends PgEnum<any>> = T extends PgEnum<infer U> ? U[number] : never;
+
 export const scheduleStatus = pgEnum('schedule_status', ['disabled', 'scheduled', 'running']);
+export type ScheduleStatus = InferEnumType<typeof scheduleStatus>;
+
 export const notificationLevel = pgEnum('notification_level', ['info', 'warning', 'alert']);
+export type NotificationLevel = InferEnumType<typeof notificationLevel>;
+
 export const memberRole = pgEnum('member_role', ['owner', 'member']);
+export type MemberRole = InferEnumType<typeof memberRole>;
+
+export const cloudProvider = pgEnum('cloud_provider', ['aws', 'gcp', 'other']);
+export type CloudProvider = InferEnumType<typeof cloudProvider>;
 
 export const awsClusters = pgTable(
   'aws_clusters',
@@ -52,6 +64,9 @@ export const awsClusters = pgTable(
   ]
 );
 
+export type AWSCluster = InferSelectModel<typeof awsClusters>;
+export type AWSClusterInsert = InferInsertModel<typeof awsClusters>;
+
 export const connections = pgTable(
   'connections',
   {
@@ -80,6 +95,9 @@ export const connections = pgTable(
     })
   ]
 );
+
+export type Connection = InferSelectModel<typeof connections>;
+export type ConnectionInsert = InferInsertModel<typeof connections>;
 
 export const connectionInfo = pgTable(
   'connection_info',
@@ -115,6 +133,9 @@ export const connectionInfo = pgTable(
   ]
 );
 
+export type ConnectionInfo = InferSelectModel<typeof connectionInfo>;
+export type ConnectionInfoInsert = InferInsertModel<typeof connectionInfo>;
+
 export const integrations = pgTable(
   'integrations',
   {
@@ -141,6 +162,9 @@ export const integrations = pgTable(
     })
   ]
 );
+
+export type Integration = InferSelectModel<typeof integrations>;
+export type IntegrationInsert = InferInsertModel<typeof integrations>;
 
 export const awsClusterConnections = pgTable(
   'aws_cluster_connections',
@@ -179,6 +203,81 @@ export const awsClusterConnections = pgTable(
     })
   ]
 );
+
+export type AWSClusterConnection = InferSelectModel<typeof awsClusterConnections>;
+export type AWSClusterConnectionInsert = InferInsertModel<typeof awsClusterConnections>;
+
+export const gcpInstances = pgTable(
+  'gcp_instances',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    projectId: uuid('project_id').notNull(),
+    instanceName: text('instance_name').notNull(),
+    gcpProjectId: text('gcp_project_id').notNull(),
+    data: jsonb('data').$type<CloudSQLInstanceInfo>().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_gcp_instances_project'
+    }).onDelete('cascade'),
+    index('idx_gcp_instances_project_id').on(table.projectId),
+    unique('uq_gcp_instances_instance_name').on(table.projectId, table.gcpProjectId, table.instanceName),
+    pgPolicy('gcp_instances_policy', {
+      to: authenticatedUser,
+      for: 'all',
+      using: sql`EXISTS (
+        SELECT 1 FROM project_members
+        WHERE project_id = gcp_instances.project_id AND user_id = current_setting('app.current_user', true)::TEXT
+      )`
+    })
+  ]
+);
+
+export type GCPInstance = InferSelectModel<typeof gcpInstances>;
+export type GCPInstanceInsert = InferInsertModel<typeof gcpInstances>;
+
+export const gcpInstanceConnections = pgTable(
+  'gcp_instance_connections',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    projectId: uuid('project_id').notNull(),
+    instanceId: uuid('instance_id').notNull(),
+    connectionId: uuid('connection_id').notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_gcp_instance_connections_project'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.instanceId],
+      foreignColumns: [gcpInstances.id],
+      name: 'fk_gcp_instance_connections_instance'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.connectionId],
+      foreignColumns: [connections.id],
+      name: 'fk_gcp_instance_connections_connection'
+    }).onDelete('cascade'),
+    index('idx_gcp_instance_connections_instance_id').on(table.instanceId),
+    index('idx_gcp_instance_connections_connection_id').on(table.connectionId),
+    index('idx_gcp_instance_connections_project_id').on(table.projectId),
+    pgPolicy('gcp_instance_connections_policy', {
+      to: authenticatedUser,
+      for: 'all',
+      using: sql`EXISTS (
+        SELECT 1 FROM project_members
+        WHERE project_id = gcp_instance_connections.project_id AND user_id = current_setting('app.current_user', true)::TEXT
+      )`
+    })
+  ]
+);
+
+export type GCPInstanceConnection = InferSelectModel<typeof gcpInstanceConnections>;
+export type GCPInstanceConnectionInsert = InferInsertModel<typeof gcpInstanceConnections>;
 
 export const schedules = pgTable(
   'schedules',
@@ -231,6 +330,9 @@ export const schedules = pgTable(
   ]
 );
 
+export type Schedule = InferSelectModel<typeof schedules>;
+export type ScheduleInsert = InferInsertModel<typeof schedules>;
+
 export const scheduleRuns = pgTable(
   'schedule_runs',
   {
@@ -241,7 +343,7 @@ export const scheduleRuns = pgTable(
     result: text('result').notNull(),
     summary: text('summary'),
     notificationLevel: notificationLevel('notification_level').default('info').notNull(),
-    messages: jsonb('messages').$type<Message[]>().notNull()
+    messages: jsonb('messages').$type<SDKMessage[]>().notNull()
   },
   (table) => [
     foreignKey({
@@ -269,11 +371,15 @@ export const scheduleRuns = pgTable(
   ]
 );
 
+export type ScheduleRun = InferSelectModel<typeof scheduleRuns>;
+export type ScheduleRunInsert = InferInsertModel<typeof scheduleRuns>;
+
 export const projects = pgTable(
   'projects',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
-    name: text('name').notNull()
+    name: text('name').notNull(),
+    cloudProvider: cloudProvider('cloud_provider').notNull()
   },
   () => [
     pgPolicy('projects_view_policy', {
@@ -308,6 +414,9 @@ export const projects = pgTable(
   ]
 );
 
+export type Project = InferSelectModel<typeof projects>;
+export type ProjectInsert = InferInsertModel<typeof projects>;
+
 export const projectMembers = pgTable(
   'project_members',
   {
@@ -334,3 +443,40 @@ export const projectMembers = pgTable(
     })
   ]
 );
+
+export type ProjectMember = InferSelectModel<typeof projectMembers>;
+export type ProjectMemberInsert = InferInsertModel<typeof projectMembers>;
+
+export const playbooks = pgTable(
+  'playbooks',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    projectId: uuid('project_id').notNull(),
+    name: varchar('name', { length: 255 }).notNull(),
+    description: text('description'),
+    content: jsonb('content').notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdBy: text('created_by').notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_playbooks_project'
+    }).onDelete('cascade'),
+    unique('uq_playbooks_name').on(table.projectId, table.name),
+    index('idx_playbooks_project_id').on(table.projectId),
+    pgPolicy('playbooks_policy', {
+      to: authenticatedUser,
+      for: 'all',
+      using: sql`EXISTS (
+        SELECT 1 FROM project_members
+        WHERE project_id = playbooks.project_id AND user_id = current_setting('app.current_user', true)::TEXT
+      )`
+    })
+  ]
+);
+
+export type Playbook = InferSelectModel<typeof playbooks>;
+export type PlaybookInsert = InferInsertModel<typeof playbooks>;

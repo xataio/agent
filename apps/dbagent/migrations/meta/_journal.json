@@ -15,6 +15,27 @@
       "when": 1741953778092,
       "tag": "0001_default_privs",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1742939952070,
+      "tag": "0002_custom_playbooks",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1744136109718,
+      "tag": "0003_cloud_providers",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1744190884400,
+      "tag": "0004_drop_project_default",
+      "breakpoints": true
     }
   ]
 }

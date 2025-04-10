@@ -60,7 +60,11 @@ class LiteLLMModel implements Model {
     return this.#info;
   }
 
-  createClient(): LanguageModel {
+  fullId(): string {
+    return this.#info.id;
+  }
+
+  instance(): LanguageModel {
     return this.#factory.createLanguageModel(this.#info.id);
   }
 }
