@@ -22,15 +22,15 @@ import { CloudSQLInstanceInfo } from '../gcp/cloudsql';
 
 export const authenticatedUser = pgRole('authenticated_user', { inherit: true });
 
-type InferEnumType<T extends PgEnum<any>> = T extends PgEnum<infer U> ? U[number] : never; 
-  
-export const scheduleStatus = pgEnum('schedule_status', ['disabled', 'scheduled', 'running']); 
-export type ScheduleStatus = InferEnumType<typeof scheduleStatus>; 
-  
+type InferEnumType<T extends PgEnum<any>> = T extends PgEnum<infer U> ? U[number] : never;
+
+export const scheduleStatus = pgEnum('schedule_status', ['disabled', 'scheduled', 'running']);
+export type ScheduleStatus = InferEnumType<typeof scheduleStatus>;
+
 export const notificationLevel = pgEnum('notification_level', ['info', 'warning', 'alert']);
-export type NotificationLevel = InferEnumType<typeof notificationLevel>; 
-  
-export const memberRole = pgEnum('member_role', ['owner', 'member']); 
+export type NotificationLevel = InferEnumType<typeof notificationLevel>;
+
+export const memberRole = pgEnum('member_role', ['owner', 'member']);
 export type MemberRole = InferEnumType<typeof memberRole>;
 
 export const cloudProvider = pgEnum('cloud_provider', ['aws', 'gcp', 'other']);
