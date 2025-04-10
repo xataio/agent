@@ -6,7 +6,8 @@ import { auth } from '~/auth';
 
 import { dbCreatePlaybook, dbDeletePlaybook, dbUpdatePlaybook } from '~/lib/db/custom-playbooks';
 import { getUserDBAccess, getUserSessionDBAccess } from '~/lib/db/db';
-import { getSchedulesByUserIdAndProjectId, Schedule } from '~/lib/db/schedules';
+import { getSchedulesByUserIdAndProjectId } from '~/lib/db/schedules';
+import { Schedule } from '~/lib/db/schema';
 import {
   customPlaybook,
   getCustomPlaybook,

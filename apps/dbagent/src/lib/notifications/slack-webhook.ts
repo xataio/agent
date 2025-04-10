@@ -1,8 +1,6 @@
 import { DBAccess } from '../db/db';
 import { getIntegration } from '../db/integrations';
-import { ScheduleRun } from '../db/schedule-runs';
-import { Schedule } from '../db/schedules';
-import { Connection, NotificationLevel } from '../db/schema';
+import { Connection, NotificationLevel, Schedule, ScheduleRun } from '../db/schema';
 import { env } from '../env/client';
 
 export async function sendScheduleNotification(

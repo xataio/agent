@@ -33,8 +33,7 @@ import {
 import { Database, MoreVertical, PlusCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Suspense, useState } from 'react';
-import { Project } from '~/lib/db/projects';
-import { CloudProvider } from '~/lib/db/schema';
+import { CloudProvider, Project } from '~/lib/db/schema';
 import { actionCreateProject, actionDeleteProject, actionUpdateProject } from './actions';
 
 interface ProjectListProps {

@@ -4,16 +4,16 @@ import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { auth } from '~/auth';
 import { getUserDBAccess, getUserSessionDBAccess } from '~/lib/db/db';
-import { getScheduleRuns, ScheduleRun } from '~/lib/db/schedule-runs';
+import { getScheduleRuns } from '~/lib/db/schedule-runs';
 import {
   deleteSchedule,
   getSchedule,
   getSchedules,
   insertSchedule,
-  Schedule,
   updateSchedule,
   updateScheduleRunData
 } from '~/lib/db/schedules';
+import { Schedule, ScheduleRun } from '~/lib/db/schema';
 import { scheduleGetNextRun, utcToLocalDate } from '~/lib/monitoring/scheduler';
 import { listPlaybooks } from '~/lib/tools/playbooks';
 
@@ -89,7 +89,7 @@ export async function actionUpdateScheduleEnabled(scheduleId: string, enabled: b
     const schedule = await getSchedule(dbAccess, scheduleId);
     schedule.enabled = false;
     schedule.status = 'disabled';
-    schedule.nextRun = undefined;
+    schedule.nextRun = null;
     await updateScheduleRunData(dbAccess, schedule);
   }
 }

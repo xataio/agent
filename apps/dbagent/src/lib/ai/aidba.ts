@@ -5,8 +5,7 @@ import { openai } from '@ai-sdk/openai';
 import { LanguageModelV1, Tool } from 'ai';
 import { Pool } from 'pg';
 import { getUserDBAccess } from '~/lib/db/db';
-import { Connection } from '~/lib/db/schema';
-import { Project } from '../db/projects';
+import { Connection, Project } from '~/lib/db/schema';
 import { commonToolset, getDBClusterTools, getDBSQLTools, getPlaybookToolset, mergeToolsets } from './tools';
 
 const commonSystemPrompt = `

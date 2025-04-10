@@ -29,8 +29,9 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Project } from '~/lib/db/projects';
+import { Project } from '~/lib/db/schema';
 import { Bot } from '../icons/bot';
+
 interface SideNavProps {
   className?: string;
   project: Project;

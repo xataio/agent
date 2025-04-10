@@ -2,13 +2,7 @@
 
 import { eq } from 'drizzle-orm';
 import { DBAccess } from './db';
-import { CloudProvider, projectMembers, projects } from './schema';
-
-export type Project = {
-  id: string;
-  name: string;
-  cloudProvider: CloudProvider;
-};
+import { Project, projectMembers, projects } from './schema';
 
 export async function generateProjectId(): Promise<string> {
   return crypto.randomUUID();

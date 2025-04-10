@@ -2,8 +2,7 @@
 
 import { and, eq } from 'drizzle-orm';
 import { DBAccess } from './db';
-import { Schedule } from './schedules';
-import { Connection, connections } from './schema';
+import { Connection, connections, Schedule } from './schema';
 
 export async function listConnections(dbAccess: DBAccess, projectId: string): Promise<Connection[]> {
   return dbAccess.query(async ({ db }) => {

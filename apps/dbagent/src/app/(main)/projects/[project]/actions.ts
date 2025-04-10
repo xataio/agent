@@ -8,9 +8,9 @@ import {
   getSchedule,
   getSchedulesByProjectId,
   insertSchedule,
-  updateSchedule,
-  type Schedule
+  updateSchedule
 } from '~/lib/db/schedules';
+import { Schedule } from '~/lib/db/schema';
 
 export async function getProject(projectId: string) {
   const dbAccess = await getUserSessionDBAccess();

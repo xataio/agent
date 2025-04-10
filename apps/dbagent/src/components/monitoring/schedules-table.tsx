@@ -5,8 +5,7 @@ import { ListIcon, PencilIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Schedule } from '~/lib/db/schedules';
-import { Connection } from '~/lib/db/schema';
+import { Connection, Schedule } from '~/lib/db/schema';
 import { actionGetSchedules, actionUpdateScheduleEnabled } from './actions';
 
 function displayRelativeTime(date1: Date, date2: Date): string {

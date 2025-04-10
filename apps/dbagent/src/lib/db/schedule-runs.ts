@@ -1,20 +1,8 @@
 'use server';
 
-import { Message } from '@ai-sdk/ui-utils';
 import { desc, eq, lt } from 'drizzle-orm';
 import { DBAccess } from './db';
-import { NotificationLevel, scheduleRuns } from './schema';
-
-export type ScheduleRun = {
-  id: string;
-  projectId: string;
-  scheduleId: string;
-  createdAt: string;
-  result: string;
-  summary: string | null;
-  notificationLevel: NotificationLevel;
-  messages: Message[];
-};
+import { ScheduleRun, scheduleRuns } from './schema';
 
 export async function insertScheduleRunLimitHistory(
   dbAccess: DBAccess,
