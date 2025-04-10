@@ -16,12 +16,14 @@ import { fetcher, generateUUID } from './utils';
 
 export function Chat({
   id,
+  defaultLanguageModel,
   connections,
   initialMessages,
   suggestedActions,
   isReadonly
 }: {
   id: string;
+  defaultLanguageModel: string;
   connections: Connection[];
   initialMessages: Array<UIMessage>;
   suggestedActions?: SuggestedAction[];
@@ -30,7 +32,7 @@ export function Chat({
   const queryClient = useQueryClient();
   const defaultConnection = connections.find((c) => c.isDefault);
   const [connectionId, setConnectionId] = useState<string>(defaultConnection?.id || '');
-  const [model, setModel] = useState<string>('openai-gpt-4o');
+  const [model, setModel] = useState<string>(defaultLanguageModel);
 
   const { messages, setMessages, handleSubmit, input, setInput, append, status, stop, reload } = useChat({
     id,

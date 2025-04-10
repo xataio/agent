@@ -1,6 +1,7 @@
 import { UIMessage } from 'ai';
 import { Chat } from '~/components/chat/chat';
 import { DataStreamHandler } from '~/components/chat/data-stream-handler';
+import { getDefaultLanguageModel } from '~/lib/ai/providers';
 import { getMessagesByChatId } from '~/lib/db/chats';
 import { listConnections } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
@@ -35,6 +36,7 @@ export default async function Page({ params }: { params: Promise<PageParams> }) 
 
   const dbAccess = await getUserSessionDBAccess();
   const connections = await listConnections(dbAccess, project);
+  const defaultLanguageModel = getDefaultLanguageModel();
 
   const messagesFromDb = await getMessagesByChatId(dbAccess, { id: chat });
 
@@ -59,6 +61,7 @@ export default async function Page({ params }: { params: Promise<PageParams> }) 
       <Chat
         key={`${chat}-${chat}`}
         id={chat}
+        defaultLanguageModel={defaultLanguageModel.info().id}
         connections={connections}
         initialMessages={convertToUIMessages(messagesFromDb)}
         suggestedActions={suggestedActions}
