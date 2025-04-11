@@ -193,7 +193,7 @@ function getMostRecentUserMessage(messages: Array<UIMessage>) {
   return userMessages.at(-1);
 }
 
-export function getTrailingMessageId({ messages }: { messages: Array<{ id: string }> }): string | null {
+function getTrailingMessageId({ messages }: { messages: Array<{ id: string }> }): string | null {
   const trailingMessage = messages.at(-1);
 
   if (!trailingMessage) return null;
