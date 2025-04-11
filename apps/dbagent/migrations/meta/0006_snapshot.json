@@ -4,6 +4,272 @@
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.artifact_documents": {
+      "name": "artifact_documents",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'text'"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_artifact_documents_project_id": {
+          "name": "idx_artifact_documents_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_artifact_documents_user_id": {
+          "name": "idx_artifact_documents_user_id",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_artifact_documents_project": {
+          "name": "fk_artifact_documents_project",
+          "tableFrom": "artifact_documents",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "artifact_documents_id_pk": {
+          "name": "artifact_documents_id_pk",
+          "columns": ["id"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {
+        "artifact_documents_policy": {
+          "name": "artifact_documents_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n          SELECT 1 FROM project_members\n          WHERE project_id = artifact_documents.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n        )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.artifact_suggestions": {
+      "name": "artifact_suggestions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "document_created_at": {
+          "name": "document_created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_text": {
+          "name": "original_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "suggested_text": {
+          "name": "suggested_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_resolved": {
+          "name": "is_resolved",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_artifact_suggestions_document_id": {
+          "name": "idx_artifact_suggestions_document_id",
+          "columns": [
+            {
+              "expression": "document_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_artifact_suggestions_project_id": {
+          "name": "idx_artifact_suggestions_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_artifact_suggestions_user_id": {
+          "name": "idx_artifact_suggestions_user_id",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_artifact_suggestions_project": {
+          "name": "fk_artifact_suggestions_project",
+          "tableFrom": "artifact_suggestions",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "fk_artifact_suggestions_document": {
+          "name": "fk_artifact_suggestions_document",
+          "tableFrom": "artifact_suggestions",
+          "tableTo": "artifact_documents",
+          "columnsFrom": ["document_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "artifact_suggestions_id_pk": {
+          "name": "artifact_suggestions_id_pk",
+          "columns": ["id"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {
+        "artifact_suggestions_policy": {
+          "name": "artifact_suggestions_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n          SELECT 1 FROM project_members\n          WHERE project_id = artifact_suggestions.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n        )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.aws_cluster_connections": {
       "name": "aws_cluster_connections",
       "schema": "",
@@ -501,118 +767,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.documents": {
-      "name": "documents",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "project_id": {
-          "name": "project_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content": {
-          "name": "content",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "kind": {
-          "name": "kind",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'text'"
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "idx_documents_project_id": {
-          "name": "idx_documents_project_id",
-          "columns": [
-            {
-              "expression": "project_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_documents_user_id": {
-          "name": "idx_documents_user_id",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "fk_documents_project": {
-          "name": "fk_documents_project",
-          "tableFrom": "documents",
-          "tableTo": "projects",
-          "columnsFrom": ["project_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "documents_id_pk": {
-          "name": "documents_id_pk",
-          "columns": ["id"]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {
-        "documents_policy": {
-          "name": "documents_policy",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": ["authenticated_user"],
-          "using": "EXISTS (\n          SELECT 1 FROM project_members\n          WHERE project_id = documents.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n        )"
-        }
-      },
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.gcp_instance_connections": {
       "name": "gcp_instance_connections",
       "schema": "",
@@ -890,6 +1044,158 @@
           "for": "ALL",
           "to": ["authenticated_user"],
           "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = integrations.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.message_votes": {
+      "name": "message_votes",
+      "schema": "",
+      "columns": {
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chat_id": {
+          "name": "chat_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "message_id": {
+          "name": "message_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_upvoted": {
+          "name": "is_upvoted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_message_votes_chat_id": {
+          "name": "idx_message_votes_chat_id",
+          "columns": [
+            {
+              "expression": "chat_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_message_votes_message_id": {
+          "name": "idx_message_votes_message_id",
+          "columns": [
+            {
+              "expression": "message_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_message_votes_project_id": {
+          "name": "idx_message_votes_project_id",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_message_votes_user_id": {
+          "name": "idx_message_votes_user_id",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fk_votes_chat": {
+          "name": "fk_votes_chat",
+          "tableFrom": "message_votes",
+          "tableTo": "chats",
+          "columnsFrom": ["chat_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "fk_message_votes_message": {
+          "name": "fk_message_votes_message",
+          "tableFrom": "message_votes",
+          "tableTo": "messages",
+          "columnsFrom": ["message_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "fk_message_votes_project": {
+          "name": "fk_message_votes_project",
+          "tableFrom": "message_votes",
+          "tableTo": "projects",
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "message_votes_chat_id_message_id_user_id_pk": {
+          "name": "message_votes_chat_id_message_id_user_id_pk",
+          "columns": ["chat_id", "message_id", "user_id"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {
+        "message_votes_policy": {
+          "name": "message_votes_policy",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": ["authenticated_user"],
+          "using": "EXISTS (\n          SELECT 1 FROM project_members\n          WHERE project_id = message_votes.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n        )"
         }
       },
       "checkConstraints": {},
@@ -1648,312 +1954,6 @@
           "for": "ALL",
           "to": ["authenticated_user"],
           "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = schedules.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
-        }
-      },
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.suggestions": {
-      "name": "suggestions",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "project_id": {
-          "name": "project_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "document_id": {
-          "name": "document_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "document_created_at": {
-          "name": "document_created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "original_text": {
-          "name": "original_text",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "suggested_text": {
-          "name": "suggested_text",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "is_resolved": {
-          "name": "is_resolved",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "idx_suggestions_document_id": {
-          "name": "idx_suggestions_document_id",
-          "columns": [
-            {
-              "expression": "document_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_suggestions_project_id": {
-          "name": "idx_suggestions_project_id",
-          "columns": [
-            {
-              "expression": "project_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_suggestions_user_id": {
-          "name": "idx_suggestions_user_id",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "fk_suggestions_project": {
-          "name": "fk_suggestions_project",
-          "tableFrom": "suggestions",
-          "tableTo": "projects",
-          "columnsFrom": ["project_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "fk_suggestions_document": {
-          "name": "fk_suggestions_document",
-          "tableFrom": "suggestions",
-          "tableTo": "documents",
-          "columnsFrom": ["document_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "suggestions_id_pk": {
-          "name": "suggestions_id_pk",
-          "columns": ["id"]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {
-        "suggestions_policy": {
-          "name": "suggestions_policy",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": ["authenticated_user"],
-          "using": "EXISTS (\n          SELECT 1 FROM project_members\n          WHERE project_id = suggestions.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n        )"
-        }
-      },
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.votes": {
-      "name": "votes",
-      "schema": "",
-      "columns": {
-        "project_id": {
-          "name": "project_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "chat_id": {
-          "name": "chat_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "message_id": {
-          "name": "message_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_upvoted": {
-          "name": "is_upvoted",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "idx_votes_chat_id": {
-          "name": "idx_votes_chat_id",
-          "columns": [
-            {
-              "expression": "chat_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_votes_message_id": {
-          "name": "idx_votes_message_id",
-          "columns": [
-            {
-              "expression": "message_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_votes_project_id": {
-          "name": "idx_votes_project_id",
-          "columns": [
-            {
-              "expression": "project_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_votes_user_id": {
-          "name": "idx_votes_user_id",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "fk_votes_chat": {
-          "name": "fk_votes_chat",
-          "tableFrom": "votes",
-          "tableTo": "chats",
-          "columnsFrom": ["chat_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "fk_votes_message": {
-          "name": "fk_votes_message",
-          "tableFrom": "votes",
-          "tableTo": "messages",
-          "columnsFrom": ["message_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "fk_votes_project": {
-          "name": "fk_votes_project",
-          "tableFrom": "votes",
-          "tableTo": "projects",
-          "columnsFrom": ["project_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "votes_chat_id_message_id_user_id_pk": {
-          "name": "votes_chat_id_message_id_user_id_pk",
-          "columns": ["chat_id", "message_id", "user_id"]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {
-        "votes_policy": {
-          "name": "votes_policy",
-          "as": "PERMISSIVE",
-          "for": "ALL",
-          "to": ["authenticated_user"],
-          "using": "EXISTS (\n          SELECT 1 FROM project_members\n          WHERE project_id = votes.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n        )"
         }
       },
       "checkConstraints": {},
