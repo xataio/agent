@@ -133,15 +133,25 @@ export async function saveDocument(
   }
 ) {
   return dbAccess.query(async ({ db }) => {
-    return await db.insert(artifactDocuments).values({
-      id,
-      title,
-      kind,
-      content,
-      userId,
-      createdAt: new Date(),
-      projectId
-    });
+    return await db
+      .insert(artifactDocuments)
+      .values({
+        id,
+        title,
+        kind,
+        content,
+        userId,
+        createdAt: new Date(),
+        projectId
+      })
+      .onConflictDoUpdate({
+        target: [artifactDocuments.id],
+        set: {
+          title,
+          kind,
+          content
+        }
+      });
   });
 }
 
