@@ -43,6 +43,13 @@
       "when": 1744360127359,
       "tag": "0005_chats_ui",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1744360864403,
+      "tag": "0006_model_refactor",
+      "breakpoints": true
     }
   ]
 }
