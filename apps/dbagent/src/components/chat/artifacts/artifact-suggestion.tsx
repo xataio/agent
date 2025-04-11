@@ -2,9 +2,9 @@
 
 import { Button, cn } from '@internal/components';
 import { AnimatePresence, motion } from 'framer-motion';
+import { CrossIcon, MessageCircleIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useWindowSize } from 'usehooks-ts';
-import { CrossIcon, MessageIcon } from '../../icons';
 import { ArtifactKind } from './artifact';
 import { UISuggestion } from './text/editor/suggestions';
 
@@ -32,7 +32,7 @@ export const ArtifactSuggestion = ({
           }}
           whileHover={{ scale: 1.1 }}
         >
-          <MessageIcon size={windowWidth && windowWidth < 768 ? 16 : 14} />
+          <MessageCircleIcon size={windowWidth && windowWidth < 768 ? 16 : 14} />
         </motion.div>
       ) : (
         <motion.div

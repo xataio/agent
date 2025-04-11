@@ -8,10 +8,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@internal/components';
-import { ChevronDownIcon } from 'lucide-react';
+import { CheckCircleIcon, ChevronDownIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Connection } from '~/lib/db/schema';
-import { CheckCircleFillIcon } from '../icons';
 
 export function ConnectionSelector({
   connections,
@@ -70,7 +69,7 @@ export function ConnectionSelector({
                 </div>
 
                 <div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
-                  <CheckCircleFillIcon />
+                  <CheckCircleIcon />
                 </div>
               </button>
             </DropdownMenuItem>

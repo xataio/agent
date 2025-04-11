@@ -7,8 +7,7 @@ import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
 import type { UseChatHelpers } from '@ai-sdk/react';
 import { Button, cn, Textarea, toast } from '@internal/components';
-import { ArrowUpIcon } from 'lucide-react';
-import { StopIcon } from '../icons';
+import { ArrowUpIcon, CircleStopIcon } from 'lucide-react';
 import { SuggestedAction, SuggestedActions } from './suggested-actions';
 
 function PureMultimodalInput({
@@ -148,7 +147,7 @@ function PureStopButton({ stop, setMessages }: { stop: () => void; setMessages: 
         setMessages((messages) => messages);
       }}
     >
-      <StopIcon size={14} />
+      <CircleStopIcon size={14} />
     </Button>
   );
 }

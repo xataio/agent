@@ -5,10 +5,9 @@ import { Button, cn, Code, Tooltip, TooltipContent, TooltipTrigger, Typography }
 import type { UIMessage } from 'ai';
 import equal from 'fast-deep-equal';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Clock, SparklesIcon } from 'lucide-react';
+import { Clock, PencilIcon, SparklesIcon } from 'lucide-react';
 import { memo, useState } from 'react';
 import { Vote } from '~/lib/db/schema';
-import { PencilEditIcon } from '../../icons';
 import { DocumentToolCall, DocumentToolResult } from '../artifacts/document';
 import { DocumentPreview } from '../artifacts/document-preview';
 import { Markdown } from './markdown';
@@ -85,7 +84,7 @@ const PurePreviewMessage = ({
                                 setMode('edit');
                               }}
                             >
-                              <PencilEditIcon />
+                              <PencilIcon />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>Edit message</TooltipContent>

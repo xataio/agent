@@ -1,10 +1,10 @@
 'use client';
 
 import { Button, cn } from '@internal/components';
+import { PlusIcon } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { memo } from 'react';
 import { Connection } from '~/lib/db/schema';
-import { PlusIcon } from '../icons';
 import { ConnectionSelector } from './connection-selector';
 import { ModelSelector } from './model-selector';
 

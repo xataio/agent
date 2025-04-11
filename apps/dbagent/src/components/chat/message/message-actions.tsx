@@ -2,13 +2,12 @@ import { Button, toast, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger
 import { useQueryClient } from '@tanstack/react-query';
 import type { Message } from 'ai';
 import equal from 'fast-deep-equal';
-import { CopyIcon } from 'lucide-react';
+import { CopyIcon, ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useParams } from 'next/navigation';
 import { memo } from 'react';
 import { useCopyToClipboard } from 'usehooks-ts';
 import { Vote } from '~/lib/db/schema';
-import { ThumbDownIcon, ThumbUpIcon } from '../../icons';
 
 export function PureMessageActions({
   chatId,
@@ -103,7 +102,7 @@ export function PureMessageActions({
                 });
               }}
             >
-              <ThumbUpIcon />
+              <ThumbsUpIcon />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Upvote Response</TooltipContent>
@@ -153,7 +152,7 @@ export function PureMessageActions({
                 });
               }}
             >
-              <ThumbDownIcon />
+              <ThumbsDownIcon />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Downvote Response</TooltipContent>

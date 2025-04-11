@@ -10,9 +10,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@internal/components';
-import { ChevronDownIcon } from 'lucide-react';
+import { CheckCircleIcon, ChevronDownIcon } from 'lucide-react';
 import { ModelInfo } from '~/lib/ai/providers/types';
-import { CheckCircleFillIcon } from '../icons';
 import { actionGetLanguageModels } from './actions';
 
 interface ModelSelectorProps {
@@ -72,7 +71,7 @@ export function ModelSelector({ value, onValueChange, className }: ModelSelector
                 </div>
 
                 <div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
-                  <CheckCircleFillIcon />
+                  <CheckCircleIcon />
                 </div>
               </button>
             </DropdownMenuItem>

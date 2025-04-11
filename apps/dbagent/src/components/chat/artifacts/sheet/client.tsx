@@ -1,7 +1,6 @@
 import { toast } from '@internal/components';
-import { CopyIcon, SparklesIcon, UndoIcon } from 'lucide-react';
+import { CopyIcon, RedoIcon, SparklesIcon, UndoIcon } from 'lucide-react';
 import { parse, unparse } from 'papaparse';
-import { RedoIcon } from '~/components/icons';
 import { Artifact } from '../create-artifact';
 import { SpreadsheetEditor } from './editor';
 

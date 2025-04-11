@@ -1,7 +1,6 @@
 import { memo } from 'react';
 
-import { FileIcon, LoaderIcon } from 'lucide-react';
-import { MessageIcon, PencilEditIcon } from '../../icons';
+import { FileIcon, LoaderIcon, MessageCircleIcon, PencilIcon } from 'lucide-react';
 import type { ArtifactKind } from './artifact';
 import { useArtifact } from './use-artifact';
 
@@ -55,9 +54,9 @@ function PureDocumentToolResult({ type, result }: DocumentToolResultProps) {
         {type === 'create' ? (
           <FileIcon />
         ) : type === 'update' ? (
-          <PencilEditIcon />
+          <PencilIcon />
         ) : type === 'request-suggestions' ? (
-          <MessageIcon />
+          <MessageCircleIcon />
         ) : null}
       </div>
       <div className="text-left">{`${getActionText(type, 'past')} "${result.title}"`}</div>
@@ -101,9 +100,9 @@ function PureDocumentToolCall({ type, args }: DocumentToolCallProps) {
           {type === 'create' ? (
             <FileIcon />
           ) : type === 'update' ? (
-            <PencilEditIcon />
+            <PencilIcon />
           ) : type === 'request-suggestions' ? (
-            <MessageIcon />
+            <MessageCircleIcon />
           ) : null}
         </div>
 

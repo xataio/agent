@@ -1,5 +1,5 @@
 import { toast } from '@internal/components';
-import { ClockRewind, CopyIcon, MessageIcon, PenIcon, RedoIcon, UndoIcon } from '~/components/icons';
+import { CopyIcon, HistoryIcon, MessageCircleIcon, PenIcon, RedoIcon, UndoIcon } from 'lucide-react';
 import { Suggestion } from '~/lib/db/schema';
 import { Artifact } from '../create-artifact';
 import { DocumentSkeleton } from '../document-skeleton';
@@ -89,7 +89,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
   },
   actions: [
     {
-      icon: <ClockRewind size={18} />,
+      icon: <HistoryIcon size={18} />,
       description: 'View changes',
       onClick: ({ handleVersionChange }) => {
         handleVersionChange('toggle');
@@ -152,7 +152,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
       }
     },
     {
-      icon: <MessageIcon />,
+      icon: <MessageCircleIcon />,
       description: 'Request suggestions',
       onClick: ({ appendMessage }) => {
         void appendMessage({

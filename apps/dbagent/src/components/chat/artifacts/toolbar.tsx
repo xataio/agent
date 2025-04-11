@@ -3,12 +3,10 @@
 import { UseChatHelpers } from '@ai-sdk/react';
 import { cn, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@internal/components';
 import type { ChatRequestOptions, CreateMessage, Message } from 'ai';
-import { AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion';
-import { ArrowUpIcon } from 'lucide-react';
-import { nanoid } from 'nanoid';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowUpIcon, StopCircleIcon } from 'lucide-react';
 import { type Dispatch, memo, ReactNode, RefObject, type SetStateAction, useEffect, useRef, useState } from 'react';
 import { useOnClickOutside } from 'usehooks-ts';
-import { StopIcon, SummarizeIcon } from '../../icons';
 import { artifactDefinitions, ArtifactKind } from './artifact';
 import { ArtifactToolbarItem } from './create-artifact';
 
@@ -104,106 +102,6 @@ const Tool = ({
         {description}
       </TooltipContent>
     </Tooltip>
-  );
-};
-
-const randomArr = [...Array(6)].map(() => nanoid(5));
-
-const ReadingLevelSelector = ({
-  setSelectedTool,
-  append,
-  isAnimating
-}: {
-  setSelectedTool: Dispatch<SetStateAction<string | null>>;
-  isAnimating: boolean;
-  append: (
-    message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions
-  ) => Promise<string | null | undefined>;
-}) => {
-  const LEVELS = ['Elementary', 'Middle School', 'Keep current level', 'High School', 'College', 'Graduate'];
-
-  const y = useMotionValue(-40 * 2);
-  const dragConstraints = 5 * 40 + 2;
-  const yToLevel = useTransform(y, [0, -dragConstraints], [0, 5]);
-
-  const [currentLevel, setCurrentLevel] = useState(2);
-  const [hasUserSelectedLevel, setHasUserSelectedLevel] = useState<boolean>(false);
-
-  useEffect(() => {
-    const unsubscribe = yToLevel.on('change', (latest) => {
-      const level = Math.min(5, Math.max(0, Math.round(Math.abs(latest))));
-      setCurrentLevel(level);
-    });
-
-    return () => unsubscribe();
-  }, [yToLevel]);
-
-  return (
-    <div className="relative flex flex-col items-center justify-end">
-      {randomArr.map((id) => (
-        <motion.div
-          key={id}
-          className="flex size-[40px] flex-row items-center justify-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <div className="bg-muted-foreground/40 size-2 rounded-full" />
-        </motion.div>
-      ))}
-
-      <TooltipProvider>
-        <Tooltip open={!isAnimating}>
-          <TooltipTrigger asChild>
-            <motion.div
-              className={cn('bg-background absolute flex flex-row items-center rounded-full border p-3', {
-                'bg-primary text-primary-foreground': currentLevel !== 2,
-                'bg-background text-foreground': currentLevel === 2
-              })}
-              style={{ y }}
-              drag="y"
-              dragElastic={0}
-              dragMomentum={false}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ duration: 0.1 }}
-              dragConstraints={{ top: -dragConstraints, bottom: 0 }}
-              onDragStart={() => {
-                setHasUserSelectedLevel(false);
-              }}
-              onDragEnd={() => {
-                if (currentLevel === 2) {
-                  setSelectedTool(null);
-                } else {
-                  setHasUserSelectedLevel(true);
-                }
-              }}
-              onClick={() => {
-                if (currentLevel !== 2 && hasUserSelectedLevel) {
-                  void append({
-                    role: 'user',
-                    content: `Please adjust the reading level to ${LEVELS[currentLevel]} level.`
-                  });
-
-                  setSelectedTool(null);
-                }
-              }}
-            >
-              {currentLevel === 2 ? <SummarizeIcon /> : <ArrowUpIcon />}
-            </motion.div>
-          </TooltipTrigger>
-          <TooltipContent
-            side="left"
-            sideOffset={16}
-            className="bg-foreground text-background rounded-2xl p-3 px-4 text-sm"
-          >
-            {LEVELS[currentLevel]}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </div>
   );
 };
 
@@ -347,21 +245,13 @@ const PureToolbar = ({
         initial={{ opacity: 0, y: -20, scale: 1 }}
         animate={
           isToolbarVisible
-            ? selectedTool === 'adjust-reading-level'
-              ? {
-                  opacity: 1,
-                  y: 0,
-                  height: 6 * 43,
-                  transition: { delay: 0 },
-                  scale: 0.95
-                }
-              : {
-                  opacity: 1,
-                  y: 0,
-                  height: toolsByArtifactKind.length * 50,
-                  transition: { delay: 0 },
-                  scale: 1
-                }
+            ? {
+                opacity: 1,
+                y: 0,
+                height: toolsByArtifactKind.length * 50,
+                transition: { delay: 0 },
+                scale: 1
+              }
             : { opacity: 1, y: 0, height: 54, transition: { delay: 0 } }
         }
         exit={{ opacity: 0, y: -20, transition: { duration: 0.1 } }}
@@ -397,15 +287,8 @@ const PureToolbar = ({
               setMessages((messages) => messages);
             }}
           >
-            <StopIcon />
+            <StopCircleIcon />
           </motion.div>
-        ) : selectedTool === 'adjust-reading-level' ? (
-          <ReadingLevelSelector
-            key="reading-level-selector"
-            append={append}
-            setSelectedTool={setSelectedTool}
-            isAnimating={isAnimating}
-          />
         ) : (
           <Tools
             key="tools"
