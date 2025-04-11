@@ -516,8 +516,8 @@ export const messages = pgTable(
 export type Message = InferSelectModel<typeof messages>;
 export type MessageInsert = InferInsertModel<typeof messages>;
 
-export const votes = pgTable(
-  'votes',
+export const messageVotes = pgTable(
+  'message_votes',
   {
     projectId: uuid('project_id').notNull(),
     chatId: uuid('chat_id').notNull(),
@@ -536,33 +536,33 @@ export const votes = pgTable(
     foreignKey({
       columns: [table.messageId],
       foreignColumns: [messages.id],
-      name: 'fk_votes_message'
+      name: 'fk_message_votes_message'
     }).onDelete('cascade'),
     foreignKey({
       columns: [table.projectId],
       foreignColumns: [projects.id],
-      name: 'fk_votes_project'
+      name: 'fk_message_votes_project'
     }).onDelete('cascade'),
-    index('idx_votes_chat_id').on(table.chatId),
-    index('idx_votes_message_id').on(table.messageId),
-    index('idx_votes_project_id').on(table.projectId),
-    index('idx_votes_user_id').on(table.userId),
-    pgPolicy('votes_policy', {
+    index('idx_message_votes_chat_id').on(table.chatId),
+    index('idx_message_votes_message_id').on(table.messageId),
+    index('idx_message_votes_project_id').on(table.projectId),
+    index('idx_message_votes_user_id').on(table.userId),
+    pgPolicy('message_votes_policy', {
       to: authenticatedUser,
       for: 'all',
       using: sql`EXISTS (
           SELECT 1 FROM project_members
-          WHERE project_id = votes.project_id AND user_id = current_setting('app.current_user', true)::TEXT
+          WHERE project_id = message_votes.project_id AND user_id = current_setting('app.current_user', true)::TEXT
         )`
     })
   ]
 );
 
-export type Vote = InferSelectModel<typeof votes>;
-export type VoteInsert = InferInsertModel<typeof votes>;
+export type MessageVote = InferSelectModel<typeof messageVotes>;
+export type MessageVoteInsert = InferInsertModel<typeof messageVotes>;
 
-export const documents = pgTable(
-  'documents',
+export const artifactDocuments = pgTable(
+  'artifact_documents',
   {
     id: uuid('id').defaultRandom().notNull(),
     projectId: uuid('project_id').notNull(),
@@ -579,26 +579,26 @@ export const documents = pgTable(
     foreignKey({
       columns: [table.projectId],
       foreignColumns: [projects.id],
-      name: 'fk_documents_project'
+      name: 'fk_artifact_documents_project'
     }).onDelete('cascade'),
-    index('idx_documents_project_id').on(table.projectId),
-    index('idx_documents_user_id').on(table.userId),
-    pgPolicy('documents_policy', {
+    index('idx_artifact_documents_project_id').on(table.projectId),
+    index('idx_artifact_documents_user_id').on(table.userId),
+    pgPolicy('artifact_documents_policy', {
       to: authenticatedUser,
       for: 'all',
       using: sql`EXISTS (
           SELECT 1 FROM project_members
-          WHERE project_id = documents.project_id AND user_id = current_setting('app.current_user', true)::TEXT
+          WHERE project_id = artifact_documents.project_id AND user_id = current_setting('app.current_user', true)::TEXT
         )`
     })
   ]
 );
 
-export type Document = InferSelectModel<typeof documents>;
-export type DocumentInsert = InferInsertModel<typeof documents>;
+export type ArtifactDocument = InferSelectModel<typeof artifactDocuments>;
+export type ArtifactDocumentInsert = InferInsertModel<typeof artifactDocuments>;
 
-export const suggestions = pgTable(
-  'suggestions',
+export const artifactSuggestions = pgTable(
+  'artifact_suggestions',
   {
     id: uuid('id').defaultRandom().notNull(),
     projectId: uuid('project_id').notNull(),
@@ -616,29 +616,29 @@ export const suggestions = pgTable(
     foreignKey({
       columns: [table.projectId],
       foreignColumns: [projects.id],
-      name: 'fk_suggestions_project'
+      name: 'fk_artifact_suggestions_project'
     }).onDelete('cascade'),
     foreignKey({
       columns: [table.documentId],
-      foreignColumns: [documents.id],
-      name: 'fk_suggestions_document'
+      foreignColumns: [artifactDocuments.id],
+      name: 'fk_artifact_suggestions_document'
     }).onDelete('cascade'),
-    index('idx_suggestions_document_id').on(table.documentId),
-    index('idx_suggestions_project_id').on(table.projectId),
-    index('idx_suggestions_user_id').on(table.userId),
-    pgPolicy('suggestions_policy', {
+    index('idx_artifact_suggestions_document_id').on(table.documentId),
+    index('idx_artifact_suggestions_project_id').on(table.projectId),
+    index('idx_artifact_suggestions_user_id').on(table.userId),
+    pgPolicy('artifact_suggestions_policy', {
       to: authenticatedUser,
       for: 'all',
       using: sql`EXISTS (
           SELECT 1 FROM project_members
-          WHERE project_id = suggestions.project_id AND user_id = current_setting('app.current_user', true)::TEXT
+          WHERE project_id = artifact_suggestions.project_id AND user_id = current_setting('app.current_user', true)::TEXT
         )`
     })
   ]
 );
 
-export type Suggestion = InferSelectModel<typeof suggestions>;
-export type SuggestionInsert = InferInsertModel<typeof suggestions>;
+export type ArtifactSuggestion = InferSelectModel<typeof artifactSuggestions>;
+export type ArtifactSuggestionInsert = InferInsertModel<typeof artifactSuggestions>;
 
 export const playbooks = pgTable(
   'playbooks',
