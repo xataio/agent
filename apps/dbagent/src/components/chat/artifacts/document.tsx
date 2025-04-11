@@ -109,7 +109,9 @@ function PureDocumentToolCall({ type, args }: DocumentToolCallProps) {
         <div className="text-left">{`${getActionText(type, 'present')} ${args.title ? `"${args.title}"` : ''}`}</div>
       </div>
 
-      <div className="mt-1 animate-spin">{<LoaderIcon />}</div>
+      <div className="mt-1 animate-spin">
+        <LoaderIcon />
+      </div>
     </button>
   );
 }

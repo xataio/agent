@@ -48,7 +48,7 @@ export function useArtifact() {
     (updaterFn: UIArtifact | ((current: UIArtifact) => UIArtifact)) => {
       queryClient.setQueryData<UIArtifact>(['artifact'], (currentArtifact) => {
         const current = currentArtifact ?? initialArtifactData;
-        return typeof updaterFn === 'function' ? (updaterFn as Function)(current) : updaterFn;
+        return typeof updaterFn === 'function' ? updaterFn(current) : updaterFn;
       });
     },
     [queryClient]
@@ -62,6 +62,7 @@ export function useArtifact() {
   });
 
   const setMetadata = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     (newMetadata: any | ((current: any) => any)) => {
       if (!artifact.documentId) return;
       queryClient.setQueryData(['artifact-metadata', artifact.documentId], (currentMetadata) => {
