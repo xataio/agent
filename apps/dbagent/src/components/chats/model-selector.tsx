@@ -1,6 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@internal/components';
 import { useEffect, useState } from 'react';
-import { ModelInfo } from '~/lib/ai/providers/types';
+import { ProviderModel } from '~/lib/ai/providers/types';
 import { actionGetLanguageModels } from './actions';
 
 interface ModelSelectorProps {
@@ -9,7 +9,7 @@ interface ModelSelectorProps {
 }
 
 export function ModelSelector({ value, onValueChange }: ModelSelectorProps) {
-  const [models, setModels] = useState<ModelInfo[]>([]);
+  const [models, setModels] = useState<ProviderModel[]>([]);
 
   useEffect(() => {
     async function loadModels() {

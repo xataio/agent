@@ -19,7 +19,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Bot } from '~/components/icons/bot';
-import { ModelInfo } from '~/lib/ai/providers/types';
+import { ProviderModel } from '~/lib/ai/providers';
 import { Connection, Schedule, ScheduleRun } from '~/lib/db/schema';
 import { actionGetDefaultLanguageModel } from './actions';
 import { ChatSidebar } from './chat-sidebar';
@@ -55,7 +55,7 @@ function ChatsUIContent({
   const [connectionId, setConnectionId] = useState<string>(
     scheduleRun?.schedule.connectionId || defaultConnection?.id || ''
   );
-  const [defaultModel, setDefaultModel] = useState<ModelInfo>();
+  const [defaultModel, setDefaultModel] = useState<ProviderModel>();
   const [model, setModel] = useState(scheduleRun?.schedule.model || defaultModel?.id || '');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
