@@ -1,15 +1,6 @@
 'use client';
 
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  toast
-} from '@internal/components';
+import { Button, toast } from '@internal/components';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { MessageSquare, Trash2 } from 'lucide-react';
@@ -82,7 +73,7 @@ export default function ChatsPage() {
   }
 
   return (
-    <div className="container p-24">
+    <div className="container">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Your Chats</h1>
@@ -93,36 +84,39 @@ export default function ChatsPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {chats.map((chat) => (
-          <Card key={chat.id} className="group">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 truncate">
-                <MessageSquare className="text-muted-foreground h-5 w-5" />
-                <span className="truncate">{chat.title}</span>
-              </CardTitle>
-              <CardDescription>Created on {format(new Date(chat.createdAt), 'MMM d, yyyy')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-muted-foreground line-clamp-2 h-10 text-sm">Chat with your database assistant</div>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button variant="outline" asChild>
-                <Link href={`/projects/${projectId}/chats/${chat.id}`}>Open Chat</Link>
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-destructive"
-                onClick={() => handleDeleteChat(chat.id)}
-                disabled={isDeleting === chat.id}
-              >
-                <Trash2 className="h-4 w-4" />
-                <span className="sr-only">Delete chat</span>
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+      <div className="w-full">
+        <div className="rounded-md border">
+          <div className="divide-border divide-y">
+            {chats.map((chat) => (
+              <div key={chat.id} className="hover:bg-muted/50 group flex items-center justify-between p-4">
+                <div className="flex items-center gap-3">
+                  <MessageSquare className="text-muted-foreground h-5 w-5" />
+                  <div>
+                    <h3 className="font-medium">{chat.title}</h3>
+                    <p className="text-muted-foreground text-sm">
+                      Created on {format(new Date(chat.createdAt), 'MMM d, yyyy')}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/projects/${projectId}/chats/${chat.id}`}>Open Chat</Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={() => handleDeleteChat(chat.id)}
+                    disabled={isDeleting === chat.id}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Delete chat</span>
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

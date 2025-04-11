@@ -7,35 +7,17 @@ import { DBAccess } from './db';
 import {
   artifactDocuments,
   artifactSuggestions,
+  ChatInsert,
   chats,
-  Message,
+  MessageInsert,
   messages,
   messageVotes,
   type ArtifactSuggestion
 } from './schema';
 
-export async function saveChat(
-  dbAccess: DBAccess,
-  {
-    id,
-    projectId,
-    userId,
-    title
-  }: {
-    id: string;
-    projectId: string;
-    userId: string;
-    title: string;
-  }
-) {
+export async function saveChat(dbAccess: DBAccess, values: ChatInsert) {
   return dbAccess.query(async ({ db }) => {
-    return await db.insert(chats).values({
-      id,
-      projectId,
-      createdAt: new Date(),
-      userId,
-      title
-    });
+    return await db.insert(chats).values(values);
   });
 }
 
@@ -61,7 +43,7 @@ export async function getChatById(dbAccess: DBAccess, { id }: { id: string }) {
   });
 }
 
-export async function saveMessages(dbAccess: DBAccess, { messages: items }: { messages: Array<Message> }) {
+export async function saveMessages(dbAccess: DBAccess, { messages: items }: { messages: Array<MessageInsert> }) {
   return dbAccess.query(async ({ db }) => {
     return await db.insert(messages).values(items);
   });

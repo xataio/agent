@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         message: userMessage
       });
 
-      await saveChat(dbAccess, { id, userId, projectId: connection.projectId, title });
+      await saveChat(dbAccess, { id, userId, projectId: connection.projectId, title, model });
     } else {
       if (chat.userId !== userId) {
         return new Response('Unauthorized', { status: 401 });

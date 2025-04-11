@@ -455,6 +455,7 @@ export const chats = pgTable(
     projectId: uuid('project_id').notNull(),
     createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
     title: text('title').notNull(),
+    model: text('model').notNull(),
     userId: text('user_id').notNull()
   },
   (table) => [
