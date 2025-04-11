@@ -21,7 +21,7 @@ class BuiltinModel implements Model {
 
   instance(): LanguageModel {
     const model = this.info();
-    return this.#provider.kind.languageModel(model.id);
+    return this.#provider.kind.languageModel(model.providerId);
   }
 }
 
