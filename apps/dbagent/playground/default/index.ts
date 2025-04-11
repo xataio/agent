@@ -10,7 +10,7 @@ import { buildPlaygroundTools } from '../tools';
 
 /* eslint-disable no-process-env */
 const defaultModel = getBuiltinProviderRegistry()
-  .languageModel(process.env.MASTRA_MODEL ?? 'openai-gpt-4o')
+  .languageModel(process.env.MASTRA_MODEL ?? 'chat')
   .instance();
 const cloudProvider = (process.env.MASTRA_CLOUD_PROVIDER ?? 'aws') as CloudProvider;
 const defaultTools = buildPlaygroundTools({

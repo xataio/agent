@@ -1,6 +1,6 @@
 'use server';
 
-import { getDefaultLanguageModel, listLanguageModels } from '~/lib/ai/providers';
+import { getDefaultLanguageModel, listLanguageModels, Model } from '~/lib/ai/providers';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 import { getScheduleRun } from '~/lib/db/schedule-runs';
 import { getSchedule } from '~/lib/db/schedules';
@@ -19,13 +19,15 @@ export async function actionGetScheduleRun(runId?: string) {
 }
 
 export async function actionGetLanguageModels() {
-  return (await listLanguageModels()).map((m) => {
-    const { private: _, ...info } = m.info();
-    return info;
-  });
+  return (await listLanguageModels()).map(getModelInfo);
 }
 
-export async function actionGetDefaultLanguageModel() {
-  const { private: _, ...info } = (await getDefaultLanguageModel()).info();
+export async function actionGetDefaultLanguageModel(): Promise<{ id: string; name: string }> {
+  const model = await getDefaultLanguageModel();
+  return getModelInfo(model);
+}
+
+function getModelInfo(model: Model): { id: string; name: string } {
+  const { private: _, ...info } = model.info();
   return info;
 }

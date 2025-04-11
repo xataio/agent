@@ -11,6 +11,7 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "tsc": "turbo run tsc",
+    "generate": "turbo run generate",
     "format-check": "prettier --check \"./**/*.{ts,tsx,css,json,md,yml,yaml}\"",
     "format-write": "prettier --write \"./**/*.{ts,tsx,css,json,md,yml,yaml}\"",
     "prepare": "husky"

@@ -29,7 +29,6 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import * as z from 'zod';
-import { ModelInfo } from '~/lib/ai/providers/types';
 import { Connection, Schedule } from '~/lib/db/schema';
 import { actionGetDefaultLanguageModel } from '../chats/actions';
 import { ModelSelector } from '../chats/model-selector';
@@ -74,12 +73,12 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const playbook = searchParams.get('playbook');
 
-  const [defaultModel, setDefaultModel] = useState<ModelInfo>();
+  const [defaultModel, setDefaultModel] = useState<{ id: string; name: string }>();
   useEffect(() => {
     async function loadDefaultModel() {
       const model = await actionGetDefaultLanguageModel();
       setDefaultModel(model);
-      form.setValue('model', model?.id || '');
+      form.setValue('model', model.id);
     }
     void loadDefaultModel();
   }, []);
@@ -89,7 +88,7 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
     defaultValues: {
       playbook: playbook || playbooks[0] || '',
       connection: connections.find((c) => c.isDefault)?.name || '',
-      model: defaultModel?.id || '',
+      model: defaultModel?.id || 'chat',
       scheduleType: 'cron',
       minInterval: '5',
       maxInterval: '1440',
@@ -109,7 +108,7 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
         form.reset({
           playbook: schedule.playbook,
           connection: connections.find((c) => c.id === schedule.connectionId)?.name || '',
-          model: schedule.model || defaultModel?.id || '',
+          model: schedule.model || defaultModel?.id || 'chat',
           scheduleType: schedule.scheduleType as 'automatic' | 'cron',
           cronExpression: schedule.cronExpression ?? undefined,
           minInterval: schedule.minInterval?.toString(),

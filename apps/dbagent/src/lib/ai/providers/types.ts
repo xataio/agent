@@ -1,3 +1,4 @@
+import { ProviderV1 } from '@ai-sdk/provider';
 import { LanguageModel } from 'ai';
 
 export interface ProviderRegistry {
@@ -7,15 +8,26 @@ export interface ProviderRegistry {
 }
 
 export interface Model {
-  fullId(): string;
-
-  info(): ModelInfo;
+  info(): ProviderModel;
 
   instance(): LanguageModel;
 }
 
-export type ModelInfo = {
+export type Provider = {
+  info: ProviderInfo;
+  models: ProviderModel[];
+};
+
+export type ProviderInfo = {
+  name: string;
   id: string;
+  kind: ProviderV1;
+  fallback?: string;
+};
+
+export type ProviderModel = {
+  id: string;
+  providerId: string;
   name: string;
   private?: boolean;
 };
