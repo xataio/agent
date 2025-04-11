@@ -1,31 +1,18 @@
-import { auth } from '~/auth';
+import { notFound } from 'next/dist/client/components/not-found';
 import { getChatById, getVotesByChatId, voteMessage } from '~/lib/db/chats';
 import { getUserSessionDBAccess } from '~/lib/db/db';
+import { requireUserSession } from '~/utils/route';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const chatId = searchParams.get('chatId');
-
   if (!chatId) {
     return new Response('chatId is required', { status: 400 });
   }
 
-  const session = await auth();
-  if (!session || !session.user || !session.user.email) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
   const dbAccess = await getUserSessionDBAccess();
-
   const chat = await getChatById(dbAccess, { id: chatId });
-
-  if (!chat) {
-    return new Response('Chat not found', { status: 404 });
-  }
-
-  if (chat.userId !== session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+  if (!chat) notFound();
 
   const votes = await getVotesByChatId(dbAccess, { id: chatId });
 
@@ -39,11 +26,7 @@ export async function PATCH(request: Request) {
     return new Response('messageId and type are required', { status: 400 });
   }
 
-  const session = await auth();
-  if (!session?.user?.id) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
+  const userId = await requireUserSession();
   const dbAccess = await getUserSessionDBAccess();
 
   const chat = await getChatById(dbAccess, { id: chatId });
@@ -51,13 +34,9 @@ export async function PATCH(request: Request) {
     return new Response('Chat not found', { status: 404 });
   }
 
-  if (chat.userId !== session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
   await voteMessage(dbAccess, {
     projectId: chat.projectId,
-    userId: session.user.id,
+    userId,
     chatId,
     messageId,
     type: type

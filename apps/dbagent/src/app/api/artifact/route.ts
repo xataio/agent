@@ -1,19 +1,14 @@
-import { auth } from '~/auth';
+import { notFound } from 'next/navigation';
 import { ArtifactKind } from '~/components/chat/artifacts/artifact';
 import { deleteDocumentsByIdAfterTimestamp, getDocumentsById, saveDocument } from '~/lib/db/chats';
 import { getUserSessionDBAccess } from '~/lib/db/db';
+import { requireUserSession } from '~/utils/route';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
-
   if (!id) {
     return new Response('Missing id', { status: 400 });
-  }
-
-  const session = await auth();
-  if (!session || !session.user) {
-    return new Response('Unauthorized', { status: 401 });
   }
 
   const dbAccess = await getUserSessionDBAccess();
@@ -21,14 +16,7 @@ export async function GET(request: Request) {
   const documents = await getDocumentsById(dbAccess, { id });
 
   const [document] = documents;
-
-  if (!document) {
-    return new Response('Not Found', { status: 404 });
-  }
-
-  if (document.userId !== session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+  if (!document) notFound();
 
   return Response.json(documents, { status: 200 });
 }
@@ -45,29 +33,21 @@ export async function POST(request: Request) {
     return new Response('Missing projectId', { status: 400 });
   }
 
-  const session = await auth();
-  if (!session) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
+  const userId = await requireUserSession();
   const dbAccess = await getUserSessionDBAccess();
 
   const { content, title, kind }: { content: string; title: string; kind: ArtifactKind } = await request.json();
 
-  if (session.user?.id) {
-    const document = await saveDocument(dbAccess, {
-      id,
-      projectId,
-      content,
-      title,
-      kind,
-      userId: session.user.id
-    });
+  const document = await saveDocument(dbAccess, {
+    id,
+    projectId,
+    content,
+    title,
+    kind,
+    userId
+  });
 
-    return Response.json(document, { status: 200 });
-  }
-
-  return new Response('Unauthorized', { status: 401 });
+  return Response.json(document, { status: 200 });
 }
 
 export async function PATCH(request: Request) {
@@ -80,20 +60,12 @@ export async function PATCH(request: Request) {
     return new Response('Missing id', { status: 400 });
   }
 
-  const session = await auth();
-  if (!session || !session.user) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
   const dbAccess = await getUserSessionDBAccess();
 
   const documents = await getDocumentsById(dbAccess, { id });
 
   const [document] = documents;
-
-  if (document?.userId !== session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+  if (!document) notFound();
 
   await deleteDocumentsByIdAfterTimestamp(dbAccess, {
     id,

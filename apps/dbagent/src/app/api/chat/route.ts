@@ -1,15 +1,16 @@
 import { UIMessage, appendResponseMessages, createDataStreamResponse, smoothStream, streamText } from 'ai';
+import { notFound } from 'next/navigation';
 import { NextRequest } from 'next/server';
 import { generateTitleFromUserMessage } from '~/app/(main)/projects/[project]/chats/actions';
-import { auth } from '~/auth';
 import { generateUUID } from '~/components/chat/utils';
 import { getChatSystemPrompt, getModelInstance } from '~/lib/ai/agent';
 import { getTools } from '~/lib/ai/tools';
-import { deleteChatById, getChatById, getChatsByUserId, saveMessages, updateChat } from '~/lib/db/chats';
+import { deleteChatById, getChatById, getChatsByUserId as getChats, saveMessages, updateChat } from '~/lib/db/chats';
 import { getConnection } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 import { getProjectById } from '~/lib/db/projects';
 import { getTargetDbPool } from '~/lib/targetdb/db';
+import { requireUserSession } from '~/utils/route';
 
 export const maxDuration = 60;
 
@@ -17,15 +18,9 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const limit = parseInt(searchParams.get('limit') || '10', 10);
 
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
   const dbAccess = await getUserSessionDBAccess();
 
-  const chats = await getChatsByUserId(dbAccess, { id: userId, limit });
+  const chats = await getChats(dbAccess, { limit });
 
   return Response.json({ chats });
 }
@@ -34,12 +29,7 @@ export async function POST(request: Request) {
   try {
     const { id, messages, connectionId, model, useArtifacts } = await request.json();
 
-    const session = await auth();
-    const userId = session?.user?.id;
-    if (!userId) {
-      return new Response('Unauthorized', { status: 401 });
-    }
-
+    const userId = await requireUserSession();
     const dbAccess = await getUserSessionDBAccess();
     const connection = await getConnection(dbAccess, connectionId);
     if (!connection) {
@@ -58,9 +48,7 @@ export async function POST(request: Request) {
     }
 
     const chat = await getChatById(dbAccess, { id });
-    if (!chat || chat.userId !== userId) {
-      return new Response('Unauthorized', { status: 401 });
-    }
+    if (!chat) notFound();
 
     if (!chat?.title) {
       const title = await generateTitleFromUserMessage({
@@ -159,19 +147,11 @@ export async function DELETE(request: Request) {
     return new Response('Not Found', { status: 404 });
   }
 
-  const session = await auth();
-  if (!session || !session.user) {
-    return new Response('Unauthorized', { status: 401 });
-  }
-
   const dbAccess = await getUserSessionDBAccess();
 
   try {
     const chat = await getChatById(dbAccess, { id });
-
-    if (chat?.userId !== session.user.id) {
-      return new Response('Unauthorized', { status: 401 });
-    }
+    if (!chat) notFound();
 
     await deleteChatById(dbAccess, { id });
 
