@@ -9,10 +9,10 @@ import { mergeToolsets, Toolset, ToolsetGroup } from './types';
 
 export function getDBClusterTools(
   dbAccess: DBAccess,
-  connection: Connection,
+  connection: Connection | (() => Promise<Connection>),
   cloudProvider: CloudProvider
 ): Record<string, Tool> {
-  const connectionGetter = () => Promise.resolve({ connection });
+  const connectionGetter = typeof connection === 'function' ? connection : () => Promise.resolve(connection);
   const toolset: Toolset[] = [new CommonDBClusterTools(dbAccess, connectionGetter)];
 
   if (cloudProvider === 'aws') {
@@ -25,9 +25,9 @@ export function getDBClusterTools(
 
 export class CommonDBClusterTools implements ToolsetGroup {
   #dbAccess: DBAccess;
-  #getter: () => Promise<{ connection: Connection }>;
+  #getter: () => Promise<Connection>;
 
-  constructor(dbAccess: DBAccess, getter: () => Promise<{ connection: Connection }>) {
+  constructor(dbAccess: DBAccess, getter: () => Promise<Connection>) {
     this.#dbAccess = dbAccess;
     this.#getter = getter;
   }
@@ -48,7 +48,7 @@ export class CommonDBClusterTools implements ToolsetGroup {
       Useful during the initial assessment.`,
       parameters: z.object({}),
       execute: async () => {
-        const { connection } = await getter();
+        const connection = await getter();
         return await getTablesAndInstanceInfo(db, connection);
       }
     });
@@ -61,7 +61,7 @@ export class CommonDBClusterTools implements ToolsetGroup {
       description: `Get the available and installed PostgreSQL extensions for the database.`,
       parameters: z.object({}),
       execute: async () => {
-        const { connection } = await getter();
+        const connection = await getter();
         return await getPostgresExtensions(db, connection);
       }
     });
@@ -70,9 +70,9 @@ export class CommonDBClusterTools implements ToolsetGroup {
 
 export class AWSDBClusterTools implements ToolsetGroup {
   #dbAccess: DBAccess;
-  #getter: () => Promise<{ connection: Connection }>;
+  #getter: () => Promise<Connection>;
 
-  constructor(dbAccess: DBAccess, getter: () => Promise<{ connection: Connection }>) {
+  constructor(dbAccess: DBAccess, getter: () => Promise<Connection>) {
     this.#dbAccess = dbAccess;
     this.#getter = getter;
   }
@@ -95,7 +95,7 @@ export class AWSDBClusterTools implements ToolsetGroup {
       }),
       execute: async ({ periodInSeconds, grep }) => {
         console.log('getInstanceLogs', periodInSeconds, grep);
-        const { connection } = await getter();
+        const connection = await getter();
         return await getInstanceLogsRDS(db, { connection, periodInSeconds, grep });
       }
     });
@@ -112,7 +112,7 @@ export class AWSDBClusterTools implements ToolsetGroup {
       }),
       execute: async ({ metricName, periodInSeconds }) => {
         console.log('getClusterMetric', metricName, periodInSeconds);
-        const { connection } = await getter();
+        const connection = await getter();
         return await getClusterMetricRDS(db, { connection, metricName, periodInSeconds });
       }
     });
@@ -121,9 +121,9 @@ export class AWSDBClusterTools implements ToolsetGroup {
 
 export class GCPDBClusterTools implements ToolsetGroup {
   #dbAccess: DBAccess;
-  #getter: () => Promise<{ connection: Connection }>;
+  #getter: () => Promise<Connection>;
 
-  constructor(dbAccess: DBAccess, getter: () => Promise<{ connection: Connection }>) {
+  constructor(dbAccess: DBAccess, getter: () => Promise<Connection>) {
     this.#dbAccess = dbAccess;
     this.#getter = getter;
   }
@@ -146,7 +146,7 @@ export class GCPDBClusterTools implements ToolsetGroup {
       }),
       execute: async ({ periodInSeconds, grep }) => {
         console.log('getInstanceLogs', periodInSeconds, grep);
-        const { connection } = await getter();
+        const connection = await getter();
         return await getInstanceLogsGCP(db, { connection, periodInSeconds, grep });
       }
     });
@@ -176,7 +176,7 @@ export class GCPDBClusterTools implements ToolsetGroup {
       }),
       execute: async ({ metricName, periodInSeconds }) => {
         console.log('getClusterMetricGCP', metricName, periodInSeconds);
-        const { connection } = await getter();
+        const connection = await getter();
         return await getClusterMetricGCP(db, { connection, metricName, periodInSeconds });
       }
     });

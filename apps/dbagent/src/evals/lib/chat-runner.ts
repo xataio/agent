@@ -36,7 +36,7 @@ export const evalChat = async ({
     const tools = await getTools({ project, connection, targetDb, userId: 'evalUser' });
     const response = await generateText({
       model: getModelInstance(env.CHAT_MODEL),
-      system: getChatSystemPrompt({ project }),
+      system: getChatSystemPrompt({ cloudProvider: project.cloudProvider }),
       maxSteps: 20,
       tools,
       messages
