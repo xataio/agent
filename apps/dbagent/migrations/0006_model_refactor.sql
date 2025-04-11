@@ -13,6 +13,7 @@ SET
         WHEN "model" LIKE 'anthropic-%' THEN REPLACE("model", 'anthropic-', 'anthropic:')
         WHEN "model" LIKE 'deepseek-%' THEN REPLACE("model", 'deepseek-', 'deepseek:')
         WHEN "model" LIKE 'google-%' THEN REPLACE("model", 'google-', 'google:')
+        WHEN "model" LIKE 'gemini-%' THEN REPLACE("model", 'gemini-', 'google:gemini-')
         ELSE "model" -- Keep as is if no pattern matches
     END
 WHERE
