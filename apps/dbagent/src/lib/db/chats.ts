@@ -15,24 +15,44 @@ import {
   type ArtifactSuggestion
 } from './schema';
 
-export async function saveChat(dbAccess: DBAccess, values: ChatInsert) {
+export async function saveChat(dbAccess: DBAccess, chat: ChatInsert, chatMessages: Array<MessageInsert> = []) {
   return dbAccess.query(async ({ db }) => {
-    return await db.insert(chats).values(values);
+    return await db.transaction(async (tx) => {
+      const result = await tx.insert(chats).values(chat);
+
+      if (chatMessages.length > 0) {
+        await tx.insert(messages).values(chatMessages);
+      }
+
+      return result;
+    });
+  });
+}
+
+export async function updateChat(dbAccess: DBAccess, id: string, chat: Partial<ChatInsert>) {
+  return dbAccess.query(async ({ db }) => {
+    return await db.update(chats).set(chat).where(eq(chats.id, id));
   });
 }
 
 export async function deleteChatById(dbAccess: DBAccess, { id }: { id: string }) {
   return dbAccess.query(async ({ db }) => {
-    await db.delete(messageVotes).where(eq(messageVotes.chatId, id));
-    await db.delete(messages).where(eq(messages.chatId, id));
-
     return await db.delete(chats).where(eq(chats.id, id));
   });
 }
 
-export async function getChatsByUserId(dbAccess: DBAccess, { id, limit }: { id: string; limit: number }) {
+export async function getChatsByUserId(
+  dbAccess: DBAccess,
+  { id, limit = 100, offset = 0 }: { id: string; limit?: number; offset?: number }
+) {
   return dbAccess.query(async ({ db }) => {
-    return await db.select().from(chats).where(eq(chats.userId, id)).orderBy(desc(chats.createdAt)).limit(limit);
+    return await db
+      .select()
+      .from(chats)
+      .where(eq(chats.userId, id))
+      .orderBy(desc(chats.createdAt))
+      .limit(limit)
+      .offset(offset);
   });
 }
 
@@ -72,23 +92,27 @@ export async function voteMessage(
   }
 ) {
   return dbAccess.query(async ({ db }) => {
-    const [existingVote] = await db
-      .select()
-      .from(messageVotes)
-      .where(and(eq(messageVotes.messageId, messageId)));
-
-    if (existingVote) {
-      return await db
-        .update(messageVotes)
-        .set({ isUpvoted: type === 'up' })
+    return await db.transaction(async (tx) => {
+      const [existingVote] = await tx
+        .select()
+        .from(messageVotes)
         .where(and(eq(messageVotes.messageId, messageId), eq(messageVotes.chatId, chatId)));
-    }
-    return await db.insert(messageVotes).values({
-      chatId,
-      messageId,
-      projectId,
-      userId,
-      isUpvoted: type === 'up'
+
+      if (existingVote) {
+        await tx
+          .update(messageVotes)
+          .set({ isUpvoted: type === 'up' })
+          .where(and(eq(messageVotes.messageId, messageId), eq(messageVotes.chatId, chatId)));
+      } else {
+        await tx.insert(messageVotes).values({
+          chatId,
+          messageId,
+          projectId,
+          userId,
+          isUpvoted: type === 'up'
+        });
+      }
+      return { success: true };
     });
   });
 }
@@ -159,10 +183,6 @@ export async function deleteDocumentsByIdAfterTimestamp(
   { id, timestamp }: { id: string; timestamp: Date }
 ) {
   return dbAccess.query(async ({ db }) => {
-    await db
-      .delete(artifactSuggestions)
-      .where(and(eq(artifactSuggestions.documentId, id), gt(artifactSuggestions.documentCreatedAt, timestamp)));
-
     return await db
       .delete(artifactDocuments)
       .where(and(eq(artifactDocuments.id, id), gt(artifactDocuments.createdAt, timestamp)));
@@ -198,19 +218,23 @@ export async function deleteMessagesByChatIdAfterTimestamp(
   { chatId, timestamp }: { chatId: string; timestamp: Date }
 ) {
   return dbAccess.query(async ({ db }) => {
-    const messagesToDelete = await db
-      .select({ id: messages.id })
-      .from(messages)
-      .where(and(eq(messages.chatId, chatId), gte(messages.createdAt, timestamp)));
+    return await db.transaction(async (tx) => {
+      const messagesToDelete = await tx
+        .select({ id: messages.id })
+        .from(messages)
+        .where(and(eq(messages.chatId, chatId), gte(messages.createdAt, timestamp)));
 
-    const messageIds = messagesToDelete.map((message) => message.id);
+      const messageIds = messagesToDelete.map((message) => message.id);
 
-    if (messageIds.length > 0) {
-      await db
-        .delete(messageVotes)
-        .where(and(eq(messageVotes.chatId, chatId), inArray(messageVotes.messageId, messageIds)));
+      if (messageIds.length > 0) {
+        await tx
+          .delete(messageVotes)
+          .where(and(eq(messageVotes.chatId, chatId), inArray(messageVotes.messageId, messageIds)));
 
-      return await db.delete(messages).where(and(eq(messages.chatId, chatId), inArray(messages.id, messageIds)));
-    }
+        await tx.delete(messages).where(and(eq(messages.chatId, chatId), inArray(messages.id, messageIds)));
+      }
+
+      return { success: true, deletedCount: messageIds.length };
+    });
   });
 }

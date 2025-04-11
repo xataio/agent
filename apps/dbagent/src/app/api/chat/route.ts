@@ -5,7 +5,7 @@ import { auth } from '~/auth';
 import { generateUUID } from '~/components/chat/utils';
 import { getChatSystemPrompt, getModelInstance } from '~/lib/ai/agent';
 import { getTools } from '~/lib/ai/tools';
-import { deleteChatById, getChatById, getChatsByUserId, saveChat, saveMessages } from '~/lib/db/chats';
+import { deleteChatById, getChatById, getChatsByUserId, saveMessages, updateChat } from '~/lib/db/chats';
 import { getConnection } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 import { getProjectById } from '~/lib/db/projects';
@@ -58,30 +58,17 @@ export async function POST(request: Request) {
     }
 
     const chat = await getChatById(dbAccess, { id });
-    if (!chat) {
+    if (!chat || chat.userId !== userId) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+
+    if (!chat?.title) {
       const title = await generateTitleFromUserMessage({
         message: userMessage
       });
 
-      await saveChat(dbAccess, { id, userId, projectId: connection.projectId, title, model });
-    } else {
-      if (chat.userId !== userId) {
-        return new Response('Unauthorized', { status: 401 });
-      }
+      await updateChat(dbAccess, id, { title, model });
     }
-
-    await saveMessages(dbAccess, {
-      messages: [
-        {
-          chatId: id,
-          id: userMessage.id,
-          projectId: connection.projectId,
-          role: 'user',
-          parts: userMessage.parts,
-          createdAt: new Date()
-        }
-      ]
-    });
 
     const targetDb = getTargetDbPool(connection.connectionString);
     const context = getChatSystemPrompt({ cloudProvider: project.cloudProvider, useArtifacts });
@@ -122,6 +109,14 @@ export async function POST(request: Request) {
               await saveMessages(dbAccess, {
                 messages: [
                   {
+                    chatId: id,
+                    id: userMessage.id,
+                    projectId: connection.projectId,
+                    role: 'user',
+                    parts: userMessage.parts,
+                    createdAt: new Date()
+                  },
+                  {
                     id: assistantId,
                     projectId: connection.projectId,
                     chatId: id,
@@ -131,11 +126,11 @@ export async function POST(request: Request) {
                   }
                 ]
               });
-            } catch (_) {
-              console.error('Failed to save chat');
+            } catch (error) {
+              console.error('Failed to save chat', error);
+            } finally {
+              await targetDb.end();
             }
-
-            await targetDb.end();
           }
         });
 
