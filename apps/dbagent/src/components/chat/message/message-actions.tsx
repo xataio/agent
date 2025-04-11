@@ -8,7 +8,7 @@ import { useParams } from 'next/navigation';
 import { memo } from 'react';
 import { useCopyToClipboard } from 'usehooks-ts';
 import { Vote } from '~/lib/db/schema';
-import { ThumbDownIcon, ThumbUpIcon } from '../icons';
+import { ThumbDownIcon, ThumbUpIcon } from '../../icons';
 
 export function PureMessageActions({
   chatId,

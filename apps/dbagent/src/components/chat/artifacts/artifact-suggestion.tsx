@@ -4,9 +4,9 @@ import { Button, cn } from '@internal/components';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useWindowSize } from 'usehooks-ts';
-import { CrossIcon, MessageIcon } from '../icons';
+import { CrossIcon, MessageIcon } from '../../icons';
 import { ArtifactKind } from './artifact';
-import { UISuggestion } from './editor/suggestions';
+import { UISuggestion } from './text/editor/suggestions';
 
 export const ArtifactSuggestion = ({
   suggestion,

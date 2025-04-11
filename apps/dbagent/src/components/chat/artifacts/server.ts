@@ -2,7 +2,7 @@ import { DataStreamWriter } from 'ai';
 import { saveDocument } from '~/lib/db/chats';
 import { DBAccess } from '~/lib/db/db';
 import { Document } from '~/lib/db/schema';
-import { ArtifactKind } from '../artifact';
+import { ArtifactKind } from './artifact';
 import { sheetDocumentHandler } from './sheet/server';
 import { textDocumentHandler } from './text/server';
 

@@ -340,7 +340,7 @@ export const scheduleRuns = pgTable(
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     projectId: uuid('project_id').notNull(),
     scheduleId: uuid('schedule_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
     result: text('result').notNull(),
     summary: text('summary'),
     notificationLevel: notificationLevel('notification_level').default('info').notNull(),
@@ -453,7 +453,7 @@ export const chats = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     projectId: uuid('project_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
     title: text('title').notNull(),
     userId: text('user_id').notNull()
   },
@@ -487,7 +487,7 @@ export const messages = pgTable(
     chatId: uuid('chat_id').notNull(),
     role: varchar('role').$type<SDKMessage['role']>().notNull(),
     parts: jsonb('parts').$type<SDKMessage['parts']>().notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull()
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull()
   },
   (table) => [
     foreignKey({
@@ -524,7 +524,7 @@ export const votes = pgTable(
     messageId: uuid('message_id').notNull(),
     userId: text('user_id').notNull(),
     isUpvoted: boolean('is_upvoted').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull()
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull()
   },
   (table) => [
     primaryKey({ columns: [table.chatId, table.messageId, table.userId] }),
@@ -566,7 +566,7 @@ export const documents = pgTable(
   {
     id: uuid('id').defaultRandom().notNull(),
     projectId: uuid('project_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
     title: text('title').notNull(),
     content: text('content'),
     kind: varchar('kind', { enum: ['text', 'sheet'] })
@@ -648,7 +648,7 @@ export const playbooks = pgTable(
     name: varchar('name', { length: 255 }).notNull(),
     description: text('description'),
     content: jsonb('content').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
     createdBy: text('created_by').notNull()
   },

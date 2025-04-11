@@ -1,11 +1,11 @@
 import { toast } from '@internal/components';
 import { ClockRewind, CopyIcon, MessageIcon, PenIcon, RedoIcon, UndoIcon } from '~/components/icons';
 import { Suggestion } from '~/lib/db/schema';
-import { Artifact } from '../../create-artifact';
-import { DiffView } from '../../diff-view';
-import { DocumentSkeleton } from '../../document-skeleton';
-import { Editor } from '../../text-editor';
-import { getSuggestions } from '../actions';
+import { Artifact } from '../create-artifact';
+import { DocumentSkeleton } from '../document-skeleton';
+import { getSuggestions } from './actions';
+import { Editor } from './editor';
+import { DiffView } from './editor/diff-view';
 
 interface TextArtifactMetadata {
   suggestions: Array<Suggestion>;

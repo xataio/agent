@@ -3,9 +3,9 @@ import { UIMessage } from 'ai';
 import equal from 'fast-deep-equal';
 import { memo } from 'react';
 import { Vote } from '~/lib/db/schema';
+import { PreviewMessage } from '../message';
+import { useScrollToBottom } from '../use-scroll-to-bottom';
 import { UIArtifact } from './artifact';
-import { PreviewMessage } from './message';
-import { useScrollToBottom } from './use-scroll-to-bottom';
 
 interface ArtifactMessagesProps {
   projectId: string;

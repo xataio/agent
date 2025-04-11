@@ -6,13 +6,13 @@ import equal from 'fast-deep-equal';
 import { FileIcon, FullscreenIcon, LoaderIcon } from 'lucide-react';
 import { memo, MouseEvent, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Document } from '~/lib/db/schema';
+import { fetcher } from '../utils';
 import { ArtifactKind, UIArtifact } from './artifact';
 import { DocumentToolCall, DocumentToolResult } from './document';
 import { InlineDocumentSkeleton } from './document-skeleton';
-import { SpreadsheetEditor } from './sheet-editor';
-import { Editor } from './text-editor';
+import { SpreadsheetEditor } from './sheet/editor';
+import { Editor } from './text/editor';
 import { useArtifact } from './use-artifact';
-import { fetcher } from './utils';
 
 interface DocumentPreviewProps {
   projectId: string;

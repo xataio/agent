@@ -3,8 +3,8 @@ import { Plugin, PluginKey } from 'prosemirror-state';
 import { type Decoration, DecorationSet, type EditorView } from 'prosemirror-view';
 import { createRoot } from 'react-dom/client';
 import { Suggestion } from '~/lib/db/schema';
-import { ArtifactKind } from '../artifact';
-import { ArtifactSuggestion } from '../artifact-suggestion';
+import { ArtifactKind } from '../../artifact';
+import { ArtifactSuggestion } from '../../artifact-suggestion';
 
 export interface UISuggestion extends Suggestion {
   selectionStart: number;

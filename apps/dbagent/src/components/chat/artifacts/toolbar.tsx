@@ -8,7 +8,7 @@ import { ArrowUpIcon } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { type Dispatch, memo, ReactNode, RefObject, type SetStateAction, useEffect, useRef, useState } from 'react';
 import { useOnClickOutside } from 'usehooks-ts';
-import { StopIcon, SummarizeIcon } from '../icons';
+import { StopIcon, SummarizeIcon } from '../../icons';
 import { artifactDefinitions, ArtifactKind } from './artifact';
 import { ArtifactToolbarItem } from './create-artifact';
 

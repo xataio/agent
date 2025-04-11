@@ -1,7 +1,7 @@
 import { memo } from 'react';
 
 import { FileIcon, LoaderIcon } from 'lucide-react';
-import { MessageIcon, PencilEditIcon } from '../icons';
+import { MessageIcon, PencilEditIcon } from '../../icons';
 import type { ArtifactKind } from './artifact';
 import { useArtifact } from './use-artifact';
 

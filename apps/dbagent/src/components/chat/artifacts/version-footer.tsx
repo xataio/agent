@@ -8,8 +8,8 @@ import { LoaderIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useWindowSize } from 'usehooks-ts';
 import { Document } from '~/lib/db/schema';
+import { getDocumentTimestampByIndex } from '../utils';
 import { useArtifact } from './use-artifact';
-import { getDocumentTimestampByIndex } from './utils';
 
 interface VersionFooterProps {
   handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;

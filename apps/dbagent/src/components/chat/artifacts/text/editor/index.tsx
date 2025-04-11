@@ -6,9 +6,9 @@ import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { memo, useEffect, useRef } from 'react';
 import { Suggestion } from '~/lib/db/schema';
-import { documentSchema, handleTransaction, headingRule } from './editor/config';
-import { buildContentFromDocument, buildDocumentFromContent, createDecorations } from './editor/functions';
-import { projectWithPositions, suggestionsPlugin, suggestionsPluginKey } from './editor/suggestions';
+import { documentSchema, handleTransaction, headingRule } from './config';
+import { buildContentFromDocument, buildDocumentFromContent, createDecorations } from './functions';
+import { projectWithPositions, suggestionsPlugin, suggestionsPluginKey } from './suggestions';
 
 type EditorProps = {
   content: string;

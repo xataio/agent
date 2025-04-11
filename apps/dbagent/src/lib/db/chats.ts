@@ -2,7 +2,7 @@ import 'server-only';
 
 import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm';
 
-import { ArtifactKind } from '~/components/chat/artifact';
+import { ArtifactKind } from '~/components/chat/artifacts/artifact';
 import { DBAccess } from './db';
 import { chats, documents, Message, messages, type Suggestion, suggestions, votes } from './schema';
 

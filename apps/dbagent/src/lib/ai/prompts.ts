@@ -1,4 +1,4 @@
-import { ArtifactKind } from '~/components/chat/artifact';
+import { ArtifactKind } from '~/components/chat/artifacts/artifact';
 
 export const commonSystemPrompt = `
 You are an AI assistant expert in PostgreSQL and database administration.

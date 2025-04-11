@@ -6,12 +6,12 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
 import { useState } from 'react';
 import { Connection, Vote } from '~/lib/db/schema';
-import { Artifact } from './artifact';
-import { ChatHeader } from './chat-header';
+import { Artifact } from './artifacts/artifact';
+import { useArtifactSelector } from './artifacts/use-artifact';
+import { ChatHeader } from './header';
 import { Messages } from './messages';
 import { MultimodalInput } from './multimodal-input';
 import { SuggestedAction } from './suggested-actions';
-import { useArtifactSelector } from './use-artifact';
 import { fetcher, generateUUID } from './utils';
 
 export function Chat({

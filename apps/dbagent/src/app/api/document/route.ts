@@ -1,5 +1,5 @@
 import { auth } from '~/auth';
-import { ArtifactKind } from '~/components/chat/artifact';
+import { ArtifactKind } from '~/components/chat/artifacts/artifact';
 import { deleteDocumentsByIdAfterTimestamp, getDocumentsById, saveDocument } from '~/lib/db/chats';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 

@@ -1,6 +1,6 @@
 import { UIMessage } from 'ai';
+import { DataStreamHandler } from '~/components/chat/artifacts/data-stream-handler';
 import { Chat } from '~/components/chat/chat';
-import { DataStreamHandler } from '~/components/chat/data-stream-handler';
 import { getDefaultLanguageModel } from '~/lib/ai/providers';
 import { getMessagesByChatId } from '~/lib/db/chats';
 import { listConnections } from '~/lib/db/connections';

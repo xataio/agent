@@ -7,7 +7,7 @@ import { EditorView } from 'prosemirror-view';
 import { useEffect, useRef } from 'react';
 import { renderToString } from 'react-dom/server';
 import ReactMarkdown from 'react-markdown';
-import { diffEditor } from './editor/diff';
+import { diffEditor } from './diff';
 
 export const DiffType = {
   Unchanged: 0,
