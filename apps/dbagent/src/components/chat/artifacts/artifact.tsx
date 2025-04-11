@@ -7,7 +7,7 @@ import equal from 'fast-deep-equal';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
-import { Document, Vote } from '~/lib/db/schema';
+import { ArtifactDocument, MessageVote } from '~/lib/db/schema';
 import { MultimodalInput } from '../multimodal-input';
 import { fetcher } from '../utils';
 import { ArtifactActions } from './artifact-actions';
@@ -59,7 +59,7 @@ function PureArtifact({
   stop: UseChatHelpers['stop'];
   messages: Array<UIMessage>;
   setMessages: UseChatHelpers['setMessages'];
-  votes: Array<Vote> | undefined;
+  votes: Array<MessageVote> | undefined;
   append: UseChatHelpers['append'];
   handleSubmit: UseChatHelpers['handleSubmit'];
   reload: UseChatHelpers['reload'];
@@ -74,7 +74,7 @@ function PureArtifact({
   });
 
   const [mode, setMode] = useState<'edit' | 'diff'>('edit');
-  const [document, setDocument] = useState<Document | null>(null);
+  const [document, setDocument] = useState<ArtifactDocument | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
 
   const { open: isSidebarOpen } = useSidebar();
@@ -104,7 +104,7 @@ function PureArtifact({
     async (updatedContent: string) => {
       if (!artifact) return;
 
-      const currentDocuments = queryClient.getQueryData<Array<Document>>(['documents', artifact.documentId]);
+      const currentDocuments = queryClient.getQueryData<Array<ArtifactDocument>>(['documents', artifact.documentId]);
       if (!currentDocuments) return;
 
       const currentDocument = currentDocuments.at(-1);

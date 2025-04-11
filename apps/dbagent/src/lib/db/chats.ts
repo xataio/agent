@@ -4,7 +4,15 @@ import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm';
 
 import { ArtifactKind } from '~/components/chat/artifacts/artifact';
 import { DBAccess } from './db';
-import { chats, documents, Message, messages, type Suggestion, suggestions, votes } from './schema';
+import {
+  artifactDocuments,
+  artifactSuggestions,
+  chats,
+  Message,
+  messages,
+  messageVotes,
+  type ArtifactSuggestion
+} from './schema';
 
 export async function saveChat(
   dbAccess: DBAccess,
@@ -33,7 +41,7 @@ export async function saveChat(
 
 export async function deleteChatById(dbAccess: DBAccess, { id }: { id: string }) {
   return dbAccess.query(async ({ db }) => {
-    await db.delete(votes).where(eq(votes.chatId, id));
+    await db.delete(messageVotes).where(eq(messageVotes.chatId, id));
     await db.delete(messages).where(eq(messages.chatId, id));
 
     return await db.delete(chats).where(eq(chats.id, id));
@@ -84,16 +92,16 @@ export async function voteMessage(
   return dbAccess.query(async ({ db }) => {
     const [existingVote] = await db
       .select()
-      .from(votes)
-      .where(and(eq(votes.messageId, messageId)));
+      .from(messageVotes)
+      .where(and(eq(messageVotes.messageId, messageId)));
 
     if (existingVote) {
       return await db
-        .update(votes)
+        .update(messageVotes)
         .set({ isUpvoted: type === 'up' })
-        .where(and(eq(votes.messageId, messageId), eq(votes.chatId, chatId)));
+        .where(and(eq(messageVotes.messageId, messageId), eq(messageVotes.chatId, chatId)));
     }
-    return await db.insert(votes).values({
+    return await db.insert(messageVotes).values({
       chatId,
       messageId,
       projectId,
@@ -105,7 +113,7 @@ export async function voteMessage(
 
 export async function getVotesByChatId(dbAccess: DBAccess, { id }: { id: string }) {
   return dbAccess.query(async ({ db }) => {
-    return await db.select().from(votes).where(eq(votes.chatId, id));
+    return await db.select().from(messageVotes).where(eq(messageVotes.chatId, id));
   });
 }
 
@@ -128,7 +136,7 @@ export async function saveDocument(
   }
 ) {
   return dbAccess.query(async ({ db }) => {
-    return await db.insert(documents).values({
+    return await db.insert(artifactDocuments).values({
       id,
       title,
       kind,
@@ -142,7 +150,11 @@ export async function saveDocument(
 
 export async function getDocumentsById(dbAccess: DBAccess, { id }: { id: string }) {
   return dbAccess.query(async ({ db }) => {
-    const items = await db.select().from(documents).where(eq(documents.id, id)).orderBy(asc(documents.createdAt));
+    const items = await db
+      .select()
+      .from(artifactDocuments)
+      .where(eq(artifactDocuments.id, id))
+      .orderBy(asc(artifactDocuments.createdAt));
 
     return items;
   });
@@ -152,9 +164,9 @@ export async function getDocumentById(dbAccess: DBAccess, { id }: { id: string }
   return dbAccess.query(async ({ db }) => {
     const [selectedDocument] = await db
       .select()
-      .from(documents)
-      .where(eq(documents.id, id))
-      .orderBy(desc(documents.createdAt));
+      .from(artifactDocuments)
+      .where(eq(artifactDocuments.id, id))
+      .orderBy(desc(artifactDocuments.createdAt));
 
     return selectedDocument;
   });
@@ -166,16 +178,21 @@ export async function deleteDocumentsByIdAfterTimestamp(
 ) {
   return dbAccess.query(async ({ db }) => {
     await db
-      .delete(suggestions)
-      .where(and(eq(suggestions.documentId, id), gt(suggestions.documentCreatedAt, timestamp)));
+      .delete(artifactSuggestions)
+      .where(and(eq(artifactSuggestions.documentId, id), gt(artifactSuggestions.documentCreatedAt, timestamp)));
 
-    return await db.delete(documents).where(and(eq(documents.id, id), gt(documents.createdAt, timestamp)));
+    return await db
+      .delete(artifactDocuments)
+      .where(and(eq(artifactDocuments.id, id), gt(artifactDocuments.createdAt, timestamp)));
   });
 }
 
-export async function saveSuggestions(dbAccess: DBAccess, { suggestions: items }: { suggestions: Array<Suggestion> }) {
+export async function saveSuggestions(
+  dbAccess: DBAccess,
+  { suggestions: items }: { suggestions: Array<ArtifactSuggestion> }
+) {
   return dbAccess.query(async ({ db }) => {
-    return await db.insert(suggestions).values(items);
+    return await db.insert(artifactSuggestions).values(items);
   });
 }
 
@@ -183,8 +200,8 @@ export async function getSuggestionsByDocumentId(dbAccess: DBAccess, { documentI
   return dbAccess.query(async ({ db }) => {
     return await db
       .select()
-      .from(suggestions)
-      .where(and(eq(suggestions.documentId, documentId)));
+      .from(artifactSuggestions)
+      .where(and(eq(artifactSuggestions.documentId, documentId)));
   });
 }
 
@@ -207,7 +224,9 @@ export async function deleteMessagesByChatIdAfterTimestamp(
     const messageIds = messagesToDelete.map((message) => message.id);
 
     if (messageIds.length > 0) {
-      await db.delete(votes).where(and(eq(votes.chatId, chatId), inArray(votes.messageId, messageIds)));
+      await db
+        .delete(messageVotes)
+        .where(and(eq(messageVotes.chatId, chatId), inArray(messageVotes.messageId, messageIds)));
 
       return await db.delete(messages).where(and(eq(messages.chatId, chatId), inArray(messages.id, messageIds)));
     }

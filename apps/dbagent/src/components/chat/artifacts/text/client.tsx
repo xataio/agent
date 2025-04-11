@@ -1,6 +1,6 @@
 import { toast } from '@internal/components';
 import { CopyIcon, HistoryIcon, MessageCircleIcon, PenIcon, RedoIcon, UndoIcon } from 'lucide-react';
-import { Suggestion } from '~/lib/db/schema';
+import { ArtifactSuggestion } from '~/lib/db/schema';
 import { Artifact } from '../create-artifact';
 import { DocumentSkeleton } from '../document-skeleton';
 import { getSuggestions } from './actions';
@@ -8,7 +8,7 @@ import { Editor } from './editor';
 import { DiffView } from './editor/diff-view';
 
 interface TextArtifactMetadata {
-  suggestions: Array<Suggestion>;
+  suggestions: Array<ArtifactSuggestion>;
 }
 
 export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
@@ -25,7 +25,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     if (streamPart.type === 'suggestion') {
       setMetadata((metadata) => {
         return {
-          suggestions: [...metadata.suggestions, streamPart.content as Suggestion]
+          suggestions: [...metadata.suggestions, streamPart.content as ArtifactSuggestion]
         };
       });
     }

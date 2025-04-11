@@ -5,7 +5,7 @@ import { toast } from '@internal/components';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
 import { useState } from 'react';
-import { Connection, Vote } from '~/lib/db/schema';
+import { Connection, MessageVote } from '~/lib/db/schema';
 import { Artifact } from './artifacts/artifact';
 import { useArtifactSelector } from './artifacts/use-artifact';
 import { ChatHeader } from './header';
@@ -50,7 +50,7 @@ export function Chat({
     }
   });
 
-  const { data: votes } = useQuery<Vote[]>({
+  const { data: votes } = useQuery<MessageVote[]>({
     queryKey: ['votes', id],
     queryFn: () => fetcher(`/api/vote?chatId=${id}`),
     enabled: messages.length >= 2

@@ -5,7 +5,7 @@ import { inputRules } from 'prosemirror-inputrules';
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { memo, useEffect, useRef } from 'react';
-import { Suggestion } from '~/lib/db/schema';
+import { ArtifactSuggestion } from '~/lib/db/schema';
 import { documentSchema, handleTransaction, headingRule } from './config';
 import { buildContentFromDocument, buildDocumentFromContent, createDecorations } from './functions';
 import { projectWithPositions, suggestionsPlugin, suggestionsPluginKey } from './suggestions';
@@ -16,7 +16,7 @@ type EditorProps = {
   status: 'streaming' | 'idle';
   isCurrentVersion: boolean;
   currentVersionIndex: number;
-  suggestions: Array<Suggestion>;
+  suggestions: Array<ArtifactSuggestion>;
 };
 
 function PureEditor({ content, onSaveContent, suggestions, status }: EditorProps) {

@@ -7,7 +7,7 @@ import equal from 'fast-deep-equal';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Clock, PencilIcon, SparklesIcon } from 'lucide-react';
 import { memo, useState } from 'react';
-import { Vote } from '~/lib/db/schema';
+import { MessageVote } from '~/lib/db/schema';
 import { DocumentToolCall, DocumentToolResult } from '../artifacts/document';
 import { DocumentPreview } from '../artifacts/document-preview';
 import { Markdown } from './markdown';
@@ -27,7 +27,7 @@ const PurePreviewMessage = ({
   projectId: string;
   chatId: string;
   message: UIMessage;
-  vote: Vote | undefined;
+  vote: MessageVote | undefined;
   isLoading: boolean;
   setMessages: UseChatHelpers['setMessages'];
   reload: UseChatHelpers['reload'];

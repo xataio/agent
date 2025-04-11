@@ -7,13 +7,13 @@ import { motion } from 'framer-motion';
 import { LoaderIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useWindowSize } from 'usehooks-ts';
-import { Document } from '~/lib/db/schema';
+import { ArtifactDocument } from '~/lib/db/schema';
 import { getDocumentTimestampByIndex } from '../utils';
 import { useArtifact } from './use-artifact';
 
 interface VersionFooterProps {
   handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
-  documents: Array<Document> | undefined;
+  documents: Array<ArtifactDocument> | undefined;
   currentVersionIndex: number;
 }
 

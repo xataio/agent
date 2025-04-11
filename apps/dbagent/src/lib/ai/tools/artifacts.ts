@@ -4,7 +4,7 @@ import { artifactKinds, documentHandlersByArtifactKind } from '~/components/chat
 import { generateUUID } from '~/components/chat/utils';
 import { getDocumentById, saveSuggestions } from '~/lib/db/chats';
 import { DBAccess } from '~/lib/db/db';
-import { Suggestion } from '~/lib/db/schema';
+import { ArtifactSuggestion } from '~/lib/db/schema';
 import { getModelInstance } from '../agent';
 
 interface ArtifactToolProps {
@@ -150,7 +150,7 @@ export const requestSuggestions = ({ userId, projectId, dataStream, dbAccess }: 
         };
       }
 
-      const suggestions: Array<Omit<Suggestion, 'userId' | 'createdAt' | 'documentCreatedAt'>> = [];
+      const suggestions: Array<Omit<ArtifactSuggestion, 'userId' | 'createdAt' | 'documentCreatedAt'>> = [];
 
       const { elementStream } = streamObject({
         model: getModelInstance('chat'),

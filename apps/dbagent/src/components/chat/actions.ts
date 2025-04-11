@@ -19,10 +19,9 @@ export async function actionGetScheduleRun(runId?: string) {
 }
 
 export async function actionGetLanguageModels() {
-  return listLanguageModels().map((m) => ({ id: m.fullId(), name: m.info().name }));
+  return listLanguageModels().map((m) => m.info());
 }
 
 export async function actionGetDefaultLanguageModel() {
-  const model = getDefaultLanguageModel();
-  return { id: model.fullId(), name: model.info().name };
+  return getDefaultLanguageModel().info();
 }

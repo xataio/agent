@@ -1,6 +1,6 @@
-import { Document } from '~/lib/db/schema';
+import { ArtifactDocument } from '~/lib/db/schema';
 
-export function getDocumentTimestampByIndex(documents: Array<Document>, index: number) {
+export function getDocumentTimestampByIndex(documents: Array<ArtifactDocument>, index: number) {
   if (!documents) return new Date();
   if (index > documents.length) return new Date();
 

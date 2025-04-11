@@ -1,5 +1,5 @@
 import { LanguageModel } from 'ai';
-import { CloudProvider, Project } from '../db/schema';
+import { CloudProvider } from '../db/schema';
 import { artifactsPrompt, chatSystemPrompt, commonSystemPrompt, monitoringSystemPrompt } from './prompts';
 import { getLanguageModel } from './providers';
 
@@ -15,16 +15,16 @@ function getCloudProviderPrompt(cloudProvider: string): string {
 }
 
 export function getChatSystemPrompt({
-  project,
+  cloudProvider,
   useArtifacts = false
 }: {
-  project: Project;
+  cloudProvider: CloudProvider;
   useArtifacts?: boolean;
 }): string {
   return [
     commonSystemPrompt,
     chatSystemPrompt,
-    getCloudProviderPrompt(project.cloudProvider),
+    getCloudProviderPrompt(cloudProvider),
     useArtifacts ? artifactsPrompt : ''
   ]
     .filter((item) => item?.trim().length > 0)

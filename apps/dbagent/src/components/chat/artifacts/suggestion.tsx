@@ -8,7 +8,7 @@ import { useWindowSize } from 'usehooks-ts';
 import { ArtifactKind } from './artifact';
 import { UISuggestion } from './text/editor/suggestions';
 
-export const ArtifactSuggestion = ({
+export const Suggestion = ({
   suggestion,
   onApply,
   artifactKind

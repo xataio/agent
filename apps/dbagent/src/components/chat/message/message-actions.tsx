@@ -7,7 +7,7 @@ import { useSession } from 'next-auth/react';
 import { useParams } from 'next/navigation';
 import { memo } from 'react';
 import { useCopyToClipboard } from 'usehooks-ts';
-import { Vote } from '~/lib/db/schema';
+import { MessageVote } from '~/lib/db/schema';
 
 export function PureMessageActions({
   chatId,
@@ -17,7 +17,7 @@ export function PureMessageActions({
 }: {
   chatId: string;
   message: Message;
-  vote: Vote | undefined;
+  vote: MessageVote | undefined;
   isLoading: boolean;
 }) {
   const { data: session } = useSession();
@@ -78,7 +78,7 @@ export function PureMessageActions({
                 toast.promise(upvote, {
                   loading: 'Upvoting Response...',
                   success: () => {
-                    queryClient.setQueryData<Array<Vote>>(['votes', chatId], (currentVotes) => {
+                    queryClient.setQueryData<Array<MessageVote>>(['votes', chatId], (currentVotes) => {
                       if (!currentVotes || !session?.user?.id) return [];
 
                       const votesWithoutCurrent = currentVotes.filter((vote) => vote.messageId !== message.id);
@@ -128,7 +128,7 @@ export function PureMessageActions({
                 toast.promise(downvote, {
                   loading: 'Downvoting Response...',
                   success: () => {
-                    queryClient.setQueryData<Array<Vote>>(['votes', chatId], (currentVotes) => {
+                    queryClient.setQueryData<Array<MessageVote>>(['votes', chatId], (currentVotes) => {
                       if (!currentVotes || !session?.user?.id) return [];
 
                       const votesWithoutCurrent = currentVotes.filter((vote) => vote.messageId !== message.id);

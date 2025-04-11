@@ -2,28 +2,9 @@ import { anthropic } from '@ai-sdk/anthropic';
 import { deepseek } from '@ai-sdk/deepseek';
 import { google } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
-import { ProviderV1 } from '@ai-sdk/provider';
 import { LanguageModel } from 'ai';
 
-import { Model, ModelInfo, ProviderRegistry } from './types';
-
-type Provider = {
-  info: ProviderInfo;
-  models: ProviderModel[];
-};
-
-type ProviderInfo = {
-  name: string;
-  id: string;
-  kind: ProviderV1;
-  fallback?: string;
-};
-
-type ProviderModel = {
-  id: string;
-  providerId?: string;
-  name: string;
-};
+import { Model, Provider, ProviderInfo, ProviderModel, ProviderRegistry } from './types';
 
 class BuiltinModel implements Model {
   #model: ProviderModel;
@@ -34,15 +15,8 @@ class BuiltinModel implements Model {
     this.#provider = provider;
   }
 
-  fullId(): string {
-    return `${this.#provider.id}-${this.#model.id}`;
-  }
-
-  info(): ModelInfo {
-    return {
-      id: this.#model.providerId || this.#model.id,
-      name: this.#model.name
-    };
+  info(): ProviderModel {
+    return this.#model;
   }
 
   instance(): LanguageModel {
@@ -60,11 +34,13 @@ const builtinOpenAIModels: Provider = {
   },
   models: [
     {
-      id: 'gpt-4o',
+      id: 'openai:gpt-4o',
+      providerId: 'gpt-4o',
       name: 'GPT-4o'
     },
     {
-      id: 'gpt-4-turbo',
+      id: 'openai:gpt-4-turbo',
+      providerId: 'gpt-4-turbo',
       name: 'GPT-4 Turbo'
     }
   ]
@@ -78,7 +54,8 @@ const builtinDeepseekModels: Provider = {
   },
   models: [
     {
-      id: 'deepseek-chat',
+      id: 'deepseek:chat',
+      providerId: 'deepseek-chat',
       name: 'DeepSeek Chat'
     }
   ]
@@ -92,7 +69,7 @@ const builtinAnthropicModels: Provider = {
   },
   models: [
     {
-      id: 'claude-3-7-sonnet',
+      id: 'anthropic:claude-3-7-sonnet',
       providerId: 'claude-3-7-sonnet-20250219',
       name: 'Claude 3.7 Sonnet'
     }
@@ -107,11 +84,13 @@ const builtinGoogleModels: Provider = {
   },
   models: [
     {
-      id: 'gemini-2.0-flash',
+      id: 'google:gemini-2.0-flash',
+      providerId: 'gemini-2.0-flash',
       name: 'Gemini 2.0 Flash'
     },
     {
-      id: 'gemini-2.0-flash-lite',
+      id: 'google:gemini-2.0-flash-lite',
+      providerId: 'gemini-2.0-flash-lite',
       name: 'Gemini 2.0 Flash Lite'
     }
   ]
@@ -121,12 +100,12 @@ const builtinProviderModels: Record<string, BuiltinModel> = Object.fromEntries(
   [builtinOpenAIModels, builtinDeepseekModels, builtinAnthropicModels, builtinGoogleModels].flatMap((p) => {
     return p.models.map((model) => {
       const modelInstance = new BuiltinModel(p.info, model);
-      return [modelInstance.fullId(), modelInstance];
+      return [modelInstance.info().id, modelInstance];
     });
   })
 );
 
-export const defaultLanguageModel = builtinProviderModels['openai-gpt-4o']!;
+export const defaultLanguageModel = builtinProviderModels['openai:gpt-4o']!;
 
 const builtinCustomModels: Record<string, BuiltinModel> = {
   chat: defaultLanguageModel,

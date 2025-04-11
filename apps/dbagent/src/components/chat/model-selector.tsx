@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger
 } from '@internal/components';
 import { CheckCircleIcon, ChevronDownIcon } from 'lucide-react';
-import { ModelInfo } from '~/lib/ai/providers/types';
+import { ProviderModel } from '~/lib/ai/providers/types';
 import { actionGetLanguageModels } from './actions';
 
 interface ModelSelectorProps {
@@ -22,7 +22,7 @@ interface ModelSelectorProps {
 
 export function ModelSelector({ value, onValueChange, className }: ModelSelectorProps) {
   const [open, setOpen] = useState(false);
-  const [models, setModels] = useState<ModelInfo[]>([]);
+  const [models, setModels] = useState<ProviderModel[]>([]);
   const [modelId, setModelId] = useState(value);
 
   useEffect(() => {

@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import equal from 'fast-deep-equal';
 import { FileIcon, FullscreenIcon, LoaderIcon } from 'lucide-react';
 import { memo, MouseEvent, useCallback, useEffect, useMemo, useRef } from 'react';
-import { Document } from '~/lib/db/schema';
+import { ArtifactDocument } from '~/lib/db/schema';
 import { fetcher } from '../utils';
 import { ArtifactKind, UIArtifact } from './artifact';
 import { DocumentToolCall, DocumentToolResult } from './document';
@@ -23,7 +23,7 @@ interface DocumentPreviewProps {
 export function DocumentPreview({ projectId, result, args }: DocumentPreviewProps) {
   const { artifact, setArtifact } = useArtifact();
 
-  const { data: documents, isLoading: isDocumentsFetching } = useQuery<Array<Document>>({
+  const { data: documents, isLoading: isDocumentsFetching } = useQuery<Array<ArtifactDocument>>({
     queryKey: ['document', result?.id],
     queryFn: () => {
       if (!result) return [];
@@ -65,7 +65,7 @@ export function DocumentPreview({ projectId, result, args }: DocumentPreviewProp
     return <LoadingSkeleton artifactKind={result.kind ?? args.kind} />;
   }
 
-  const document: Document | null = previewDocument
+  const document: ArtifactDocument | null = previewDocument
     ? previewDocument
     : artifact.status === 'streaming'
       ? {
@@ -191,7 +191,7 @@ const DocumentHeader = memo(PureDocumentHeader, (prevProps, nextProps) => {
   return true;
 });
 
-const DocumentContent = ({ document }: { document: Document }) => {
+const DocumentContent = ({ document }: { document: ArtifactDocument }) => {
   const { artifact } = useArtifact();
 
   const containerClassName = cn(
