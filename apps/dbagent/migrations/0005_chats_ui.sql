@@ -55,6 +55,12 @@ CREATE TABLE "votes" (
 );
 --> statement-breakpoint
 ALTER TABLE "votes" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
+ALTER TABLE "connection_info" DROP CONSTRAINT "uq_connections_info";--> statement-breakpoint
+ALTER TABLE "connection_info" DROP CONSTRAINT "fk_connections_info_connection";
+--> statement-breakpoint
+DROP INDEX "idx_aws_cluster_conn_cluster_id";--> statement-breakpoint
+DROP INDEX "idx_aws_cluster_conn_connection_id";--> statement-breakpoint
+DROP INDEX "idx_aws_cluster_conn_project_id";--> statement-breakpoint
 ALTER TABLE "chats" ADD CONSTRAINT "fk_chats_project" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "documents" ADD CONSTRAINT "fk_documents_project" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "messages" ADD CONSTRAINT "fk_messages_project" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -77,6 +83,12 @@ CREATE INDEX "idx_votes_chat_id" ON "votes" USING btree ("chat_id");--> statemen
 CREATE INDEX "idx_votes_message_id" ON "votes" USING btree ("message_id");--> statement-breakpoint
 CREATE INDEX "idx_votes_project_id" ON "votes" USING btree ("project_id");--> statement-breakpoint
 CREATE INDEX "idx_votes_user_id" ON "votes" USING btree ("user_id");--> statement-breakpoint
+ALTER TABLE "connection_info" ADD CONSTRAINT "fk_connection_info_connection" FOREIGN KEY ("connection_id") REFERENCES "public"."connections"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "idx_aws_cluster_connections_cluster_id" ON "aws_cluster_connections" USING btree ("cluster_id");--> statement-breakpoint
+CREATE INDEX "idx_aws_cluster_connections_connection_id" ON "aws_cluster_connections" USING btree ("connection_id");--> statement-breakpoint
+CREATE INDEX "idx_aws_cluster_connections_project_id" ON "aws_cluster_connections" USING btree ("project_id");--> statement-breakpoint
+ALTER TABLE "connection_info" ADD CONSTRAINT "uq_connection_info" UNIQUE("connection_id","type");--> statement-breakpoint
+ALTER POLICY "projects_members_policy" ON "project_members" RENAME TO "project_members_policy";--> statement-breakpoint
 CREATE POLICY "chats_policy" ON "chats" AS PERMISSIVE FOR ALL TO "authenticated_user" USING (EXISTS (
         SELECT 1 FROM project_members
         WHERE project_id = chats.project_id AND user_id = current_setting('app.current_user', true)::TEXT

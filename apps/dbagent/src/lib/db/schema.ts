@@ -118,9 +118,9 @@ export const connectionInfo = pgTable(
     foreignKey({
       columns: [table.connectionId],
       foreignColumns: [connections.id],
-      name: 'fk_connections_info_connection'
+      name: 'fk_connection_info_connection'
     }).onDelete('cascade'),
-    unique('uq_connections_info').on(table.connectionId, table.type),
+    unique('uq_connection_info').on(table.connectionId, table.type),
     index('idx_connection_info_connection_id').on(table.connectionId),
     index('idx_connection_info_project_id').on(table.projectId),
     pgPolicy('connection_info_policy', {
@@ -191,9 +191,9 @@ export const awsClusterConnections = pgTable(
       foreignColumns: [connections.id],
       name: 'fk_aws_cluster_connections_connection'
     }).onDelete('cascade'),
-    index('idx_aws_cluster_conn_cluster_id').on(table.clusterId),
-    index('idx_aws_cluster_conn_connection_id').on(table.connectionId),
-    index('idx_aws_cluster_conn_project_id').on(table.projectId),
+    index('idx_aws_cluster_connections_cluster_id').on(table.clusterId),
+    index('idx_aws_cluster_connections_connection_id').on(table.connectionId),
+    index('idx_aws_cluster_connections_project_id').on(table.projectId),
     pgPolicy('aws_cluster_connections_policy', {
       to: authenticatedUser,
       for: 'all',
@@ -437,7 +437,7 @@ export const projectMembers = pgTable(
     index('idx_project_members_project_id').on(table.projectId),
     // Project members has an "allow all" policy, to avoid circular dependencies.
     // Instead, we use the project policies to control access to project members.
-    pgPolicy('projects_members_policy', {
+    pgPolicy('project_members_policy', {
       to: authenticatedUser,
       for: 'all',
       using: sql`true`
@@ -453,7 +453,7 @@ export const chats = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     projectId: uuid('project_id').notNull(),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     title: text('title').notNull(),
     userId: text('user_id').notNull()
   },
@@ -487,7 +487,7 @@ export const messages = pgTable(
     chatId: uuid('chat_id').notNull(),
     role: varchar('role').$type<SDKMessage['role']>().notNull(),
     parts: jsonb('parts').$type<SDKMessage['parts']>().notNull(),
-    createdAt: timestamp('created_at').defaultNow().notNull()
+    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull()
   },
   (table) => [
     foreignKey({
@@ -524,7 +524,7 @@ export const votes = pgTable(
     messageId: uuid('message_id').notNull(),
     userId: text('user_id').notNull(),
     isUpvoted: boolean('is_upvoted').notNull(),
-    createdAt: timestamp('created_at').defaultNow().notNull()
+    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull()
   },
   (table) => [
     primaryKey({ columns: [table.chatId, table.messageId, table.userId] }),
@@ -566,7 +566,7 @@ export const documents = pgTable(
   {
     id: uuid('id').defaultRandom().notNull(),
     projectId: uuid('project_id').notNull(),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
     title: text('title').notNull(),
     content: text('content'),
     kind: varchar('kind', { enum: ['text', 'sheet'] })

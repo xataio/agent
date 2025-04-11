@@ -1,5 +1,5 @@
 {
-  "id": "482d34b9-645a-41fb-a9ff-2217f74a90ea",
+  "id": "3b6f117a-daae-4464-b1e8-a0c4dee112a7",
   "prevId": "c6f03a09-b8d9-4dec-9185-cb8ecb299177",
   "version": "7",
   "dialect": "postgresql",
@@ -35,8 +35,8 @@
         }
       },
       "indexes": {
-        "idx_aws_cluster_conn_cluster_id": {
-          "name": "idx_aws_cluster_conn_cluster_id",
+        "idx_aws_cluster_connections_cluster_id": {
+          "name": "idx_aws_cluster_connections_cluster_id",
           "columns": [
             {
               "expression": "cluster_id",
@@ -50,8 +50,8 @@
           "method": "btree",
           "with": {}
         },
-        "idx_aws_cluster_conn_connection_id": {
-          "name": "idx_aws_cluster_conn_connection_id",
+        "idx_aws_cluster_connections_connection_id": {
+          "name": "idx_aws_cluster_connections_connection_id",
           "columns": [
             {
               "expression": "connection_id",
@@ -65,8 +65,8 @@
           "method": "btree",
           "with": {}
         },
-        "idx_aws_cluster_conn_project_id": {
-          "name": "idx_aws_cluster_conn_project_id",
+        "idx_aws_cluster_connections_project_id": {
+          "name": "idx_aws_cluster_connections_project_id",
           "columns": [
             {
               "expression": "project_id",
@@ -381,8 +381,8 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "fk_connections_info_connection": {
-          "name": "fk_connections_info_connection",
+        "fk_connection_info_connection": {
+          "name": "fk_connection_info_connection",
           "tableFrom": "connection_info",
           "tableTo": "connections",
           "columnsFrom": ["connection_id"],
@@ -393,8 +393,8 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "uq_connections_info": {
-          "name": "uq_connections_info",
+        "uq_connection_info": {
+          "name": "uq_connection_info",
           "nullsNotDistinct": false,
           "columns": ["connection_id", "type"]
         }
@@ -1184,8 +1184,8 @@
         }
       },
       "policies": {
-        "projects_members_policy": {
-          "name": "projects_members_policy",
+        "project_members_policy": {
+          "name": "project_members_policy",
           "as": "PERMISSIVE",
           "for": "ALL",
           "to": ["authenticated_user"],
