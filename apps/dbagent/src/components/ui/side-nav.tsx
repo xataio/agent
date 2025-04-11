@@ -16,11 +16,13 @@ import {
   SidebarRail,
   useSidebar
 } from '@internal/components';
+import { useQuery } from '@tanstack/react-query';
 import {
   ActivityIcon,
   AlarmClock,
   CloudIcon,
   DatabaseIcon,
+  MessageSquare,
   NotebookPen,
   PanelLeft,
   Server,
@@ -29,7 +31,8 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Project } from '~/lib/db/schema';
+import { Chat, Project } from '~/lib/db/schema';
+import { fetcher } from '../chat/utils';
 import { Bot } from '../icons/bot';
 
 interface SideNavProps {
@@ -41,7 +44,13 @@ interface SideNavProps {
 export function SideNav({ className, project, onboardingComplete }: SideNavProps) {
   const pathname = usePathname();
   const { toggleSidebar } = useSidebar();
+
   const [onboardingCompleteState, setOnboardingComplete] = useState(onboardingComplete);
+
+  const { data: { chats = [] } = {} } = useQuery<{ chats: Chat[] }>({
+    queryKey: ['chats'],
+    queryFn: () => fetcher('/api/chat')
+  });
 
   const isActive = (path: string) => {
     return pathname === path;
@@ -99,12 +108,25 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
         }
       ]
     },
-
     {
-      title: 'Chats',
-      url: `${basePath}/chats`,
+      title: 'Chat',
+      url: `${basePath}/chats/new`,
       icon: Bot,
-      className: 'text-sm'
+      className: 'text-sm',
+      subItems: [
+        ...chats.slice(0, 5).map((chat) => ({
+          title: chat.title,
+          url: `${basePath}/chats/${chat.id}`,
+          icon: MessageSquare,
+          className: 'text-xs'
+        })),
+        {
+          title: 'All chats',
+          url: `${basePath}/chats`,
+          icon: null,
+          className: 'text-xs'
+        }
+      ]
     },
     {
       title: 'Playbooks',
@@ -126,8 +148,8 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+              {items.map((item, itemIndex) => (
+                <SidebarMenuItem key={`sidebar-item-${itemIndex}`}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
                     <Link href={item.url}>
                       <item.icon />
@@ -137,11 +159,11 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
 
                   {item.subItems && (
                     <SidebarMenuSub>
-                      {item.subItems.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title} className="text-sm">
+                      {item.subItems.map((subItem, subIndex) => (
+                        <SidebarMenuSubItem key={`sidebar-subitem-${itemIndex}-${subIndex}`} className="text-sm">
                           <SidebarMenuSubButton asChild>
                             <Link href={subItem.url}>
-                              <subItem.icon />
+                              {subItem.icon ? <subItem.icon /> : null}
                               <span>{subItem.title}</span>
                             </Link>
                           </SidebarMenuSubButton>

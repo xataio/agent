@@ -30,7 +30,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import * as z from 'zod';
 import { Connection, Schedule } from '~/lib/db/schema';
-import { ModelSelector } from '../chats/model-selector';
+import { ModelSelector } from '../chat/model-selector';
 import { actionCreateSchedule, actionDeleteSchedule, actionGetSchedule, actionUpdateSchedule } from './actions';
 import { CronExpressionModal } from './cron-expression-modal';
 

@@ -1,0 +1,15 @@
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+.skeleton {
+  * {
+    pointer-events: none !important;
+  }
+}
+
+.ProseMirror {
+  outline: none;
+}

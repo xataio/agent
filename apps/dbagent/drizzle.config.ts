@@ -8,7 +8,7 @@ export default {
   out: './migrations',
   dialect: 'postgresql',
   introspect: {
-    casing: 'preserve'
+    casing: 'camel'
   },
   strict: true,
   dbCredentials: {
