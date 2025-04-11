@@ -11,6 +11,7 @@ import {
   pgPolicy,
   pgRole,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   unique,
@@ -117,9 +118,9 @@ export const connectionInfo = pgTable(
     foreignKey({
       columns: [table.connectionId],
       foreignColumns: [connections.id],
-      name: 'fk_connections_info_connection'
+      name: 'fk_connection_info_connection'
     }).onDelete('cascade'),
-    unique('uq_connections_info').on(table.connectionId, table.type),
+    unique('uq_connection_info').on(table.connectionId, table.type),
     index('idx_connection_info_connection_id').on(table.connectionId),
     index('idx_connection_info_project_id').on(table.projectId),
     pgPolicy('connection_info_policy', {
@@ -190,9 +191,9 @@ export const awsClusterConnections = pgTable(
       foreignColumns: [connections.id],
       name: 'fk_aws_cluster_connections_connection'
     }).onDelete('cascade'),
-    index('idx_aws_cluster_conn_cluster_id').on(table.clusterId),
-    index('idx_aws_cluster_conn_connection_id').on(table.connectionId),
-    index('idx_aws_cluster_conn_project_id').on(table.projectId),
+    index('idx_aws_cluster_connections_cluster_id').on(table.clusterId),
+    index('idx_aws_cluster_connections_connection_id').on(table.connectionId),
+    index('idx_aws_cluster_connections_project_id').on(table.projectId),
     pgPolicy('aws_cluster_connections_policy', {
       to: authenticatedUser,
       for: 'all',
@@ -339,7 +340,7 @@ export const scheduleRuns = pgTable(
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     projectId: uuid('project_id').notNull(),
     scheduleId: uuid('schedule_id').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
     result: text('result').notNull(),
     summary: text('summary'),
     notificationLevel: notificationLevel('notification_level').default('info').notNull(),
@@ -436,7 +437,7 @@ export const projectMembers = pgTable(
     index('idx_project_members_project_id').on(table.projectId),
     // Project members has an "allow all" policy, to avoid circular dependencies.
     // Instead, we use the project policies to control access to project members.
-    pgPolicy('projects_members_policy', {
+    pgPolicy('project_members_policy', {
       to: authenticatedUser,
       for: 'all',
       using: sql`true`
@@ -447,6 +448,198 @@ export const projectMembers = pgTable(
 export type ProjectMember = InferSelectModel<typeof projectMembers>;
 export type ProjectMemberInsert = InferInsertModel<typeof projectMembers>;
 
+export const chats = pgTable(
+  'chats',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    projectId: uuid('project_id').notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    title: text('title').notNull(),
+    userId: text('user_id').notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_chats_project'
+    }).onDelete('cascade'),
+    index('idx_chats_project_id').on(table.projectId),
+    index('idx_chats_user_id').on(table.userId),
+    pgPolicy('chats_policy', {
+      to: authenticatedUser,
+      for: 'all',
+      using: sql`EXISTS (
+        SELECT 1 FROM project_members
+        WHERE project_id = chats.project_id AND user_id = current_setting('app.current_user', true)::TEXT
+      )`
+    })
+  ]
+);
+
+export type Chat = InferSelectModel<typeof chats>;
+export type ChatInsert = InferInsertModel<typeof chats>;
+
+export const messages = pgTable(
+  'messages',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    projectId: uuid('project_id').notNull(),
+    chatId: uuid('chat_id').notNull(),
+    role: varchar('role').$type<SDKMessage['role']>().notNull(),
+    parts: jsonb('parts').$type<SDKMessage['parts']>().notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_messages_project'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.chatId],
+      foreignColumns: [chats.id],
+      name: 'fk_messages_chat'
+    }).onDelete('cascade'),
+    index('idx_messages_project_id').on(table.projectId),
+    index('idx_messages_chat_id').on(table.chatId),
+    pgPolicy('messages_policy', {
+      to: authenticatedUser,
+      for: 'all',
+      using: sql`EXISTS (
+        SELECT 1 FROM project_members
+        WHERE project_id = messages.project_id AND user_id = current_setting('app.current_user', true)::TEXT
+      )`
+    })
+  ]
+);
+
+export type Message = InferSelectModel<typeof messages>;
+export type MessageInsert = InferInsertModel<typeof messages>;
+
+export const votes = pgTable(
+  'votes',
+  {
+    projectId: uuid('project_id').notNull(),
+    chatId: uuid('chat_id').notNull(),
+    messageId: uuid('message_id').notNull(),
+    userId: text('user_id').notNull(),
+    isUpvoted: boolean('is_upvoted').notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull()
+  },
+  (table) => [
+    primaryKey({ columns: [table.chatId, table.messageId, table.userId] }),
+    foreignKey({
+      columns: [table.chatId],
+      foreignColumns: [chats.id],
+      name: 'fk_votes_chat'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.messageId],
+      foreignColumns: [messages.id],
+      name: 'fk_votes_message'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_votes_project'
+    }).onDelete('cascade'),
+    index('idx_votes_chat_id').on(table.chatId),
+    index('idx_votes_message_id').on(table.messageId),
+    index('idx_votes_project_id').on(table.projectId),
+    index('idx_votes_user_id').on(table.userId),
+    pgPolicy('votes_policy', {
+      to: authenticatedUser,
+      for: 'all',
+      using: sql`EXISTS (
+          SELECT 1 FROM project_members
+          WHERE project_id = votes.project_id AND user_id = current_setting('app.current_user', true)::TEXT
+        )`
+    })
+  ]
+);
+
+export type Vote = InferSelectModel<typeof votes>;
+export type VoteInsert = InferInsertModel<typeof votes>;
+
+export const documents = pgTable(
+  'documents',
+  {
+    id: uuid('id').defaultRandom().notNull(),
+    projectId: uuid('project_id').notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    title: text('title').notNull(),
+    content: text('content'),
+    kind: varchar('kind', { enum: ['text', 'sheet'] })
+      .notNull()
+      .default('text'),
+    userId: text('user_id').notNull()
+  },
+  (table) => [
+    primaryKey({ columns: [table.id] }),
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_documents_project'
+    }).onDelete('cascade'),
+    index('idx_documents_project_id').on(table.projectId),
+    index('idx_documents_user_id').on(table.userId),
+    pgPolicy('documents_policy', {
+      to: authenticatedUser,
+      for: 'all',
+      using: sql`EXISTS (
+          SELECT 1 FROM project_members
+          WHERE project_id = documents.project_id AND user_id = current_setting('app.current_user', true)::TEXT
+        )`
+    })
+  ]
+);
+
+export type Document = InferSelectModel<typeof documents>;
+export type DocumentInsert = InferInsertModel<typeof documents>;
+
+export const suggestions = pgTable(
+  'suggestions',
+  {
+    id: uuid('id').defaultRandom().notNull(),
+    projectId: uuid('project_id').notNull(),
+    documentId: uuid('document_id').notNull(),
+    documentCreatedAt: timestamp('document_created_at').notNull(),
+    originalText: text('original_text').notNull(),
+    suggestedText: text('suggested_text').notNull(),
+    description: text('description'),
+    isResolved: boolean('is_resolved').default(false).notNull(),
+    userId: text('user_id').notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull()
+  },
+  (table) => [
+    primaryKey({ columns: [table.id] }),
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_suggestions_project'
+    }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.documentId],
+      foreignColumns: [documents.id],
+      name: 'fk_suggestions_document'
+    }).onDelete('cascade'),
+    index('idx_suggestions_document_id').on(table.documentId),
+    index('idx_suggestions_project_id').on(table.projectId),
+    index('idx_suggestions_user_id').on(table.userId),
+    pgPolicy('suggestions_policy', {
+      to: authenticatedUser,
+      for: 'all',
+      using: sql`EXISTS (
+          SELECT 1 FROM project_members
+          WHERE project_id = suggestions.project_id AND user_id = current_setting('app.current_user', true)::TEXT
+        )`
+    })
+  ]
+);
+
+export type Suggestion = InferSelectModel<typeof suggestions>;
+export type SuggestionInsert = InferInsertModel<typeof suggestions>;
+
 export const playbooks = pgTable(
   'playbooks',
   {
@@ -455,8 +648,7 @@ export const playbooks = pgTable(
     name: varchar('name', { length: 255 }).notNull(),
     description: text('description'),
     content: jsonb('content').notNull(),
-    createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
     createdBy: text('created_by').notNull()
   },
   (table) => [
