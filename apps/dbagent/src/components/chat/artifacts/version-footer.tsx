@@ -47,7 +47,7 @@ export const VersionFooter = ({ handleVersionChange, documents, currentVersionIn
           onClick={async () => {
             setIsMutating(true);
 
-            const response = await fetch(`/api/document?id=${artifact.documentId}`, {
+            const response = await fetch(`/api/artifact?id=${artifact.documentId}`, {
               method: 'PATCH',
               body: JSON.stringify({
                 timestamp: getDocumentTimestampByIndex(documents, currentVersionIndex)

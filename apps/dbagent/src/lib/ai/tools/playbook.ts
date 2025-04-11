@@ -5,7 +5,7 @@ import { getCustomPlaybookAndPlaybookTool, listCustomPlaybooksAndPlaybookTool } 
 import { getPlaybook, listPlaybooks } from '~/lib/tools/playbooks';
 import { ToolsetGroup } from './types';
 
-export function getPlaybookTools(dbAccess: DBAccess, projectId: string): Record<string, Tool> {
+export function getPlaybookToolset(dbAccess: DBAccess, projectId: string): Record<string, Tool> {
   return new playbookTools(dbAccess, () => Promise.resolve({ projectId })).toolset();
 }
 

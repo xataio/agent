@@ -6,7 +6,7 @@ import { getArtifactTools } from './artifacts';
 import { getDBClusterTools } from './cluster';
 import { commonToolset } from './common';
 import { getDBSQLTools } from './db';
-import { getPlaybookTools } from './playbook';
+import { getPlaybookToolset } from './playbook';
 import { mergeToolsets } from './types';
 
 export * from './cluster';
@@ -34,7 +34,7 @@ export async function getTools({
 
   const dbTools = getDBSQLTools(targetDb);
   const clusterTools = getDBClusterTools(dbAccess, connection, project.cloudProvider);
-  const playbookToolset = getPlaybookTools(dbAccess, project.id);
+  const playbookToolset = getPlaybookToolset(dbAccess, project.id);
   const artifactsToolset =
     useArtifacts && dataStream ? getArtifactTools({ dbAccess, userId, projectId: project.id, dataStream }) : {};
 

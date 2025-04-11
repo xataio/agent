@@ -69,7 +69,7 @@ function PureArtifact({
 
   const { data: documents, isLoading: isDocumentsFetching } = useQuery({
     queryKey: ['documents', artifact.documentId],
-    queryFn: () => fetcher(`/api/document?id=${artifact.documentId}`),
+    queryFn: () => fetcher(`/api/artifact?id=${artifact.documentId}`),
     enabled: artifact.documentId !== 'init' && artifact.status !== 'streaming'
   });
 
@@ -114,7 +114,7 @@ function PureArtifact({
       }
 
       if (currentDocument.content !== updatedContent) {
-        await fetch(`/api/document?id=${artifact.documentId}&projectId=${chatId}`, {
+        await fetch(`/api/artifact?id=${artifact.documentId}&projectId=${chatId}`, {
           method: 'POST',
           body: JSON.stringify({
             title: artifact.title,

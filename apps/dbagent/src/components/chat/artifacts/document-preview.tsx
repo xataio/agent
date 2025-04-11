@@ -27,7 +27,7 @@ export function DocumentPreview({ projectId, result, args }: DocumentPreviewProp
     queryKey: ['document', result?.id],
     queryFn: () => {
       if (!result) return [];
-      return fetcher(`/api/document?id=${result.id}`);
+      return fetcher(`/api/artifact?id=${result.id}`);
     },
     enabled: !!result
   });
