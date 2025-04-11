@@ -1,18 +1,24 @@
 'use server';
 
-import { getTools } from '~/lib/ai/aidba';
+import { getDBClusterTools } from '~/lib/ai/tools/cluster';
+import { commonToolset } from '~/lib/ai/tools/common';
+import { getDBSQLTools } from '~/lib/ai/tools/db';
+import { getPlaybookToolset } from '~/lib/ai/tools/playbook';
+import { mergeToolsets } from '~/lib/ai/tools/types';
 import { getConnection, listConnections } from '~/lib/db/connections';
+import { getUserSessionDBAccess } from '~/lib/db/db';
+import { getTargetDbPool } from '~/lib/targetdb/db';
 
 export interface Tool {
   name: string;
   description: string;
   isBuiltIn: boolean;
-  enabled: boolean;
 }
 
 export async function actionGetConnections(projectId: string) {
   try {
-    return await listConnections(projectId);
+    const dbAccess = await getUserSessionDBAccess();
+    return await listConnections(dbAccess, projectId);
   } catch (error) {
     console.error('Error getting connections:', error);
     return [];
@@ -21,22 +27,33 @@ export async function actionGetConnections(projectId: string) {
 
 export async function actionGetBuiltInTools(connectionId: string): Promise<Tool[]> {
   try {
-    const connection = await getConnection(connectionId);
+    const dbAccess = await getUserSessionDBAccess();
+    const connection = await getConnection(dbAccess, connectionId);
     if (!connection) {
       throw new Error('Connection not found');
     }
 
-    const tools = await getTools(connection);
+    // Get SQL tools
+    const targetDb = getTargetDbPool(connection.connectionString);
+    const dbTools = getDBSQLTools(targetDb);
 
-    console.log('tools', tools.parameters);
-    return Object.entries(tools).map(([name, tool]) => ({
+    // Get cluster tools
+    const clusterTools = getDBClusterTools(dbAccess, connection, 'aws'); // Default to AWS for now
+
+    // Get playbook tools
+    const playbookToolset = getPlaybookToolset(dbAccess, connection.projectId);
+
+    // Merge all toolsets
+    const mergedTools = mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools);
+
+    // Convert to array format
+    return Object.entries(mergedTools).map(([name, tool]) => ({
       name,
       description: tool.description || 'No description available',
-      isBuiltIn: true,
-      enabled: true
+      isBuiltIn: true
     }));
   } catch (error) {
-    console.error('Error getting tools:', error);
+    console.error('Error getting built-in tools:', error);
     return [];
   }
 }

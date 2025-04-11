@@ -18,7 +18,7 @@ import { BookOpenIcon, ChevronLeftIcon, ChevronRightIcon, MoreVerticalIcon, Play
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Connection } from '~/lib/db/connections';
+import { Connection } from '~/lib/db/schema';
 import { Tool, actionGetBuiltInTools, actionGetConnections } from './action';
 
 const ITEMS_PER_PAGE = 10;
@@ -123,7 +123,6 @@ export function ToolsTable() {
                     size="icon"
                     title="Run tool"
                     onClick={() => router.push(`/projects/${project}/chats?tool=${encodeURIComponent(tool.name)}`)}
-                    disabled={!tool.enabled}
                   >
                     <PlayIcon className="h-3 w-3" />
                   </Button>

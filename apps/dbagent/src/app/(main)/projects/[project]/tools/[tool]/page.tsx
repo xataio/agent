@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { actionGetBuiltInTools } from '~/components/tools/action';
 import { ToolView } from '~/components/tools/tool-view';
 import { listConnections } from '~/lib/db/connections';
+import { getUserSessionDBAccess } from '~/lib/db/db';
 
 type PageParams = {
   project: string;
@@ -15,7 +16,8 @@ export default async function ToolPage({ params }: { params: Promise<PageParams>
   const decodedToolName = decodeURIComponent(toolName);
 
   // Get the default connection for the project
-  const connections = await listConnections(project);
+  const dbAccess = await getUserSessionDBAccess();
+  const connections = await listConnections(dbAccess, project);
   const defaultConnection = connections.find((c) => c.isDefault);
   if (!defaultConnection) {
     throw new Error('No default connection found');
@@ -36,8 +38,7 @@ export default async function ToolPage({ params }: { params: Promise<PageParams>
         tool={{
           name: tool.name,
           description: tool.description,
-          isBuiltIn: tool.isBuiltIn,
-          enabled: tool.enabled
+          isBuiltIn: tool.isBuiltIn
         }}
       />
     </div>
