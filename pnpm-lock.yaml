@@ -1319,11 +1319,6 @@ packages:
     peerDependencies:
       react: '>=16.8.0 <19.0.0'
 
-  '@fluentui/react-icons@2.0.295':
-    resolution: {integrity: sha512-5OHNBu1q7hf57CcKzrIkCBFbcHlOpDEHkWOf0uB6ni2TiDsK57XDSIuqPIAin2E1jLye6H51rCR3q9f542jZrg==}
-    peerDependencies:
-      react: '>=16.8.0 <19.0.0'
-
   '@google-cloud/common@5.0.2':
     resolution: {integrity: sha512-V7bmBKYQyu0eVG2BFejuUjlBt+zrya6vtsKdY+JxMM/dNntPF41vZ9+LhOshEUH01zOHEqBSvI7Dad7ZS6aUeA==}
     engines: {node: '>=14.0.0'}
@@ -7188,8 +7183,8 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
-  swr@2.3.3:
-    resolution: {integrity: sha512-dshNvs3ExOqtZ6kJBaAsabhPdHyeY4P2cKwRCniDVifBMoG/SVI7tfLWqPXriVspf2Rg4tPzXJTnwaihIeFw2A==}
+  swr@2.3.0:
+    resolution: {integrity: sha512-NyZ76wA4yElZWBHzSgEJc28a0u6QZvhb6w0azeL2k7+Q1gAzVK+IqQYXhVOC/mzi+HZIozrZvBVeSeOZNR2bqA==}
     peerDependencies:
       react: ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -7801,7 +7796,7 @@ snapshots:
       '@ai-sdk/provider-utils': 2.2.6(zod@3.24.2)
       '@ai-sdk/ui-utils': 1.2.7(zod@3.24.2)
       react: 19.1.0
-      swr: 2.3.3(react@19.1.0)
+      swr: 2.3.0(react@19.1.0)
       throttleit: 2.1.0
     optionalDependencies:
       zod: 3.24.2
@@ -8821,12 +8816,6 @@ snapshots:
       react-dom: 19.1.0(react@19.1.0)
 
   '@floating-ui/utils@0.2.9': {}
-
-  '@fluentui/react-icons@2.0.295(react@19.1.0)':
-    dependencies:
-      '@griffel/react': 1.5.29(react@19.1.0)
-      react: 19.1.0
-      tslib: 2.8.1
 
   '@fluentui/react-icons@2.0.295(react@19.1.0)':
     dependencies:
@@ -15751,7 +15740,7 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  swr@2.3.3(react@19.1.0):
+  swr@2.3.0(react@19.1.0):
     dependencies:
       dequal: 2.0.3
       react: 19.1.0
