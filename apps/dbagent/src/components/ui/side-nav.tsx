@@ -6,7 +6,9 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupAction,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -22,6 +24,7 @@ import {
   AlarmClock,
   CloudIcon,
   DatabaseIcon,
+  HistoryIcon,
   MessageSquare,
   NotebookPen,
   PanelLeft,
@@ -29,7 +32,7 @@ import {
   ZapIcon
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Chat, Project } from '~/lib/db/schema';
 import { fetcher } from '../chat/utils';
@@ -43,6 +46,8 @@ interface SideNavProps {
 
 export function SideNav({ className, project, onboardingComplete }: SideNavProps) {
   const pathname = usePathname();
+  const router = useRouter();
+
   const { toggleSidebar } = useSidebar();
 
   const [onboardingCompleteState, setOnboardingComplete] = useState(onboardingComplete);
@@ -112,21 +117,7 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
       title: 'Chat',
       url: `${basePath}/chats/new`,
       icon: Bot,
-      className: 'text-sm',
-      subItems: [
-        ...chats.slice(0, 5).map((chat) => ({
-          title: chat.title,
-          url: `${basePath}/chats/${chat.id}`,
-          icon: MessageSquare,
-          className: 'text-xs'
-        })),
-        {
-          title: 'All chats',
-          url: `${basePath}/chats`,
-          icon: null,
-          className: 'text-xs'
-        }
-      ]
+      className: 'text-sm'
     },
     {
       title: 'Playbooks',
@@ -171,6 +162,32 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
                       ))}
                     </SidebarMenuSub>
                   )}
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Chat History</SidebarGroupLabel>
+          <SidebarGroupAction
+            title="All chats"
+            onClick={() => {
+              router.push(`${basePath}/chats`);
+            }}
+          >
+            <HistoryIcon /> <span className="sr-only">All chats</span>
+          </SidebarGroupAction>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {chats.map((chat) => (
+                <SidebarMenuItem key={`sidebar-chat-${chat.id}`}>
+                  <SidebarMenuButton asChild isActive={isActive(`${basePath}/chats/${chat.id}`)}>
+                    <Link href={`${basePath}/chats/${chat.id}`}>
+                      <MessageSquare />
+                      <span>{chat.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

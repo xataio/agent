@@ -50,11 +50,8 @@ export async function POST(request: Request) {
     const chat = await getChatById(dbAccess, { id });
     if (!chat) notFound();
 
-    if (!chat?.title) {
-      const title = await generateTitleFromUserMessage({
-        message: userMessage
-      });
-
+    if (!chat?.title || chat.title === 'New chat') {
+      const title = await generateTitleFromUserMessage({ message: userMessage });
       await updateChat(dbAccess, id, { title, model });
     }
 
