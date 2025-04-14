@@ -105,7 +105,7 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
         }
       } catch (error) {
         console.error('Error renaming chat:', error);
-        queryClient.invalidateQueries({ queryKey: ['chats'] });
+        void queryClient.invalidateQueries({ queryKey: ['chats'] });
       }
     }
   };
@@ -331,9 +331,9 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
             <DialogTitle>Rename Chat</DialogTitle>
           </DialogHeader>
           <form
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              handleRenameChat();
+              await handleRenameChat();
             }}
           >
             <Input

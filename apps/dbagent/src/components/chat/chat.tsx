@@ -52,7 +52,7 @@ export function Chat({
 
   useEffect(() => {
     // On first load, refresh the chat history cache
-    queryClient.invalidateQueries({ queryKey: ['chats'] });
+    void queryClient.invalidateQueries({ queryKey: ['chats'] });
   }, []);
 
   const { data: votes } = useQuery<MessageVote[]>({
