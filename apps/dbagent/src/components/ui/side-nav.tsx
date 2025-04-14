@@ -231,19 +231,16 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
             <SidebarGroupContent>
               <SidebarMenu>
                 {chats.map((chat) => (
-                  <SidebarMenuItem key={`sidebar-chat-${chat.id}`} className="group relative">
+                  <SidebarMenuItem key={`sidebar-chat-${chat.id}`} className="group/item relative">
                     <SidebarMenuButton asChild isActive={isActive(`${basePath}/chats/${chat.id}`)}>
                       <Link href={`${basePath}/chats/${chat.id}`}>
                         <MessageSquare />
                         <span>{chat.title}</span>
                       </Link>
                     </SidebarMenuButton>
-                    <div>
+                    <div className="invisible absolute right-2 top-1/2 -translate-y-1/2 group-hover/item:visible">
                       <DropdownMenu>
-                        <DropdownMenuTrigger
-                          asChild
-                          className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100"
-                        >
+                        <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-7 w-7">
                             <MoreVertical className="h-4 w-4" />
                             <span className="sr-only">Actions</span>
