@@ -1,6 +1,6 @@
 import { LanguageModel } from 'ai';
 import { CloudProvider } from '../db/schema';
-import { chatSystemPrompt, commonSystemPrompt, monitoringSystemPrompt } from './prompts';
+import { artifactsPrompt, chatSystemPrompt, commonSystemPrompt, monitoringSystemPrompt } from './prompts';
 import { getLanguageModel } from './providers';
 
 function getCloudProviderPrompt(cloudProvider: string): string {
@@ -14,8 +14,19 @@ function getCloudProviderPrompt(cloudProvider: string): string {
   }
 }
 
-export function getChatSystemPrompt({ cloudProvider }: { cloudProvider: CloudProvider }): string {
-  return [commonSystemPrompt, chatSystemPrompt, getCloudProviderPrompt(cloudProvider)]
+export function getChatSystemPrompt({
+  cloudProvider,
+  useArtifacts = false
+}: {
+  cloudProvider: CloudProvider;
+  useArtifacts?: boolean;
+}): string {
+  return [
+    commonSystemPrompt,
+    chatSystemPrompt,
+    getCloudProviderPrompt(cloudProvider),
+    useArtifacts ? artifactsPrompt : ''
+  ]
     .filter((item) => item?.trim().length > 0)
     .join('\n');
 }

@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
-import { auth } from '~/auth';
+import { requireUserSession } from '~/utils/route';
 import { env } from '../env/server';
 import { authenticatedUser } from './schema';
 
@@ -67,20 +67,13 @@ export class DBUserAccess implements DBAccess {
 }
 
 export async function getUserSessionDBAccess(): Promise<DBAccess> {
-  const session = await auth();
-  if (!session) {
-    throw new Error('No session found');
-  }
-  if (!session.user) {
-    throw new Error('No active user');
-  }
-  return new DBUserAccess(session.user.id!);
+  const userId = await requireUserSession();
+  return new DBUserAccess(userId);
 }
 
 export async function getUserDBAccess(userId: string | undefined | null): Promise<DBAccess> {
-  if (!userId) {
-    return getUserSessionDBAccess();
-  }
+  if (!userId) return await getUserSessionDBAccess();
+
   return new DBUserAccess(userId);
 }
 
