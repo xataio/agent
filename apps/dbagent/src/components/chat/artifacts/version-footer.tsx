@@ -1,11 +1,10 @@
 'use client';
 
 import { Button } from '@internal/components';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { isAfter } from 'date-fns';
 import { motion } from 'framer-motion';
 import { LoaderIcon } from 'lucide-react';
-import { useState } from 'react';
 import { useWindowSize } from 'usehooks-ts';
 import { ArtifactDocument } from '~/lib/db/schema';
 import { getDocumentTimestampByIndex } from '../utils';
@@ -24,7 +23,31 @@ export const VersionFooter = ({ handleVersionChange, documents, currentVersionIn
   const { width } = useWindowSize();
   const isMobile = width < 768;
 
-  const [isMutating, setIsMutating] = useState(false);
+  const { isPending, mutate } = useMutation({
+    mutationFn: async ({ documentId, timestamp }: { documentId: string; timestamp: Date }) => {
+      const response = await fetch(`/api/artifact?id=${documentId}&timestamp=${timestamp.toISOString()}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to restore version');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.setQueryData(
+        ['documents', artifact.documentId],
+        documents
+          ? documents.filter((document) =>
+              isAfter(
+                new Date(document.createdAt),
+                new Date(getDocumentTimestampByIndex(documents, currentVersionIndex))
+              )
+            )
+          : []
+      );
+    }
+  });
 
   if (!documents) return;
 
@@ -43,36 +66,16 @@ export const VersionFooter = ({ handleVersionChange, documents, currentVersionIn
 
       <div className="flex flex-row gap-4">
         <Button
-          disabled={isMutating}
-          onClick={async () => {
-            setIsMutating(true);
-
-            const response = await fetch(`/api/artifact?id=${artifact.documentId}`, {
-              method: 'PATCH',
-              body: JSON.stringify({
-                timestamp: getDocumentTimestampByIndex(documents, currentVersionIndex)
-              })
+          disabled={isPending}
+          onClick={() => {
+            mutate({
+              documentId: artifact.documentId,
+              timestamp: getDocumentTimestampByIndex(documents, currentVersionIndex)
             });
-
-            if (response.ok) {
-              queryClient.setQueryData(
-                ['documents', artifact.documentId],
-                documents
-                  ? documents.filter((document) =>
-                      isAfter(
-                        new Date(document.createdAt),
-                        new Date(getDocumentTimestampByIndex(documents, currentVersionIndex))
-                      )
-                    )
-                  : []
-              );
-            }
-
-            setIsMutating(false);
           }}
         >
           <div>Restore this version</div>
-          {isMutating && (
+          {isPending && (
             <div className="animate-spin">
               <LoaderIcon />
             </div>
