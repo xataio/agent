@@ -27,7 +27,6 @@ export type ProviderInfo = {
 
 export type ProviderModel = {
   id: string;
-  providerId: string;
   name: string;
   private?: boolean;
 };

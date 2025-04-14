@@ -15,7 +15,7 @@ model_list:
       model: deepseek/deepseek-chat
     model_info:
       xata_agent:
-        model_id: deepseek-chat
+        model_id: deepseek:chat
         group_fallback: deepseek
 
   - model_name: Claude 3.7 Sonnet
@@ -24,7 +24,7 @@ model_list:
     model_info:
       mode: chat
       xata_agent:
-        model_id: anthropic-claude-3-7-sonnet
+        model_id: anthropic:claude-3-7-sonnet
         default: [chat]
         group_fallback: anthropic
 
@@ -34,7 +34,7 @@ model_list:
       api_key: os.environ/GOOGLE_GENERATIVE_AI_API_KEY
     model_info:
       xata_agent:
-        model_id: google-gemini-2.0-flash
+        model_id: google:gemini-2.0-flash
         group_fallback: google
 
   - model_name: Gemini 2.0 Flash Lite
@@ -43,7 +43,7 @@ model_list:
       api_key: os.environ/GOOGLE_GENERATIVE_AI_API_KEY
     model_info:
       xata_agent:
-        model_id: google-gemini-2.0-flash-lite
+        model_id: google:gemini-2.0-flash-lite
         group_fallback: google
 
   # internal models

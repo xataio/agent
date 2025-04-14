@@ -2,7 +2,7 @@ import { createOpenAI, OpenAIProvider } from '@ai-sdk/openai';
 import { LiteLLMClient, LiteLLMClientConfig } from '@internal/litellm-client';
 import { LanguageModel } from 'ai';
 import { Deployment } from '../../../../../../packages/litellm-client/src/generated/schemas';
-import { Model, ModelInfo, ProviderRegistry } from './types';
+import { Model, ProviderModel, ProviderRegistry } from './types';
 
 class LiteLLMProviderRegistry implements ProviderRegistry {
   #models: Record<string, LiteLLMModel> | null = null;
@@ -60,15 +60,15 @@ class LLMLiteLanguageModelFactory {
 }
 
 class LiteLLMModel implements Model {
-  #info: ModelInfo;
+  #info: ProviderModel;
   #factory: LLMLiteLanguageModelFactory;
 
-  constructor(factory: LLMLiteLanguageModelFactory, info: ModelInfo) {
+  constructor(factory: LLMLiteLanguageModelFactory, info: ProviderModel) {
     this.#factory = factory;
     this.#info = info;
   }
 
-  info(): ModelInfo {
+  info(): ProviderModel {
     return this.#info;
   }
 
@@ -134,7 +134,7 @@ export async function createLiteLLMProviderRegistry(config: LiteLLMConfig): Prom
 function modelIdFromDeployment(deployment: Deployment) {
   return (
     deployment.model_info?.xata_agent?.model_id ||
-    deployment.litellm_params?.model?.replace('/', '-') ||
+    deployment.litellm_params?.model?.replace('/', ':') ||
     deployment.model_name
   );
 }

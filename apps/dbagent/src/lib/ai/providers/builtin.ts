@@ -6,16 +6,24 @@ import { LanguageModel } from 'ai';
 
 import { Model, Provider, ProviderInfo, ProviderModel, ProviderRegistry } from './types';
 
+type BuiltinProvider = Provider & {
+  models: BuiltinProviderModel[];
+};
+
+type BuiltinProviderModel = ProviderModel & {
+  providerId: string;
+};
+
 class BuiltinModel implements Model {
-  #model: ProviderModel;
+  #model: BuiltinProviderModel;
   #provider: ProviderInfo;
 
-  constructor(provider: ProviderInfo, model: ProviderModel) {
+  constructor(provider: ProviderInfo, model: BuiltinProviderModel) {
     this.#model = model;
     this.#provider = provider;
   }
 
-  info(): ProviderModel {
+  info(): BuiltinProviderModel {
     return this.#model;
   }
 
@@ -25,7 +33,7 @@ class BuiltinModel implements Model {
   }
 }
 
-const builtinOpenAIModels: Provider = {
+const builtinOpenAIModels: BuiltinProvider = {
   info: {
     name: 'OpenAI',
     id: 'openai',
@@ -46,7 +54,7 @@ const builtinOpenAIModels: Provider = {
   ]
 };
 
-const builtinDeepseekModels: Provider = {
+const builtinDeepseekModels: BuiltinProvider = {
   info: {
     name: 'DeepSeek',
     id: 'deepseek',
@@ -61,7 +69,7 @@ const builtinDeepseekModels: Provider = {
   ]
 };
 
-const builtinAnthropicModels: Provider = {
+const builtinAnthropicModels: BuiltinProvider = {
   info: {
     name: 'Anthropic',
     id: 'anthropic',
@@ -76,7 +84,7 @@ const builtinAnthropicModels: Provider = {
   ]
 };
 
-const builtinGoogleModels: Provider = {
+const builtinGoogleModels: BuiltinProvider = {
   info: {
     name: 'Google',
     id: 'google',
@@ -99,7 +107,7 @@ const builtinGoogleModels: Provider = {
 const builtinProviderModels: Record<string, BuiltinModel> = Object.fromEntries(
   [builtinOpenAIModels, builtinDeepseekModels, builtinAnthropicModels, builtinGoogleModels].flatMap((p) => {
     return p.models.map((model) => {
-      const modelInstance = new BuiltinModel(p.info, model);
+      const modelInstance = new BuiltinModel(p.info, model as BuiltinProviderModel);
       return [modelInstance.info().id, modelInstance];
     });
   })
