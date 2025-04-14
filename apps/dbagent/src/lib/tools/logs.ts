@@ -24,6 +24,7 @@ export async function getInstanceLogsRDS(
 
   const cluster = await getClusterByConnection(dbAccess, connection.id);
   if (!cluster) {
+    console.log('Cluster not found for connection:', connection.id);
     return 'Cluster not found';
   }
 
