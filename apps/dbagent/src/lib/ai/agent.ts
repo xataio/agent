@@ -1,7 +1,7 @@
 import { LanguageModel } from 'ai';
 import { CloudProvider } from '../db/schema';
 import { artifactsPrompt, chatSystemPrompt, commonSystemPrompt, monitoringSystemPrompt } from './prompts';
-import { getLanguageModel } from './providers';
+import { getLanguageModel, getLanguageModelWithFallback } from './providers';
 
 function getCloudProviderPrompt(cloudProvider: string): string {
   switch (cloudProvider) {
@@ -40,4 +40,18 @@ export function getMonitoringSystemPrompt({ cloudProvider }: { cloudProvider: Cl
 export async function getModelInstance(name: string): Promise<LanguageModel> {
   const model = await getLanguageModel(name);
   return model.instance();
+}
+
+export type ScheduleLanguageModel = LanguageModel & {
+  requestedModelId: string;
+  isFallback: boolean;
+};
+
+export async function getMonitoringModelInstance(name: string): Promise<ScheduleLanguageModel> {
+  const model = await getLanguageModelWithFallback(name);
+  return {
+    ...model.instance(),
+    requestedModelId: model.requestedModelId,
+    isFallback: model.isFallback
+  };
 }

@@ -5,7 +5,7 @@ export * from './types';
 import { env } from '~/lib/env/server';
 import { getBuiltinProviderRegistry } from './builtin';
 import { createLiteLLMProviderRegistry } from './litellm';
-import { Model, ProviderRegistry } from './types';
+import { Model, ModelWithFallback, ProviderRegistry } from './types';
 
 let cachedRegistry: ProviderRegistry | null = null;
 let lastCacheTime: number | null = null;
@@ -40,4 +40,9 @@ export async function getDefaultLanguageModel(): Promise<Model> {
 export async function getLanguageModel(modelId: string): Promise<Model> {
   const registry = await getProviderRegistry();
   return registry.languageModel(modelId);
+}
+
+export async function getLanguageModelWithFallback(modelId: string): Promise<ModelWithFallback> {
+  const registry = await getProviderRegistry();
+  return registry.languageModel(modelId, true);
 }

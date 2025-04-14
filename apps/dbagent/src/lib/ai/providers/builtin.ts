@@ -4,7 +4,7 @@ import { google } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
 import { LanguageModel } from 'ai';
 
-import { Model, Provider, ProviderInfo, ProviderModel, ProviderRegistry } from './types';
+import { Model, ModelWithFallback, Provider, ProviderInfo, ProviderModel, ProviderRegistry } from './types';
 
 type BuiltinProvider = Provider & {
   models: BuiltinProviderModel[];
@@ -135,12 +135,16 @@ class BuiltinProviderRegistry implements ProviderRegistry {
     return defaultLanguageModel;
   }
 
-  languageModel(id: string): Model {
+  languageModel(id: string, useFallback?: boolean): ModelWithFallback {
     const model = builtinModels[id];
     if (!model) {
       throw new Error(`Model ${id} not found`);
     }
-    return model;
+    return {
+      ...model,
+      isFallback: useFallback ?? false,
+      requestedModelId: id
+    } as ModelWithFallback;
   }
 }
 
