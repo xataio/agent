@@ -160,6 +160,35 @@ export async function DELETE(request: Request) {
   }
 }
 
+export async function PATCH(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+
+  if (!id) {
+    return new Response('Not Found', { status: 404 });
+  }
+
+  const { title } = await request.json();
+  if (!title) {
+    return new Response('Title is required', { status: 400 });
+  }
+
+  const dbAccess = await getUserSessionDBAccess();
+
+  try {
+    const chat = await getChatById(dbAccess, { id });
+    if (!chat) notFound();
+
+    await updateChat(dbAccess, id, { title });
+
+    return new Response('Chat updated', { status: 200 });
+  } catch (error) {
+    return new Response('An error occurred while processing your request!', {
+      status: 500
+    });
+  }
+}
+
 function getMostRecentUserMessage(messages: Array<UIMessage>) {
   const userMessages = messages.filter((message) => message.role === 'user');
   return userMessages.at(-1);

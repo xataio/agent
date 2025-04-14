@@ -30,7 +30,7 @@ import {
   SidebarRail,
   useSidebar
 } from '@internal/components';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ActivityIcon,
   AlarmClock,
@@ -69,7 +69,8 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [newChatTitle, setNewChatTitle] = useState('');
 
-  const { data: { chats = [] } = {}, refetch: refetchChats } = useQuery<{ chats: Chat[] }>({
+  const queryClient = useQueryClient();
+  const { data: { chats = [] } = {} } = useQuery<{ chats: Chat[] }>({
     queryKey: ['chats'],
     queryFn: () => fetcher('/api/chat')
   });
@@ -81,17 +82,30 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
   const handleRenameChat = async () => {
     if (selectedChat && newChatTitle.trim()) {
       try {
-        await fetch(`/api/chat/${selectedChat.id}`, {
+        queryClient.setQueryData(['chats'], (oldData: { chats: Chat[] } | undefined) => {
+          if (!oldData) return { chats: [] };
+
+          return {
+            chats: oldData.chats.map((chat) => (chat.id === selectedChat.id ? { ...chat, title: newChatTitle } : chat))
+          };
+        });
+
+        setIsRenameDialogOpen(false);
+
+        const response = await fetch(`/api/chat?id=${selectedChat.id}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ title: newChatTitle })
         });
-        setIsRenameDialogOpen(false);
-        refetchChats();
+
+        if (!response.ok) {
+          throw new Error('Failed to rename chat');
+        }
       } catch (error) {
         console.error('Error renaming chat:', error);
+        queryClient.invalidateQueries({ queryKey: ['chats'] });
       }
     }
   };
@@ -99,11 +113,23 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
   const handleDeleteChat = async () => {
     if (selectedChat) {
       try {
-        await fetch(`/api/chat/${selectedChat.id}`, {
+        queryClient.setQueryData(['chats'], (oldData: { chats: Chat[] } | undefined) => {
+          if (!oldData) return { chats: [] };
+
+          return {
+            chats: oldData.chats.filter((chat) => chat.id !== selectedChat.id)
+          };
+        });
+
+        setIsDeleteDialogOpen(false);
+
+        const response = await fetch(`/api/chat?id=${selectedChat.id}`, {
           method: 'DELETE'
         });
-        setIsDeleteDialogOpen(false);
-        refetchChats();
+
+        if (!response.ok) {
+          throw new Error('Failed to delete chat');
+        }
       } catch (error) {
         console.error('Error deleting chat:', error);
       }
@@ -290,19 +316,27 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
           <DialogHeader>
             <DialogTitle>Rename Chat</DialogTitle>
           </DialogHeader>
-          <Input
-            value={newChatTitle}
-            onChange={(e) => setNewChatTitle(e.target.value)}
-            placeholder="Enter new chat name"
-          />
-          <DialogFooter>
-            <Button onClick={handleRenameChat} disabled={!newChatTitle.trim()}>
-              Save
-            </Button>
-            <Button variant="secondary" onClick={() => setIsRenameDialogOpen(false)}>
-              Cancel
-            </Button>
-          </DialogFooter>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleRenameChat();
+            }}
+          >
+            <Input
+              value={newChatTitle}
+              onChange={(e) => setNewChatTitle(e.target.value)}
+              placeholder="Enter new chat name"
+              autoFocus
+            />
+            <DialogFooter className="mt-4">
+              <Button type="submit" disabled={!newChatTitle.trim()}>
+                Save
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => setIsRenameDialogOpen(false)}>
+                Cancel
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
