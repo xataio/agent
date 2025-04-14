@@ -5,13 +5,9 @@ export type Pool = pg.Pool;
 export type Client = pg.Client;
 export type ClientBase = pg.ClientBase;
 
-export function getTargetDbPool(connectionString: string, poolConfig?: Omit<PoolConfig, 'connectionString'>): Pool {
+export function getTargetDbPool(connectionString: string, poolConfig: Omit<PoolConfig, 'connectionString'> = {}): Pool {
   const parsed = parseConnectionString(connectionString);
-  const config = {
-    ...(poolConfig || {}),
-    ...parsed
-  };
-  if (!config.min) config.min = 0;
+  const config = { ...poolConfig, ...parsed };
   if (!config.max) config.max = 1;
 
   return new pg.Pool(config);
