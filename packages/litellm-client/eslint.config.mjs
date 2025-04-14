@@ -6,7 +6,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default [
   {
-    ignores: ['eslint.config.mjs']
+    ignores: ['eslint.config.mjs', 'src/generated/**/*']
   },
   ...base,
   {
