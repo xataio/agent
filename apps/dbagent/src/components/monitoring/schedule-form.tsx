@@ -77,7 +77,7 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
     defaultValues: {
       playbook: playbook || playbooks[0] || '',
       connection: connections.find((c) => c.isDefault)?.name || '',
-      model: 'chat',
+      model: 'openai:gpt-4.1',
       scheduleType: 'cron',
       minInterval: '5',
       maxInterval: '1440',
@@ -94,10 +94,11 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
     if (isEditMode) {
       const fetchSchedule = async () => {
         const schedule = await actionGetSchedule(scheduleId);
+        console.log('schedule', schedule);
         form.reset({
           playbook: schedule.playbook,
           connection: connections.find((c) => c.id === schedule.connectionId)?.name || '',
-          model: schedule.model || 'chat',
+          model: schedule.model,
           scheduleType: schedule.scheduleType as 'automatic' | 'cron',
           cronExpression: schedule.cronExpression ?? undefined,
           minInterval: schedule.minInterval?.toString(),
@@ -208,8 +209,8 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
               control={form.control}
               name="model"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Model</FormLabel>
+                <FormItem className="flex flex-col space-y-2">
+                  <FormLabel className="block">Model</FormLabel>
                   <FormControl>
                     <ModelSelector value={field.value} onValueChange={field.onChange} />
                   </FormControl>

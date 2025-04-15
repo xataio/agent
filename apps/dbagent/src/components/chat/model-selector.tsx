@@ -26,6 +26,12 @@ export function ModelSelector({ value, onValueChange, className }: ModelSelector
   const [modelId, setModelId] = useState(value);
 
   useEffect(() => {
+    if (value !== modelId) {
+      setModelId(value);
+    }
+  }, [value, modelId]);
+
+  useEffect(() => {
     async function loadModels() {
       const fetchedModels = await actionGetLanguageModels();
       setModels(fetchedModels);
