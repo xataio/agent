@@ -68,7 +68,7 @@ export function Chat({
   useEffect(() => {
     // If chat has been loaded without an assistant message, we need to reload the chat
     if (initialMessages.length === messages.length && initialMessages[initialMessages.length - 1]?.role === 'user') {
-      reload();
+      void reload();
     }
   }, []);
 
