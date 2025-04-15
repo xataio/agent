@@ -11,7 +11,7 @@ type GetClusterMetricParams = {
   cloudProvider: CloudProvider;
   metricName: string;
   periodInSeconds: number;
-  stat: 'Average' | 'Maximum' | 'Minimum' | 'Sum' | undefined;
+  stat?: 'Average' | 'Maximum' | 'Minimum' | 'Sum';
 };
 
 export async function getClusterMetricRDS(
