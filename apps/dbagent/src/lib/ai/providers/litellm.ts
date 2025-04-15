@@ -12,7 +12,7 @@ const xataAgentSettingsSchema = z.object({
   // Group fallback model.
   group_fallback: z.string().optional(),
 
-  // List of aliases this model is registerd as.
+  // List of aliases this model is registered as.
   alias: z.array(z.string()).optional(),
 
   // Model priority. If 2 serve as fallbacks for similar model IDs (or ID
