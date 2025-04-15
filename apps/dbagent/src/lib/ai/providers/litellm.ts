@@ -3,25 +3,60 @@ import { LiteLLMClient, LiteLLMClientConfig, Schemas } from '@internal/litellm-c
 import { LanguageModel } from 'ai';
 import { Model, ModelWithFallback, ProviderModel, ProviderRegistry } from './types';
 
+import { z } from 'zod';
+
+const xataAgentSettingsSchema = z.object({
+  // Optional internal model id. Overwrites the model id derived from the LiteLLM config
+  model_id: z.string().optional(),
+
+  // Group fallback model.
+  group_fallback: z.string().optional(),
+
+  // List of aliases this model is registerd as.
+  alias: z.array(z.string()).optional(),
+
+  // Model priority. If 2 serve as fallbacks for similar model IDs (or ID
+  // groups), we use the model with the highest priority.
+  // Default: 1
+  priority: z.number().optional(),
+
+  // Private models can be instantiated, but they are not explicitly shown in the UI.
+  // For data extraction models like 'summary' or 'title'.
+  private: z.boolean().optional()
+});
+
+type XataAgentSettings = z.infer<typeof xataAgentSettingsSchema>;
+
+function agentSettings(d: Schemas.Deployment): XataAgentSettings | undefined {
+  const settings = d.model_info?.xata_agent;
+  if (!settings) return undefined;
+
+  try {
+    return xataAgentSettingsSchema.parse(settings);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new Error(`Invalid xata_agent configuration: ${error.message}`);
+    }
+    throw error;
+  }
+}
+
 class LiteLLMProviderRegistry implements ProviderRegistry {
   #models: Record<string, LiteLLMModel> | null = null;
-  #extraModels: Record<string, LiteLLMModel> | null = null;
   #defaultLanguageModel: LiteLLMModel | null = null;
   #groupFallbacks: Record<string, LiteLLMModel> = {};
 
   constructor({
     models,
-    extraModels,
     defaultLanguageModel,
     groupFallbacks
   }: {
     models: Record<string, LiteLLMModel>;
-    extraModels?: Record<string, LiteLLMModel>;
+    aliasModels?: Record<string, LiteLLMModel>;
     defaultLanguageModel?: LiteLLMModel;
     groupFallbacks: Record<string, LiteLLMModel>;
   }) {
     this.#models = models;
-    this.#extraModels = extraModels ?? {};
     this.#defaultLanguageModel = defaultLanguageModel ?? Object.values(models)[0] ?? null;
     this.#groupFallbacks = groupFallbacks;
   }
@@ -39,7 +74,7 @@ class LiteLLMProviderRegistry implements ProviderRegistry {
   }
 
   languageModel(modelId: string, useFallback?: boolean): ModelWithFallback {
-    const model = this.#models?.[modelId] ?? this.#extraModels?.[modelId];
+    const model = this.#models?.[modelId];
     if (!model && !useFallback) {
       throw new Error(`Model ${modelId} not found`);
     }
@@ -135,18 +170,18 @@ export function createLiteLLMProviderRegistryFromDeployments(
 
   const factory = new LLMLiteLanguageModelFactory(config.baseUrl, config.apiKey);
 
-  const models = Object.fromEntries(
+  const baseModels = Object.fromEntries(
     supportedDeployments
       .sort((a, b) => {
         const nameA = a.deployment.model_name;
         const nameB = b.deployment.model_name;
         return nameA.localeCompare(nameB);
       })
-      .map((d) => {
+      .map(({ modelId, deployment }) => {
         const model = new LiteLLMModel(factory, {
-          name: d.deployment.model_name,
-          id: d.modelId,
-          private: d.deployment.model_info?.xata_agent?.private
+          name: deployment.model_name,
+          id: modelId,
+          private: agentSettings(deployment)?.private ?? false
         });
         return [model.fullId(), model] as [string, LiteLLMModel];
       })
@@ -154,37 +189,35 @@ export function createLiteLLMProviderRegistryFromDeployments(
 
   // Build group fallback index
   const groupFallbacks = buildModelIndex(
-    models,
+    baseModels,
     buildPriorityIndex(
       supportedDeployments,
-      (d) => d.model_info?.xata_agent?.group_fallback,
-      (d) => d.model_info?.xata_agent?.default_priority
+      (deployment) => agentSettings(deployment)?.group_fallback,
+      (deployment) => agentSettings(deployment)?.priority
     )
   );
 
   // Build default model index
-  const extraModels = buildModelIndex(
-    models,
+  const aliasModels = buildModelIndex(
+    baseModels,
     buildPriorityIndex(
       supportedDeployments,
-      (d) => d.model_info?.xata_agent?.default,
-      (d) => d.model_info?.xata_agent?.default_priority
+      (deployment) => agentSettings(deployment)?.alias,
+      (deployment) => agentSettings(deployment)?.priority
     )
   );
 
+  const models = { ...baseModels, ...aliasModels };
   return new LiteLLMProviderRegistry({
     models,
-    extraModels,
-    defaultLanguageModel: extraModels['chat'] ?? undefined,
+    defaultLanguageModel: models['chat'] ?? undefined,
     groupFallbacks
   });
 }
 
 function modelIdFromDeployment(deployment: Schemas.Deployment) {
   return (
-    deployment.model_info?.xata_agent?.model_id ||
-    deployment.litellm_params?.model?.replace('/', ':') ||
-    deployment.model_name
+    agentSettings(deployment)?.model_id || deployment.litellm_params?.model?.replace('/', ':') || deployment.model_name
   );
 }
 
@@ -204,16 +237,18 @@ function buildPriorityIndex(
   const index: Record<string, { modelId: string; priority: number }> = {};
 
   for (const d of deployments) {
-    const keys = getKey(d.deployment);
+    const { modelId, deployment } = d;
+
+    const keys = getKey(deployment);
     if (!keys) continue;
 
-    const priority = getPriority(d.deployment) ?? 1;
+    const priority = getPriority(deployment) ?? 1;
     const keysArray = Array.isArray(keys) ? keys : [keys];
 
     for (const key of keysArray) {
       const existing = index[key];
       if (!existing || priority > existing.priority) {
-        index[key] = { modelId: d.modelId, priority };
+        index[key] = { modelId: modelId, priority };
       }
     }
   }

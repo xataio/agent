@@ -27,6 +27,8 @@ model_list:
         model_id: anthropic:claude-3-7-sonnet
         default: [chat]
         group_fallback: anthropic
+        alias:
+          - anthropic:claude-3-7-sonnet-20250219
 
   - model_name: Gemini 2.0 Flash
     litellm_params:

@@ -73,7 +73,7 @@ describe('LiteLLM Provider', () => {
       const model = models[0]!;
       expect(model.info().id).toBe('test:model');
       expect(model.info().name).toBe('Test Model');
-      expect(model.info().private).toBeUndefined();
+      expect(model.info().private).toBeDefined();
     });
 
     it('should handle missing xata_agent gracefully', async () => {
@@ -96,7 +96,7 @@ describe('LiteLLM Provider', () => {
       const model = models[0]!;
       expect(model.info().id).toBe('test:model');
       expect(model.info().name).toBe('Test Model');
-      expect(model.info().private).toBeUndefined();
+      expect(model.info().private).toBeDefined();
     });
 
     it('should use correct model IDs from various sources', async () => {
@@ -197,7 +197,7 @@ describe('LiteLLM Provider', () => {
           id: '12345',
           mode: 'chat',
           xata_agent: {
-            private: false
+            alias: ['chat']
           }
         }
       },
@@ -208,7 +208,8 @@ describe('LiteLLM Provider', () => {
           id: '12345',
           mode: 'chat',
           xata_agent: {
-            private: true
+            private: true,
+            alias: ['title']
           }
         }
       },
@@ -275,6 +276,17 @@ describe('LiteLLM Provider', () => {
       });
     });
 
+    describe('Alias', () => {
+      it('should find model by alias', async () => {
+        const model = registry.languageModel('title');
+        expect(model.info().id).toBe('test:model2');
+      });
+
+      it('should fail if alias does not exist', async () => {
+        expect(() => registry.languageModel('unknown')).toThrow();
+      });
+    });
+
     describe('Group Fallback', () => {
       it('should fallback to group model when exact match not found', async () => {
         const model = registry.languageModel('test:unknown', true);
@@ -294,7 +306,7 @@ describe('LiteLLM Provider', () => {
       it('should use highest priority model for fallback', async () => {
         const fallback = registry.languageModel('alt:unknown', true);
         expect(fallback.isFallback).toBe(true);
-        expect(fallback.info().id).toBe('alt:fallback');
+        expect(fallback.info().id).toBe('alt:fallback2');
       });
 
       it('should throw error when no group fallback exists', async () => {
