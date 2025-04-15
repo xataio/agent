@@ -11,11 +11,12 @@ type GetClusterMetricParams = {
   cloudProvider: CloudProvider;
   metricName: string;
   periodInSeconds: number;
+  stat: 'Average' | 'Maximum' | 'Minimum' | 'Sum' | undefined;
 };
 
 export async function getClusterMetricRDS(
   dbAccess: DBAccess,
-  { connection, metricName, periodInSeconds }: Omit<GetClusterMetricParams, 'cloudProvider'>
+  { connection, metricName, periodInSeconds, stat }: Omit<GetClusterMetricParams, 'cloudProvider'>
 ): Promise<string> {
   const awsCredentials = await getIntegration(dbAccess, connection.projectId, 'aws');
   if (!awsCredentials) {
@@ -39,7 +40,8 @@ export async function getClusterMetricRDS(
         awsCredentials,
         metricName,
         startTime,
-        endTime
+        endTime,
+        stat
       );
     } else {
       datapoints = await getRDSInstanceMetric(
@@ -48,7 +50,8 @@ export async function getClusterMetricRDS(
         awsCredentials,
         metricName,
         startTime,
-        endTime
+        endTime,
+        stat
       );
     }
     const toReturn = datapoints
