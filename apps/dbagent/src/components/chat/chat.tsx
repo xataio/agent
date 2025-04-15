@@ -4,7 +4,7 @@ import { useChat } from '@ai-sdk/react';
 import { toast } from '@internal/components';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { Connection, MessageVote } from '~/lib/db/schema';
 import { Artifact } from './artifacts/artifact';
 import { useArtifactSelector } from './artifacts/use-artifact';
@@ -14,7 +14,7 @@ import { MultimodalInput } from './multimodal-input';
 import { SuggestedAction } from './suggested-actions';
 import { fetcher, generateUUID } from './utils';
 
-export function Chat({
+function PureChat({
   id,
   projectId,
   defaultLanguageModel,
@@ -130,3 +130,14 @@ export function Chat({
     </>
   );
 }
+
+export const Chat = memo(PureChat, (prevProps, nextProps) => {
+  return (
+    prevProps.connections.length === nextProps.connections.length &&
+    prevProps.suggestedActions?.length === nextProps.suggestedActions?.length &&
+    prevProps.id === nextProps.id &&
+    prevProps.projectId === nextProps.projectId &&
+    prevProps.defaultLanguageModel === nextProps.defaultLanguageModel &&
+    prevProps.initialMessages.length === nextProps.initialMessages.length
+  );
+});
