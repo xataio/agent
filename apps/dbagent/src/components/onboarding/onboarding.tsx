@@ -121,7 +121,7 @@ export function Onboarding({ project }: { project: Project }) {
                   </p>
                 </div>
                 <div className="flex gap-4">
-                  <Button onClick={() => router.push(`/projects/${project.id}/chats?start=report`)}>
+                  <Button onClick={() => router.push(`/projects/${project.id}/chats/new?start=report`)}>
                     Get Initial Assessment
                   </Button>
                   <Button onClick={() => router.push(`/projects/${project.id}/monitoring`)} variant="outline">

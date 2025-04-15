@@ -12,6 +12,8 @@ type PageParams = {
 
 type SearchParams = {
   scheduleRun?: string;
+  playbook?: string;
+  start?: string;
 };
 
 export default async function Page({
@@ -22,7 +24,7 @@ export default async function Page({
   searchParams: Promise<SearchParams>;
 }) {
   const { project } = await params;
-  const { scheduleRun } = await searchParams;
+  const { scheduleRun, playbook, start } = await searchParams;
 
   const session = await auth();
   const userId = session?.user?.id;
@@ -56,6 +58,54 @@ export default async function Page({
           })) ||
             [])
       }))
+    );
+  } else if (playbook) {
+    await saveChat(
+      dbAccess,
+      {
+        id: chatId,
+        projectId: project,
+        userId,
+        model: 'chat',
+        title: `Playbook ${playbook}`
+      },
+      [
+        {
+          chatId,
+          projectId: project,
+          role: 'user',
+          parts: [
+            {
+              type: 'text',
+              text: `Run playbook ${playbook}`
+            }
+          ]
+        }
+      ]
+    );
+  } else if (start) {
+    await saveChat(
+      dbAccess,
+      {
+        id: chatId,
+        projectId: project,
+        userId,
+        model: 'chat',
+        title: `New chat`
+      },
+      [
+        {
+          chatId,
+          projectId: project,
+          role: 'user',
+          parts: [
+            {
+              type: 'text',
+              text: `Hi! I'd like an initial assessment of my database. Please analyze its configuration, settings, and current activity to provide recommendations for optimization and potential improvements.`
+            }
+          ]
+        }
+      ]
     );
   } else {
     await saveChat(dbAccess, {

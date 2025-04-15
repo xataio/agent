@@ -4,7 +4,7 @@ import { useChat } from '@ai-sdk/react';
 import { toast } from '@internal/components';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Connection, MessageVote } from '~/lib/db/schema';
 import { Artifact } from './artifacts/artifact';
 import { useArtifactSelector } from './artifacts/use-artifact';
@@ -60,6 +60,13 @@ export function Chat({
   // corresponds to the top padding of the main layout container: /src/components/ui/container.tsx
   const layoutTopPadding = 'calc(var(--spacing)* 24)';
   const heightScreen = `calc(100vh - ${layoutTopPadding})`;
+
+  useEffect(() => {
+    // If chat has been loaded without an assistant message, we need to reload the chat
+    if (initialMessages.length === messages.length && initialMessages[initialMessages.length - 1]?.role === 'user') {
+      reload();
+    }
+  }, []);
 
   return (
     <>
