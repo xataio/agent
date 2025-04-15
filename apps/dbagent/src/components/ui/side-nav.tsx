@@ -192,21 +192,7 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
       title: 'Chat',
       url: `${basePath}/chats/new`,
       icon: Bot,
-      className: 'text-sm',
-      subItems: [
-        ...chats.slice(0, 5).map((chat) => ({
-          title: chat.title,
-          url: `${basePath}/chats/${chat.id}`,
-          icon: MessageSquare,
-          className: 'text-xs'
-        })),
-        {
-          title: 'All chats',
-          url: `${basePath}/chats`,
-          icon: null,
-          className: 'text-xs'
-        }
-      ]
+      className: 'text-sm'
     },
     {
       title: 'Playbooks',
