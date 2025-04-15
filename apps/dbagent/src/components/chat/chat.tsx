@@ -4,7 +4,7 @@ import { useChat } from '@ai-sdk/react';
 import { toast } from '@internal/components';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { Connection, MessageVote } from '~/lib/db/schema';
 import { Artifact } from './artifacts/artifact';
 import { useArtifactSelector } from './artifacts/use-artifact';
@@ -68,12 +68,20 @@ function PureChat({
   const layoutTopPadding = 'calc(var(--spacing)* 24)';
   const heightScreen = `calc(100vh - ${layoutTopPadding})`;
 
+  // Using useRef to avoid re-initializing the chat on every render
+  // This is a workaround to avoid re-initializing the chat when the component is re-mounted
+  // and the messages are already loaded
+  const initialized = useRef(false);
   useEffect(() => {
-    // If chat has been loaded without an assistant message, we need to reload the chat
-    if (initialMessages?.length === messages.length && initialMessages[initialMessages.length - 1]?.role === 'user') {
-      void reload();
+    if (!initialized.current) {
+      initialized.current = true;
+
+      // If chat has been loaded without an assistant message, we need to reload the chat
+      if (initialMessages?.[initialMessages.length - 1]?.role === 'user') {
+        void reload();
+      }
     }
-  }, []);
+  }, [initialized, initialMessages, reload]);
 
   return (
     <>
