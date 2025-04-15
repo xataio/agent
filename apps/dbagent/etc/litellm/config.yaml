@@ -25,9 +25,9 @@ model_list:
       mode: chat
       xata_agent:
         model_id: anthropic:claude-3-7-sonnet
-        default: [chat]
         group_fallback: anthropic
         alias:
+          - chat
           - anthropic:claude-3-7-sonnet-20250219
 
   - model_name: Gemini 2.0 Flash
