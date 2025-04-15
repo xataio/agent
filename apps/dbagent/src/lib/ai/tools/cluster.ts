@@ -1,12 +1,13 @@
 import { tool, Tool } from 'ai';
 import { z } from 'zod';
+import { getClusterByConnection } from '~/lib/db/aws-clusters';
 import { DBAccess } from '~/lib/db/db';
+import { getInstanceByConnection } from '~/lib/db/gcp-instances';
 import { CloudProvider, Connection } from '~/lib/db/schema';
-import { getPostgresExtensions, getTablesAndInstanceInfo } from '~/lib/tools/dbinfo';
+import { getPostgresExtensions, getTablesInfo } from '~/lib/tools/dbinfo';
 import { getInstanceLogsGCP, getInstanceLogsRDS } from '~/lib/tools/logs';
 import { getClusterMetricGCP, getClusterMetricRDS } from '~/lib/tools/metrics';
 import { mergeToolsets, Toolset, ToolsetGroup } from './types';
-
 export function getDBClusterTools(
   dbAccess: DBAccess,
   connection: Connection | (() => Promise<Connection>),
@@ -34,22 +35,20 @@ export class CommonDBClusterTools implements ToolsetGroup {
 
   toolset(): Record<string, Tool> {
     return {
-      getTablesAndInstanceInfo: this.getTablesAndInstanceInfo(),
+      getTablesInfo: this.getTablesInfo(),
       getPostgresExtensions: this.getPostgresExtensions()
     };
   }
 
-  private getTablesAndInstanceInfo(): Tool {
+  private getTablesInfo(): Tool {
     const getter = this.#getter;
     const db = this.#dbAccess;
     return tool({
-      description: `Get the information about tables (sizes, row counts, usage)
-      and the data about server instance/cluster on which the DB is running.
-      Useful during the initial assessment.`,
+      description: `Get the information about tables (sizes, row counts, usage).`,
       parameters: z.object({}),
       execute: async () => {
         const connection = await getter();
-        return await getTablesAndInstanceInfo(db, connection);
+        return await getTablesInfo(db, connection);
       }
     });
   }
@@ -80,7 +79,8 @@ export class AWSDBClusterTools implements ToolsetGroup {
   toolset(): Record<string, Tool> {
     return {
       getInstanceLogs: this.getInstanceLogsRDS(),
-      getInstanceMetric: this.getInstanceMetricRDS()
+      getInstanceMetric: this.getInstanceMetricRDS(),
+      getClusterInfo: this.getClusterInfo()
     };
   }
 
@@ -119,6 +119,19 @@ export class AWSDBClusterTools implements ToolsetGroup {
       }
     });
   }
+
+  private getClusterInfo(): Tool {
+    const getter = this.#getter;
+    const db = this.#dbAccess;
+    return tool({
+      description: `Get the information about the RDS cluster or instance.`,
+      parameters: z.object({}),
+      execute: async () => {
+        const connection = await getter();
+        return await getClusterByConnection(db, connection.id);
+      }
+    });
+  }
 }
 
 export class GCPDBClusterTools implements ToolsetGroup {
@@ -133,7 +146,8 @@ export class GCPDBClusterTools implements ToolsetGroup {
   toolset(): Record<string, Tool> {
     return {
       getInstanceLogs: this.getInstanceLogsGCP(),
-      getInstanceMetric: this.getInstanceMetricGCP()
+      getInstanceMetric: this.getInstanceMetricGCP(),
+      getInstanceInfo: this.getInstanceInfo()
     };
   }
 
@@ -180,6 +194,19 @@ export class GCPDBClusterTools implements ToolsetGroup {
         console.log('getClusterMetricGCP', metricName, periodInSeconds);
         const connection = await getter();
         return await getClusterMetricGCP(db, { connection, metricName, periodInSeconds });
+      }
+    });
+  }
+
+  private getInstanceInfo(): Tool {
+    const getter = this.#getter;
+    const db = this.#dbAccess;
+    return tool({
+      description: `Get the information about the GCP Cloud SQL instance.`,
+      parameters: z.object({}),
+      execute: async () => {
+        const connection = await getter();
+        return await getInstanceByConnection(db, connection.id);
       }
     });
   }
