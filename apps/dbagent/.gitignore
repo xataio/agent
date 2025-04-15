@@ -35,6 +35,12 @@ yarn-error.log*
 .env.eval
 .env.litellm.local
 
+# local config files
+# litellm configs
+/etc/litellm/*
+!/etc/litellm/config.yaml
+
+
 # vercel
 .vercel
 

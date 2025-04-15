@@ -1,7 +1,6 @@
 import { createOpenAI, OpenAIProvider } from '@ai-sdk/openai';
-import { LiteLLMClient, LiteLLMClientConfig } from '@internal/litellm-client';
+import { LiteLLMClient, LiteLLMClientConfig, Schemas } from '@internal/litellm-client';
 import { LanguageModel } from 'ai';
-import { Deployment } from '../../../../../../packages/litellm-client/src/generated/schemas';
 import { Model, ModelWithFallback, ProviderModel, ProviderRegistry } from './types';
 
 class LiteLLMProviderRegistry implements ProviderRegistry {
@@ -127,7 +126,7 @@ export async function createLiteLLMProviderRegistry(config: LiteLLMConfig): Prom
 
 export function createLiteLLMProviderRegistryFromDeployments(
   config: LiteLLMConfig,
-  deployments: Deployment[]
+  deployments: Schemas.Deployment[]
 ): ProviderRegistry {
   const supportedDeployments = deployments.filter(isSupportedModel).map((deployment) => ({
     modelId: modelIdFromDeployment(deployment),
@@ -138,6 +137,11 @@ export function createLiteLLMProviderRegistryFromDeployments(
 
   const models = Object.fromEntries(
     supportedDeployments
+      .sort((a, b) => {
+        const nameA = a.deployment.model_name;
+        const nameB = b.deployment.model_name;
+        return nameA.localeCompare(nameB);
+      })
       .map((d) => {
         const model = new LiteLLMModel(factory, {
           name: d.deployment.model_name,
@@ -145,11 +149,6 @@ export function createLiteLLMProviderRegistryFromDeployments(
           private: d.deployment.model_info?.xata_agent?.private
         });
         return [model.fullId(), model] as [string, LiteLLMModel];
-      })
-      .sort((a, b) => {
-        const nameA = a[1].info().name;
-        const nameB = b[1].info().name;
-        return nameA.localeCompare(nameB);
       })
   );
 
@@ -159,7 +158,7 @@ export function createLiteLLMProviderRegistryFromDeployments(
     buildPriorityIndex(
       supportedDeployments,
       (d) => d.model_info?.xata_agent?.group_fallback,
-      (d) => d.model_info?.xata_agent?.default_priority ?? 1
+      (d) => d.model_info?.xata_agent?.default_priority
     )
   );
 
@@ -169,7 +168,7 @@ export function createLiteLLMProviderRegistryFromDeployments(
     buildPriorityIndex(
       supportedDeployments,
       (d) => d.model_info?.xata_agent?.default,
-      (d) => d.model_info?.xata_agent?.default_priority ?? 1
+      (d) => d.model_info?.xata_agent?.default_priority
     )
   );
 
@@ -181,7 +180,7 @@ export function createLiteLLMProviderRegistryFromDeployments(
   });
 }
 
-function modelIdFromDeployment(deployment: Deployment) {
+function modelIdFromDeployment(deployment: Schemas.Deployment) {
   return (
     deployment.model_info?.xata_agent?.model_id ||
     deployment.litellm_params?.model?.replace('/', ':') ||
@@ -189,18 +188,18 @@ function modelIdFromDeployment(deployment: Deployment) {
   );
 }
 
-function isSupportedModel(model: Deployment) {
+function isSupportedModel(model: Schemas.Deployment) {
   return isChatModel(model);
 }
 
-function isChatModel(model: Deployment) {
+function isChatModel(model: Schemas.Deployment) {
   return model.model_info?.mode ? model.model_info['mode'] === 'chat' : false;
 }
 
 function buildPriorityIndex(
-  deployments: { modelId: string; deployment: Deployment }[],
-  getKey: (deployment: Deployment) => string | string[] | undefined,
-  getPriority: (deployment: Deployment) => number = () => 1
+  deployments: { modelId: string; deployment: Schemas.Deployment }[],
+  getKey: (deployment: Schemas.Deployment) => string | string[] | undefined,
+  getPriority: (deployment: Schemas.Deployment) => number | undefined = () => 1
 ): Record<string, { modelId: string; priority: number }> {
   const index: Record<string, { modelId: string; priority: number }> = {};
 
@@ -208,7 +207,7 @@ function buildPriorityIndex(
     const keys = getKey(d.deployment);
     if (!keys) continue;
 
-    const priority = getPriority(d.deployment);
+    const priority = getPriority(d.deployment) ?? 1;
     const keysArray = Array.isArray(keys) ? keys : [keys];
 
     for (const key of keysArray) {

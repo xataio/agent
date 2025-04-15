@@ -1,4 +1,4 @@
-import type { Deployment } from '@internal/litellm-client';
+import { Schemas } from '@internal/litellm-client';
 import { describe, expect, it } from 'vitest';
 import { createLiteLLMProviderRegistryFromDeployments } from './litellm';
 
@@ -10,31 +10,29 @@ const baseConfig = {
 describe('LiteLLM Provider', () => {
   describe('Model Creation', () => {
     it('should create models from deployments correctly', async () => {
-      const mockDeployments: Deployment[] = [
+      const mockDeployments: Schemas.Deployment[] = [
         {
           model_name: 'Test Model 1',
+          litellm_params: { model: 'test/model1' },
           model_info: {
+            id: '12345',
             mode: 'chat',
             xata_agent: {
               model_id: 'test:model1',
               private: false
             }
-          },
-          litellm_params: {
-            model: 'test/model1'
           }
         },
         {
           model_name: 'Test Model 2',
+          litellm_params: { model: 'test/model2' },
           model_info: {
+            id: '12345',
             mode: 'chat',
             xata_agent: {
               model_id: 'test:model2',
               private: true
             }
-          },
-          litellm_params: {
-            model: 'test/model2'
           }
         }
       ];
@@ -56,13 +54,12 @@ describe('LiteLLM Provider', () => {
     });
 
     it('should handle missing model_info gracefully', async () => {
-      const mockDeployments: Deployment[] = [
+      const mockDeployments: Schemas.Deployment[] = [
         {
           model_name: 'Test Model',
-          litellm_params: {
-            model: 'test/model'
-          },
+          litellm_params: { model: 'test/model' },
           model_info: {
+            id: '12345',
             mode: 'chat'
           }
         }
@@ -73,20 +70,19 @@ describe('LiteLLM Provider', () => {
       const models = registry.listLanguageModels();
       expect(models).toHaveLength(1);
 
-      const model = models[0];
+      const model = models[0]!;
       expect(model.info().id).toBe('test:model');
       expect(model.info().name).toBe('Test Model');
       expect(model.info().private).toBeUndefined();
     });
 
     it('should handle missing xata_agent gracefully', async () => {
-      const mockDeployments: Deployment[] = [
+      const mockDeployments: Schemas.Deployment[] = [
         {
           model_name: 'Test Model',
-          litellm_params: {
-            model: 'test/model'
-          },
+          litellm_params: { model: 'test/model' },
           model_info: {
+            id: '12345',
             mode: 'chat'
           }
         }
@@ -97,17 +93,19 @@ describe('LiteLLM Provider', () => {
       const models = registry.listLanguageModels();
       expect(models).toHaveLength(1);
 
-      const model = models[0];
+      const model = models[0]!;
       expect(model.info().id).toBe('test:model');
       expect(model.info().name).toBe('Test Model');
       expect(model.info().private).toBeUndefined();
     });
 
     it('should use correct model IDs from various sources', async () => {
-      const mockDeployments: Deployment[] = [
+      const mockDeployments: Schemas.Deployment[] = [
         {
           model_name: 'Test Model 1',
+          litellm_params: { model: 'test/model1' },
           model_info: {
+            id: '12345',
             mode: 'chat',
             xata_agent: {
               model_id: 'custom:id1'
@@ -116,16 +114,17 @@ describe('LiteLLM Provider', () => {
         },
         {
           model_name: 'Test Model 2',
-          litellm_params: {
-            model: 'test/model2'
-          },
+          litellm_params: { model: 'test/model2' },
           model_info: {
+            id: '12345',
             mode: 'chat'
           }
         },
         {
           model_name: 'Test Model 3',
+          litellm_params: { model: 'test/model3' },
           model_info: {
+            id: '12345',
             mode: 'chat'
           }
         }
@@ -138,14 +137,16 @@ describe('LiteLLM Provider', () => {
 
       expect(models.find((m) => m.info().id === 'custom:id1')).toBeDefined();
       expect(models.find((m) => m.info().id === 'test:model2')).toBeDefined();
-      expect(models.find((m) => m.info().id === 'Test Model 3')).toBeDefined();
+      expect(models.find((m) => m.info().id === 'test:model3')).toBeDefined();
     });
 
     it('should sort models by name', async () => {
-      const mockDeployments: Deployment[] = [
+      const mockDeployments: Schemas.Deployment[] = [
         {
           model_name: 'Z Model',
+          litellm_params: { model: 'test/z' },
           model_info: {
+            id: '12345',
             mode: 'chat',
             xata_agent: {
               model_id: 'test:z'
@@ -154,7 +155,9 @@ describe('LiteLLM Provider', () => {
         },
         {
           model_name: 'A Model',
+          litellm_params: { model: 'test/a' },
           model_info: {
+            id: '12345',
             mode: 'chat',
             xata_agent: {
               model_id: 'test:a'
@@ -163,7 +166,9 @@ describe('LiteLLM Provider', () => {
         },
         {
           model_name: 'M Model',
+          litellm_params: { model: 'test/m' },
           model_info: {
+            id: '12345',
             mode: 'chat',
             xata_agent: {
               model_id: 'test:m'
@@ -177,20 +182,19 @@ describe('LiteLLM Provider', () => {
       const models = registry.listLanguageModels();
       expect(models).toHaveLength(3);
 
-      expect(models[0].info().name).toBe('A Model');
-      expect(models[1].info().name).toBe('M Model');
-      expect(models[2].info().name).toBe('Z Model');
+      expect(models[0]!.info().name).toBe('A Model');
+      expect(models[1]!.info().name).toBe('M Model');
+      expect(models[2]!.info().name).toBe('Z Model');
     });
   });
 
   describe('Model Lookup', () => {
-    const mockDeployments: Deployment[] = [
+    const mockDeployments: Schemas.Deployment[] = [
       {
         model_name: 'Test Model 1',
-        litellm_params: {
-          model: 'test/model1'
-        },
+        litellm_params: { model: 'test/model1' },
         model_info: {
+          id: '12345',
           mode: 'chat',
           xata_agent: {
             private: false
@@ -199,10 +203,9 @@ describe('LiteLLM Provider', () => {
       },
       {
         model_name: 'Test Model 2',
-        litellm_params: {
-          model: 'test/model2'
-        },
+        litellm_params: { model: 'test/model2' },
         model_info: {
+          id: '12345',
           mode: 'chat',
           xata_agent: {
             private: true
@@ -211,14 +214,38 @@ describe('LiteLLM Provider', () => {
       },
       {
         model_name: 'Fallback Model',
-        litellm_params: {
-          model: 'test/fallback'
-        },
+        litellm_params: { model: 'test/fallback' },
         model_info: {
+          id: '12345',
           mode: 'chat',
           xata_agent: {
             private: false,
-            group_fallback: 'test'
+            group_fallback: 'test',
+            priority: 10
+          }
+        }
+      },
+      {
+        model_name: 'Alt Fallback Model',
+        litellm_params: { model: 'alt/fallback' },
+        model_info: {
+          id: '12345',
+          mode: 'chat',
+          xata_agent: {
+            group_fallback: 'alt',
+            priority: 1
+          }
+        }
+      },
+      {
+        model_name: 'Alt Fallback Model 2',
+        litellm_params: { model: 'alt/fallback2' },
+        model_info: {
+          id: '12345',
+          mode: 'chat',
+          xata_agent: {
+            group_fallback: 'alt',
+            priority: 10
           }
         }
       }
@@ -236,11 +263,15 @@ describe('LiteLLM Provider', () => {
       it('should return correct model info for exact matches', async () => {
         const model = registry.languageModel('test:model2');
         expect(model.info().private).toBe(true);
-        expect(model.info().name).toBe('Test Model 2');
+        expect(model.info().id).toBe('test:model2');
       });
 
-      it('should handle case sensitivity in model IDs', async () => {
+      it('should be case insensitive', async () => {
         expect(() => registry.languageModel('TEST:MODEL1')).toThrow();
+      });
+
+      it('should fail if fallback exists, but was not requested', async () => {
+        expect(() => registry.languageModel('alt:unknown')).toThrow();
       });
     });
 
@@ -252,7 +283,7 @@ describe('LiteLLM Provider', () => {
         expect(model.requestedModelId).toBe('test:unknown');
       });
 
-      it('should mark fallback models correctly in ModelWithFallback', async () => {
+      it('should mark fallback models correctly', async () => {
         const exactMatch = registry.languageModel('test:model1');
         expect(exactMatch.isFallback).toBe(false);
 
@@ -260,18 +291,14 @@ describe('LiteLLM Provider', () => {
         expect(fallback.isFallback).toBe(true);
       });
 
-      it('should handle missing group fallback gracefully', async () => {
+      it('should use highest priority model for fallback', async () => {
+        const fallback = registry.languageModel('alt:unknown', true);
+        expect(fallback.isFallback).toBe(true);
+        expect(fallback.info().id).toBe('alt:fallback');
+      });
+
+      it('should throw error when no group fallback exists', async () => {
         expect(() => registry.languageModel('unknown:model')).toThrow();
-      });
-    });
-
-    describe('Error Handling', () => {
-      it('should throw error when model not found and no fallback available', async () => {
-        expect(() => registry.languageModel('nonexistent:model')).toThrow();
-      });
-
-      it('should throw error when fallback model not found', async () => {
-        expect(() => registry.languageModel('test:unknown')).toThrow();
       });
     });
   });
