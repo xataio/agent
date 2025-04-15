@@ -50,14 +50,16 @@ export async function POST(request: Request) {
   return Response.json(document, { status: 200 });
 }
 
-export async function PATCH(request: Request) {
+export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
-
-  const { timestamp }: { timestamp: string } = await request.json();
-
   if (!id) {
     return new Response('Missing id', { status: 400 });
+  }
+
+  const timestamp = searchParams.get('timestamp');
+  if (!timestamp) {
+    return new Response('Missing timestamp', { status: 400 });
   }
 
   const dbAccess = await getUserSessionDBAccess();
