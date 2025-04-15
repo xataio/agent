@@ -42,13 +42,18 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      void queryClient.invalidateQueries({ queryKey: ['history'] });
+      void queryClient.invalidateQueries({ queryKey: ['chats'] });
     },
     onError: (error) => {
       console.error(error.message);
       toast.error('An error occured, please try again!');
     }
   });
+
+  useEffect(() => {
+    // On first load, refresh the chat history cache
+    void queryClient.invalidateQueries({ queryKey: ['chats'] });
+  }, []);
 
   const { data: votes } = useQuery<MessageVote[]>({
     queryKey: ['votes', id],
@@ -57,7 +62,6 @@ export function Chat({
   });
 
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
-  // corresponds to the top padding of the main layout container: /src/components/ui/container.tsx
   const layoutTopPadding = 'calc(var(--spacing)* 24)';
   const heightScreen = `calc(100vh - ${layoutTopPadding})`;
 

@@ -77,10 +77,12 @@ const TUNING_PLAYBOOK = `
 Objective: Recommend performance and vacuum settings for the database.
 
 Step 1:
-Use the getTablesAndInstanceInfo tool to gather what you know about the database and the cluster/instance type
+Use the getClusterInfo or getInstanceInfo tool to gather what you know about the cluster/instance type.
+Use the getTablesInfo tool to gather what you know about the tables in the database.
+Retrieve the main metrics (CPU, free memory, etc) for the past 24h.
 
 Step 2:
-Think about what CPU/memory does that AWS instance class have?
+Think about what CPU/memory does that the instance class have?
 
 Step 3:
 Given the information you collected above, think about the ideal settings for the following parameters: 
@@ -106,6 +108,7 @@ Step 4:
 Now compare with the value you read via the tool getPerformanceAndVacuumSettings and see if there's anything you'd change.
 
 Report your findings in a structured way, with the settings you'd change, and the reason for the change. Highlight the most important changes first.
+Keep in mind the cloud provider when making the recommendations.
 `;
 
 const INVESTIGATE_HIGH_CPU_USAGE_PLAYBOOK = `
@@ -184,7 +187,7 @@ Step 1:
 Get the freeable memory metric using the tool getInstanceMetric.
 
 Step 3:
-Get the instance details and compare the freeable memory with the amount of memory available.
+Get the cluster/instance details and compare the freeable memory with the amount of memory available.
 
 Step 4:
 Check the logs for any indications of memory pressure or out of memory errors. If there are,
@@ -200,7 +203,7 @@ in order to free up memory.
 
 Step 6:
 If there is no clear root cause for using memory, suggest to the user to scale up the Postgres instance.
-Recommend a particular instance class.
+Recommend a particular instance class, keeping in mind the cloud provider.
 `;
 
 export function getPlaybook(name: string): string {

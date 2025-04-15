@@ -1,10 +1,10 @@
 import { redirect } from 'next/navigation';
-import { auth } from '~/auth';
 import { generateUUID } from '~/components/chat/utils';
 import { saveChat } from '~/lib/db/chats';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 import { getScheduleRun } from '~/lib/db/schedule-runs';
 import { getSchedule } from '~/lib/db/schedules';
+import { requireUserSession } from '~/utils/route';
 
 type PageParams = {
   project: string;
@@ -26,12 +26,9 @@ export default async function Page({
   const { project } = await params;
   const { scheduleRun, playbook, start } = await searchParams;
 
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) throw new Error('Unauthorized');
-
-  const chatId = generateUUID();
+  const userId = await requireUserSession();
   const dbAccess = await getUserSessionDBAccess();
+  const chatId = generateUUID();
 
   if (scheduleRun) {
     const run = await getScheduleRun(dbAccess, scheduleRun);
@@ -113,7 +110,7 @@ export default async function Page({
       projectId: project,
       userId,
       model: 'chat',
-      title: ''
+      title: 'New chat'
     });
   }
 
