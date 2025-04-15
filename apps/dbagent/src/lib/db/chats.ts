@@ -56,7 +56,7 @@ export async function getChatById(dbAccess: DBAccess, { id }: { id: string }) {
 
 export async function saveMessages(dbAccess: DBAccess, { messages: items }: { messages: Array<MessageInsert> }) {
   return dbAccess.query(async ({ db }) => {
-    return await db.insert(messages).values(items);
+    return await db.insert(messages).values(items).onConflictDoNothing();
   });
 }
 
