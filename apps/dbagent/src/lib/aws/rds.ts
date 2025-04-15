@@ -319,54 +319,43 @@ export async function getRDSClusterMetric(
   credentials: AWSCredentials,
   metricName: string,
   startTime: Date = new Date(Date.now() - 24 * 60 * 60 * 1000), // Default to last 24 hours
-  endTime: Date = new Date()
+  endTime: Date = new Date(),
+  stat: 'Average' | 'Maximum' | 'Minimum' | 'Sum' = 'Average'
 ): Promise<{ timestamp: Date; value: number }[]> {
   try {
-    // Calculate time difference in seconds
-    const timeDiffSeconds = Math.floor((endTime.getTime() - startTime.getTime()) / 1000);
-
-    // Target around 50 data points
-    let period = 3600; // Default to 1 hour
-    if (timeDiffSeconds <= 500) {
-      // Up to ~8 minutes
-      period = 10; // 10 second intervals
-    } else if (timeDiffSeconds <= 3000) {
-      // Up to ~50 minutes
-      period = 60; // 1 minute intervals
-    } else if (timeDiffSeconds <= 43200) {
-      // Up to ~12 hours
-      period = 300; // 5 minute intervals
-    }
-    const client = initializeCloudWatchClient(credentials, region);
-    const command = new GetMetricStatisticsCommand({
-      Namespace: 'AWS/RDS',
-      MetricName: metricName,
-      Dimensions: [
-        {
-          Name: 'DBClusterIdentifier',
-          Value: clusterIdentifier
-        }
-      ],
-      StartTime: startTime,
-      EndTime: endTime,
-      Period: period,
-      Statistics: ['Average']
+    const rdsClient = initializeRDSClient(credentials, region);
+    const describeClusterCommand = new DescribeDBClustersCommand({
+      DBClusterIdentifier: clusterIdentifier
     });
 
-    console.log('command', JSON.stringify(command, null, 2));
+    const clusterResponse = await rdsClient.send(describeClusterCommand);
+    const cluster = clusterResponse.DBClusters?.[0];
 
-    const response = await client.send(command);
-
-    if (!response.Datapoints?.length) {
+    if (!cluster || !cluster.DBClusterMembers || cluster.DBClusterMembers.length === 0) {
+      console.error('No instances found in cluster:', clusterIdentifier);
       return [];
     }
 
-    return response.Datapoints.map((point) => ({
-      timestamp: point.Timestamp || new Date(),
-      value: point.Average || 0
-    })).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    // Find the writer instance
+    const writerMember = cluster.DBClusterMembers.find((member) => member.IsClusterWriter === true);
+
+    if (!writerMember || !writerMember.DBInstanceIdentifier) {
+      console.error('No writer instance found in cluster:', clusterIdentifier);
+      return [];
+    }
+
+    // Now get metrics for the writer instance
+    return await getRDSInstanceMetric(
+      writerMember.DBInstanceIdentifier,
+      region,
+      credentials,
+      metricName,
+      startTime,
+      endTime,
+      stat
+    );
   } catch (error) {
-    console.error(`Error fetching RDS cluster metric ${metricName}:`, error);
+    console.error('Error fetching RDS cluster metric:', error);
     return [];
   }
 }
@@ -377,7 +366,8 @@ export async function getRDSInstanceMetric(
   credentials: AWSCredentials,
   metricName: string,
   startTime: Date,
-  endTime: Date
+  endTime: Date,
+  stat: 'Average' | 'Maximum' | 'Minimum' | 'Sum' = 'Average'
 ): Promise<{ timestamp: Date; value: number }[]> {
   try {
     // Calculate time difference in seconds
@@ -409,7 +399,7 @@ export async function getRDSInstanceMetric(
       StartTime: startTime,
       EndTime: endTime,
       Period: period,
-      Statistics: ['Average']
+      Statistics: [stat]
     });
 
     console.log('command', JSON.stringify(command, null, 2));
@@ -422,7 +412,14 @@ export async function getRDSInstanceMetric(
 
     return response.Datapoints.map((point) => ({
       timestamp: point.Timestamp || new Date(),
-      value: point.Average || 0
+      value:
+        (stat === 'Average'
+          ? point.Average
+          : stat === 'Maximum'
+            ? point.Maximum
+            : stat === 'Minimum'
+              ? point.Minimum
+              : point.Sum) || 0
     })).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   } catch (error) {
     console.error(`Error fetching RDS instance metric ${metricName}:`, error);

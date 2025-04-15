@@ -105,15 +105,17 @@ export class AWSDBClusterTools implements ToolsetGroup {
     const getter = this.#getter;
     const db = this.#dbAccess;
     return tool({
-      description: `Get the metrics for the RDS instance. You can specify the period in seconds.`,
+      description: `Get the metrics for the RDS instance. If this is a cluster, the metric is read from the current writer instance.
+      You can specify the period in seconds. The stat parameter is one of the following: Average, Maximum, Minimum, Sum. It defaults to Average.`,
       parameters: z.object({
         metricName: z.string(),
-        periodInSeconds: z.number()
+        periodInSeconds: z.number(),
+        stat: z.enum(['Average', 'Maximum', 'Minimum', 'Sum']).optional()
       }),
-      execute: async ({ metricName, periodInSeconds }) => {
+      execute: async ({ metricName, periodInSeconds, stat }) => {
         console.log('getClusterMetric', metricName, periodInSeconds);
         const connection = await getter();
-        return await getClusterMetricRDS(db, { connection, metricName, periodInSeconds });
+        return await getClusterMetricRDS(db, { connection, metricName, periodInSeconds, stat });
       }
     });
   }
