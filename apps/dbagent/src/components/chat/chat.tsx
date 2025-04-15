@@ -20,13 +20,15 @@ function PureChat({
   defaultLanguageModel,
   connections,
   initialMessages,
+  initialInput,
   suggestedActions
 }: {
   id: string;
   projectId: string;
   defaultLanguageModel: string;
   connections: Connection[];
-  initialMessages: Array<UIMessage>;
+  initialMessages?: Array<UIMessage>;
+  initialInput?: string;
   suggestedActions?: SuggestedAction[];
 }) {
   const queryClient = useQueryClient();
@@ -38,6 +40,7 @@ function PureChat({
     id,
     body: { id, connectionId, model, useArtifacts: true },
     initialMessages,
+    initialInput,
     experimental_throttle: 100,
     sendExtraMessageFields: true,
     generateId: generateUUID,
@@ -67,7 +70,7 @@ function PureChat({
 
   useEffect(() => {
     // If chat has been loaded without an assistant message, we need to reload the chat
-    if (initialMessages.length === messages.length && initialMessages[initialMessages.length - 1]?.role === 'user') {
+    if (initialMessages?.length === messages.length && initialMessages[initialMessages.length - 1]?.role === 'user') {
       void reload();
     }
   }, []);
@@ -138,6 +141,7 @@ export const Chat = memo(PureChat, (prevProps, nextProps) => {
     prevProps.id === nextProps.id &&
     prevProps.projectId === nextProps.projectId &&
     prevProps.defaultLanguageModel === nextProps.defaultLanguageModel &&
-    prevProps.initialMessages.length === nextProps.initialMessages.length
+    prevProps.initialMessages?.length === nextProps.initialMessages?.length &&
+    prevProps.initialInput === nextProps.initialInput
   );
 });
