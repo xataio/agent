@@ -1,6 +1,6 @@
 import { createOpenAI, OpenAIProvider } from '@ai-sdk/openai';
-import { LiteLLMClient, LiteLLMClientConfig, Schemas } from '@internal/litellm-client';
 import { LanguageModel } from 'ai';
+import { LiteLLMApi, LiteLLMApiOptions, Schemas } from 'litellm-api';
 import { Model, ModelWithFallback, ProviderModel, ProviderRegistry } from './types';
 
 import { z } from 'zod';
@@ -148,11 +148,11 @@ class LiteLLMModel implements Model {
   }
 }
 
-export type LiteLLMConfig = LiteLLMClientConfig;
+export type LiteLLMConfig = LiteLLMApiOptions;
 
 export async function createLiteLLMProviderRegistry(config: LiteLLMConfig): Promise<ProviderRegistry> {
-  const client = new LiteLLMClient(config);
-  const response = await client.modelManagement.modelInfoV1V1ModelInfoGet({});
+  const client = new LiteLLMApi(config);
+  const response = await client.api.modelManagement.modelInfoV1V1ModelInfoGet({});
   if (!response.data) {
     throw new Error('No models found');
   }
@@ -168,7 +168,7 @@ export function createLiteLLMProviderRegistryFromDeployments(
     deployment
   }));
 
-  const factory = new LLMLiteLanguageModelFactory(config.baseUrl, config.apiKey);
+  const factory = new LLMLiteLanguageModelFactory(config.baseUrl, config.token ?? '');
 
   const baseModels = Object.fromEntries(
     supportedDeployments

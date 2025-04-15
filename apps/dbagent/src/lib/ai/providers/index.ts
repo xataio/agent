@@ -17,7 +17,7 @@ export async function getProviderRegistry(): Promise<ProviderRegistry> {
     if (!cachedRegistry || !lastCacheTime || now - lastCacheTime > CACHE_TTL_MS) {
       cachedRegistry = await createLiteLLMProviderRegistry({
         baseUrl: env.LITELLM_BASE_URL,
-        apiKey: env.LITELLM_API_KEY
+        token: env.LITELLM_API_KEY
       });
       lastCacheTime = now;
     }

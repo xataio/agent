@@ -1,10 +1,10 @@
-import { Schemas } from '@internal/litellm-client';
+import { Schemas } from 'litellm-api';
 import { describe, expect, it } from 'vitest';
 import { createLiteLLMProviderRegistryFromDeployments } from './litellm';
 
 const baseConfig = {
   baseUrl: 'http://test',
-  apiKey: 'test-key'
+  token: 'test-key'
 };
 
 describe('LiteLLM Provider', () => {
