@@ -236,32 +236,33 @@ export async function getRDSClusterLogs(
   client: RDSClient,
   startTime: Date = new Date(Date.now() - 1 * 60 * 60 * 1000)
 ): Promise<string[]> {
+  console.log('Getting logs for cluster:', clusterIdentifier);
   try {
-    // Get cluster instances
-    const command = new DescribeDBInstancesCommand({
-      Filters: [
-        {
-          Name: 'db-cluster-id',
-          Values: [clusterIdentifier]
-        }
-      ]
+    // Get the cluster details to find the writer instance
+    const describeClusterCommand = new DescribeDBClustersCommand({
+      DBClusterIdentifier: clusterIdentifier
     });
 
-    const response = await client.send(command);
-    const instances = response.DBInstances || [];
+    const clusterResponse = await client.send(describeClusterCommand);
+    const cluster = clusterResponse.DBClusters?.[0];
+
+    if (!cluster || !cluster.DBClusterMembers || cluster.DBClusterMembers.length === 0) {
+      console.error('No instances found in cluster:', clusterIdentifier);
+      return [];
+    }
 
     // Find the writer instance
-    const writerInstance = instances.find(
-      (instance) => instance.DBInstanceStatus === 'available' && !instance.ReadReplicaSourceDBInstanceIdentifier
-    );
+    const writerMember = cluster.DBClusterMembers.find((member) => member.IsClusterWriter === true);
 
-    if (!writerInstance?.DBInstanceIdentifier) {
-      console.error('No writer instance found for cluster:', clusterIdentifier);
+    if (!writerMember || !writerMember.DBInstanceIdentifier) {
+      console.error('No writer instance found in cluster:', clusterIdentifier);
       return [];
     }
 
     // Get logs from the writer instance of the cluster
-    return getRDSInstanceLogs(writerInstance.DBInstanceIdentifier, client, startTime);
+    const logs = await getRDSInstanceLogs(writerMember.DBInstanceIdentifier, client, startTime);
+    console.log('logs length', logs.length);
+    return logs;
   } catch (error) {
     console.error('Error fetching RDS cluster logs:', error);
     return [];
@@ -300,7 +301,12 @@ export async function getRDSInstanceLogs(
     });
 
     const logs = await Promise.all(logPromises);
-    return logs.filter((log) => log.length > 0);
+    // Split each log file content into lines and flatten the array
+    const logLines = logs
+      .filter((log) => log.length > 0)
+      .flatMap((log) => log.split('\n'))
+      .filter((line) => line.trim().length > 0); // Remove empty lines
+    return logLines;
   } catch (error) {
     console.error('Error fetching RDS logs:', error);
     return [];
