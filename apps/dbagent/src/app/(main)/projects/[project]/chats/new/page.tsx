@@ -44,7 +44,7 @@ export default async function Page({
         title: `Schedule: ${schedule.playbook} - Run: ${run.id}`
       },
       run.messages.map((message) => ({
-        id: message.id,
+        id: generateUUID(),
         chatId,
         projectId: project,
         role: message.role,
