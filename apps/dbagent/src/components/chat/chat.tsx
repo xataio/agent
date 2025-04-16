@@ -68,21 +68,6 @@ function PureChat({
   const layoutTopPadding = 'calc(var(--spacing)* 24)';
   const heightScreen = `calc(100vh - ${layoutTopPadding})`;
 
-  // State for tracking chat visibility
-  const [visibility, setVisibility] = useState<'public' | 'private'>('private');
-
-  // Fetch the chat to get its visibility
-  useQuery({
-    queryKey: ['chat', id],
-    queryFn: async () => {
-      const response = await fetcher(`/api/chat?id=${id}`);
-      if (response?.visibility) {
-        setVisibility(response.visibility);
-      }
-      return response;
-    }
-  });
-
   // Using useRef to avoid re-initializing the chat on every render
   // This is a workaround to avoid re-initializing the chat when the component is re-mounted
   // and the messages are already loaded
@@ -103,14 +88,13 @@ function PureChat({
       <div className="relative flex flex-col" style={{ height: heightScreen }}>
         <div className="sticky top-0">
           <ChatHeader
+            projectId={projectId}
             chatId={id}
             connections={connections}
             model={model}
             setModel={setModel}
             connectionId={connectionId}
             setConnectionId={setConnectionId}
-            visibility={visibility}
-            onVisibilityChange={setVisibility}
           />
         </div>
         <div className="flex-1 space-y-2 overflow-y-auto px-4 pt-6">
