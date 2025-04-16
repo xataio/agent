@@ -25,25 +25,5 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
 
-  litellm:
-    image: ghcr.io/berriai/litellm:main-latest
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-dbagent}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/litellm
-      STORE_MODEL_IN_DB: 'True' # allows adding models to proxy via UI
-      MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-1234}
-    env_file:
-      - path: '.env.litellm.local'
-        required: false
-      - '.env.local'
-    ports:
-      - '4000:4000'
-    entrypoint: sh
-    command: -c "litellm --config /app/etc/$${LITELLM_CONFIG_FILE:-config.yaml} --detailed_debug"
-    volumes:
-      - ./etc/litellm:/app/etc
-    depends_on:
-      - postgres
-    init: true
-
 volumes:
   postgres_data:

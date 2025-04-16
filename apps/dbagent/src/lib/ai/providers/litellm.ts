@@ -43,11 +43,13 @@ function agentSettings(d: Schemas.Deployment): XataAgentSettings | undefined {
 
 class LiteLLMProviderRegistry implements ProviderRegistry {
   #models: Record<string, LiteLLMModel> | null = null;
+  #aliasModels: Record<string, LiteLLMModel> | null = null;
   #defaultLanguageModel: LiteLLMModel | null = null;
   #groupFallbacks: Record<string, LiteLLMModel> = {};
 
   constructor({
     models,
+    aliasModels,
     defaultLanguageModel,
     groupFallbacks
   }: {
@@ -57,6 +59,7 @@ class LiteLLMProviderRegistry implements ProviderRegistry {
     groupFallbacks: Record<string, LiteLLMModel>;
   }) {
     this.#models = models;
+    this.#aliasModels = aliasModels ?? {};
     this.#defaultLanguageModel = defaultLanguageModel ?? Object.values(models)[0] ?? null;
     this.#groupFallbacks = groupFallbacks;
   }
@@ -74,7 +77,7 @@ class LiteLLMProviderRegistry implements ProviderRegistry {
   }
 
   languageModel(modelId: string, useFallback?: boolean): ModelWithFallback {
-    const model = this.#models?.[modelId];
+    const model = this.#models?.[modelId] ?? this.#aliasModels?.[modelId];
     if (!model && !useFallback) {
       throw new Error(`Model ${modelId} not found`);
     }
@@ -207,10 +210,10 @@ export function createLiteLLMProviderRegistryFromDeployments(
     )
   );
 
-  const models = { ...baseModels, ...aliasModels };
   return new LiteLLMProviderRegistry({
-    models,
-    defaultLanguageModel: models['chat'] ?? undefined,
+    models: baseModels,
+    aliasModels: aliasModels,
+    defaultLanguageModel: baseModels['chat'] ?? aliasModels['chat'] ?? undefined,
     groupFallbacks
   });
 }

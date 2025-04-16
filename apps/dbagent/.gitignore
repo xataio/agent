@@ -37,8 +37,8 @@ yarn-error.log*
 
 # local config files
 # litellm configs
-/etc/litellm/*
-!/etc/litellm/config.yaml
+/dev/litellm/etc/*
+!/dev/litellm/etc/config.yaml
 
 
 # vercel

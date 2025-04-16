@@ -161,7 +161,8 @@ class BuiltinProviderRegistry implements ProviderRegistry {
       throw new Error(`Model ${id} not found`);
     }
     return {
-      ...model,
+      info: () => model.info(),
+      instance: () => model.instance(),
       isFallback: useFallback ?? false,
       requestedModelId: id
     } as ModelWithFallback;

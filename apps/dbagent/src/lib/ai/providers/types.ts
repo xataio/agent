@@ -7,14 +7,14 @@ export interface ProviderRegistry {
   languageModel(modelId: string, useFallback?: boolean): ModelWithFallback;
 }
 
-export interface ModelWithFallback extends Model {
-  isFallback: boolean;
-  requestedModelId: string;
-}
-
 export interface Model {
   info(): ProviderModel;
   instance(): LanguageModel;
+}
+
+export interface ModelWithFallback extends Model {
+  isFallback: boolean;
+  requestedModelId: string;
 }
 
 export type Provider = {

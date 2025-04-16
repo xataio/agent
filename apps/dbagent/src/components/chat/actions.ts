@@ -12,12 +12,12 @@ export async function actionGetDefaultLanguageModel() {
   return getModelInfo(model);
 }
 
-function getModelInfo(model: Model): { id: string; name: string } {
-  const { private: _, ...info } = model.info();
-  return info;
-}
-
 export async function actionGetLanguageModel(modelId: string) {
   const model = await getLanguageModel(modelId);
   return getModelInfo(model);
+}
+
+function getModelInfo(model: Model): { id: string; name: string } {
+  const { private: _, ...info } = model.info();
+  return info;
 }
