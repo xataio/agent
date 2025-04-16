@@ -75,9 +75,9 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
 
   const [defaultModel, setDefaultModel] = useState<{ id: string; name: string }>();
   useEffect(() => {
-    void actionGetDefaultLanguageModel().then(model => {
-          setDefaultModel(model);
-          form.setValue('model', model.id);
+    void actionGetDefaultLanguageModel().then((model) => {
+      setDefaultModel(model);
+      form.setValue('model', model.id);
     });
   }, []);
 
