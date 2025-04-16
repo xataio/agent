@@ -4,11 +4,14 @@ import { CompletenessMetric } from '@mastra/evals/nlp';
 import { CloudProvider } from '~/lib/db/schema';
 
 import { openai } from '@ai-sdk/openai';
-import { getChatSystemPrompt, getModelInstance, getMonitoringSystemPrompt } from '~/lib/ai/agent';
+import { getChatSystemPrompt, getMonitoringSystemPrompt } from '~/lib/ai/agent';
+import { getBuiltinProviderRegistry } from '~/lib/ai/providers';
 import { buildPlaygroundTools } from '../tools';
 
 /* eslint-disable no-process-env */
-const defaultModel = getModelInstance(process.env.MASTRA_MODEL ?? 'chat');
+const defaultModel = getBuiltinProviderRegistry()
+  .languageModel(process.env.MASTRA_MODEL ?? 'chat')
+  .instance();
 const cloudProvider = (process.env.MASTRA_CLOUD_PROVIDER ?? 'aws') as CloudProvider;
 const defaultTools = buildPlaygroundTools({
   projectConnection: process.env.MASTRA_PROJECT_CONNECTION ?? undefined,

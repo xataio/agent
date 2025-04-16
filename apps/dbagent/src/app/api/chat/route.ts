@@ -60,7 +60,7 @@ export async function POST(request: Request) {
 
     const targetDb = getTargetDbPool(connection.connectionString);
     const context = getChatSystemPrompt({ cloudProvider: project.cloudProvider, useArtifacts });
-    const model = getLanguageModel(modelId);
+    const model = await getLanguageModel(modelId);
 
     return createDataStreamResponse({
       execute: async (dataStream) => {

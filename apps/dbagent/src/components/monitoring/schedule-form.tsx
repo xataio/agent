@@ -30,6 +30,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import * as z from 'zod';
 import { Connection, Schedule } from '~/lib/db/schema';
+import { actionGetDefaultLanguageModel } from '../chat/actions';
 import { ModelSelector } from '../chat/model-selector';
 import { actionCreateSchedule, actionDeleteSchedule, actionGetSchedule, actionUpdateSchedule } from './actions';
 import { CronExpressionModal } from './cron-expression-modal';
@@ -72,12 +73,20 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const playbook = searchParams.get('playbook');
 
+  const [defaultModel, setDefaultModel] = useState<{ id: string; name: string }>();
+  useEffect(() => {
+    void actionGetDefaultLanguageModel().then((model) => {
+      setDefaultModel(model);
+      form.setValue('model', model.id);
+    });
+  }, []);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       playbook: playbook || playbooks[0] || '',
       connection: connections.find((c) => c.isDefault)?.name || '',
-      model: 'chat',
+      model: defaultModel?.id || 'chat',
       scheduleType: 'cron',
       minInterval: '5',
       maxInterval: '1440',
@@ -112,7 +121,7 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
       };
       void fetchSchedule();
     }
-  }, [isEditMode, form.reset, scheduleId]);
+  }, [isEditMode, form.reset, scheduleId, defaultModel]);
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     const schedule: Omit<Schedule, 'id' | 'userId'> = {
