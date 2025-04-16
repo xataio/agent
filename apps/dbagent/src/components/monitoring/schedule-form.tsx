@@ -75,12 +75,10 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
 
   const [defaultModel, setDefaultModel] = useState<{ id: string; name: string }>();
   useEffect(() => {
-    async function loadDefaultModel() {
-      const model = await actionGetDefaultLanguageModel();
-      setDefaultModel(model);
-      form.setValue('model', model.id);
-    }
-    void loadDefaultModel();
+    void actionGetDefaultLanguageModel().then(model => {
+          setDefaultModel(model);
+          form.setValue('model', model.id);
+    });
   }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({

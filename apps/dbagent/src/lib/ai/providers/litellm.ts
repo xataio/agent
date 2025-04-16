@@ -111,26 +111,26 @@ class LiteLLMProviderRegistry implements ProviderRegistry {
   }
 }
 
-class LLMLiteLanguageModelFactory {
-  #llmliteOpenAI: OpenAIProvider;
+class LiteLLMLanguageModelFactory {
+  #litellmOpenAI: OpenAIProvider;
 
   constructor(baseURL: string, apiKey: string) {
-    this.#llmliteOpenAI = createOpenAI({
+    this.#litellmOpenAI = createOpenAI({
       baseURL,
       apiKey
     });
   }
 
   createLanguageModel(modelId: string) {
-    return this.#llmliteOpenAI.languageModel(modelId);
+    return this.#litellmOpenAI.languageModel(modelId);
   }
 }
 
 class LiteLLMModel implements Model {
   #info: ProviderModel;
-  #factory: LLMLiteLanguageModelFactory;
+  #factory: LiteLLMLanguageModelFactory;
 
-  constructor(factory: LLMLiteLanguageModelFactory, info: ProviderModel) {
+  constructor(factory: LiteLLMLanguageModelFactory, info: ProviderModel) {
     this.#factory = factory;
     this.#info = info;
   }
@@ -168,7 +168,7 @@ export function createLiteLLMProviderRegistryFromDeployments(
     deployment
   }));
 
-  const factory = new LLMLiteLanguageModelFactory(config.baseUrl, config.token ?? '');
+  const factory = new LiteLLMLanguageModelFactory(config.baseUrl, config.token ?? '');
 
   const baseModels = Object.fromEntries(
     supportedDeployments

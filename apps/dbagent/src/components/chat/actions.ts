@@ -3,7 +3,8 @@
 import { getDefaultLanguageModel, listLanguageModels, Model } from '~/lib/ai/providers';
 
 export async function actionGetLanguageModels() {
-  return (await listLanguageModels()).map(getModelInfo);
+  const models = await listLanguageModels();
+  return models.map(getModelInfo);
 }
 
 export async function actionGetDefaultLanguageModel() {
