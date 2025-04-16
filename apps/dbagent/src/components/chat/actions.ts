@@ -1,6 +1,6 @@
 'use server';
 
-import { getDefaultLanguageModel, listLanguageModels, Model } from '~/lib/ai/providers';
+import { getDefaultLanguageModel, getLanguageModel, listLanguageModels, Model } from '~/lib/ai/providers';
 
 export async function actionGetLanguageModels() {
   const models = await listLanguageModels();
@@ -15,4 +15,9 @@ export async function actionGetDefaultLanguageModel() {
 function getModelInfo(model: Model): { id: string; name: string } {
   const { private: _, ...info } = model.info();
   return info;
+}
+
+export async function actionGetLanguageModel(modelId: string) {
+  const model = await getLanguageModel(modelId);
+  return getModelInfo(model);
 }

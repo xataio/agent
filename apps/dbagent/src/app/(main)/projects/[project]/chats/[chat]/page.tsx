@@ -13,7 +13,7 @@ type PageParams = {
 };
 
 export default async function Page({ params }: { params: Promise<PageParams> }) {
-  const { project, chat } = await params;
+  const { project: projectId, chat: chatId } = await params;
 
   const suggestedActions = [
     {
@@ -35,10 +35,10 @@ export default async function Page({ params }: { params: Promise<PageParams> }) 
   ];
 
   const dbAccess = await getUserSessionDBAccess();
-  const connections = await listConnections(dbAccess, project);
+  const connections = await listConnections(dbAccess, projectId);
   const defaultLanguageModel = await getDefaultLanguageModel();
 
-  const messagesFromDb = await getMessagesByChatId(dbAccess, { id: chat });
+  const chat = await getMessagesByChatId(dbAccess, { id: chatId });
 
   function convertToUIMessages(messages: Array<Message>): Array<UIMessage> {
     return messages.map((message) => ({
@@ -59,16 +59,16 @@ export default async function Page({ params }: { params: Promise<PageParams> }) 
   return (
     <>
       <Chat
-        key={`${chat}-${chat}`}
-        id={chat}
-        projectId={project}
-        defaultLanguageModel={defaultLanguageModel.info().id}
+        key={`chat-${chatId}`}
+        id={chatId}
+        projectId={projectId}
+        defaultLanguageModel={chat.model ?? defaultLanguageModel.info().id}
         connections={connections}
-        initialMessages={convertToUIMessages(messagesFromDb)}
+        initialMessages={convertToUIMessages(chat.messages)}
         suggestedActions={suggestedActions}
       />
 
-      <DataStreamHandler id={chat} />
+      <DataStreamHandler id={chatId} />
     </>
   );
 }

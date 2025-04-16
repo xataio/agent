@@ -9,6 +9,7 @@ import {
   artifactSuggestions,
   ChatInsert,
   chats,
+  Message,
   MessageInsert,
   messages,
   messageVotes,
@@ -18,20 +19,23 @@ import {
 export async function saveChat(dbAccess: DBAccess, chat: ChatInsert, chatMessages: Array<MessageInsert> = []) {
   return dbAccess.query(async ({ db }) => {
     return await db.transaction(async (tx) => {
-      const result = await tx.insert(chats).values(chat);
+      const result = await tx
+        .insert(chats)
+        .values(chat)
+        .onConflictDoUpdate({
+          target: [chats.id],
+          set: {
+            model: chat.model,
+            title: chat.title
+          }
+        });
 
       if (chatMessages.length > 0) {
-        await tx.insert(messages).values(chatMessages);
+        await tx.insert(messages).values(chatMessages).onConflictDoNothing();
       }
 
       return result;
     });
-  });
-}
-
-export async function updateChat(dbAccess: DBAccess, id: string, chat: Partial<ChatInsert>) {
-  return dbAccess.query(async ({ db }) => {
-    return await db.update(chats).set(chat).where(eq(chats.id, id));
   });
 }
 
@@ -41,9 +45,26 @@ export async function deleteChatById(dbAccess: DBAccess, { id }: { id: string })
   });
 }
 
-export async function getChats(dbAccess: DBAccess, { limit = 100, offset = 0 }: { limit?: number; offset?: number }) {
+export async function getChatsByProject(
+  dbAccess: DBAccess,
+  {
+    project,
+    limit = 100,
+    offset = 0
+  }: {
+    project: string;
+    limit?: number;
+    offset?: number;
+  }
+) {
   return dbAccess.query(async ({ db }) => {
-    return await db.select().from(chats).orderBy(desc(chats.createdAt)).limit(limit).offset(offset);
+    return await db
+      .select()
+      .from(chats)
+      .where(eq(chats.projectId, project))
+      .orderBy(desc(chats.createdAt))
+      .limit(limit)
+      .offset(offset);
   });
 }
 
@@ -54,15 +75,26 @@ export async function getChatById(dbAccess: DBAccess, { id }: { id: string }) {
   });
 }
 
-export async function saveMessages(dbAccess: DBAccess, { messages: items }: { messages: Array<MessageInsert> }) {
-  return dbAccess.query(async ({ db }) => {
-    return await db.insert(messages).values(items).onConflictDoNothing();
-  });
-}
-
 export async function getMessagesByChatId(dbAccess: DBAccess, { id }: { id: string }) {
   return dbAccess.query(async ({ db }) => {
-    return await db.select().from(messages).where(eq(messages.chatId, id)).orderBy(asc(messages.createdAt));
+    const result = await db
+      .select({
+        chat: {
+          id: chats.id,
+          title: chats.title,
+          model: chats.model
+        },
+        messages: messages
+      })
+      .from(chats)
+      .leftJoin(messages, eq(messages.chatId, chats.id))
+      .where(eq(chats.id, id))
+      .orderBy(asc(messages.createdAt));
+
+    return {
+      ...result[0]?.chat,
+      messages: result.map((row) => row.messages).filter(Boolean) as Array<Message>
+    };
   });
 }
 

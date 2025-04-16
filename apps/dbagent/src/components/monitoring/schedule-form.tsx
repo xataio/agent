@@ -103,10 +103,11 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
     if (isEditMode) {
       const fetchSchedule = async () => {
         const schedule = await actionGetSchedule(scheduleId);
+
         form.reset({
           playbook: schedule.playbook,
           connection: connections.find((c) => c.id === schedule.connectionId)?.name || '',
-          model: schedule.model || defaultModel?.id || 'chat',
+          model: schedule.model,
           scheduleType: schedule.scheduleType as 'automatic' | 'cron',
           cronExpression: schedule.cronExpression ?? undefined,
           minInterval: schedule.minInterval?.toString(),
@@ -148,7 +149,7 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
     } else {
       await actionCreateSchedule(schedule);
     }
-    console.log(data);
+
     router.push(`/projects/${projectId}/monitoring`);
   };
 
@@ -217,8 +218,8 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
               control={form.control}
               name="model"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Model</FormLabel>
+                <FormItem className="flex flex-col space-y-2">
+                  <FormLabel className="block">Model</FormLabel>
                   <FormControl>
                     <ModelSelector value={field.value} onValueChange={field.onChange} />
                   </FormControl>
