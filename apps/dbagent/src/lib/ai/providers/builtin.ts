@@ -82,6 +82,11 @@ const builtinAnthropicModels: Provider = {
       id: 'anthropic:claude-3-7-sonnet',
       providerId: 'claude-3-7-sonnet-20250219',
       name: 'Claude 3.7 Sonnet'
+    },
+    {
+      id: 'anthropic:claude-3-5-haiku',
+      providerId: 'claude-3-5-haiku-20241022',
+      name: 'Claude 3.5 Haiku'
     }
   ]
 };
