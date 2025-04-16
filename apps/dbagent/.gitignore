@@ -33,7 +33,6 @@ yarn-error.log*
 .env.production.local
 .env.staging
 .env.eval
-.env.litellm.local
 
 # local config files
 # litellm configs
