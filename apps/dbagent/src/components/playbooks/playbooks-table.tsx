@@ -101,7 +101,7 @@ export function PlaybooksTable() {
                     variant="outline"
                     size="icon"
                     title="Run playbook"
-                    onClick={() => router.push(`/projects/${project}/chats?playbook=${playbook.name}`)}
+                    onClick={() => router.push(`/projects/${project}/chats/new?playbook=${playbook.name}`)}
                   >
                     <PlayIcon className="h-3 w-3" />
                   </Button>
@@ -150,7 +150,7 @@ export function PlaybooksTable() {
                     variant="outline"
                     size="icon"
                     title="Run playbook"
-                    onClick={() => router.push(`/projects/${project}/chats?playbook=${customPlaybook.name}`)}
+                    onClick={() => router.push(`/projects/${project}/chats/new?playbook=${customPlaybook.name}`)}
                   >
                     <PlayIcon className="h-3 w-3" />
                   </Button>

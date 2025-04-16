@@ -1,22 +1,16 @@
 import { DBAccess } from '~/lib/db/db';
 import { getConnectionInfo } from '../db/connection-info';
-import { getProjectById } from '../db/projects';
 import { Connection } from '../db/schema';
 import { ClientBase, findTableSchema, getPerformanceSettings, getVacuumSettings } from '../targetdb/db';
 
-export async function getTablesAndInstanceInfo(dbAccess: DBAccess, connection: Connection): Promise<string> {
+export async function getTablesInfo(dbAccess: DBAccess, connection: Connection): Promise<string> {
   try {
     const tables = await getConnectionInfo(dbAccess, connection.id, 'tables');
-    const project = await getProjectById(dbAccess, connection.projectId);
 
     return `
 Here are the tables, their sizes, and usage counts:
 
 ${JSON.stringify(tables)}
-
-Here is information about the Project:
-
-${JSON.stringify(project)}
 `;
   } catch (error) {
     console.error('Error getting tables and instance info', error);

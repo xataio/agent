@@ -57,20 +57,6 @@
       "when": 1744368189657,
       "tag": "0007_chat_model",
       "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1744756059745,
-      "tag": "0008_clear_network",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1744765918299,
-      "tag": "0009_free_darkstar",
-      "breakpoints": true
     }
   ]
 }

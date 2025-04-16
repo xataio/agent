@@ -4,7 +4,7 @@ import { useChat } from '@ai-sdk/react';
 import { toast } from '@internal/components';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UIMessage } from 'ai';
-import { useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { Connection, MessageVote } from '~/lib/db/schema';
 import { Artifact } from './artifacts/artifact';
 import { useArtifactSelector } from './artifacts/use-artifact';
@@ -14,19 +14,21 @@ import { MultimodalInput } from './multimodal-input';
 import { SuggestedAction } from './suggested-actions';
 import { fetcher, generateUUID } from './utils';
 
-export function Chat({
+function PureChat({
   id,
   projectId,
   defaultLanguageModel,
   connections,
   initialMessages,
+  initialInput,
   suggestedActions
 }: {
   id: string;
   projectId: string;
   defaultLanguageModel: string;
   connections: Connection[];
-  initialMessages: Array<UIMessage>;
+  initialMessages?: Array<UIMessage>;
+  initialInput?: string;
   suggestedActions?: SuggestedAction[];
 }) {
   const queryClient = useQueryClient();
@@ -38,17 +40,23 @@ export function Chat({
     id,
     body: { id, connectionId, model, useArtifacts: true },
     initialMessages,
+    initialInput,
     experimental_throttle: 100,
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      void queryClient.invalidateQueries({ queryKey: ['history'] });
+      void queryClient.invalidateQueries({ queryKey: ['chats'] });
     },
     onError: (error) => {
       console.error(error.message);
       toast.error('An error occured, please try again!');
     }
   });
+
+  useEffect(() => {
+    // On first load, refresh the chat history cache
+    void queryClient.invalidateQueries({ queryKey: ['chats'] });
+  }, []);
 
   const { data: votes } = useQuery<MessageVote[]>({
     queryKey: ['votes', id],
@@ -57,9 +65,23 @@ export function Chat({
   });
 
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
-  // corresponds to the top padding of the main layout container: /src/components/ui/container.tsx
   const layoutTopPadding = 'calc(var(--spacing)* 24)';
   const heightScreen = `calc(100vh - ${layoutTopPadding})`;
+
+  // Using useRef to avoid re-initializing the chat on every render
+  // This is a workaround to avoid re-initializing the chat when the component is re-mounted
+  // and the messages are already loaded
+  const initialized = useRef(false);
+  useEffect(() => {
+    if (!initialized.current) {
+      initialized.current = true;
+
+      // If chat has been loaded without an assistant message, we need to reload the chat
+      if (initialMessages?.[initialMessages.length - 1]?.role === 'user') {
+        void reload();
+      }
+    }
+  }, [initialized, initialMessages, reload]);
 
   return (
     <>
@@ -119,3 +141,15 @@ export function Chat({
     </>
   );
 }
+
+export const Chat = memo(PureChat, (prevProps, nextProps) => {
+  return (
+    prevProps.connections.length === nextProps.connections.length &&
+    prevProps.suggestedActions?.length === nextProps.suggestedActions?.length &&
+    prevProps.id === nextProps.id &&
+    prevProps.projectId === nextProps.projectId &&
+    prevProps.defaultLanguageModel === nextProps.defaultLanguageModel &&
+    prevProps.initialMessages?.length === nextProps.initialMessages?.length &&
+    prevProps.initialInput === nextProps.initialInput
+  );
+});

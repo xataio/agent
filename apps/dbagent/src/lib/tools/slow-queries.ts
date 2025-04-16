@@ -2,9 +2,21 @@ import { ClientBase, describeTable, explainQuery, getSlowQueries } from '../targ
 
 export async function toolGetSlowQueries(client: ClientBase, thresholdMs: number): Promise<string> {
   const slowQueries = await getSlowQueries(client, thresholdMs);
-  const result = JSON.stringify(slowQueries);
+  // Filter out slow queries with query text larger than 5k characters
+  const filteredSlowQueries = slowQueries.map((query) => {
+    if (query.query && query.query.length > 5000) {
+      return {
+        ...query,
+        query: 'Err: query too long to analyze'
+      };
+    }
+    return query;
+  });
+
+  const result = JSON.stringify(filteredSlowQueries);
   console.log(result);
-  return JSON.stringify(slowQueries);
+
+  return JSON.stringify(filteredSlowQueries);
 }
 
 export async function toolExplainQuery(client: ClientBase, schema: string, query: string): Promise<string> {
