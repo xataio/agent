@@ -34,7 +34,7 @@ export function PlaybookView({ playbook }: { playbook: Playbook }) {
               Schedule Playbook
             </Button>
           </Link>
-          <Link href={`/projects/${project}/chats?playbook=${playbook.name}`}>
+          <Link href={`/projects/${project}/chats/new?playbook=${playbook.name}`}>
             <Button>
               <PlayCircle className="mr-2 h-4 w-4" />
               Run Playbook

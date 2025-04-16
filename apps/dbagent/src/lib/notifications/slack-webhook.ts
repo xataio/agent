@@ -104,7 +104,7 @@ export async function sendScheduleNotification(
               type: 'plain_text',
               text: 'Open in chat'
             },
-            url: `${env.PUBLIC_URL}/projects/${schedule.projectId}/chats?runId=${run.id}`
+            url: `${env.PUBLIC_URL}/projects/${schedule.projectId}/chats/new?scheduleRun=${run.id}`
           },
           {
             type: 'button',
