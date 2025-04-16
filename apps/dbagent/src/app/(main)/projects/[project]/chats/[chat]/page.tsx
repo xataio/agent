@@ -59,7 +59,7 @@ export default async function Page({ params }: { params: Promise<PageParams> }) 
   return (
     <>
       <Chat
-        key={`${chat}-${chat}`}
+        key={`chat-${chatId}`}
         id={chatId}
         projectId={projectId}
         defaultLanguageModel={chat.model ?? defaultLanguageModel.info().id}
