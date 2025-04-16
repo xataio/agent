@@ -30,7 +30,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import * as z from 'zod';
 import { Connection, Schedule } from '~/lib/db/schema';
-import { ModelSelector } from '../chats/model-selector';
+import { ModelSelector } from '../chat/model-selector';
 import { actionCreateSchedule, actionDeleteSchedule, actionGetSchedule, actionUpdateSchedule } from './actions';
 import { CronExpressionModal } from './cron-expression-modal';
 
@@ -77,7 +77,7 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
     defaultValues: {
       playbook: playbook || playbooks[0] || '',
       connection: connections.find((c) => c.isDefault)?.name || '',
-      model: 'openai-gpt-4o',
+      model: 'chat',
       scheduleType: 'cron',
       minInterval: '5',
       maxInterval: '1440',
@@ -97,7 +97,7 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
         form.reset({
           playbook: schedule.playbook,
           connection: connections.find((c) => c.id === schedule.connectionId)?.name || '',
-          model: schedule.model || 'openai-gpt-4o',
+          model: schedule.model || 'chat',
           scheduleType: schedule.scheduleType as 'automatic' | 'cron',
           cronExpression: schedule.cronExpression ?? undefined,
           minInterval: schedule.minInterval?.toString(),

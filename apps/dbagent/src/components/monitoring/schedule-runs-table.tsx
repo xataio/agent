@@ -209,7 +209,7 @@ export function ScheduleRunsTable({ schedule }: { schedule: Schedule }) {
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <Link href={`/projects/${project}/chats?runId=${run.id}`}>
+                                    <Link href={`/projects/${project}/chats/new?scheduleRun=${run.id}`}>
                                       <Button variant="outline" size="icon" onClick={() => {}}>
                                         <MessageSquare className="h-4 w-4" />
                                         <span className="sr-only">Load in chat</span>

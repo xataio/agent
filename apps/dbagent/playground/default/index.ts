@@ -8,7 +8,7 @@ import { getChatSystemPrompt, getModelInstance, getMonitoringSystemPrompt } from
 import { buildPlaygroundTools } from '../tools';
 
 /* eslint-disable no-process-env */
-const defaultModel = getModelInstance(process.env.MASTRA_MODEL ?? 'openai-gpt-4o');
+const defaultModel = getModelInstance(process.env.MASTRA_MODEL ?? 'chat');
 const cloudProvider = (process.env.MASTRA_CLOUD_PROVIDER ?? 'aws') as CloudProvider;
 const defaultTools = buildPlaygroundTools({
   projectConnection: process.env.MASTRA_PROJECT_CONNECTION ?? undefined,

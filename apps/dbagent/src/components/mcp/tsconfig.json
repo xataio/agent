@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "node16",
+    "esModuleInterop": true,
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["../../*"]
+    },
+    "outDir": ".",
+    "rootDir": "."
+  },
+  "include": ["./index.ts"],
+  "exclude": ["node_modules"]
+}

@@ -1,33 +1,36 @@
-import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { z } from 'zod';
+'use server';
 
-const server = new McpServer(
-  {
-    name: 'example-server',
-    version: '1.0.0'
-  },
-  {
-    capabilities: {
-      tools: {}
-    }
+import { getUserDBAccess } from '~/lib/db/db';
+import { addUserMcpServerToDB, dbGetUserMcpServer, dbUpdateUserMcpServer } from '~/lib/db/user-mcp-servers';
+import { UserMcpServer } from '~/lib/tools/user-mcp-servers';
+
+//playbook db insert
+export async function actionAddUserMcpServerToDB(input: UserMcpServer, asUserId?: string): Promise<UserMcpServer> {
+  console.log('adding user mcp server {userMcpServer: ', input, '}');
+  const dbAccess = await getUserDBAccess(asUserId);
+  return await addUserMcpServerToDB(dbAccess, input);
+}
+
+export async function actionCheckUserMcpServerExists(serverName: string, asUserId?: string): Promise<boolean> {
+  console.log(`checking if mcp server exists {serverName: ${serverName}}`);
+  const dbAccess = await getUserDBAccess(asUserId);
+  const result = await dbGetUserMcpServer(dbAccess, serverName);
+  console.log('RESULT', result, dbAccess);
+  if (result) {
+    return true;
+  } else {
+    return false;
   }
-);
+}
 
-server.tool('add', { a: z.number(), b: z.number() }, async ({ a, b }) => ({
-  content: [{ type: 'text', text: String(a + b) }]
-}));
+export async function actionUpdateUserMcpServer(input: UserMcpServer, asUserId?: string) {
+  console.log('updating user mcp server {userMcpServer: ', input, '}');
+  const dbAccess = await getUserDBAccess(asUserId);
+  return await dbUpdateUserMcpServer(dbAccess, input);
+}
 
-// Add a dynamic greeting resource
-server.resource('greeting', new ResourceTemplate('greeting://{name}', { list: undefined }), async (uri, { name }) => ({
-  contents: [
-    {
-      uri: uri.href,
-      text: `Hello, ${name}!`
-    }
-  ]
-}));
-
-// Start receiving messages on stdin and sending messages on stdout
-const transport = new StdioServerTransport();
-await server.connect(transport);
+export async function actionGetUserMcpServer(serverName: string, asUserId?: string) {
+  console.log(`getting user mcp server {serverName: ${serverName}}`);
+  const dbAccess = await getUserDBAccess(asUserId);
+  return await dbGetUserMcpServer(dbAccess, serverName);
+}

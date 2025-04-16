@@ -36,6 +36,41 @@
       "when": 1744190884400,
       "tag": "0004_drop_project_default",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1744362588570,
+      "tag": "0005_chats_ui",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1744360864403,
+      "tag": "0006_model_refactor",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1744368189657,
+      "tag": "0007_chat_model",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1744756059745,
+      "tag": "0008_clear_network",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1744765918299,
+      "tag": "0009_free_darkstar",
+      "breakpoints": true
     }
   ]
 }

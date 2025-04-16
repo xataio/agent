@@ -259,7 +259,7 @@ export async function runSchedule(dbAccess: DBAccess, schedule: Schedule, now: D
       summary: notificationResult.summary,
       notificationLevel: notificationResult.notificationLevel,
       messages: messages,
-      createdAt: now.toISOString() // using the start time
+      createdAt: now // using the start time
     },
     schedule.keepHistory
   );
