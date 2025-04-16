@@ -48,7 +48,7 @@ export async function checkAndRunJobsAsAdmin() {
   console.log('Checking and running jobs as admin');
   try {
     // Use DBAdminAccess to fetch all schedules
-    const adminAccess = getAdminAccess();
+    const adminAccess = await getAdminAccess();
     const schedules = await adminAccess.query(async ({ db }) => {
       return await db.select().from(schedulesSchema);
     });
