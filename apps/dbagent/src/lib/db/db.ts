@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import { requireUserSession } from '~/utils/route';
 import { env } from '../env/server';
-import { authenticatedUser } from './schema';
+import { anonymousUser, authenticatedUser } from './schema';
 
 const pool = new pg.Pool({
   connectionString: env.DATABASE_URL,
@@ -66,6 +66,23 @@ export class DBUserAccess implements DBAccess {
   }
 }
 
+/**
+ * Database access implementation for anonymous users.
+ * This sets the role to 'anonymous' without any real user ID.
+ */
+export class DBAnonymousAccess implements DBAccess {
+  async query<T>(callback: (params: { db: ReturnType<typeof drizzle>; userId: string }) => Promise<T>): Promise<T> {
+    const client = await pool.connect();
+    try {
+      const db = drizzle(client);
+      await db.execute(sql.raw(`SET ROLE "${anonymousUser.name}"`));
+      return await callback({ db, userId: 'anonymous' });
+    } finally {
+      client.release(true);
+    }
+  }
+}
+
 export async function getUserSessionDBAccess(): Promise<DBAccess> {
   const userId = await requireUserSession();
   return new DBUserAccess(userId);
@@ -77,6 +94,10 @@ export async function getUserDBAccess(userId: string | undefined | null): Promis
   return new DBUserAccess(userId);
 }
 
-export function getAdminAccess(): DBAccess {
+export async function getAdminAccess(): Promise<DBAccess> {
   return new DBAdminAccess();
+}
+
+export async function getAnonymousAccess(): Promise<DBAccess> {
+  return new DBAnonymousAccess();
 }

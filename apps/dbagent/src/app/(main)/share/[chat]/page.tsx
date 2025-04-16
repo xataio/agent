@@ -2,7 +2,7 @@ import { UIMessage } from 'ai';
 import { notFound } from 'next/navigation';
 import { ReadOnlyChat } from '~/components/chat/chat';
 import { getChatById, getMessagesByChatId } from '~/lib/db/chats';
-import { getUserSessionDBAccess } from '~/lib/db/db';
+import { getAnonymousAccess } from '~/lib/db/db';
 import { Message } from '~/lib/db/schema';
 
 type PageParams = {
@@ -13,7 +13,7 @@ export default async function SharedChatPage({ params }: { params: Promise<PageP
   const { chat: chatId } = await params;
 
   // Get DB access for reading the chat
-  const dbAccess = await getUserSessionDBAccess();
+  const dbAccess = await getAnonymousAccess();
 
   // Fetch the chat and check if it's public
   const chatData = await getChatById(dbAccess, { id: chatId });

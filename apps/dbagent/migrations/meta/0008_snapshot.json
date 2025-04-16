@@ -1,5 +1,5 @@
 {
-  "id": "83b9c1f3-9c7d-4def-aa8b-399ef563eaed",
+  "id": "918a6ac9-45a2-4201-932e-ce23f1591ec7",
   "prevId": "35bc8b93-8a60-408c-8428-3bff3063184b",
   "version": "7",
   "dialect": "postgresql",
@@ -579,12 +579,12 @@
           "to": ["authenticated_user"],
           "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = chats.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      )"
         },
-        "chats_view_policy": {
-          "name": "chats_view_policy",
+        "chats_anonymous_policy": {
+          "name": "chats_anonymous_policy",
           "as": "PERMISSIVE",
           "for": "SELECT",
-          "to": ["public"],
-          "using": "EXISTS (\n        SELECT 1 FROM project_members\n        WHERE project_id = chats.project_id AND user_id = current_setting('app.current_user', true)::TEXT\n      ) OR visibility = 'public'"
+          "to": ["anonymous_user"],
+          "using": "visibility = 'public'"
         }
       },
       "checkConstraints": {},
@@ -2011,6 +2011,12 @@
   "schemas": {},
   "sequences": {},
   "roles": {
+    "anonymous_user": {
+      "name": "anonymous_user",
+      "createDb": false,
+      "createRole": false,
+      "inherit": true
+    },
     "authenticated_user": {
       "name": "authenticated_user",
       "createDb": false,

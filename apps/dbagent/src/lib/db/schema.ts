@@ -22,6 +22,7 @@ import { RDSClusterDetailedInfo } from '../aws/rds';
 import { CloudSQLInstanceInfo } from '../gcp/cloudsql';
 
 export const authenticatedUser = pgRole('authenticated_user', { inherit: true });
+export const anonymousUser = pgRole('anonymous_user', { inherit: true });
 
 type InferEnumType<T extends PgEnum<any>> = T extends PgEnum<infer U> ? U[number] : never;
 
@@ -478,12 +479,10 @@ export const chats = pgTable(
         WHERE project_id = chats.project_id AND user_id = current_setting('app.current_user', true)::TEXT
       )`
     }),
-    pgPolicy('chats_view_policy', {
+    pgPolicy('chats_anonymous_policy', {
+      to: anonymousUser,
       for: 'select',
-      using: sql`EXISTS (
-        SELECT 1 FROM project_members
-        WHERE project_id = chats.project_id AND user_id = current_setting('app.current_user', true)::TEXT
-      ) OR visibility = 'public'`
+      using: sql`visibility = 'public'`
     })
   ]
 );
