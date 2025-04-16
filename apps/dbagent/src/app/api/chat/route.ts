@@ -6,7 +6,7 @@ import { generateUUID } from '~/components/chat/utils';
 import { getChatSystemPrompt } from '~/lib/ai/agent';
 import { getLanguageModel } from '~/lib/ai/providers';
 import { getTools } from '~/lib/ai/tools';
-import { deleteChatById, getChatById, getChats, saveChat } from '~/lib/db/chats';
+import { deleteChatById, getChatById, getChatsByProject, saveChat } from '~/lib/db/chats';
 import { getConnection } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 import { getProjectById } from '~/lib/db/projects';
@@ -17,11 +17,18 @@ export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+
+  const project = searchParams.get('project');
+  if (!project) {
+    return new Response('Project is required', { status: 400 });
+  }
+
   const limit = parseInt(searchParams.get('limit') || '10', 10);
+  const offset = parseInt(searchParams.get('offset') || '0', 10);
 
   const dbAccess = await getUserSessionDBAccess();
 
-  const chats = await getChats(dbAccess, { limit });
+  const chats = await getChatsByProject(dbAccess, { project, limit, offset });
 
   return Response.json({ chats });
 }
