@@ -1,6 +1,6 @@
 import { CoreMessage, generateText, Message as SDKMessage } from 'ai';
-import { randomUUID } from 'crypto';
 import { ExpectStatic } from 'vitest';
+import { generateUUID } from '~/components/chat/utils';
 import { getChatSystemPrompt, getModelInstance } from '~/lib/ai/agent';
 import { getTools } from '~/lib/ai/tools';
 import { Connection, Project } from '~/lib/db/schema';
@@ -24,7 +24,7 @@ export const evalChat = async ({
   };
 
   const connection: Connection = {
-    id: randomUUID(),
+    id: generateUUID(),
     name: 'evaldb',
     connectionString: dbConnection,
     projectId: project.id,

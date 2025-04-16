@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Playbook } from '~/lib/tools/playbooks';
+import { generateUUID } from '../chat/utils';
 import {
   actionCreatePlaybook,
   actionDeletePlaybook,
@@ -48,7 +49,7 @@ export function CustomPlaybookForm({ initialData, isEditing = false }: CustomPla
           description,
           content,
           projectId: project,
-          id: crypto.randomUUID(),
+          id: generateUUID(),
           isBuiltIn: false,
           createdBy: ''
         });
