@@ -76,7 +76,7 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
   const queryClient = useQueryClient();
   const { data: { chats = [] } = {} } = useQuery<{ chats: Chat[] }>({
     queryKey: ['chats'],
-    queryFn: () => fetcher('/api/chat')
+    queryFn: () => fetcher(`/api/chat?project=${project.id}`)
   });
 
   const isActive = (path: string) => {
