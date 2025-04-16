@@ -9,6 +9,7 @@ import { deleteChatById, getChatById, getChats, saveMessages, updateChat } from 
 import { getConnection } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 import { getProjectById } from '~/lib/db/projects';
+import { ChatInsert } from '~/lib/db/schema';
 import { getTargetDbPool } from '~/lib/targetdb/db';
 import { requireUserSession } from '~/utils/route';
 
@@ -168,9 +169,11 @@ export async function PATCH(request: Request) {
     return new Response('Not Found', { status: 404 });
   }
 
-  const { title } = await request.json();
-  if (!title) {
-    return new Response('Title is required', { status: 400 });
+  const data = await request.json();
+  const { title, visibility } = data;
+
+  if (!title && !visibility) {
+    return new Response('Either title or visibility is required', { status: 400 });
   }
 
   const dbAccess = await getUserSessionDBAccess();
@@ -179,7 +182,11 @@ export async function PATCH(request: Request) {
     const chat = await getChatById(dbAccess, { id });
     if (!chat) notFound();
 
-    await updateChat(dbAccess, id, { title });
+    const updateData: Partial<ChatInsert> = {};
+    if (title) updateData.title = title;
+    if (visibility) updateData.visibility = visibility;
+
+    await updateChat(dbAccess, id, updateData);
 
     return new Response('Chat updated', { status: 200 });
   } catch (error) {

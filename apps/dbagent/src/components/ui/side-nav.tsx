@@ -28,6 +28,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarRail,
+  toast,
   useSidebar
 } from '@internal/components';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -41,7 +42,10 @@ import {
   MoreVertical,
   NotebookPen,
   PanelLeft,
+  Pencil as PencilIcon,
   Server,
+  Share2 as ShareIcon,
+  Trash2 as TrashIcon,
   ZapIcon
 } from 'lucide-react';
 import Link from 'next/link';
@@ -280,7 +284,26 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
                               setIsRenameDialogOpen(true);
                             }}
                           >
+                            <PencilIcon className="mr-2 h-4 w-4" />
                             Rename
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              // Toggle share dialog or directly copy link if chat is public
+                              if (chat.visibility === 'public') {
+                                const shareUrl = `${window.location.origin}/share/${chat.id}`;
+                                navigator.clipboard.writeText(shareUrl);
+                                toast.success('Share link copied to clipboard!');
+                              } else {
+                                // Show a toast explaining that the chat needs to be made public
+                                toast.info(
+                                  'To share this chat, open it and toggle the visibility to public in the header.'
+                                );
+                              }
+                            }}
+                          >
+                            <ShareIcon className="mr-2 h-4 w-4" />
+                            Share
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
@@ -289,6 +312,7 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
                             }}
                             className="text-destructive focus:text-destructive"
                           >
+                            <TrashIcon className="mr-2 h-4 w-4" />
                             Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
