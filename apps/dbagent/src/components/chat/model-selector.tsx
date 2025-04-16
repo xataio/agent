@@ -1,6 +1,6 @@
 'use client';
 
-import { startTransition, useEffect, useMemo, useState } from 'react';
+import { startTransition, useEffect, useState } from 'react';
 
 import {
   Button,
@@ -12,7 +12,7 @@ import {
 } from '@internal/components';
 import { CheckCircleIcon, ChevronDownIcon } from 'lucide-react';
 import { ProviderModel } from '~/lib/ai/providers/types';
-import { actionGetLanguageModels } from './actions';
+import { actionGetLanguageModel, actionGetLanguageModels } from './actions';
 
 interface ModelSelectorProps {
   value: string;
@@ -23,23 +23,15 @@ interface ModelSelectorProps {
 export function ModelSelector({ value, onValueChange, className }: ModelSelectorProps) {
   const [open, setOpen] = useState(false);
   const [models, setModels] = useState<ProviderModel[]>([]);
-  const [modelId, setModelId] = useState(value);
+  const [selectedChatModel, setSelectedChatModel] = useState<ProviderModel | null>(null);
 
   useEffect(() => {
-    if (value !== modelId) {
-      setModelId(value);
-    }
-  }, [value, modelId]);
-
-  useEffect(() => {
-    async function loadModels() {
-      const fetchedModels = await actionGetLanguageModels();
-      setModels(fetchedModels);
-    }
-    void loadModels();
+    void actionGetLanguageModels().then(setModels);
   }, []);
 
-  const selectedChatModel = useMemo(() => models.find((model) => model.id === modelId), [models, modelId]);
+  useEffect(() => {
+    void actionGetLanguageModel(value).then(setSelectedChatModel);
+  }, [value]);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -64,11 +56,10 @@ export function ModelSelector({ value, onValueChange, className }: ModelSelector
                 setOpen(false);
 
                 startTransition(() => {
-                  setModelId(id);
                   onValueChange(id);
                 });
               }}
-              data-active={id === modelId}
+              data-active={id === selectedChatModel?.id}
               asChild
             >
               <button type="button" className="group/item flex w-full flex-row items-center justify-between gap-4">

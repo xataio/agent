@@ -77,7 +77,7 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
     defaultValues: {
       playbook: playbook || playbooks[0] || '',
       connection: connections.find((c) => c.isDefault)?.name || '',
-      model: 'openai:gpt-4.1',
+      model: 'chat',
       scheduleType: 'cron',
       minInterval: '5',
       maxInterval: '1440',
@@ -94,7 +94,7 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
     if (isEditMode) {
       const fetchSchedule = async () => {
         const schedule = await actionGetSchedule(scheduleId);
-        console.log('schedule', schedule);
+
         form.reset({
           playbook: schedule.playbook,
           connection: connections.find((c) => c.id === schedule.connectionId)?.name || '',
@@ -140,7 +140,7 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
     } else {
       await actionCreateSchedule(schedule);
     }
-    console.log(data);
+
     router.push(`/projects/${projectId}/monitoring`);
   };
 

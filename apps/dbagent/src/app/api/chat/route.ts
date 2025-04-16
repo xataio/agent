@@ -3,9 +3,10 @@ import { notFound } from 'next/navigation';
 import { NextRequest } from 'next/server';
 import { generateTitleFromUserMessage } from '~/app/(main)/projects/[project]/chats/actions';
 import { generateUUID } from '~/components/chat/utils';
-import { getChatSystemPrompt, getModelInstance } from '~/lib/ai/agent';
+import { getChatSystemPrompt } from '~/lib/ai/agent';
+import { getLanguageModel } from '~/lib/ai/providers';
 import { getTools } from '~/lib/ai/tools';
-import { deleteChatById, getChatById, getChats, saveMessages, updateChat } from '~/lib/db/chats';
+import { deleteChatById, getChatById, getChats, saveChat } from '~/lib/db/chats';
 import { getConnection } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 import { getProjectById } from '~/lib/db/projects';
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: Request) {
   try {
-    const { id, messages, connectionId, model, useArtifacts } = await request.json();
+    const { id, messages, connectionId, model: modelId, useArtifacts } = await request.json();
 
     const userId = await requireUserSession();
     const dbAccess = await getUserSessionDBAccess();
@@ -50,21 +51,16 @@ export async function POST(request: Request) {
     const chat = await getChatById(dbAccess, { id });
     if (!chat) notFound();
 
-    if (!chat?.title || chat.title === 'New chat') {
-      const title = await generateTitleFromUserMessage({ message: userMessage });
-      await updateChat(dbAccess, id, { title, model });
-    }
-
     const targetDb = getTargetDbPool(connection.connectionString);
     const context = getChatSystemPrompt({ cloudProvider: project.cloudProvider, useArtifacts });
-    const modelInstance = getModelInstance(model);
+    const model = getLanguageModel(modelId);
 
     return createDataStreamResponse({
       execute: async (dataStream) => {
         const tools = await getTools({ project, connection, targetDb, useArtifacts, userId, dataStream });
 
         const result = streamText({
-          model: modelInstance,
+          model: model.instance(),
           system: context,
           messages,
           maxSteps: 20,
@@ -91,8 +87,19 @@ export async function POST(request: Request) {
                 throw new Error('No assistant message found!');
               }
 
-              await saveMessages(dbAccess, {
-                messages: [
+              const title =
+                !chat.title || chat.title === 'New chat'
+                  ? await generateTitleFromUserMessage({ message: userMessage })
+                  : chat.title;
+
+              await saveChat(
+                dbAccess,
+                {
+                  ...chat,
+                  title,
+                  model: model.info().id
+                },
+                [
                   {
                     chatId: id,
                     id: userMessage.id,
@@ -110,7 +117,7 @@ export async function POST(request: Request) {
                     createdAt: new Date()
                   }
                 ]
-              });
+              );
             } catch (error) {
               console.error('Failed to save chat', error);
             } finally {
@@ -179,7 +186,7 @@ export async function PATCH(request: Request) {
     const chat = await getChatById(dbAccess, { id });
     if (!chat) notFound();
 
-    await updateChat(dbAccess, id, { title });
+    await saveChat(dbAccess, { ...chat, title });
 
     return new Response('Chat updated', { status: 200 });
   } catch (error) {
