@@ -6,9 +6,17 @@ import { getLanguageModel } from './providers';
 function getCloudProviderPrompt(cloudProvider: string): string {
   switch (cloudProvider) {
     case 'aws':
-      return `All instances in this project are AWS instances.`;
+      return `All Postgres instances in this project are hosted on AWS, either RDS or Aurora. 
+      When recommending actions, only recommend actions that can be performed on RDS or Aurora.
+      If you need to know more about the instance, you can use the getClusterInfo tool.
+      If you want to recommend changes to the instance, provide instructions specific to RDS or Aurora.
+      `;
     case 'gcp':
-      return `All instances in this project are GCP Cloud SQL instances.`;
+      return `All Postgres instances in this project are GCP Cloud SQL instances.
+      When recommending actions, only recommend actions that can be performed on GCP Cloud SQL.
+      If you need to know more about the instance, you can use the getInstanceInfo tool.
+      If you want to recommend changes to the instance, provide instructions specific to GCP Cloud SQL.
+      `;
     default:
       return '';
   }

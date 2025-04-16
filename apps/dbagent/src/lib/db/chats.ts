@@ -41,9 +41,26 @@ export async function deleteChatById(dbAccess: DBAccess, { id }: { id: string })
   });
 }
 
-export async function getChats(dbAccess: DBAccess, { limit = 100, offset = 0 }: { limit?: number; offset?: number }) {
+export async function getChatsByProject(
+  dbAccess: DBAccess,
+  {
+    project,
+    limit = 100,
+    offset = 0
+  }: {
+    project: string;
+    limit?: number;
+    offset?: number;
+  }
+) {
   return dbAccess.query(async ({ db }) => {
-    return await db.select().from(chats).orderBy(desc(chats.createdAt)).limit(limit).offset(offset);
+    return await db
+      .select()
+      .from(chats)
+      .where(eq(chats.projectId, project))
+      .orderBy(desc(chats.createdAt))
+      .limit(limit)
+      .offset(offset);
   });
 }
 
@@ -56,7 +73,7 @@ export async function getChatById(dbAccess: DBAccess, { id }: { id: string }) {
 
 export async function saveMessages(dbAccess: DBAccess, { messages: items }: { messages: Array<MessageInsert> }) {
   return dbAccess.query(async ({ db }) => {
-    return await db.insert(messages).values(items);
+    return await db.insert(messages).values(items).onConflictDoNothing();
   });
 }
 

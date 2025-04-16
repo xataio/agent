@@ -5,7 +5,7 @@ import { generateTitleFromUserMessage } from '~/app/(main)/projects/[project]/ch
 import { generateUUID } from '~/components/chat/utils';
 import { getChatSystemPrompt, getModelInstance } from '~/lib/ai/agent';
 import { getTools } from '~/lib/ai/tools';
-import { deleteChatById, getChatById, getChats, saveMessages, updateChat } from '~/lib/db/chats';
+import { deleteChatById, getChatById, getChatsByProject, saveMessages, updateChat } from '~/lib/db/chats';
 import { getConnection } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 import { getProjectById } from '~/lib/db/projects';
@@ -16,11 +16,18 @@ export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+
+  const project = searchParams.get('project');
+  if (!project) {
+    return new Response('Project is required', { status: 400 });
+  }
+
   const limit = parseInt(searchParams.get('limit') || '10', 10);
+  const offset = parseInt(searchParams.get('offset') || '0', 10);
 
   const dbAccess = await getUserSessionDBAccess();
 
-  const chats = await getChats(dbAccess, { limit });
+  const chats = await getChatsByProject(dbAccess, { project, limit, offset });
 
   return Response.json({ chats });
 }
@@ -50,11 +57,8 @@ export async function POST(request: Request) {
     const chat = await getChatById(dbAccess, { id });
     if (!chat) notFound();
 
-    if (!chat?.title) {
-      const title = await generateTitleFromUserMessage({
-        message: userMessage
-      });
-
+    if (!chat?.title || chat.title === 'New chat') {
+      const title = await generateTitleFromUserMessage({ message: userMessage });
       await updateChat(dbAccess, id, { title, model });
     }
 
@@ -156,6 +160,35 @@ export async function DELETE(request: Request) {
     await deleteChatById(dbAccess, { id });
 
     return new Response('Chat deleted', { status: 200 });
+  } catch (error) {
+    return new Response('An error occurred while processing your request!', {
+      status: 500
+    });
+  }
+}
+
+export async function PATCH(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+
+  if (!id) {
+    return new Response('Not Found', { status: 404 });
+  }
+
+  const { title } = await request.json();
+  if (!title) {
+    return new Response('Title is required', { status: 400 });
+  }
+
+  const dbAccess = await getUserSessionDBAccess();
+
+  try {
+    const chat = await getChatById(dbAccess, { id });
+    if (!chat) notFound();
+
+    await updateChat(dbAccess, id, { title });
+
+    return new Response('Chat updated', { status: 200 });
   } catch (error) {
     return new Response('An error occurred while processing your request!', {
       status: 500
