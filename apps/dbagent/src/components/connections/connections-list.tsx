@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@internal/components';
+import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@xata.io/components';
 import { CheckIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';

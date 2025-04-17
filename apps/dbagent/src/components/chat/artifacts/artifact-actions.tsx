@@ -1,4 +1,4 @@
-import { Button, cn, toast, Tooltip, TooltipContent, TooltipTrigger } from '@internal/components';
+import { Button, cn, toast, Tooltip, TooltipContent, TooltipTrigger } from '@xata.io/components';
 import { Dispatch, memo, SetStateAction, useState } from 'react';
 import { artifactDefinitions, UIArtifact } from './artifact';
 import { ArtifactActionContext } from './create-artifact';

@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
   SidebarTrigger,
   useIsMobile
-} from '@internal/components';
+} from '@xata.io/components';
 import { Menu } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';

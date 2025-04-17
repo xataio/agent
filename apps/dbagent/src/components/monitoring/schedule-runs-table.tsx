@@ -17,7 +17,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger
-} from '@internal/components';
+} from '@xata.io/components';
 import { format } from 'date-fns';
 import {
   AlertCircle,

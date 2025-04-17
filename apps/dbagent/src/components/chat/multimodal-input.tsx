@@ -6,7 +6,7 @@ import { memo, useCallback, useEffect, useRef } from 'react';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 
 import type { UseChatHelpers } from '@ai-sdk/react';
-import { Button, cn, Textarea, toast } from '@internal/components';
+import { Button, cn, Textarea, toast } from '@xata.io/components';
 import { ArrowUpIcon, CircleStopIcon } from 'lucide-react';
 import { SuggestedAction, SuggestedActions } from './suggested-actions';
 

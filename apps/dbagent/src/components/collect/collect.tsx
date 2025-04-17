@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, toast } from '@internal/components';
+import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, toast } from '@xata.io/components';
 import { useEffect, useState } from 'react';
 import { Connection } from '~/lib/db/schema';
 import { CollectInfo as CollectInfoType, getCollectInfo } from './actions';

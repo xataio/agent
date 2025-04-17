@@ -1,6 +1,6 @@
 import { UseChatHelpers } from '@ai-sdk/react';
-import { useSidebar } from '@internal/components';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSidebar } from '@xata.io/components';
 import type { UIMessage } from 'ai';
 import { formatDistance } from 'date-fns';
 import equal from 'fast-deep-equal';

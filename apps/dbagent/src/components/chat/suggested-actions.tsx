@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@internal/components';
+import { Button } from '@xata.io/components';
 import { ChatRequestOptions, CreateMessage, Message } from 'ai';
 import { motion } from 'framer-motion';
 import { memo } from 'react';

@@ -1,7 +1,7 @@
 'use client';
 
 import { UseChatHelpers } from '@ai-sdk/react';
-import { cn, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@internal/components';
+import { cn, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@xata.io/components';
 import type { ChatRequestOptions, CreateMessage, Message } from 'ai';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUpIcon, StopCircleIcon } from 'lucide-react';

@@ -1,7 +1,7 @@
 'use client';
 
-import { cn } from '@internal/components';
 import { useQuery } from '@tanstack/react-query';
+import { cn } from '@xata.io/components';
 import equal from 'fast-deep-equal';
 import { FileIcon, FullscreenIcon, LoaderIcon } from 'lucide-react';
 import { memo, MouseEvent, useCallback, useEffect, useMemo, useRef } from 'react';
