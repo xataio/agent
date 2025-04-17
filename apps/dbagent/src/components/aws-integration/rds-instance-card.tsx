@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@internal/components';
+import { Card, CardContent, CardHeader, CardTitle } from '@xata.io/components';
 import { RDSClusterDetailedInfo, RDSInstanceInfo } from '~/lib/aws/rds';
 
 interface RDSInstanceCardProps {

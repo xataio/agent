@@ -9,7 +9,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
-} from '@internal/components';
+} from '@xata.io/components';
 import { CheckCircleIcon, ChevronDownIcon } from 'lucide-react';
 import { ProviderModel } from '~/lib/ai/providers/types';
 import { actionGetLanguageModel, actionGetLanguageModels } from './actions';

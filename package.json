@@ -21,9 +21,8 @@
   "license": "ISC",
   "devDependencies": {
     "@eslint/compat": "^1.2.8",
-    "@internal/tsconfig": "workspace:*",
     "@types/node": "^22.14.1",
-    "@types/react": "^19.1.1",
+    "@types/react": "^19.1.2",
     "eslint": "^9.24.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.1",
@@ -58,5 +57,8 @@
     "node": "22.x",
     "pnpm": "10.x"
   },
-  "packageManager": "pnpm@10.5.2"
+  "packageManager": "pnpm@10.5.2",
+  "dependencies": {
+    "@xata.io/tsconfig": "^0.0.1"
+  }
 }

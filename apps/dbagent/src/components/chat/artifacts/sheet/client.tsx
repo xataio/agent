@@ -1,4 +1,4 @@
-import { toast } from '@internal/components';
+import { toast } from '@xata.io/components';
 import { CopyIcon, RedoIcon, SparklesIcon, UndoIcon } from 'lucide-react';
 import { parse, unparse } from 'papaparse';
 import { Artifact } from '../create-artifact';

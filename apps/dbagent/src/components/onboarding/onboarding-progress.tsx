@@ -1,4 +1,4 @@
-import { Progress } from '@internal/components';
+import { Progress } from '@xata.io/components';
 import { CheckCircle2 } from 'lucide-react';
 
 interface OnboardingProgressProps {

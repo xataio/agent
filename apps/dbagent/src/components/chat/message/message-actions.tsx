@@ -1,5 +1,5 @@
-import { Button, toast, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@internal/components';
 import { useQueryClient } from '@tanstack/react-query';
+import { Button, toast, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@xata.io/components';
 import type { Message } from 'ai';
 import equal from 'fast-deep-equal';
 import { CopyIcon, ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react';

@@ -1,7 +1,7 @@
 'use client';
 
 import { UseChatHelpers } from '@ai-sdk/react';
-import { Button, cn, Code, Tooltip, TooltipContent, TooltipTrigger, Typography } from '@internal/components';
+import { Button, cn, Code, Tooltip, TooltipContent, TooltipTrigger, Typography } from '@xata.io/components';
 import type { UIMessage } from 'ai';
 import equal from 'fast-deep-equal';
 import { AnimatePresence, motion } from 'framer-motion';

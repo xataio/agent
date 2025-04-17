@@ -29,7 +29,7 @@ import {
   SelectValue,
   Skeleton,
   toast
-} from '@internal/components';
+} from '@xata.io/components';
 import { Database, MoreVertical, PlusCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Suspense, useState } from 'react';

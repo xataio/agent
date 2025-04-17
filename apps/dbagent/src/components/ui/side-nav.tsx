@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Button,
   cn,
@@ -29,8 +30,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
   useSidebar
-} from '@internal/components';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+} from '@xata.io/components';
 import {
   ActivityIcon,
   AlarmClock,
