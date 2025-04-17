@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     authInterrupts: true
   },
   reactStrictMode: true,
-  transpilePackages: ['@xata.io/components', '@xata.io/theme'],
+  transpilePackages: ['@xata.io/components', '@xata.io/theme', '@xata.io/code-highlighter'],
   async redirects() {
     return [
       {
