@@ -3,7 +3,7 @@ import { LanguageModel } from 'ai';
 
 export interface ProviderRegistry {
   listLanguageModels(): Model[];
-  defaultLanguageModel(): Model;
+  defaultLanguageModel(): Model | null;
   languageModel(modelId: string, useFallback?: boolean): ModelWithFallback;
 }
 

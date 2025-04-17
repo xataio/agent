@@ -23,6 +23,10 @@ const schema = z.object({
   LITELLM_BASE_URL: z.string().optional(),
   LITELLM_API_KEY: z.string().optional(),
 
+  // Ollama settings
+  OLLAMA_HOST: z.string().optional(),
+  OLLAMA_ENABLED: z.string(z.enum(['true', 'false'])).default('false'),
+
   // Scheduler
   MAX_PARALLEL_RUNS: z.number().default(20), // How many schedules can be run in parallel
   TIMEOUT_FOR_RUNNING_SCHEDULE_SECS: z.number().default(15 * 60), // How long to wait before assuming it's dead and restart
