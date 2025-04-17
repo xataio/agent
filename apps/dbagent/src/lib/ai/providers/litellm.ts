@@ -1,9 +1,9 @@
-import { createOpenAI, OpenAIProvider } from '@ai-sdk/openai';
-import { LanguageModel } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
 import { LiteLLMApi, LiteLLMApiOptions, Schemas } from 'litellm-api';
-import { Model, ModelWithFallback, ProviderModel, ProviderRegistry } from './types';
+import { Model, ProviderRegistry } from './types';
 
 import { z } from 'zod';
+import { createModel, createRegistryFromModels } from './utils';
 
 const xataAgentSettingsSchema = z.object({
   // Optional internal model id. Overwrites the model id derived from the LiteLLM config
@@ -41,116 +41,6 @@ function agentSettings(d: Schemas.Deployment): XataAgentSettings | undefined {
   }
 }
 
-class LiteLLMProviderRegistry implements ProviderRegistry {
-  #models: Record<string, LiteLLMModel> | null = null;
-  #aliasModels: Record<string, LiteLLMModel> | null = null;
-  #defaultLanguageModel: LiteLLMModel | null = null;
-  #groupFallbacks: Record<string, LiteLLMModel> = {};
-
-  constructor({
-    models,
-    aliasModels,
-    defaultLanguageModel,
-    groupFallbacks
-  }: {
-    models: Record<string, LiteLLMModel>;
-    aliasModels?: Record<string, LiteLLMModel>;
-    defaultLanguageModel?: LiteLLMModel;
-    groupFallbacks: Record<string, LiteLLMModel>;
-  }) {
-    this.#models = models;
-    this.#aliasModels = aliasModels ?? {};
-    this.#defaultLanguageModel = defaultLanguageModel ?? Object.values(models)[0] ?? null;
-    this.#groupFallbacks = groupFallbacks;
-  }
-
-  listLanguageModels(): Model[] {
-    return Object.values(this.#models ?? {});
-  }
-
-  defaultLanguageModel(): Model {
-    const model = this.#defaultLanguageModel;
-    if (!model) {
-      throw new Error('No model found');
-    }
-    return model;
-  }
-
-  languageModel(modelId: string, useFallback?: boolean): ModelWithFallback {
-    const model = this.#models?.[modelId] ?? this.#aliasModels?.[modelId];
-    if (!model && !useFallback) {
-      throw new Error(`Model ${modelId} not found`);
-    }
-    if (model) {
-      return {
-        info: () => model.info(),
-        instance: () => model.instance(),
-        isFallback: false,
-        requestedModelId: modelId
-      };
-    }
-
-    const fallbackModel = this.fallbackLanguageModel(modelId);
-    if (!fallbackModel) {
-      throw new Error(`Model ${modelId} not found and no fallback available`);
-    }
-    return {
-      info: () => fallbackModel.info(),
-      instance: () => fallbackModel.instance(),
-      isFallback: true,
-      requestedModelId: modelId
-    };
-  }
-
-  fallbackLanguageModel(modelId: string): LiteLLMModel | undefined {
-    const [group] = modelId.split(':');
-    if (group && group !== modelId) {
-      const fallbackModel = this.#groupFallbacks[group];
-      if (fallbackModel) {
-        return fallbackModel;
-      }
-    }
-    return undefined;
-  }
-}
-
-class LiteLLMLanguageModelFactory {
-  #litellmOpenAI: OpenAIProvider;
-
-  constructor(baseURL: string, apiKey: string) {
-    this.#litellmOpenAI = createOpenAI({
-      baseURL,
-      apiKey
-    });
-  }
-
-  createLanguageModel(modelId: string) {
-    return this.#litellmOpenAI.languageModel(modelId);
-  }
-}
-
-class LiteLLMModel implements Model {
-  #info: ProviderModel;
-  #factory: LiteLLMLanguageModelFactory;
-
-  constructor(factory: LiteLLMLanguageModelFactory, info: ProviderModel) {
-    this.#factory = factory;
-    this.#info = info;
-  }
-
-  info(): ProviderModel {
-    return this.#info;
-  }
-
-  fullId(): string {
-    return this.#info.id;
-  }
-
-  instance(): LanguageModel {
-    return this.#factory.createLanguageModel(this.#info.name);
-  }
-}
-
 export type LiteLLMConfig = LiteLLMApiOptions;
 
 export async function createLiteLLMProviderRegistry(config: LiteLLMConfig): Promise<ProviderRegistry> {
@@ -171,9 +61,12 @@ export function createLiteLLMProviderRegistryFromDeployments(
     deployment
   }));
 
-  const factory = new LiteLLMLanguageModelFactory(config.baseUrl, config.token ?? '');
+  const litellmProxyProvider = createOpenAI({
+    baseURL: config.baseUrl,
+    apiKey: config.token ?? ''
+  });
 
-  const baseModels = Object.fromEntries(
+  const baseModels: Record<string, Model> = Object.fromEntries(
     supportedDeployments
       .sort((a, b) => {
         const nameA = a.deployment.model_name;
@@ -181,19 +74,23 @@ export function createLiteLLMProviderRegistryFromDeployments(
         return nameA.localeCompare(nameB);
       })
       .map(({ modelId, deployment }) => {
-        const model = new LiteLLMModel(factory, {
-          name: deployment.model_name,
-          id: modelId,
-          private: agentSettings(deployment)?.private ?? false
-        });
-        return [model.fullId(), model] as [string, LiteLLMModel];
+        const model = createModel(
+          {
+            name: deployment.model_name,
+            id: modelId,
+            private: agentSettings(deployment)?.private ?? false
+          },
+          () => litellmProxyProvider.languageModel(deployment.model_name)
+        );
+
+        return [model.info().id, model];
       })
   );
 
   // Build group fallback index
   const groupFallbacks = buildModelIndex(
     baseModels,
-    buildPriorityIndex(
+    buildPrioritizedNameIndex(
       supportedDeployments,
       (deployment) => agentSettings(deployment)?.group_fallback,
       (deployment) => agentSettings(deployment)?.priority
@@ -201,21 +98,31 @@ export function createLiteLLMProviderRegistryFromDeployments(
   );
 
   // Build default model index
-  const aliasModels = buildModelIndex(
-    baseModels,
-    buildPriorityIndex(
-      supportedDeployments,
-      (deployment) => agentSettings(deployment)?.alias,
-      (deployment) => agentSettings(deployment)?.priority
-    )
+  const aliasModels: Record<string, string> = buildPrioritizedNameIndex(
+    supportedDeployments,
+    (deployment) => agentSettings(deployment)?.alias,
+    (deployment) => agentSettings(deployment)?.priority
   );
 
-  return new LiteLLMProviderRegistry({
-    models: baseModels,
-    aliasModels: aliasModels,
-    defaultLanguageModel: baseModels['chat'] ?? aliasModels['chat'] ?? undefined,
-    groupFallbacks
+  const defaultModelId = 'chat';
+  const defaultModel = baseModels[aliasModels[defaultModelId] ?? defaultModelId] ?? undefined;
+  return createRegistryFromModels({
+    models: Object.values(baseModels),
+    aliases: aliasModels,
+    defaultModel: defaultModel,
+    fallback: (modelId) => fallbackLanguageModel(modelId, groupFallbacks)
   });
+}
+
+function fallbackLanguageModel(modelId: string, groupFallbacks: Record<string, Model>): Model | undefined {
+  const [group] = modelId.split(':');
+  if (group && group !== modelId) {
+    const fallbackModel = groupFallbacks[group];
+    if (fallbackModel) {
+      return fallbackModel;
+    }
+  }
+  return undefined;
 }
 
 function modelIdFromDeployment(deployment: Schemas.Deployment) {
@@ -232,11 +139,11 @@ function isChatModel(model: Schemas.Deployment) {
   return model.model_info?.mode ? model.model_info['mode'] === 'chat' : false;
 }
 
-function buildPriorityIndex(
+function buildPrioritizedNameIndex(
   deployments: { modelId: string; deployment: Schemas.Deployment }[],
   getKey: (deployment: Schemas.Deployment) => string | string[] | undefined,
   getPriority: (deployment: Schemas.Deployment) => number | undefined = () => 1
-): Record<string, { modelId: string; priority: number }> {
+): Record<string, string> {
   const index: Record<string, { modelId: string; priority: number }> = {};
 
   for (const d of deployments) {
@@ -256,12 +163,9 @@ function buildPriorityIndex(
     }
   }
 
-  return index;
+  return Object.fromEntries(Object.entries(index).map(([key, { modelId }]) => [key, modelId]));
 }
 
-function buildModelIndex(
-  baseModels: Record<string, LiteLLMModel>,
-  priorityIndex: Record<string, { modelId: string; priority: number }>
-): Record<string, LiteLLMModel> {
-  return Object.fromEntries(Object.entries(priorityIndex).map(([key, { modelId }]) => [key, baseModels[modelId]!]));
+function buildModelIndex(baseModels: Record<string, Model>, index: Record<string, string>): Record<string, Model> {
+  return Object.fromEntries(Object.entries(index).map(([key, modelId]) => [key, baseModels[modelId]!]));
 }
