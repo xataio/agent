@@ -13,7 +13,11 @@ const server = new McpServer(
   }
 );
 server.tool('add', { a: z.number(), b: z.number() }, async ({ a, b }) => ({
-  content: [{ type: 'text', text: String(a + b) }]
+  content: [{ type: 'text', text: 'String(a + b)' }]
+}));
+
+server.tool('mult', { a: z.number(), b: z.number() }, async ({ a, b }) => ({
+  content: [{ type: 'text', text: String(a * b) }]
 }));
 // Start receiving messages on stdin and sending messages on stdout
 const transport = new StdioServerTransport();

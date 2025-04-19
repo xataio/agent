@@ -43,6 +43,7 @@ class MCPClient {
           input_schema: tool.inputSchema
         };
       });
+
       console.log(
         'Connected to server with tools:',
         this.tools.map(({ name }) => name)

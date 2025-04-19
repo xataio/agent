@@ -3,7 +3,6 @@
 import {
   Badge,
   Button,
-  Checkbox,
   Code,
   Dialog,
   DialogContent,
@@ -14,6 +13,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  Switch,
   Table,
   TableBody,
   TableCell,
@@ -210,9 +210,7 @@ export function McpTable() {
               <TableCell className="whitespace-nowrap">{server.version}</TableCell>
               <TableCell>{server.filePath}</TableCell>
               <TableCell>
-                <div className="flex justify-center">
-                  <Checkbox checked={server.enabled} onCheckedChange={() => handleToggleEnabled(server)} />
-                </div>
+                <Switch checked={server.enabled} onCheckedChange={() => handleToggleEnabled(server)} />
               </TableCell>
               <TableCell>
                 <div className="flex gap-2">
