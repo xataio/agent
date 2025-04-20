@@ -27,7 +27,7 @@ export async function actionGetConnections(projectId: string) {
   }
 }
 
-export async function actionGetBuiltInTools(connectionId: string): Promise<Tool[]> {
+export async function actionGetBuiltInAndCustomTools(connectionId: string): Promise<Tool[]> {
   try {
     const userId = await requireUserSession();
     const dbAccess = await getUserSessionDBAccess();

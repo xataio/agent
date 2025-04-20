@@ -17,7 +17,7 @@ async function getToolsFromMCPServer(userId?: string) {
           const fileName = path.basename(file, '.js');
 
           const getServerFromDb = await actionGetUserMcpServer(fileName, userId);
-          console.log('GET SERVER FROM DB', getServerFromDb?.enabled);
+          // console.log('GET SERVER FROM DB', getServerFromDb?.enabled);
 
           if (!getServerFromDb?.enabled) {
             return null;

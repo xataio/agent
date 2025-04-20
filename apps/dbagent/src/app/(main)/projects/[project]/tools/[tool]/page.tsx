@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { actionGetBuiltInTools } from '~/components/tools/action';
+import { actionGetBuiltInAndCustomTools } from '~/components/tools/action';
 import { ToolView } from '~/components/tools/tool-view';
 import { listConnections } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
@@ -24,7 +24,7 @@ export default async function ToolPage({ params }: { params: Promise<PageParams>
   }
 
   // Get all tools
-  const tools = await actionGetBuiltInTools(defaultConnection.id);
+  const tools = await actionGetBuiltInAndCustomTools(defaultConnection.id);
   const tool = tools.find((t) => t.name === decodedToolName);
 
   if (!tool) {

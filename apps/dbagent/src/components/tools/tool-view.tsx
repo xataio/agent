@@ -30,7 +30,7 @@ export function ToolView({ tool }: { tool: Tool }) {
           <div className="bg-muted prose prose-sm whitespace-pre-wrap rounded-md p-4">{tool.description}</div>
         </CardContent>
         <CardFooter className="flex justify-end gap-3 pt-6">
-          <Link href={`/projects/${project}/chats?tool=${tool.name}`}>
+          <Link href={`/projects/${project}/chats/new?tool=${tool.name}`}>
             <Button>
               <PlayCircle className="mr-2 h-4 w-4" />
               Run Tool
