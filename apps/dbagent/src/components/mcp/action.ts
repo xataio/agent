@@ -42,7 +42,7 @@ export async function actionGetUserMcpServer(serverName: string, asUserId?: stri
   return await dbGetUserMcpServer(dbAccess, serverName);
 }
 
-export async function actionDeleteUserMcpServer(serverName: string, asUserId?: string): Promise<void> {
+export async function actionDeleteUserMcpServerFromDBAndFiles(serverName: string, asUserId?: string): Promise<void> {
   const dbAccess = await getUserDBAccess(asUserId);
 
   // Get the server details before deleting from DB
