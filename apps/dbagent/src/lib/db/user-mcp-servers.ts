@@ -40,7 +40,7 @@ export async function dbUpdateUserMcpServer(dbAccess: DBAccess, input: UserMcpSe
   });
 }
 
-export async function addUserMcpServerToDB(dbAccess: DBAccess, input: UserMcpServer): Promise<UserMcpServer> {
+export async function dbAddUserMcpServerToDB(dbAccess: DBAccess, input: UserMcpServer): Promise<UserMcpServer> {
   return await dbAccess.query(async ({ db }) => {
     // Check if server with same name exists
     const existingServer = await db.select().from(mcpServers).where(eq(mcpServers.name, input.serverName)).limit(1);
@@ -74,5 +74,15 @@ export async function addUserMcpServerToDB(dbAccess: DBAccess, input: UserMcpSer
       filePath: server.filePath,
       enabled: server.enabled
     };
+  });
+}
+
+export async function dbDeleteUserMcpServer(dbAccess: DBAccess, serverName: string): Promise<void> {
+  return await dbAccess.query(async ({ db }) => {
+    const result = await db.delete(mcpServers).where(eq(mcpServers.name, serverName)).returning();
+
+    if (result.length === 0) {
+      throw new Error(`Server with name "${serverName}" not found`);
+    }
   });
 }

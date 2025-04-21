@@ -87,6 +87,11 @@ export function McpTable() {
     if (!serverExists) {
       const addUserMcpServer = await actionAddUserMcpServerToDB(targetMcpServer);
       console.log('ADDED MCP SERVER', addUserMcpServer.enabled);
+      // Update the mcpServerInDb state to reflect that the server is now in the database
+      setmcpServerInDb((prev) => ({
+        ...prev,
+        [targetMcpServer.fileName]: true
+      }));
     } else {
       const updateUserMcpServer = await actionUpdateUserMcpServer(targetMcpServer);
       console.log('UPDATED MCP SERVER', updateUserMcpServer?.enabled);
@@ -113,7 +118,18 @@ export function McpTable() {
   const totalPages = Math.ceil(mcpServers.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentServers = mcpServers.slice(startIndex, endIndex);
+
+  // Sort servers to show new ones first [this may not be needed later on]
+  // const currentServers = mcpServers.slice(startIndex, endIndex);
+  const sortedServers = [...mcpServers].sort((a, b) => {
+    const aIsNew = !mcpServerInDb[a.fileName];
+    const bIsNew = !mcpServerInDb[b.fileName];
+    if (aIsNew && !bIsNew) return -1;
+    if (!aIsNew && bIsNew) return 1;
+    return 0;
+  });
+
+  const currentServers = sortedServers.slice(startIndex, endIndex);
 
   return (
     <div>
@@ -172,7 +188,7 @@ export function McpTable() {
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem
                         onClick={() => router.push(getMcpServerUrl(server.fileName))}
-                        disabled={!mcpServerInDb[server.fileName]}
+                        disabled={!server.enabled && !mcpServerInDb[server.fileName]}
                       >
                         <BookOpenIcon className="mr-2 h-3 w-3" />
                         View Details

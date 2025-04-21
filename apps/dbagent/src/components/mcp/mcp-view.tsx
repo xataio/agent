@@ -1,13 +1,14 @@
 'use client';
 
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@internal/components';
-import { ArrowLeft, PlayCircle } from 'lucide-react';
+import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@internal/components';
+import { ArrowLeft, PlayCircle, Trash2Icon } from 'lucide-react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { actionGetConnections, actionGetCustomTools } from '~/components/tools/action';
 import { Connection } from '~/lib/db/schema';
 import { UserMcpServer } from '~/lib/tools/user-mcp-servers';
+import { actionDeleteUserMcpServerFromDBAndFiles } from './action';
 
 interface Tool {
   name: string;
@@ -17,10 +18,12 @@ interface Tool {
 
 export function McpView({ server }: { server: UserMcpServer }) {
   const { project } = useParams<{ project: string }>();
+  const router = useRouter();
   const [connections, setConnections] = useState<Connection[]>([]);
   const [tools, setTools] = useState<Tool[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     const loadConnections = async () => {
@@ -59,6 +62,16 @@ export function McpView({ server }: { server: UserMcpServer }) {
       void loadTools();
     }
   }, [connections]);
+
+  const handleDeleteServer = async () => {
+    try {
+      await actionDeleteUserMcpServerFromDBAndFiles(server.fileName);
+      router.push(`/projects/${project}/mcp`);
+    } catch (error) {
+      console.error('Error deleting server:', error);
+      setError('Failed to delete server. Please try again later.');
+    }
+  };
 
   return (
     <main className="container mx-auto max-w-4xl px-4 py-8">
@@ -120,6 +133,23 @@ export function McpView({ server }: { server: UserMcpServer }) {
             </div>
           </div>
         </CardContent>
+        <CardFooter className="flex justify-end gap-3 pt-6">
+          {!showDeleteConfirm ? (
+            <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)}>
+              <Trash2Icon className="mr-2 h-4 w-4" />
+              Delete Server
+            </Button>
+          ) : (
+            <div className="flex gap-2">
+              <Button variant="destructive" onClick={handleDeleteServer}>
+                Confirm Delete
+              </Button>
+              <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
+                Cancel Delete
+              </Button>
+            </div>
+          )}
+        </CardFooter>
       </Card>
     </main>
   );
