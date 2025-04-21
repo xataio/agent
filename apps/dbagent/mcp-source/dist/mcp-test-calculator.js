@@ -12,12 +12,17 @@ const server = new McpServer(
     }
   }
 );
-server.tool('add', { a: z.number(), b: z.number() }, async ({ a, b }) => ({
+server.tool('add', 'add two integers, a and b, together', { a: z.number(), b: z.number() }, async ({ a, b }) => ({
   content: [{ type: 'text', text: String(a + b) }]
 }));
-server.tool('testingTool', { testInput: z.string() }, async ({ testInput }) => ({
-  content: [{ type: 'text', text: testInput }]
-}));
+server.tool(
+  'testingTool',
+  'a testing tool that outputs the input string',
+  { testInput: z.string() },
+  async ({ testInput }) => ({
+    content: [{ type: 'text', text: testInput }]
+  })
+);
 // Start receiving messages on stdin and sending messages on stdout
 const transport = new StdioServerTransport();
 await server.connect(transport);

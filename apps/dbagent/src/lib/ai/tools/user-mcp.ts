@@ -27,9 +27,11 @@ async function getToolsFromMCPServer(userId?: string) {
             command: 'node',
             args: [filePath]
           });
+
           const client = await experimental_createMCPClient({
             transport
           });
+
           const toolSet = await client.tools();
           console.log('Loaded tools for', fileName, toolSet);
           return toolSet;

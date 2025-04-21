@@ -29,7 +29,20 @@ export async function actionGetConnections(projectId: string) {
 
 export async function actionGetBuiltInAndCustomTools(connectionId: string): Promise<Tool[]> {
   try {
-    const userId = await requireUserSession();
+    const [builtInTools, customTools] = await Promise.all([
+      actionGetBuiltInTools(connectionId),
+      actionGetCustomTools(connectionId)
+    ]);
+    return [...customTools, ...builtInTools];
+  } catch (error) {
+    console.error('Error getting tools:', error);
+    return [];
+  }
+}
+
+export async function actionGetBuiltInTools(connectionId: string): Promise<Tool[]> {
+  try {
+    await requireUserSession();
     const dbAccess = await getUserSessionDBAccess();
     const connection = await getConnection(dbAccess, connectionId);
     if (!connection) {
@@ -46,28 +59,41 @@ export async function actionGetBuiltInAndCustomTools(connectionId: string): Prom
     // Get playbook tools
     const playbookToolset = getPlaybookToolset(dbAccess, connection.projectId);
 
-    // Get MCP tools
-    const mcpTools = await userMCPToolset.getTools(userId);
-
-    // Merge all toolsets
+    // Merge all built-in toolsets
     const mergedTools = mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools);
 
-    const customTools = Object.entries(mcpTools).map(([name, tool]) => ({
-      name,
-      description: tool.description || 'No description available',
-      isBuiltIn: false
-    }));
-
-    const builtInTools = Object.entries(mergedTools).map(([name, tool]) => ({
+    // Convert to array format
+    return Object.entries(mergedTools).map(([name, tool]) => ({
       name,
       description: tool.description || 'No description available',
       isBuiltIn: true
     }));
-
-    // Convert to array format
-    return [...customTools, ...builtInTools];
   } catch (error) {
     console.error('Error getting built-in tools:', error);
+    return [];
+  }
+}
+
+export async function actionGetCustomTools(connectionId: string): Promise<Tool[]> {
+  try {
+    const userId = await requireUserSession();
+    const dbAccess = await getUserSessionDBAccess();
+    const connection = await getConnection(dbAccess, connectionId);
+    if (!connection) {
+      throw new Error('Connection not found');
+    }
+
+    // Get MCP tools
+    const mcpTools = await userMCPToolset.getTools(userId);
+
+    // Convert to array format
+    return Object.entries(mcpTools).map(([name, tool]) => ({
+      name,
+      description: tool.description || 'No description available',
+      isBuiltIn: false
+    }));
+  } catch (error) {
+    console.error('Error getting custom tools:', error);
     return [];
   }
 }

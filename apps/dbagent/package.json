@@ -16,8 +16,7 @@
     "load-test": "tsx scripts/load-testing/musicbrainz-loader.ts",
     "dev-scheduler": "tsx scripts/scheduler.ts",
     "playground": "mastra dev -d playground",
-    "build:mcp-servers": "tsc -p mcp-source/tsconfig.json",
-    "build:mcp-client": "tsc -p src/components/mcp/tsconfig.json"
+    "build:mcp-servers": "tsc -p mcp-source/tsconfig.json"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.10",
