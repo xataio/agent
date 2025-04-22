@@ -48,6 +48,7 @@ function createOllamaModel(provider: OllamaProvider, model: OllamaModel) {
 
   return createModel(providerModel, () => {
     const languageModel = provider.languageModel(model.model, {
+      simulateStreaming: true,
       numCtx: contextLength,
       repeatLastN: -1,
       structuredOutputs: true
