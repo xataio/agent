@@ -1,5 +1,7 @@
-import { Ollama } from 'ollama';
-import { createOllama } from 'ollama-ai-provider';
+import { LanguageModelV1 } from '@ai-sdk/provider';
+import { defaultSettingsMiddleware, wrapLanguageModel } from 'ai';
+import { Ollama, ShowResponse } from 'ollama';
+import { createOllama, OllamaProvider } from 'ollama-ai-provider';
 import { ProviderModel, ProviderRegistry } from './types';
 import { createModel, createRegistryFromModels } from './utils';
 
@@ -8,27 +10,58 @@ export type OllamaConfig = {
   headers?: Record<string, string>;
 };
 
+type OllamaModel = ShowResponse & {
+  name: string;
+  model: string;
+};
+
 export async function createOllamaProviderRegistry(config: OllamaConfig): Promise<ProviderRegistry> {
   const client = new Ollama(config);
-  const response = await client.list();
+  const listResponse = await client.list();
 
-  const modelProvider = createOllama(config);
+  // XXX: Remove models with missing capabilities: completion, tools
+  //      The `show` methods return is currently missing the 'capabilities' field.
+  const ollamaModelList = await Promise.all(
+    listResponse.models.map(async (model) => {
+      const details = await client.show({ model: model.model });
+      return {
+        model: model.model,
+        name: model.name,
+        ...details
+      };
+    })
+  );
 
-  const models = response.models.map((model) => {
-    const providerModel: ProviderModel = {
-      id: `ollama:${model.model}`,
-      name: `Ollama - ${model.name}`
-    };
-    const providerId = model.model;
-    return createModel(providerModel, () =>
-      modelProvider.languageModel(providerId, {
-        // Streaming using the ollama provider is unreliable, and not well supported by some models.
-        // Unfortunately we can not tell in advance if streaming will work with the given model.
-        // So we always simulate streaming to avoid issues.
-        simulateStreaming: true
-      })
-    );
-  });
-
+  const ollamaProvider = createOllama(config);
+  const models = ollamaModelList.map((m) => createOllamaModel(ollamaProvider, m));
   return createRegistryFromModels({ models });
+}
+
+function createOllamaModel(provider: OllamaProvider, model: OllamaModel) {
+  const contextLength =
+    Object.entries(model.model_info || {}).find(([key]) => key.endsWith('context_length'))?.[1] || 4096;
+
+  const providerModel: ProviderModel = {
+    id: `ollama:${model.model}`,
+    name: `Ollama - ${model.name}`
+  };
+
+  return createModel(providerModel, () => {
+    const languageModel = provider.languageModel(model.model, {
+      numCtx: contextLength,
+      repeatLastN: -1,
+      structuredOutputs: true
+    });
+
+    return wrapLanguageModel({
+      model: languageModel as unknown as LanguageModelV1,
+      middleware: [
+        defaultSettingsMiddleware({
+          settings: {
+            temperature: 0.1
+          }
+        })
+      ]
+    });
+  });
 }
