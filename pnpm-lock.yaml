@@ -259,6 +259,9 @@ importers:
       '@types/canvas-confetti':
         specifier: ^1.9.0
         version: 1.9.0
+      '@types/chroma-js':
+        specifier: ^3.1.1
+        version: 3.1.1
       '@types/diff-match-patch':
         specifier: ^1.0.36
         version: 1.0.36
@@ -2984,6 +2987,9 @@ packages:
 
   '@types/caseless@0.12.5':
     resolution: {integrity: sha512-hWtVTC2q7hc7xZ/RLbxapMvDMgUnDvKvMOpKal4DrMyfGBUfB1oKaZlIRr6mJL+If3bAP6sV/QneGzF6tJjZDg==}
+
+  '@types/chroma-js@3.1.1':
+    resolution: {integrity: sha512-SFCr4edNkZ1bGaLzGz7rgR1bRzVX4MmMxwsIa3/Bh6ose8v+hRpneoizHv0KChdjxaXyjRtaMq7sCuZSzPomQA==}
 
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
@@ -10737,6 +10743,8 @@ snapshots:
   '@types/canvas-confetti@1.9.0': {}
 
   '@types/caseless@0.12.5': {}
+
+  '@types/chroma-js@3.1.1': {}
 
   '@types/connect@3.4.38':
     dependencies:

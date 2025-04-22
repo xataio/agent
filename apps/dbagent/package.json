@@ -85,6 +85,7 @@
     "@dotenvx/dotenvx": "^1.41.0",
     "@types/bytes": "^3.1.5",
     "@types/canvas-confetti": "^1.9.0",
+    "@types/chroma-js": "^3.1.1",
     "@types/diff-match-patch": "^1.0.36",
     "@types/dockerode": "^3.3.38",
     "@types/papaparse": "^5.3.15",
