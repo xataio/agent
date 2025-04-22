@@ -12,7 +12,7 @@ services:
       - db_network
 
   xata-agent:
-    image: xataio/agent:0.1.2
+    image: xataio/agent:0.2.1
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-dbagent}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-dbagent}
       NODE_ENV: production

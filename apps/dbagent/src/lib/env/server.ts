@@ -14,10 +14,14 @@ const schema = z.object({
   AUTH_OPENID_ISSUER: z.string().optional(),
 
   // LLM API credentials
-  OPENAI_API_KEY: z.string(),
+  OPENAI_API_KEY: z.string().optional(),
   DEEPSEEK_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
   GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
+
+  // LiteLLM settings
+  LITELLM_BASE_URL: z.string().optional(),
+  LITELLM_API_KEY: z.string().optional(),
 
   // Scheduler
   MAX_PARALLEL_RUNS: z.number().default(20), // How many schedules can be run in parallel

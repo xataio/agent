@@ -4,13 +4,17 @@ import { LanguageModel } from 'ai';
 export interface ProviderRegistry {
   listLanguageModels(): Model[];
   defaultLanguageModel(): Model;
-  languageModel(modelId: string): Model;
+  languageModel(modelId: string, useFallback?: boolean): ModelWithFallback;
 }
 
 export interface Model {
   info(): ProviderModel;
-
   instance(): LanguageModel;
+}
+
+export interface ModelWithFallback extends Model {
+  isFallback: boolean;
+  requestedModelId: string;
 }
 
 export type Provider = {
@@ -27,6 +31,6 @@ export type ProviderInfo = {
 
 export type ProviderModel = {
   id: string;
-  providerId: string;
   name: string;
+  private?: boolean;
 };

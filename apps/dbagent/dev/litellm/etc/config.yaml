@@ -1,0 +1,76 @@
+model_list:
+  - model_name: GPT-4o
+    litellm_params:
+      model: openai/gpt-4o
+    model_info:
+      xata_agent:
+        group_fallback: openai
+        alias:
+          - title
+          - summary
+  - model_name: GPT-4 Turbo
+    litellm_params:
+      model: openai/gpt-4-turbo
+  - model_name: GPT-4.1
+    litellm_params:
+      model: openai/gpt-4.1
+  - model_name: GPT-4.1 Mini
+    litellm_params:
+      model: openai/gpt-4.1-mini
+
+  - model_name: DeepSeek Chat
+    litellm_params:
+      model: deepseek/deepseek-chat
+    model_info:
+      xata_agent:
+        model_id: deepseek:chat
+        group_fallback: deepseek
+
+  - model_name: Claude 3.7 Sonnet
+    litellm_params:
+      model: anthropic/claude-3-7-sonnet-20250219
+    model_info:
+      mode: chat
+      xata_agent:
+        model_id: anthropic:claude-3-7-sonnet
+        group_fallback: anthropic
+        alias:
+          - chat
+          - anthropic:claude-3-7-sonnet-20250219
+  - model_name: Claude 3.5 Haiku
+    litellm_params:
+      model: anthropic/claude-3-5-haiku-20241022
+    model_info:
+      xata_agent:
+        model_id: anthropic:claude-3-5-haiku
+
+  - model_name: Gemini 2.0 Flash
+    litellm_params:
+      model: gemini/gemini-2.0-flash
+      api_key: os.environ/GOOGLE_GENERATIVE_AI_API_KEY
+    model_info:
+      xata_agent:
+        model_id: google:gemini-2.0-flash
+        group_fallback: google
+  - model_name: Gemini 2.0 Flash Lite
+    litellm_params:
+      model: gemini/gemini-2.0-flash-lite
+      api_key: os.environ/GOOGLE_GENERATIVE_AI_API_KEY
+    model_info:
+      xata_agent:
+        model_id: google:gemini-2.0-flash-lite
+        group_fallback: google
+  - model_name: Gemini 2.5 Pro
+    litellm_params:
+      model: gemini/gemini-2.5-pro-preview-03-25
+      api_key: os.environ/GOOGLE_GENERATIVE_AI_API_KEY
+    model_info:
+      xata_agent:
+        model_id: google:gemini-2.5-pro
+        group_fallback: google
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL
+  store_model_in_db: true
+  store_prompts_in_spend_logs: true
