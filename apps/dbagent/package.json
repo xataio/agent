@@ -36,7 +36,7 @@
     "@tailwindcss/postcss": "^4.1.4",
     "@tanstack/react-query": "^5.74.4",
     "@vercel/functions": "^2.0.0",
-    "@xata.io/components": "^0.0.6",
+    "@xata.io/components": "^0.0.7",
     "@xata.io/theme": "^1.0.1",
     "ai": "^4.3.9",
     "bytes": "^3.1.2",

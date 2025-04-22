@@ -118,8 +118,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0(@aws-sdk/credential-provider-web-identity@3.787.0)
       '@xata.io/components':
-        specifier: ^0.0.6
-        version: 0.0.6(@types/react-dom@19.1.2(@types/react@19.1.2))(@types/react@19.1.2)(react-dom@19.1.0(react@19.1.0))
+        specifier: ^0.0.7
+        version: 0.0.7(@types/react-dom@19.1.2(@types/react@19.1.2))(@types/react@19.1.2)(react-dom@19.1.0(react@19.1.0))
       '@xata.io/theme':
         specifier: ^1.0.1
         version: 1.0.1
@@ -3298,8 +3298,8 @@ packages:
   '@xata.io/code-highlighter@0.0.1':
     resolution: {integrity: sha512-vvCO4CplnRF9/vv3FRqnKsTRFkftYvmCDwBIyTVLXl09Uu+nndT+k6W3SMRu/mgy4NfuVS6w8ZA+Qz9EI1peoA==}
 
-  '@xata.io/components@0.0.6':
-    resolution: {integrity: sha512-9Pcbn9LLD7G+eaedgvkkxPkbF1w+Aav4koTk9f4q8d0Xd/6ZM5PVfhqO0f9cD+e4ZGZuHutkTFo5j4OUZyLPyA==}
+  '@xata.io/components@0.0.7':
+    resolution: {integrity: sha512-Z0ZAnMilJy9nbjgBd6APOQKzhgw30DzFxh4vg4cCsTNONJzA4U1sYCLmkI1B4cXq62bz3rtYVY3XlTWpBavjtA==}
 
   '@xata.io/eslint-config@0.0.1':
     resolution: {integrity: sha512-KFCw2dLII1DkdXix8gK7/G7So6ryv2f2MikaoqqTXNF3GBNRNRxRUyM+cgSej4vzcpuU7gMcEASCP65lGSz6AA==}
@@ -5078,10 +5078,6 @@ packages:
   js-base64@3.7.7:
     resolution: {integrity: sha512-7rCnleh0z2CkXhH67J8K1Ytz0b2Y+yxTPL+/KOJoa20hfnVQ/3/T6W/KflYI4bRHRagNeXeU2bkNGI3v1oS/lw==}
 
-  js-cookie@3.0.5:
-    resolution: {integrity: sha512-cEiJEAEoIbWfCZYKWhVwFuvPX1gETRYPw6LlaTKoxD3s2AkXzkCjnp6h0V77ozyqj0jakteJ4YqDJT830+lVGw==}
-    engines: {node: '>=14'}
-
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
@@ -5297,11 +5293,6 @@ packages:
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
-
-  lucide-react@0.488.0:
-    resolution: {integrity: sha512-ronlL0MyKut4CEzBY/ai2ZpKPxyWO4jUqdAkm2GNK5Zn3Rj+swDz+3lvyAUXN0PNqPKIX6XM9Xadwz/skLs/pQ==}
-    peerDependencies:
-      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   lucide-react@0.503.0:
     resolution: {integrity: sha512-HGGkdlPWQ0vTF8jJ5TdIqhQXZi6uh3LnNgfZ8MHiuxFfX3RZeA79r2MW2tHAZKlAVfoNE8esm3p+O6VkIvpj6w==}
@@ -11139,7 +11130,7 @@ snapshots:
       hast: 1.0.0
       shiki: 3.3.0
 
-  '@xata.io/components@0.0.6(@types/react-dom@19.1.2(@types/react@19.1.2))(@types/react@19.1.2)(react-dom@19.1.0(react@19.1.0))':
+  '@xata.io/components@0.0.7(@types/react-dom@19.1.2(@types/react@19.1.2))(@types/react@19.1.2)(react-dom@19.1.0(react@19.1.0))':
     dependencies:
       '@dagrejs/dagre': 1.1.4
       '@fluentui/react-icons': 2.0.297(react@19.1.0)
@@ -11179,8 +11170,7 @@ snapshots:
       cmdk: 1.1.1(@types/react-dom@19.1.2(@types/react@19.1.2))(@types/react@19.1.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       date-fns: 4.1.0
       input-otp: 1.4.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      js-cookie: 3.0.5
-      lucide-react: 0.488.0(react@19.1.0)
+      lucide-react: 0.503.0(react@19.1.0)
       next-themes: 0.4.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       postcss: 8.5.3
       react: 19.1.0
@@ -13126,8 +13116,6 @@ snapshots:
 
   js-base64@3.7.7: {}
 
-  js-cookie@3.0.5: {}
-
   js-tokens@4.0.0: {}
 
   js-yaml@4.1.0:
@@ -13342,10 +13330,6 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
-
-  lucide-react@0.488.0(react@19.1.0):
-    dependencies:
-      react: 19.1.0
 
   lucide-react@0.503.0(react@19.1.0):
     dependencies:
