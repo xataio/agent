@@ -49,12 +49,12 @@ export function VisibilitySelector({
   useQuery({
     queryKey: ['chat', chatId],
     queryFn: async () => {
-      const response = await fetcher(`/api/chat?id=${chatId}`);
+      return await fetcher(`/api/chat?id=${chatId}`);
+    },
+    onSuccess: (response) => {
       if (response?.visibility) {
         setVisibility(response.visibility);
       }
-      return response;
-    }
   });
 
   const selectedVisibility = useMemo(() => visibilities.find(({ id }) => id === visibility), [visibility]);
