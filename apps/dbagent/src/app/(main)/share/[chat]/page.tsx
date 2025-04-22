@@ -24,7 +24,7 @@ export default async function SharedChatPage({ params }: { params: Promise<PageP
   }
 
   // Fetch the messages for the chat
-  const messagesFromDb = await getMessagesByChatId(dbAccess, { id: chatId });
+  const { messages: messagesFromDb } = await getMessagesByChatId(dbAccess, { id: chatId });
 
   function convertToUIMessages(messages: Array<Message>): Array<UIMessage> {
     return messages.map((message) => ({
