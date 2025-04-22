@@ -25,7 +25,7 @@ const schema = z.object({
 
   // Ollama settings
   OLLAMA_HOST: z.string().optional(),
-  OLLAMA_ENABLED: z.string(z.enum(['true', 'false'])).default('false'),
+  OLLAMA_ENABLED: z.enum(['true', 'false', '1']).default('false'),
 
   // Scheduler
   MAX_PARALLEL_RUNS: z.number().default(20), // How many schedules can be run in parallel
