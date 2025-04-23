@@ -1,7 +1,7 @@
 import { Message } from '@ai-sdk/ui-utils';
 import { generateId, generateObject, generateText, LanguageModelV1 } from 'ai';
 import { z } from 'zod';
-import { getMonitoringModelInstance, getMonitoringSystemPrompt } from '../ai/agent';
+import { getMonitoringModel, getMonitoringSystemPrompt } from '../ai/agent';
 import { getTools } from '../ai/tools';
 import { getConnectionFromSchedule } from '../db/connections';
 import { DBAccess } from '../db/db';
@@ -194,7 +194,12 @@ export async function runSchedule(dbAccess: DBAccess, schedule: Schedule, now: D
   if (!connection) {
     throw new Error(`Connection ${schedule.connectionId} not found`);
   }
-  const modelInstance = await getMonitoringModelInstance(schedule.model);
+  const model = await getMonitoringModel(schedule.model);
+  if (model.isFallback) {
+    console.log(`Model id ${model.requestedModelId} not found, using fallback model ${model.info().id}`);
+  }
+
+  const modelInstance = model.instance();
   const messages: Message[] = [];
   const project = await getProjectById(dbAccess, connection.projectId);
   if (!project) {
