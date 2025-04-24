@@ -50,7 +50,7 @@ export function McpView({ server }: { server: UserMcpServer }) {
 
         const defaultConnection = connectionsData.find((c: Connection) => c.isDefault);
         if (defaultConnection) {
-          const tools = await actionGetCustomTools(defaultConnection.id, server.fileName, !server.enabled);
+          const tools = await actionGetCustomTools(defaultConnection.id, server.fileName);
           setTools(tools);
         }
         setError(null);

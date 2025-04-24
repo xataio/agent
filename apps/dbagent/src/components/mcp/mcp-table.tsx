@@ -47,9 +47,11 @@ export function McpTable() {
     try {
       //load mcp servers from their local folder(mcp-source)
       const response = await fetch('/api/mcp/servers');
+
       if (!response.ok) {
         throw new Error('Failed to fetch MCP servers');
       }
+
       const servers = await response.json();
       const status: Record<string, boolean> = {};
 
@@ -88,16 +90,14 @@ export function McpTable() {
     //updates mcp servers enabled status in db otherwise
     const serverExists = await actionCheckUserMcpServerExists(targetMcpServer.fileName);
     if (!serverExists) {
-      const addUserMcpServer = await actionAddUserMcpServerToDB(targetMcpServer);
-      console.log('ADDED MCP SERVER', addUserMcpServer.enabled);
+      await actionAddUserMcpServerToDB(targetMcpServer);
       //updates the mcpServerInDb state to show that the server is added to the database
       setmcpServerInDb((prev) => ({
         ...prev,
         [targetMcpServer.fileName]: true
       }));
     } else {
-      const updateUserMcpServer = await actionUpdateUserMcpServer(targetMcpServer);
-      console.log('UPDATED MCP SERVER', updateUserMcpServer?.enabled);
+      await actionUpdateUserMcpServer(targetMcpServer);
     }
   };
 
