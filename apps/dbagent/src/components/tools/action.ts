@@ -84,7 +84,7 @@ export async function actionGetCustomTools(connectionId: string, serverFileName?
     }
 
     // Get MCP tools
-    const mcpTools = (await userMCPToolset.getTools(userId, serverFileName)) as Record<string, any>;
+    const mcpTools = await userMCPToolset.getTools(userId, serverFileName);
 
     // Convert to array format
     return Object.entries(mcpTools).map(([name, tool]) => ({
