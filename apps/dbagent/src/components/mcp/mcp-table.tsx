@@ -107,7 +107,7 @@ export function McpTable() {
 
   //used to disable the Add MCP Server button (SET THIS TO FALSE LATER BEFORE DEPLOYING)
   useEffect(() => {
-    setIsAddButtonDisabled(false);
+    setIsAddButtonDisabled(true);
   }, []);
 
   const SkeletonRow = () => (
