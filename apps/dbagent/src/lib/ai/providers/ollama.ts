@@ -16,10 +16,10 @@ type OllamaModel = ShowResponse & {
 };
 
 export async function createOllamaProviderRegistry(config: OllamaConfig): Promise<ProviderRegistry> {
-  const hostUrl = normalizeHost(config.host);
+  const host = normalizeHost(config.host);
   const client = new Ollama({
-    ...config,
-    host: hostUrl
+    host: host,
+    headers: config.headers
   });
   const listResponse = await client.list();
 
@@ -37,7 +37,7 @@ export async function createOllamaProviderRegistry(config: OllamaConfig): Promis
   );
 
   const ollamaProvider = createOllama({
-    baseURL: `${hostUrl}/api`,
+    baseURL: `${host}/api`,
     headers: config.headers
   });
   const models = ollamaModelList.map((m) => createOllamaModel(ollamaProvider, m));

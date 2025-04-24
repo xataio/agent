@@ -35,7 +35,13 @@ function buildProviderRegistry() {
   // Add optional registries.
   if (env.OLLAMA_HOST) {
     requiresUpdates = true;
-    registries.push(async () => await createOllamaProviderRegistry({ host: env.OLLAMA_HOST }));
+    registries.push(
+      async () =>
+        await createOllamaProviderRegistry({
+          host: env.OLLAMA_HOST,
+          headers: env.OLLAMA_HEADERS
+        })
+    );
   }
 
   if (registries.length === 0) {
