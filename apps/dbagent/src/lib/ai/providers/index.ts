@@ -33,9 +33,11 @@ function buildProviderRegistry() {
   }
 
   // Add optional registries.
-  if (env.OLLAMA_ENABLED && (env.OLLAMA_ENABLED.toLowerCase() === 'true' || env.OLLAMA_ENABLED === '1')) {
+  if (env.OLLAMA_HOST) {
     requiresUpdates = true;
-    registries.push(async () => await createOllamaProviderRegistry({ host: env.OLLAMA_HOST }));
+    const host = env.OLLAMA_HOST.startsWith('http') ? env.OLLAMA_HOST : `http://${env.OLLAMA_HOST}`;
+    const hostWithPort = host.includes(':') ? host : `${host}:11434`;
+    registries.push(async () => await createOllamaProviderRegistry({ host: hostWithPort }));
   }
 
   if (registries.length === 0) {
