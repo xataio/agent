@@ -35,9 +35,7 @@ function buildProviderRegistry() {
   // Add optional registries.
   if (env.OLLAMA_HOST) {
     requiresUpdates = true;
-    const host = env.OLLAMA_HOST.startsWith('http') ? env.OLLAMA_HOST : `http://${env.OLLAMA_HOST}`;
-    const hostWithPort = host.includes(':') ? host : `${host}:11434`;
-    registries.push(async () => await createOllamaProviderRegistry({ host: hostWithPort }));
+    registries.push(async () => await createOllamaProviderRegistry({ host: env.OLLAMA_HOST }));
   }
 
   if (registries.length === 0) {

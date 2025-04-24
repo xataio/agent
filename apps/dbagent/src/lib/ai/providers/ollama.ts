@@ -16,7 +16,11 @@ type OllamaModel = ShowResponse & {
 };
 
 export async function createOllamaProviderRegistry(config: OllamaConfig): Promise<ProviderRegistry> {
-  const client = new Ollama(config);
+  const hostUrl = normalizeHost(config.host);
+  const client = new Ollama({
+    ...config,
+    host: hostUrl
+  });
   const listResponse = await client.list();
 
   // XXX: Remove models with missing capabilities: completion, tools
@@ -32,9 +36,20 @@ export async function createOllamaProviderRegistry(config: OllamaConfig): Promis
     })
   );
 
-  const ollamaProvider = createOllama(config);
+  const ollamaProvider = createOllama({
+    baseURL: `${hostUrl}/api`,
+    headers: config.headers
+  });
   const models = ollamaModelList.map((m) => createOllamaModel(ollamaProvider, m));
   return createRegistryFromModels({ models });
+}
+
+function normalizeHost(host?: string): string {
+  if (!host) {
+    return 'http://localhost:11434';
+  }
+  const hostWithPort = host.match(/:\d+/) ? host : `${host}:11434`;
+  return hostWithPort.match(/^https?:\/\//) ? hostWithPort : `http://${hostWithPort}`;
 }
 
 function createOllamaModel(provider: OllamaProvider, model: OllamaModel) {
