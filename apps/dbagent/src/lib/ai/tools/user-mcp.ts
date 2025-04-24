@@ -58,6 +58,6 @@ async function loadToolsFromFile(filePath: string) {
 export const userMCPToolset = {
   getTools: async (userId?: string, serverFileName?: string) => {
     const tools = await getToolsFromMCPServer(userId, serverFileName);
-    return tools;
+    return tools || {};
   }
 };
