@@ -36,7 +36,7 @@ export default async function Page({ params }: { params: Promise<PageParams> }) 
 
   const dbAccess = await getUserSessionDBAccess();
   const connections = await listConnections(dbAccess, projectId);
-  const defaultLanguageModel = getDefaultLanguageModel();
+  const defaultLanguageModel = await getDefaultLanguageModel();
 
   const chat = await getMessagesByChatId(dbAccess, { id: chatId });
 

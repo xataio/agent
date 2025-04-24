@@ -10,7 +10,7 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
     let draftContent = '';
 
     const { fullStream } = streamObject({
-      model: getModelInstance('chat'),
+      model: await getModelInstance('chat'),
       system: sheetPrompt,
       prompt: title,
       schema: z.object({
@@ -47,7 +47,7 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
     let draftContent = '';
 
     const { fullStream } = streamObject({
-      model: getModelInstance('chat'),
+      model: await getModelInstance('chat'),
       system: updateDocumentPrompt(document.content, 'sheet'),
       prompt: description,
       schema: z.object({

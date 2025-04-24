@@ -2,30 +2,20 @@ import { anthropic } from '@ai-sdk/anthropic';
 import { deepseek } from '@ai-sdk/deepseek';
 import { google } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
-import { LanguageModel } from 'ai';
+import { env } from '~/lib/env/server';
 
-import { Model, Provider, ProviderInfo, ProviderModel, ProviderRegistry } from './types';
+import { Model, Provider, ProviderModel, ProviderRegistry } from './types';
+import { createModel, createRegistryFromModels } from './utils';
 
-class BuiltinModel implements Model {
-  #model: ProviderModel;
-  #provider: ProviderInfo;
+type BuiltinProvider = Provider & {
+  models: BuiltinProviderModel[];
+};
 
-  constructor(provider: ProviderInfo, model: ProviderModel) {
-    this.#model = model;
-    this.#provider = provider;
-  }
+type BuiltinProviderModel = ProviderModel & {
+  providerId: string;
+};
 
-  info(): ProviderModel {
-    return this.#model;
-  }
-
-  instance(): LanguageModel {
-    const model = this.info();
-    return this.#provider.kind.languageModel(model.providerId);
-  }
-}
-
-const builtinOpenAIModels: Provider = {
+const builtinOpenAIModels: BuiltinProvider = {
   info: {
     name: 'OpenAI',
     id: 'openai',
@@ -56,7 +46,7 @@ const builtinOpenAIModels: Provider = {
   ]
 };
 
-const builtinDeepseekModels: Provider = {
+const builtinDeepseekModels: BuiltinProvider = {
   info: {
     name: 'DeepSeek',
     id: 'deepseek',
@@ -71,7 +61,7 @@ const builtinDeepseekModels: Provider = {
   ]
 };
 
-const builtinAnthropicModels: Provider = {
+const builtinAnthropicModels: BuiltinProvider = {
   info: {
     name: 'Anthropic',
     id: 'anthropic',
@@ -91,7 +81,7 @@ const builtinAnthropicModels: Provider = {
   ]
 };
 
-const builtinGoogleModels: Provider = {
+const builtinGoogleModels: BuiltinProvider = {
   info: {
     name: 'Google',
     id: 'google',
@@ -116,47 +106,50 @@ const builtinGoogleModels: Provider = {
   ]
 };
 
-const builtinProviderModels: Record<string, BuiltinModel> = Object.fromEntries(
-  [builtinOpenAIModels, builtinDeepseekModels, builtinAnthropicModels, builtinGoogleModels].flatMap((p) => {
-    return p.models.map((model) => {
-      const modelInstance = new BuiltinModel(p.info, model);
-      return [modelInstance.info().id, modelInstance];
-    });
-  })
-);
+const builtinProviderModels: Record<string, Model> = (function () {
+  const activeList: BuiltinProvider[] = [];
+  if (env.OPENAI_API_KEY) {
+    activeList.push(builtinOpenAIModels);
+  }
+  if (env.DEEPSEEK_API_KEY) {
+    activeList.push(builtinDeepseekModels);
+  }
+  if (env.ANTHROPIC_API_KEY) {
+    activeList.push(builtinAnthropicModels);
+  }
+  if (env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    activeList.push(builtinGoogleModels);
+  }
 
-export const defaultLanguageModel = builtinProviderModels['openai:gpt-4.1']!;
+  if (activeList.length === 0) {
+    throw new Error('No providers enabled. Please configure API keys');
+  }
+  return Object.fromEntries(
+    activeList.flatMap((p) => {
+      const factory = p.info.kind;
+      return p.models.map((model: BuiltinProviderModel) => {
+        const modelInstance = createModel(model, () => factory.languageModel(model.providerId));
+        return [modelInstance.info().id, modelInstance];
+      });
+    })
+  );
+})();
 
-const builtinCustomModels: Record<string, BuiltinModel> = {
-  chat: defaultLanguageModel,
-  title: builtinProviderModels['openai:gpt-4.1-mini']!,
-  summary: builtinProviderModels['openai:gpt-4.1-mini']!
+const defaultLanguageModel = builtinProviderModels['openai:gpt-4.1'] ?? Object.values(builtinProviderModels)[0]!;
+const defaultTitleModel = builtinProviderModels['openai:gpt-4.1-mini'] ?? Object.values(builtinProviderModels)[0]!;
+const defaultSummaryModel = builtinProviderModels['openai:gpt-4.1-mini'] ?? Object.values(builtinProviderModels)[0]!;
+
+const builtinModelAliases: Record<string, string> = {
+  chat: defaultLanguageModel.info().id,
+  title: defaultTitleModel.info().id,
+  summary: defaultSummaryModel.info().id
 };
 
-const builtinModels: Record<string, BuiltinModel> = {
-  ...builtinProviderModels,
-  ...builtinCustomModels
-};
-
-class BuiltinProviderRegistry implements ProviderRegistry {
-  listLanguageModels(): Model[] {
-    return Object.values(builtinProviderModels);
-  }
-
-  defaultLanguageModel(): Model {
-    return defaultLanguageModel;
-  }
-
-  languageModel(id: string): Model {
-    const model = builtinModels[id];
-    if (!model) {
-      throw new Error(`Model ${id} not found`);
-    }
-    return model;
-  }
-}
-
-const builtinProviderRegistry = new BuiltinProviderRegistry();
+const builtinProviderRegistry = createRegistryFromModels({
+  models: builtinProviderModels,
+  aliases: builtinModelAliases,
+  defaultModel: defaultLanguageModel
+});
 
 export function getBuiltinProviderRegistry(): ProviderRegistry {
   return builtinProviderRegistry;

@@ -1,11 +1,12 @@
 'use server';
 
 import { eq } from 'drizzle-orm';
+import { generateUUID } from '~/components/chat/utils';
 import { DBAccess } from './db';
 import { Project, ProjectInsert, projectMembers, projects } from './schema';
 
 export async function generateProjectId(): Promise<string> {
-  return crypto.randomUUID();
+  return generateUUID();
 }
 
 export async function createProject(dbAccess: DBAccess, project: ProjectInsert): Promise<string> {

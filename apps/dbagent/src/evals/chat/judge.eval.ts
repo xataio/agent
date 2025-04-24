@@ -95,7 +95,7 @@ describe.concurrent('judge', () => {
     const humanSteps = result.steps.map(stepToHuman);
     const finalAnswer = result.text;
     const { object: judgeResponse } = await generateObject({
-      model: getModelInstance(env.JUDGE_MODEL),
+      model: await getModelInstance(env.JUDGE_MODEL),
       schema: z.object({
         result: evalResultEnum,
         critique: z.string()
