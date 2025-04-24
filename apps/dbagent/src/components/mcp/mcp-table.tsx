@@ -41,6 +41,8 @@ export function McpTable() {
   const { project } = useParams<{ project: string }>();
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
+
   const loadMcpServers = async () => {
     try {
       //load mcp servers from their local folder(mcp-source)
@@ -49,21 +51,22 @@ export function McpTable() {
         throw new Error('Failed to fetch MCP servers');
       }
       const servers = await response.json();
+      const status: Record<string, boolean> = {};
 
-      //get enabled status from db
-      for (const server of servers) {
-        const getServerFromDb = await actionGetUserMcpServer(server.fileName);
-        server.enabled = getServerFromDb?.enabled || false;
-      }
+      await Promise.all(
+        servers.map(async (server: UserMcpServer) => {
+          const [getServerFromDb, exists] = await Promise.all([
+            //used to get enabled status from db
+            actionGetUserMcpServer(server.fileName),
+            //used to check if mcp servers are in db
+            actionCheckUserMcpServerExists(server.fileName)
+          ]);
+          server.enabled = getServerFromDb?.enabled || false;
+          status[server.fileName] = exists;
+        })
+      );
 
       setMcpServers(servers);
-      console.log('MCP SERVERS', servers);
-      // Check if mcp servers are in db
-      //used for the new badge
-      const status: Record<string, boolean> = {};
-      for (const server of servers) {
-        status[server.fileName] = await actionCheckUserMcpServerExists(server.fileName);
-      }
       setmcpServerInDb(status);
     } catch (error) {
       console.error('Error loading MCP servers:', error);
@@ -87,7 +90,7 @@ export function McpTable() {
     if (!serverExists) {
       const addUserMcpServer = await actionAddUserMcpServerToDB(targetMcpServer);
       console.log('ADDED MCP SERVER', addUserMcpServer.enabled);
-      // Update the mcpServerInDb state to reflect that the server is now in the database
+      //updates the mcpServerInDb state to show that the server is added to the database
       setmcpServerInDb((prev) => ({
         ...prev,
         [targetMcpServer.fileName]: true
@@ -101,6 +104,11 @@ export function McpTable() {
   useEffect(() => {
     void loadMcpServers();
   }, [project]);
+
+  //used to disable the Add MCP Server button (SET THIS TO FALSE LATER BEFORE DEPLOYING)
+  useEffect(() => {
+    setIsAddButtonDisabled(false);
+  }, []);
 
   const SkeletonRow = () => (
     <TableRow>
@@ -119,8 +127,8 @@ export function McpTable() {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
 
-  // Sort servers to show new ones first [this may not be needed later on]
-  // const currentServers = mcpServers.slice(startIndex, endIndex);
+  //sort servers to show new ones first [this may not be needed later on]
+  //(oldcode) const currentServers = mcpServers.slice(startIndex, endIndex);
   const sortedServers = [...mcpServers].sort((a, b) => {
     const aIsNew = !mcpServerInDb[a.fileName];
     const bIsNew = !mcpServerInDb[b.fileName];
@@ -135,7 +143,9 @@ export function McpTable() {
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">MCP Servers</h1>
-        <Button onClick={() => router.push(`/projects/${project}/mcp/create`)}>Add MCP Server</Button>
+        <Button onClick={() => router.push(`/projects/${project}/mcp/create`)} disabled={isAddButtonDisabled}>
+          Add MCP Server
+        </Button>
       </div>
       <Table>
         <TableHeader>
@@ -186,10 +196,7 @@ export function McpTable() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => router.push(getMcpServerUrl(server.fileName))}
-                        disabled={!server.enabled && !mcpServerInDb[server.fileName]}
-                      >
+                      <DropdownMenuItem onClick={() => router.push(getMcpServerUrl(server.fileName))}>
                         <BookOpenIcon className="mr-2 h-3 w-3" />
                         View Details
                       </DropdownMenuItem>

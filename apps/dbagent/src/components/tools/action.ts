@@ -74,7 +74,11 @@ export async function actionGetBuiltInTools(connectionId: string): Promise<Tool[
   }
 }
 
-export async function actionGetCustomTools(connectionId: string): Promise<Tool[]> {
+export async function actionGetCustomTools(
+  connectionId: string,
+  serverFileName?: string,
+  skipDbCheck: boolean = false
+): Promise<Tool[]> {
   try {
     const userId = await requireUserSession();
     const dbAccess = await getUserSessionDBAccess();
@@ -84,7 +88,7 @@ export async function actionGetCustomTools(connectionId: string): Promise<Tool[]
     }
 
     // Get MCP tools
-    const mcpTools = await userMCPToolset.getTools(userId);
+    const mcpTools = await userMCPToolset.getTools(userId, serverFileName, skipDbCheck);
 
     // Convert to array format
     return Object.entries(mcpTools).map(([name, tool]) => ({

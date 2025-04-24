@@ -1,6 +1,17 @@
 'use client';
 
-import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@internal/components';
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger
+} from '@internal/components';
 import { ArrowLeft, PlayCircle, Trash2Icon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -8,7 +19,7 @@ import { useEffect, useState } from 'react';
 import { actionGetConnections, actionGetCustomTools } from '~/components/tools/action';
 import { Connection } from '~/lib/db/schema';
 import { UserMcpServer } from '~/lib/tools/user-mcp-servers';
-import { actionDeleteUserMcpServerFromDBAndFiles } from './action';
+import { actionCheckUserMcpServerExists, actionDeleteUserMcpServerFromDBAndFiles } from './action';
 
 interface Tool {
   name: string;
@@ -19,49 +30,40 @@ interface Tool {
 export function McpView({ server }: { server: UserMcpServer }) {
   const { project } = useParams<{ project: string }>();
   const router = useRouter();
-  const [connections, setConnections] = useState<Connection[]>([]);
   const [tools, setTools] = useState<Tool[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isInDb, setIsInDb] = useState<boolean>(false);
+  const [isCheckingDb, setIsCheckingDb] = useState(true);
 
   useEffect(() => {
-    const loadConnections = async () => {
+    const loadData = async () => {
+      setIsLoading(true);
       try {
-        const data = await actionGetConnections(project);
-        setConnections(data);
+        const [connectionsData, serverExists] = await Promise.all([
+          actionGetConnections(project),
+          actionCheckUserMcpServerExists(server.fileName)
+        ]);
+
+        setIsInDb(serverExists);
+
+        const defaultConnection = connectionsData.find((c: Connection) => c.isDefault);
+        if (defaultConnection) {
+          const tools = await actionGetCustomTools(defaultConnection.id, server.fileName, !server.enabled);
+          setTools(tools);
+        }
+        setError(null);
       } catch (error) {
-        console.error('Error loading connections:', error);
+        console.error('Error loading data:', error);
+        setError('Failed to load data. Please try again later.');
+      } finally {
+        setIsLoading(false);
+        setIsCheckingDb(false);
       }
     };
-    void loadConnections();
-  }, [project]);
-
-  const loadTools = async () => {
-    setIsLoading(true);
-    try {
-      const defaultConnection = connections.find((c: Connection) => c.isDefault);
-      if (!defaultConnection) {
-        throw new Error('No default connection found');
-      }
-
-      const tools = await actionGetCustomTools(defaultConnection.id);
-      setTools(tools);
-      setError(null);
-    } catch (error) {
-      console.error('Error loading tools:', error);
-      setTools([]);
-      setError('Failed to load tools. Please try again later.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (connections.length > 0) {
-      void loadTools();
-    }
-  }, [connections]);
+    void loadData();
+  }, [project, server.fileName, server.enabled]);
 
   const handleDeleteServer = async () => {
     try {
@@ -98,7 +100,17 @@ export function McpView({ server }: { server: UserMcpServer }) {
             </div>
             <div>
               <h3 className="font-semibold">Status</h3>
-              <p className="text-muted-foreground">{server.enabled ? 'Enabled' : 'Disabled'}</p>
+              <p className="text-muted-foreground">
+                {isCheckingDb ? (
+                  <span className="text-muted-foreground">Checking status...</span>
+                ) : !isInDb ? (
+                  <span className="text-yellow-600">Not added to database</span>
+                ) : server.enabled ? (
+                  'Enabled'
+                ) : (
+                  'Disabled'
+                )}
+              </p>
             </div>
             <div>
               <h3 className="font-semibold">Available Tools</h3>
@@ -106,8 +118,6 @@ export function McpView({ server }: { server: UserMcpServer }) {
                 <p className="text-muted-foreground">Loading tools...</p>
               ) : error ? (
                 <p className="text-destructive">{error}</p>
-              ) : !server.enabled ? (
-                <p className="text-muted-foreground">Enable the server to view available tools</p>
               ) : tools.length === 0 ? (
                 <p className="text-muted-foreground">No tools available</p>
               ) : (
@@ -119,12 +129,28 @@ export function McpView({ server }: { server: UserMcpServer }) {
                           <h4 className="font-medium">{tool.name}</h4>
                           <p className="text-muted-foreground text-sm">{tool.description}</p>
                         </div>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={`/projects/${project}/chats/new?tool=${tool.name}`}>
-                            <PlayCircle className="mr-2 h-4 w-4" />
-                            Run
-                          </Link>
-                        </Button>
+                        {server.enabled ? (
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/projects/${project}/chats/new?tool=${tool.name}`}>
+                              <PlayCircle className="mr-2 h-4 w-4" />
+                              Run
+                            </Link>
+                          </Button>
+                        ) : (
+                          <div className="inline-block">
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <Button variant="outline" size="sm" disabled>
+                                  <div className="flex items-center">
+                                    <PlayCircle className="mr-2 h-4 w-4" />
+                                    Run
+                                  </div>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Enable the server to run this tool</TooltipContent>
+                            </Tooltip>
+                          </div>
+                        )}
                       </div>
                     </Card>
                   ))}
