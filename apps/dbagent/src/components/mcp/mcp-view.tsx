@@ -16,7 +16,7 @@ import { ArrowLeft, PlayCircle, Trash2Icon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { actionGetConnections, actionGetCustomTools } from '~/components/tools/action';
+import { actionGetConnections, actionGetCustomToolsFromMCPServer } from '~/components/tools/action';
 import { Connection } from '~/lib/db/schema';
 import { UserMcpServer } from '~/lib/tools/user-mcp-servers';
 import { actionCheckUserMcpServerExists, actionDeleteUserMcpServerFromDBAndFiles } from './action';
@@ -50,7 +50,7 @@ export function McpView({ server }: { server: UserMcpServer }) {
 
         const defaultConnection = connectionsData.find((c: Connection) => c.isDefault);
         if (defaultConnection) {
-          const tools = await actionGetCustomTools(defaultConnection.id, server.fileName);
+          const tools = await actionGetCustomToolsFromMCPServer(server.fileName);
           setTools(tools);
         }
         setError(null);
