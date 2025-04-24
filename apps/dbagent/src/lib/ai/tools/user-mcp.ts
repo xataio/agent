@@ -32,7 +32,6 @@ async function getToolsFromMCPServer(userId?: string, serverFileName?: string) {
     return mcpServersTools.reduce((acc, tools) => ({ ...acc, ...tools }), {});
   } catch (error) {
     console.error('Error in getToolsFromMCPServer:', error);
-    return {};
   }
 }
 
