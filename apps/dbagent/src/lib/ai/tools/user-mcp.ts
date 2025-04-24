@@ -10,13 +10,6 @@ async function getToolsFromMCPServer(userId?: string, serverFileName?: string) {
     const files = await fs.readdir(MCP_SOURCE_DIR);
     const mcpServerFiles = files.filter((file) => file.endsWith('.js'));
 
-    //only process a specific file if a serverFileName is provided
-    if (serverFileName) {
-      const filePath = path.join(MCP_SOURCE_DIR, `${serverFileName}.js`);
-      return await loadToolsFromFile(filePath);
-    }
-
-    //process all files in parallel otherwise
     const mcpServersTools = await Promise.all(
       mcpServerFiles.map(async (file) => {
         const filePath = path.join(MCP_SOURCE_DIR, file);
@@ -24,11 +17,15 @@ async function getToolsFromMCPServer(userId?: string, serverFileName?: string) {
 
         //check if the server is enabled in the db
         const getServerFromDb = await actionGetUserMcpServer(fileName, userId);
-        if (!getServerFromDb?.enabled) {
-          return {};
+        if (getServerFromDb?.enabled) {
+          return await loadToolsFromFile(filePath);
+        } else {
+          //gets servers from disk
+          if (serverFileName) {
+            const filePath = path.join(MCP_SOURCE_DIR, `${serverFileName}.js`);
+            return await loadToolsFromFile(filePath);
+          }
         }
-
-        return await loadToolsFromFile(filePath);
       })
     );
 

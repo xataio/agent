@@ -107,7 +107,7 @@ export function McpTable() {
 
   //used to disable the Add MCP Server button (SET THIS TO FALSE LATER BEFORE DEPLOYING)
   useEffect(() => {
-    setIsAddButtonDisabled(true);
+    setIsAddButtonDisabled(false);
   }, []);
 
   const SkeletonRow = () => (
@@ -129,15 +129,16 @@ export function McpTable() {
 
   //sort servers to show new ones first [this may not be needed later on]
   //(oldcode) const currentServers = mcpServers.slice(startIndex, endIndex);
-  const sortedServers = [...mcpServers].sort((a, b) => {
-    const aIsNew = !mcpServerInDb[a.fileName];
-    const bIsNew = !mcpServerInDb[b.fileName];
-    if (aIsNew && !bIsNew) return -1;
-    if (!aIsNew && bIsNew) return 1;
-    return 0;
-  });
+  const currentServers = mcpServers.slice(startIndex, endIndex);
+  // const sortedServers = [...mcpServers].sort((a, b) => {
+  //   const aIsNew = !mcpServerInDb[a.fileName];
+  //   const bIsNew = !mcpServerInDb[b.fileName];
+  //   if (aIsNew && !bIsNew) return -1;
+  //   if (!aIsNew && bIsNew) return 1;
+  //   return 0;
+  // });
 
-  const currentServers = sortedServers.slice(startIndex, endIndex);
+  // const currentServers = sortedServers.slice(startIndex, endIndex);
 
   return (
     <div>

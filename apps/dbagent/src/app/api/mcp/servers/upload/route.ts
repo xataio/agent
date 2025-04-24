@@ -24,7 +24,9 @@ export async function POST(request: Request) {
     try {
       await fs.access(mcpSourceDir);
     } catch {
-      await fs.mkdir(mcpSourceDir, { recursive: true });
+      throw new Error(
+        'MCP source directory does not exist. Please ensure the mcp-source directory is present in the project root.'
+      );
     }
 
     // Read the file content
