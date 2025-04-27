@@ -75,6 +75,42 @@ export function reportFallbackModel<TModel extends Model>(modelId: string, fallb
   } as ModelWithFallback;
 }
 
+export function combineRegistries(registries: (ProviderRegistry | null)[]): ProviderRegistry {
+  const nonNullRegistries = registries.filter((registry): registry is ProviderRegistry => registry !== null);
+  if (nonNullRegistries.length === 0) {
+    throw new Error('No registries found');
+  }
+  if (nonNullRegistries.length == 1) {
+    return nonNullRegistries[0]!;
+  }
+
+  return {
+    listLanguageModels: () => nonNullRegistries.flatMap((registry) => registry.listLanguageModels()),
+    defaultLanguageModel: () => {
+      for (const registry of nonNullRegistries) {
+        try {
+          return registry.defaultLanguageModel();
+        } catch (error) {
+          // Continue to next registry if default model not found
+          continue;
+        }
+      }
+      throw new Error('No default language model configured');
+    },
+    languageModel: (modelId: string, useFallback?: boolean) => {
+      for (const registry of nonNullRegistries) {
+        try {
+          return registry.languageModel(modelId, useFallback);
+        } catch (error) {
+          // Continue to next registry if model not found
+          continue;
+        }
+      }
+      throw new Error(`Model ${modelId} not found`);
+    }
+  };
+}
+
 export function cached<T>(ttlMs: number, fn: () => Promise<T>): () => Promise<T> {
   let value: T | null = null;
   let lastUpdate: number | null = null;
@@ -89,5 +125,14 @@ export function cached<T>(ttlMs: number, fn: () => Promise<T>): () => Promise<T>
     value = result;
     lastUpdate = now;
     return result;
+  };
+}
+
+export function memoize<T>(fn: () => Promise<T>): () => Promise<T> {
+  let value: T | null = null;
+  return async () => {
+    if (value) return value;
+    value = await fn();
+    return value;
   };
 }

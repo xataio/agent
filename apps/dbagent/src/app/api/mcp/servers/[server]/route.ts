@@ -4,9 +4,9 @@ import path from 'path';
 
 const MCP_SOURCE_DIR = path.join(process.cwd(), 'mcp-source');
 
-export async function GET(request: Request, { params }: { params: { server: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ server: string }> }) {
   try {
-    const { server } = params;
+    const { server } = await params;
     const filePath = path.join(MCP_SOURCE_DIR, `${server}.ts`);
 
     // Check if file exists
