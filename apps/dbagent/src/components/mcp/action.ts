@@ -46,14 +46,13 @@ export async function actionGetUserMcpServer(serverName: string, asUserId?: stri
 export async function actionDeleteUserMcpServerFromDBAndFiles(serverName: string, asUserId?: string): Promise<void> {
   const dbAccess = await getUserDBAccess(asUserId);
 
+  console.log('server', serverName);
+
   // Get the server details before deleting from DB
   const server = await dbGetUserMcpServer(dbAccess, serverName);
-  if (!server) {
-    throw new Error(`Server with name "${serverName}" not found`);
+  if (server) {
+    await dbDeleteUserMcpServer(dbAccess, serverName);
   }
-
-  // Delete from DB first
-  await dbDeleteUserMcpServer(dbAccess, serverName);
 
   // Delete the files
   const mcpSourceDir = getMCPSourceDir();
@@ -61,11 +60,11 @@ export async function actionDeleteUserMcpServerFromDBAndFiles(serverName: string
 
   try {
     // Delete .ts file
-    const tsFilePath = path.join(mcpSourceDir, `${server.filePath}`);
+    const tsFilePath = path.join(mcpSourceDir, `${serverName}.ts`);
     await fs.unlink(tsFilePath);
 
     // Delete .js file if it exists
-    const jsFilePath = path.join(mcpSourceDistDir, `${server.filePath.replace('.ts', '.js')}`);
+    const jsFilePath = path.join(mcpSourceDistDir, `${serverName}.js`);
     try {
       await fs.unlink(jsFilePath);
     } catch (error) {
