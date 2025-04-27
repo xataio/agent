@@ -1,13 +1,14 @@
 import { promises as fs } from 'fs';
 import { NextResponse } from 'next/server';
 import path from 'path';
+import { getMCPSourceDir } from '~/lib/ai/tools/user-mcp';
 
-const MCP_SOURCE_DIR = path.join(process.cwd(), 'mcp-source');
+const mcpSourceDir = getMCPSourceDir();
 
 export async function GET(request: Request, { params }: { params: Promise<{ server: string }> }) {
   try {
     const { server } = await params;
-    const filePath = path.join(MCP_SOURCE_DIR, `${server}.ts`);
+    const filePath = path.join(mcpSourceDir, `${server}.ts`);
 
     // Check if file exists
     try {

@@ -2,6 +2,7 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
+import { getMCPSourceDir, getMCPSourceDistDir } from '~/lib/ai/tools/user-mcp';
 import { getUserDBAccess } from '~/lib/db/db';
 import {
   dbAddUserMcpServerToDB,
@@ -55,16 +56,16 @@ export async function actionDeleteUserMcpServerFromDBAndFiles(serverName: string
   await dbDeleteUserMcpServer(dbAccess, serverName);
 
   // Delete the files
-  const MCP_SOURCE_DIR = path.join(process.cwd(), 'mcp-source');
-  const MCP_SOURCE_DIST_DIR = path.join(process.cwd(), 'mcp-source', 'dist');
+  const mcpSourceDir = getMCPSourceDir();
+  const mcpSourceDistDir = getMCPSourceDistDir();
 
   try {
     // Delete .ts file
-    const tsFilePath = path.join(MCP_SOURCE_DIR, `${server.filePath}`);
+    const tsFilePath = path.join(mcpSourceDir, `${server.filePath}`);
     await fs.unlink(tsFilePath);
 
     // Delete .js file if it exists
-    const jsFilePath = path.join(MCP_SOURCE_DIST_DIR, `${server.filePath.replace('.ts', '.js')}`);
+    const jsFilePath = path.join(mcpSourceDistDir, `${server.filePath.replace('.ts', '.js')}`);
     try {
       await fs.unlink(jsFilePath);
     } catch (error) {

@@ -3,18 +3,29 @@ import { Experimental_StdioMCPTransport } from 'ai/mcp-stdio';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { actionGetUserMcpServer } from '~/components/mcp/action';
+import { env } from '~/lib/env/server';
+
+export function getMCPSourceDistDir() {
+  const baseDir = env.MCP_SOURCE_DIR || 'mcp-source';
+  return path.join(process.cwd(), baseDir, 'dist');
+}
+
+export function getMCPSourceDir() {
+  const baseDir = env.MCP_SOURCE_DIR || 'mcp-source';
+  return path.join(process.cwd(), baseDir);
+}
 
 async function getToolsFromAllEnabledMCPServers(userId?: string) {
   //gets all the enabled mcp servers tools by checking the enabled status from the db
   try {
-    const MCP_SOURCE_DIR = path.join(process.cwd(), 'mcp-source', 'dist');
-    const files = await fs.readdir(MCP_SOURCE_DIR);
+    const mcpSourceDistDir = getMCPSourceDistDir();
+    const files = await fs.readdir(mcpSourceDistDir);
     const mcpServerFiles = files.filter((file) => file.endsWith('.js'));
 
     //gets mcp server file and looks at the enabled status of the server
     const mcpServersTools = await Promise.all(
       mcpServerFiles.map(async (file) => {
-        const filePath = path.join(MCP_SOURCE_DIR, file);
+        const filePath = path.join(mcpSourceDistDir, file);
         const fileName = path.basename(file, '.js');
 
         //check if the server is enabled in the db
@@ -37,12 +48,12 @@ async function getToolsFromAllEnabledMCPServers(userId?: string) {
 
 async function getToolsFromMCPServer(serverFileName?: string) {
   try {
-    const MCP_SOURCE_DIR = path.join(process.cwd(), 'mcp-source', 'dist');
+    const mcpSourceDistDir = getMCPSourceDistDir();
     //only gets tools for a certain mcp server if a serverFileName is provided
     //used in mcp-view when getting mcp tools for non-enabled servers that are not in the db
     //later when in mcp-view the tools are allowed to be ran only if the mcp server is enabled
     if (serverFileName) {
-      const filePath = path.join(MCP_SOURCE_DIR, `${serverFileName}.js`);
+      const filePath = path.join(mcpSourceDistDir, `${serverFileName}.js`);
       return await loadToolsFromFile(filePath);
     }
     return {};

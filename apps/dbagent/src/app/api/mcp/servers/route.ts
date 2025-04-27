@@ -1,17 +1,18 @@
 import { promises as fs } from 'fs';
 import { NextResponse } from 'next/server';
 import path from 'path';
+import { getMCPSourceDir } from '~/lib/ai/tools/user-mcp';
 
-const MCP_SOURCE_DIR = path.join(process.cwd(), 'mcp-source');
+const mcpSourceDir = getMCPSourceDir();
 
 export async function GET() {
   try {
-    const files = await fs.readdir(MCP_SOURCE_DIR);
+    const files = await fs.readdir(mcpSourceDir);
     const serverFiles = files.filter((file) => file.endsWith('.ts') && !file.endsWith('.d.ts'));
 
     const servers = await Promise.all(
       serverFiles.map(async (file) => {
-        const filePath = path.join(MCP_SOURCE_DIR, file);
+        const filePath = path.join(mcpSourceDir, file);
         const content = await fs.readFile(filePath, 'utf-8');
 
         // Extract server name and version from the file content

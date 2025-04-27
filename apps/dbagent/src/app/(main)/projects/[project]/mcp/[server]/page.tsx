@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import path from 'path';
 import { actionGetUserMcpServer } from '~/components/mcp/action';
 import { McpView } from '~/components/mcp/mcp-view';
+import { getMCPSourceDir } from '~/lib/ai/tools/user-mcp';
 import { UserMcpServer } from '~/lib/tools/user-mcp-servers';
 
 type PageParams = {
@@ -12,10 +13,10 @@ type PageParams = {
 
 export default async function McpServerPage({ params }: { params: Promise<PageParams> }) {
   const { server: serverId } = await params;
-  const MCP_SOURCE_DIR = path.join(process.cwd(), 'mcp-source');
+  const mcpSourceDir = getMCPSourceDir();
 
   // Check if server file exists locally
-  const filePath = path.join(MCP_SOURCE_DIR, `${serverId}.ts`);
+  const filePath = path.join(mcpSourceDir, `${serverId}.ts`);
   let server: UserMcpServer | null = null;
 
   try {
