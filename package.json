@@ -22,18 +22,18 @@
   "devDependencies": {
     "@eslint/compat": "^1.2.8",
     "@internal/tsconfig": "workspace:*",
-    "@types/node": "^22.14.1",
+    "@types/node": "^22.15.2",
     "@types/react": "^19.1.2",
-    "eslint": "^9.25.0",
+    "eslint": "^9.25.1",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.1",
     "prettier": "^3.5.3",
     "prettier-plugin-organize-imports": "^4.1.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tsx": "^4.19.3",
-    "turbo": "^2.5.0",
+    "turbo": "^2.5.2",
     "typescript": "^5.8.3",
-    "vitest": "^3.1.1"
+    "vitest": "^3.1.2"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
