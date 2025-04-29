@@ -7,6 +7,7 @@ import { DBAccess } from './db';
 import {
   artifactDocuments,
   artifactSuggestions,
+  Chat,
   ChatInsert,
   chats,
   Message,
@@ -16,7 +17,11 @@ import {
   type ArtifactSuggestion
 } from './schema';
 
-export async function saveChat(dbAccess: DBAccess, chat: ChatInsert, chatMessages: Array<MessageInsert> = []) {
+export async function saveChat(
+  dbAccess: DBAccess,
+  chat: ChatInsert & Partial<Chat>,
+  chatMessages: Array<MessageInsert> = []
+) {
   return dbAccess.query(async ({ db }) => {
     return await db.transaction(async (tx) => {
       const result = await tx

@@ -22,6 +22,7 @@ import { RDSClusterDetailedInfo } from '../aws/rds';
 import { CloudSQLInstanceInfo } from '../gcp/cloudsql';
 
 export const authenticatedUser = pgRole('authenticated_user', { inherit: true });
+export const anonymousUser = pgRole('anonymous_user', { inherit: true });
 
 type InferEnumType<T extends PgEnum<any>> = T extends PgEnum<infer U> ? U[number] : never;
 
@@ -36,6 +37,9 @@ export type MemberRole = InferEnumType<typeof memberRole>;
 
 export const cloudProvider = pgEnum('cloud_provider', ['aws', 'gcp', 'other']);
 export type CloudProvider = InferEnumType<typeof cloudProvider>;
+
+export const visibility = pgEnum('visibility', ['public', 'private']);
+export type Visibility = InferEnumType<typeof visibility>;
 
 export const awsClusters = pgTable(
   'aws_clusters',
@@ -456,7 +460,8 @@ export const chats = pgTable(
     createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
     title: text('title').notNull(),
     model: text('model').notNull(),
-    userId: text('user_id').notNull()
+    userId: text('user_id').notNull(),
+    visibility: visibility('visibility').default('private').notNull()
   },
   (table) => [
     foreignKey({
@@ -473,6 +478,11 @@ export const chats = pgTable(
         SELECT 1 FROM project_members
         WHERE project_id = chats.project_id AND user_id = current_setting('app.current_user', true)::TEXT
       )`
+    }),
+    pgPolicy('chats_anonymous_policy', {
+      to: anonymousUser,
+      for: 'select',
+      using: sql`visibility = 'public'`
     })
   ]
 );

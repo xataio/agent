@@ -3,7 +3,7 @@
 import { useChat } from '@ai-sdk/react';
 import { toast } from '@internal/components';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { UIMessage } from 'ai';
+import type { ChatRequestOptions, Message, UIMessage } from 'ai';
 import { memo, useEffect, useRef, useState } from 'react';
 import { Connection, MessageVote } from '~/lib/db/schema';
 import { Artifact } from './artifacts/artifact';
@@ -88,6 +88,8 @@ function PureChat({
       <div className="relative flex flex-col" style={{ height: heightScreen }}>
         <div className="sticky top-0">
           <ChatHeader
+            projectId={projectId}
+            chatId={id}
             connections={connections}
             model={model}
             setModel={setModel}
@@ -153,3 +155,26 @@ export const Chat = memo(PureChat, (prevProps, nextProps) => {
     prevProps.initialInput === nextProps.initialInput
   );
 });
+
+export function ReadOnlyChat({ messages }: { messages: Array<UIMessage> }) {
+  return (
+    <div className="flex flex-col">
+      <div className="flex-1 space-y-2 overflow-y-auto px-4 pt-6">
+        <Messages
+          messages={messages}
+          projectId={''}
+          chatId={''}
+          status={'submitted'}
+          votes={undefined}
+          setMessages={function (messages: Message[] | ((messages: Message[]) => Message[])): void {
+            throw new Error('Function not implemented.');
+          }}
+          reload={function (chatRequestOptions?: ChatRequestOptions): Promise<string | null | undefined> {
+            throw new Error('Function not implemented.');
+          }}
+          isArtifactVisible={false}
+        />
+      </div>
+    </div>
+  );
+}

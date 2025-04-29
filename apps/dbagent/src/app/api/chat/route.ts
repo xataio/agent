@@ -182,9 +182,11 @@ export async function PATCH(request: Request) {
     return new Response('Not Found', { status: 404 });
   }
 
-  const { title } = await request.json();
-  if (!title) {
-    return new Response('Title is required', { status: 400 });
+  const data = await request.json();
+  const { title, visibility } = data;
+
+  if (!title && !visibility) {
+    return new Response('Either title or visibility is required', { status: 400 });
   }
 
   const dbAccess = await getUserSessionDBAccess();
@@ -193,7 +195,7 @@ export async function PATCH(request: Request) {
     const chat = await getChatById(dbAccess, { id });
     if (!chat) notFound();
 
-    await saveChat(dbAccess, { ...chat, title });
+    await saveChat(dbAccess, { ...chat, title, visibility });
 
     return new Response('Chat updated', { status: 200 });
   } catch (error) {
