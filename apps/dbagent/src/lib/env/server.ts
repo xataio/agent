@@ -7,6 +7,19 @@ const schema = z.object({
   // The URL of the database that we use to store data
   DATABASE_URL: z.string(),
 
+  // monitoring
+  LANGFUSE_HOST: z.string().optional(),
+  LANGFUSE_PUBLIC_KEY: z.string().optional(),
+  LANGFUSE_SECRET_KEY: z.string().optional(),
+  LANGFUSE_DEBUG: z.string(z.enum(['true', 'false'])).default('false'),
+
+  OTEL_EXPORTER_OTLP_ENDPOINT: z.string().optional(),
+  OTEL_EXPORTER_OTLP_PROTOCOL: z.enum(['http/json', 'http/protobuf']).optional(),
+  OTEL_EXPORTER_OTLP_HEADERS: z.record(z.string(), z.string()).optional(),
+  OTEL_EXPORTER_OTLP_KEY: z.string().optional(),
+  OTEL_DEBUG: z.string(z.enum(['true', 'false'])).default('false'),
+  OTEL_SERVICE_NAME: z.string().default('xata-agent'),
+
   // The OpenID client settings
   AUTH_SECRET: z.string().optional(),
   AUTH_OPENID_ID: z.string().optional(),
