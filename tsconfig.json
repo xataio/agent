@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "@internal/tsconfig/base.json",
-  "include": ["**/*.ts", "apps/dbagent/src/components/chat/artifacts/code/client.tsx"],
+  "include": ["**/*.ts"],
   "exclude": ["node_modules"]
 }
