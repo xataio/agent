@@ -2,6 +2,7 @@
   "name": "db-agent",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbo --port ${PORT-4001}",
     "build": "next build",
