@@ -1,0 +1,30 @@
+.Resizer {
+  height: 4px;
+  cursor: grab;
+  transition: 0.3s transform ease;
+  flex-shrink: 0;
+  width: 4px;
+  background-color: var(--muted);
+}
+
+.Resizer:hover {
+  background-color: var(--subtle);
+}
+
+@media (min-width: 768px) {
+  .Resizer {
+    background-image: linear-gradient(to bottom, var(--subtle));
+    width: 2px;
+    height: 100%;
+  }
+
+  .Resizer:hover,
+  .Resizer:active {
+    transform: scaleY(2);
+  }
+}
+
+.Resizer:active {
+  cursor: grabbing;
+  background-color: var(--muted);
+}

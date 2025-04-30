@@ -570,7 +570,7 @@ export const artifactDocuments = pgTable(
     createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
     title: text('title').notNull(),
     content: text('content'),
-    kind: varchar('kind', { enum: ['text', 'sheet'] })
+    kind: varchar('kind', { enum: ['text', 'sheet', 'code'] })
       .notNull()
       .default('text'),
     userId: text('user_id').notNull()
