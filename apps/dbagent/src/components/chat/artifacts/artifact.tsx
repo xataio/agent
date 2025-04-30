@@ -13,13 +13,14 @@ import { fetcher } from '../utils';
 import { ArtifactActions } from './artifact-actions';
 import { ArtifactCloseButton } from './artifact-close-button';
 import { ArtifactMessages } from './artifact-messages';
+import { codeArtifact } from './code/client';
 import { sheetArtifact } from './sheet/client';
 import { textArtifact } from './text/client';
 import { Toolbar } from './toolbar';
 import { useArtifact } from './use-artifact';
 import { VersionFooter } from './version-footer';
 
-export const artifactDefinitions = [textArtifact, sheetArtifact];
+export const artifactDefinitions = [textArtifact, sheetArtifact, codeArtifact];
 export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
 
 export interface UIArtifact {
