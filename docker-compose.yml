@@ -7,7 +7,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-dbagent}
     volumes:
       - agent_postgres_data:/var/lib/postgresql/data
-      - ./apps/dbagent/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - db_network
 

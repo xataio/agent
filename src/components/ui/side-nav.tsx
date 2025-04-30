@@ -264,7 +264,7 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
                         <span>{chat.title}</span>
                       </Link>
                     </SidebarMenuButton>
-                    <div className="invisible absolute right-2 top-1/2 -translate-y-1/2 group-hover/item:visible">
+                    <div className="invisible absolute top-1/2 right-2 -translate-y-1/2 group-hover/item:visible">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-7 w-7">

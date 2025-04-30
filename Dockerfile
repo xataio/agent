@@ -11,22 +11,8 @@ WORKDIR /app
 FROM base AS deps
 WORKDIR /app
 
-# Copy workspace configuration first
-COPY pnpm-workspace.yaml ./
-COPY package.json ./
-
-# Copy all package.json files from the monorepo
-# This ensures all workspace packages are correctly identified
-COPY apps/dbagent/package.json ./apps/dbagent/
-COPY packages/components/package.json ./packages/components/
-COPY packages/theme/package.json ./packages/theme/
-COPY configs/eslint-config/package.json ./configs/eslint-config/
-COPY configs/tsconfig/package.json ./configs/tsconfig/
-
-# Now copy the source code of all workspace packages
-COPY packages/ ./packages/
-COPY configs/ ./configs/
-COPY apps/dbagent/ ./apps/dbagent/
+# Copy all files to the working directory
+COPY . .
 
 # Install dependencies
 RUN pnpm install
@@ -39,10 +25,10 @@ WORKDIR /app
 COPY --from=deps /app ./
 
 # Create a public directory if it doesn't exist
-RUN mkdir -p /app/apps/dbagent/public
+RUN mkdir -p /app/public
 
 # Build the Next.js application
-WORKDIR /app/apps/dbagent
+WORKDIR /app
 RUN pnpm build
 
 # Production image, copy all the files and run next
@@ -70,7 +56,7 @@ USER nextjs
 EXPOSE 8080
 
 # Set the working directory to the app
-WORKDIR /app/apps/dbagent
+WORKDIR /app
 
 # Configure NODE_PATH to help with module resolution 
 ENV NODE_PATH=/app/node_modules

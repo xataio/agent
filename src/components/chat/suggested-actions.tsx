@@ -40,7 +40,7 @@ function PureSuggestedActions({ suggestedActions = [], append }: SuggestedAction
             }}
             className="h-auto w-full flex-1 items-start justify-start gap-1 rounded-xl border px-4 py-3.5 text-left text-sm sm:flex-col"
           >
-            <p className="text-wrap font-medium">{suggestedAction.title}</p>
+            <p className="font-medium text-wrap">{suggestedAction.title}</p>
           </Button>
         </motion.div>
       ))}
