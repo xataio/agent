@@ -234,8 +234,8 @@ export function ScheduleForm({ projectId, isEditMode, scheduleId, playbooks, con
                   <FormLabel>Schedule Type</FormLabel>
                   <FormControl>
                     <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col space-y-1">
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormItem className="flex items-center space-x-3 space-y-0">
+                      <FormItem className="flex items-center space-y-0 space-x-3">
+                        <FormItem className="flex items-center space-y-0 space-x-3">
                           <FormControl>
                             <RadioGroupItem value="cron" />
                           </FormControl>

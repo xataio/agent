@@ -108,7 +108,7 @@ function PureChat({
           />
         </div>
 
-        <form className="bg-background mx-auto flex w-full gap-2 px-4 pb-4 pt-2 md:max-w-3xl md:pb-6">
+        <form className="bg-background mx-auto flex w-full gap-2 px-4 pt-2 pb-4 md:max-w-3xl md:pb-6">
           <MultimodalInput
             suggestedActions={suggestedActions}
             chatId={id}
