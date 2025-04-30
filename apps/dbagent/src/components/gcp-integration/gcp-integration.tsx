@@ -96,13 +96,13 @@ export function GCPIntegration({ projectId, connections }: { projectId: string; 
   };
 
   const handleInstanceSelect = async (instanceId: string) => {
-    const instance = cloudSQLInstances.find((instance) => instance.id === instanceId);
+    const instance = cloudSQLInstances.find((instance) => instance.name === instanceId);
     if (!instance) {
       toast('Error: Selected instance not found');
       return;
     }
     console.log('Selected instance', instance);
-    setSelectedInstance(instance.id);
+    setSelectedInstance(instance.name);
     setInstanceDetails(instance);
   };
 
@@ -248,7 +248,7 @@ export function GCPIntegration({ projectId, connections }: { projectId: string; 
               </SelectTrigger>
               <SelectContent>
                 {cloudSQLInstances.map((instance) => (
-                  <SelectItem key={instance.id} value={instance.id}>
+                  <SelectItem key={instance.name} value={instance.name}>
                     {instance.name}
                   </SelectItem>
                 ))}

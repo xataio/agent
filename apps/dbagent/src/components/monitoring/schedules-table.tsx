@@ -63,6 +63,9 @@ export function MonitoringScheduleTable({ connections }: { connections: Connecti
         <div className="bg-muted h-4 w-24 animate-pulse rounded" />
       </TableCell>
       <TableCell>
+        <div className="bg-muted h-4 w-24 animate-pulse rounded" />
+      </TableCell>
+      <TableCell>
         <div className="bg-muted h-4 w-32 animate-pulse rounded" />
       </TableCell>
       <TableCell>
@@ -102,6 +105,7 @@ export function MonitoringScheduleTable({ connections }: { connections: Connecti
         <TableHeader>
           <TableRow>
             <TableHead className="w-[150px]">Database</TableHead>
+            <TableHead className="w-[150px]">Model</TableHead>
             <TableHead className="w-[150px]">Playbook</TableHead>
             <TableHead className="w-[150px]">Schedule</TableHead>
             <TableHead className="w-[150px]">Status</TableHead>
@@ -122,13 +126,13 @@ export function MonitoringScheduleTable({ connections }: { connections: Connecti
           ) : schedules.length === 0 ? (
             <>
               <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground py-8 text-center">
+                <TableCell colSpan={10} className="text-muted-foreground py-8 text-center">
                   Monitoring schedules make the agent execute a playbook periodically in order to proactively identify
                   issues.
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell colSpan={6} className="text-center">
+                <TableCell colSpan={10} className="text-center">
                   <Link href={`/projects/${project}/monitoring/schedule/add`}>
                     <Button>Add Schedule</Button>
                   </Link>
@@ -139,6 +143,7 @@ export function MonitoringScheduleTable({ connections }: { connections: Connecti
             schedules.map((schedule) => (
               <TableRow key={schedule.id}>
                 <TableCell>{connections.find((c) => c.id === schedule.connectionId)?.name}</TableCell>
+                <TableCell>{schedule.model.includes(':') ? schedule.model.split(':')[1] : schedule.model}</TableCell>
                 <TableCell>{schedule.playbook}</TableCell>
                 <TableCell className="font-medium">
                   {schedule.scheduleType === 'cron' ? schedule.cronExpression : 'Automatic'}

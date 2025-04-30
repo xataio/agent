@@ -21,8 +21,9 @@
   "license": "ISC",
   "devDependencies": {
     "@eslint/compat": "^1.2.8",
-    "@types/node": "^22.14.1",
+    "@types/node": "^22.15.2",
     "@types/react": "^19.1.2",
+    "@xata.io/tsconfig": "^0.0.1",
     "eslint": "^9.25.1",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.1",
@@ -30,7 +31,7 @@
     "prettier-plugin-organize-imports": "^4.1.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tsx": "^4.19.3",
-    "turbo": "^2.5.0",
+    "turbo": "^2.5.2",
     "typescript": "^5.8.3",
     "vitest": "^3.1.2"
   },
@@ -57,8 +58,5 @@
     "node": "22.x",
     "pnpm": "10.x"
   },
-  "packageManager": "pnpm@10.5.2",
-  "dependencies": {
-    "@xata.io/tsconfig": "^0.0.1"
-  }
+  "packageManager": "pnpm@10.5.2"
 }

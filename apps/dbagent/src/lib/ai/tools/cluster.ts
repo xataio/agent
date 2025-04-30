@@ -88,10 +88,11 @@ export class AWSDBClusterTools implements ToolsetGroup {
     const getter = this.#getter;
     const db = this.#dbAccess;
     return tool({
-      description: `Get the recent logs from the RDS instance. You can specify the period in seconds and optionally grep for a substring.`,
+      description: `Get the recent logs from the RDS instance. You can specify the period in seconds and optionally grep for a substring. 
+      If you don't want to grep for a substring, you can pass an empty string.`,
       parameters: z.object({
         periodInSeconds: z.number(),
-        grep: z.string().optional()
+        grep: z.string()
       }),
       execute: async ({ periodInSeconds, grep }) => {
         console.log('getInstanceLogs', periodInSeconds, grep);
@@ -106,11 +107,11 @@ export class AWSDBClusterTools implements ToolsetGroup {
     const db = this.#dbAccess;
     return tool({
       description: `Get the metrics for the RDS instance. If this is a cluster, the metric is read from the current writer instance.
-      You can specify the period in seconds. The stat parameter is one of the following: Average, Maximum, Minimum, Sum. It defaults to Average.`,
+      You can specify the period in seconds. The stat parameter is one of the following: Average, Maximum, Minimum, Sum.`,
       parameters: z.object({
         metricName: z.string(),
         periodInSeconds: z.number(),
-        stat: z.enum(['Average', 'Maximum', 'Minimum', 'Sum']).optional()
+        stat: z.enum(['Average', 'Maximum', 'Minimum', 'Sum'])
       }),
       execute: async ({ metricName, periodInSeconds, stat }) => {
         console.log('getClusterMetric', metricName, periodInSeconds);
