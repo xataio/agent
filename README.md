@@ -2,7 +2,7 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="brand-kit/banner/xata-agent-banner-github-dark-mode@2x.png">
     <source media="(prefers-color-scheme: light)" srcset="brand-kit/banner/xata-agent-banner-github-light-mode@2x.png">
-    <img alt="Fallback image description" src="brand-kit/banner/xata-agent-banner-github@2x.png  alt="xata agent logo"">
+    <img alt="Xata logo" src="brand-kit/banner/xata-agent-banner-github@2x.png">
   </picture>
 </div>
 
