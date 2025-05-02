@@ -45,12 +45,12 @@ Step 1:
 Check CPU Utilization:
 
 Retrieve and analyze the CPU utilization metrics.
-Ensure CPU usage is within acceptable limits (e.g., below 60%).
+Ensure CPU usage is within acceptable limits.
 
 Step 2:
 Review Other Key Metrics:
 
-Freeable Memory: Ensure sufficient memory is available (e.g., above 20 GB).
+Freeable Memory: Ensure sufficient memory is available.
 Database Connections: Monitor for spikes; ensure connections are within expected limits.
 Read/Write IOPS: Check for any unusual spikes or bottlenecks.
 Disk Queue Depth: Ensure it remains at 0 to avoid I/O bottlenecks.
