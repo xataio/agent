@@ -1,6 +1,8 @@
-<div align="center">
-  <img src="brand-kit/banner/xata-agent-banner-github@2x.png" alt="xata agent logo" />
-</div>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="xata-agent-banner-github-dark-mode@2x.png">
+  <source media="(prefers-color-scheme: light)" srcset="xata-agent-banner-github-light-mode@2x.png">
+  <img alt="Fallback image description" src="xata-agent-banner-github@2x.png  alt="xata agent logo"">
+</picture>
 
 <p align="center">
   <a href="https://github.com/xataio/agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-green" alt="License - Apache 2.0"></a>&nbsp;
