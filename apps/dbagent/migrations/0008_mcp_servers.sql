@@ -5,6 +5,7 @@ CREATE TABLE "mcp_servers" (
 	"file_path" text NOT NULL,
 	"version" text NOT NULL,
 	"enabled" boolean DEFAULT true NOT NULL,
+	"env_vars" jsonb DEFAULT '{}' :: jsonb NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "uq_mcp_servers_name" UNIQUE("name"),
 	CONSTRAINT "uq_mcp_servers_server_name" UNIQUE("server_name")

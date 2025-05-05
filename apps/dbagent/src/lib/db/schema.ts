@@ -683,6 +683,7 @@ export const mcpServers = pgTable(
     filePath: text('file_path').notNull(),
     version: text('version').notNull(),
     enabled: boolean('enabled').default(true).notNull(),
+    envVars: jsonb('env_vars').$type<Record<string, string>>().default({}).notNull(),
     createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull()
   },
   (table) => [
