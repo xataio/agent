@@ -25,4 +25,4 @@ tsconfig.tsbuildinfo
 
 .eval-run-id
 
-mcp-source/dist
+dist
