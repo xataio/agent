@@ -5,7 +5,7 @@ import { commonToolset } from '~/lib/ai/tools/common';
 import { getDBSQLTools } from '~/lib/ai/tools/db';
 import { getPlaybookToolset } from '~/lib/ai/tools/playbook';
 import { mergeToolsets } from '~/lib/ai/tools/types';
-import { userMCPToolset } from '~/lib/ai/tools/user-mcp';
+import { mcpToolset } from '~/lib/ai/tools/user-mcp';
 import { getConnection, listConnections } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
 import { getTargetDbPool } from '~/lib/targetdb/db';
@@ -75,7 +75,7 @@ export async function actionGetCustomTools(connectionId: string): Promise<Tool[]
       throw new Error('Connection not found');
     }
 
-    const mcpTools = await userMCPToolset.getTools();
+    const mcpTools = await mcpToolset.listMCPTools();
     return Object.entries(mcpTools).map(([name, tool]) => ({
       name,
       description: tool.description || 'No description available',
@@ -89,7 +89,7 @@ export async function actionGetCustomTools(connectionId: string): Promise<Tool[]
 
 export async function actionGetCustomToolsFromMCPServer(serverFileName: string): Promise<Tool[]> {
   try {
-    const mcpTools = await userMCPToolset.getToolsFromMCPServer(serverFileName);
+    const mcpTools = await mcpToolset.getMCPToolForServer(serverFileName);
     return Object.entries(mcpTools).map(([name, tool]) => ({
       name,
       description: tool.description || 'No description available',

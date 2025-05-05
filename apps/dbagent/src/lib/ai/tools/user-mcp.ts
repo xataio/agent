@@ -15,7 +15,7 @@ export function getMCPSourceDir() {
   return path.join(process.cwd(), baseDir);
 }
 
-async function getToolsFromAllEnabledMCPServers(): Promise<ToolSet> {
+async function listMCPTools(): Promise<ToolSet> {
   //gets all the enabled mcp servers tools by checking the enabled status from the db
   try {
     const mcpSourceDistDir = getMCPSourceDistDir();
@@ -46,17 +46,14 @@ async function getToolsFromAllEnabledMCPServers(): Promise<ToolSet> {
   }
 }
 
-async function getToolsFromMCPServer(serverFileName?: string): Promise<ToolSet> {
+async function getMCPToolForServer(serverFileName: string): Promise<ToolSet> {
   try {
     const mcpSourceDistDir = getMCPSourceDistDir();
     //only gets tools for a certain mcp server if a serverFileName is provided
     //used in mcp-view when getting mcp tools for non-enabled servers that are not in the db
     //later when in mcp-view the tools are allowed to be ran only if the mcp server is enabled
-    if (serverFileName) {
-      const filePath = path.join(mcpSourceDistDir, `${serverFileName}.js`);
-      return await loadToolsFromFile(filePath);
-    }
-    return {};
+    const filePath = path.join(mcpSourceDistDir, `${serverFileName}.js`);
+    return await loadToolsFromFile(filePath);
   } catch (error) {
     console.error('Error in getToolsFromMCPServer:', error);
     return {};
@@ -89,7 +86,7 @@ async function loadToolsFromFile(filePath: string): Promise<ToolSet> {
   }
 }
 
-export const userMCPToolset = {
-  getTools: getToolsFromAllEnabledMCPServers,
-  getToolsFromMCPServer
+export const mcpToolset = {
+  listMCPTools,
+  getMCPToolForServer
 };
