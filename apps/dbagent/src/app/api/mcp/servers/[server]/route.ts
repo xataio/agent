@@ -5,7 +5,7 @@ import { getMCPSourceDir } from '~/lib/ai/tools/user-mcp';
 
 const mcpSourceDir = getMCPSourceDir();
 
-export async function GET(request: Request, { params }: { params: Promise<{ server: string }> }) {
+export async function GET(_: Request, { params }: { params: Promise<{ server: string }> }) {
   try {
     const { server } = await params;
     const filePath = path.join(mcpSourceDir, `${server}.ts`);
@@ -26,7 +26,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ serv
     const descriptionMatch = content.match(/description:\s*['"]([^'"]+)['"]/);
 
     const metadata = {
-      fileName: server,
+      name: server,
       serverName: nameMatch ? nameMatch[1] : server,
       version: versionMatch ? versionMatch[1] : '1.0.0',
       description: descriptionMatch ? descriptionMatch[1] : '',

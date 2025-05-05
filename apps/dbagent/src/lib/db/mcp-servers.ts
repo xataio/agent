@@ -26,7 +26,8 @@ export async function updateUserMcpServer(dbAccess: DBAccess, input: MCPServerIn
     const result = await db
       .update(mcpServers)
       .set({
-        enabled: input.enabled
+        enabled: input.enabled,
+        envVars: input.envVars
       })
       .where(eq(mcpServers.name, input.name))
       .returning();

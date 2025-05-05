@@ -150,26 +150,27 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
             <p className="text-muted-foreground">Version: {server.version}</p>
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div>
-              <h3 className="font-semibold">File Path</h3>
-              <p className="text-muted-foreground">{server.filePath}</p>
-            </div>
-            <div>
-              <h3 className="font-semibold">Status</h3>
-              <p className="text-muted-foreground">
-                {isCheckingDb ? (
-                  <span className="text-muted-foreground">Checking status...</span>
-                ) : !isInDb ? (
-                  <span className="text-yellow-600">Not added to database</span>
-                ) : server.enabled ? (
-                  'Enabled'
-                ) : (
-                  'Disabled'
-                )}
-              </p>
-            </div>
+        <CardContent className="space-y-4">
+          <div>
+            <h3 className="font-semibold">File Path</h3>
+            <p className="text-muted-foreground">{server.filePath}</p>
+          </div>
+          <div>
+            <h3 className="font-semibold">Status</h3>
+            <p className="text-muted-foreground">
+              {isCheckingDb ? (
+                <span className="text-muted-foreground">Checking status...</span>
+              ) : !isInDb ? (
+                <span className="text-yellow-600">Not enabled</span>
+              ) : server.enabled ? (
+                'Enabled'
+              ) : (
+                'Disabled'
+              )}
+            </p>
+          </div>
+
+          {isInDb && (
             <div>
               <h3 className="font-semibold">Environment Variables</h3>
               <p className="text-muted-foreground mb-4 text-sm">
@@ -212,57 +213,52 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
                   {isSavingEnvVars ? 'Saving...' : 'Save Environment Variables'}
                 </Button>
               </div>
-              {!isInDb && (
-                <p className="text-muted-foreground mt-2 text-right text-sm">
-                  Enable the server to save environment variables.
-                </p>
-              )}
             </div>
-            <div>
-              <h3 className="font-semibold">Available Tools</h3>
-              {isLoading ? (
-                <p className="text-muted-foreground">Loading tools...</p>
-              ) : error ? (
-                <p className="text-destructive">{error}</p>
-              ) : tools.length === 0 ? (
-                <p className="text-muted-foreground">No tools available</p>
-              ) : (
-                <div className="mt-2 space-y-2">
-                  {tools.map((tool) => (
-                    <Card key={tool.name} className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium">{tool.name}</h4>
-                          <p className="text-muted-foreground text-sm">{tool.description}</p>
-                        </div>
-                        {server.enabled ? (
-                          <Button variant="outline" size="sm" asChild>
-                            <Link href={`/projects/${project}/chats/new?tool=${tool.name}`}>
-                              <PlayCircle className="mr-2 h-4 w-4" />
-                              Run
-                            </Link>
-                          </Button>
-                        ) : (
-                          <div className="inline-block">
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Button variant="outline" size="sm" disabled>
-                                  <div className="flex items-center">
-                                    <PlayCircle className="mr-2 h-4 w-4" />
-                                    Run
-                                  </div>
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Enable the server to run this tool</TooltipContent>
-                            </Tooltip>
-                          </div>
-                        )}
+          )}
+          <div>
+            <h3 className="font-semibold">Available Tools</h3>
+            {isLoading ? (
+              <p className="text-muted-foreground">Loading tools...</p>
+            ) : error ? (
+              <p className="text-destructive">{error}</p>
+            ) : tools.length === 0 ? (
+              <p className="text-muted-foreground">No tools available</p>
+            ) : (
+              <div className="mt-2 space-y-2">
+                {tools.map((tool) => (
+                  <Card key={tool.name} className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">{tool.name}</h4>
+                        <p className="text-muted-foreground text-sm">{tool.description}</p>
                       </div>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
+                      {server.enabled ? (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/projects/${project}/chats/new?tool=${tool.name}`}>
+                            <PlayCircle className="mr-2 h-4 w-4" />
+                            Run
+                          </Link>
+                        </Button>
+                      ) : (
+                        <div className="inline-block">
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Button variant="outline" size="sm" disabled>
+                                <div className="flex items-center">
+                                  <PlayCircle className="mr-2 h-4 w-4" />
+                                  Run
+                                </div>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Enable the server to run this tool</TooltipContent>
+                          </Tooltip>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex justify-end gap-3 pt-6">

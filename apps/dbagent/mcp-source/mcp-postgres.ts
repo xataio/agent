@@ -22,9 +22,8 @@ const server = new Server(
 );
 
 const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl?.startsWith('postgres://')) {
-  console.error('Invalid database URL. It should start with "postgres://"');
-  process.exit(1);
+if (!databaseUrl) {
+  throw new Error('DATABASE_URL environment variable is not set');
 }
 
 const resourceBaseUrl = new URL(databaseUrl);

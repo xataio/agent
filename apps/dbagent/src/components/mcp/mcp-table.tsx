@@ -45,7 +45,6 @@ export function McpTable() {
 
   const loadMcpServers = async () => {
     try {
-      //load mcp servers from their local folder(mcp-source)
       const response = await fetch('/api/mcp/servers');
 
       if (!response.ok) {
@@ -58,9 +57,7 @@ export function McpTable() {
       await Promise.all(
         servers.map(async (server: MCPServer) => {
           const [getServerFromDb, exists] = await Promise.all([
-            //used to get enabled status from db
             actionGetUserMcpServer(server.name),
-            //used to check if mcp servers are in db
             actionCheckUserMcpServerExists(server.name)
           ]);
           server.enabled = getServerFromDb?.enabled || false;
@@ -86,12 +83,9 @@ export function McpTable() {
     );
     targetMcpServer.enabled = !targetMcpServer.enabled;
 
-    //adds mcp server to db if it doesn't exist
-    //updates mcp servers enabled status in db otherwise
     const serverExists = await actionCheckUserMcpServerExists(targetMcpServer.name);
     if (!serverExists) {
       await actionAddUserMcpServerToDB(targetMcpServer);
-      //updates the mcpServerInDb state to show that the server is added to the database
       setmcpServerInDb((prev) => ({
         ...prev,
         [targetMcpServer.name]: true
@@ -105,7 +99,6 @@ export function McpTable() {
     void loadMcpServers();
   }, [project]);
 
-  //used to disable the Add MCP Server button (SET THIS TO FALSE LATER BEFORE DEPLOYING)
   useEffect(() => {
     setIsAddButtonDisabled(false);
   }, []);
@@ -118,27 +111,14 @@ export function McpTable() {
     </TableRow>
   );
 
-  const getMcpServerUrl = (serverId: string) => {
-    return `/projects/${project}/mcp/${encodeURIComponent(serverId)}`;
+  const getMcpServerUrl = (server: MCPServer) => {
+    return `/projects/${project}/mcp/${encodeURIComponent(server.name)}`;
   };
 
-  // Pagination math
   const totalPages = Math.ceil(mcpServers.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-
-  //sort servers to show new ones first [this may not be needed later on]
-  //(oldcode) const currentServers = mcpServers.slice(startIndex, endIndex);
   const currentServers = mcpServers.slice(startIndex, endIndex);
-  // const sortedServers = [...mcpServers].sort((a, b) => {
-  //   const aIsNew = !mcpServerInDb[a.fileName];
-  //   const bIsNew = !mcpServerInDb[b.fileName];
-  //   if (aIsNew && !bIsNew) return -1;
-  //   if (!aIsNew && bIsNew) return 1;
-  //   return 0;
-  // });
-
-  // const currentServers = sortedServers.slice(startIndex, endIndex);
 
   return (
     <div>
@@ -170,7 +150,7 @@ export function McpTable() {
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Code variant="primary">
-                    <Link href={getMcpServerUrl(server.name)}>{server.serverName}</Link>
+                    <Link href={getMcpServerUrl(server)}>{server.serverName}</Link>
                   </Code>
                   {!mcpServerInDb[server.name] && (
                     <Tooltip>
@@ -197,7 +177,7 @@ export function McpTable() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => router.push(getMcpServerUrl(server.name))}>
+                      <DropdownMenuItem onClick={() => router.push(getMcpServerUrl(server))}>
                         <BookOpenIcon className="mr-2 h-3 w-3" />
                         View Details
                       </DropdownMenuItem>

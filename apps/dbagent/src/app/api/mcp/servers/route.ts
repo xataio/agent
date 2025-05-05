@@ -20,7 +20,7 @@ export async function GET() {
         const versionMatch = content.match(/version:\s*['"]([^'"]+)['"]/);
 
         return {
-          fileName: path.basename(file, '.ts'),
+          name: path.basename(file, '.ts'),
           serverName: nameMatch ? nameMatch[1] : path.basename(file, '.ts'),
           version: versionMatch ? versionMatch[1] : '1.0.0',
           filePath: file,
