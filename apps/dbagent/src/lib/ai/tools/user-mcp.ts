@@ -82,9 +82,7 @@ async function loadToolsFromFile(filePath: string): Promise<ToolSet> {
       transport
     });
 
-    const toolSet = await client.tools();
-    console.log('Loaded tools for', path.basename(filePath, '.js'), toolSet);
-    return toolSet || {};
+    return await client.tools();
   } catch (error) {
     console.error(`Error loading tools for ${filePath}:`, error);
     return {};
@@ -92,12 +90,6 @@ async function loadToolsFromFile(filePath: string): Promise<ToolSet> {
 }
 
 export const userMCPToolset = {
-  getTools: async () => {
-    const tools = await getToolsFromAllEnabledMCPServers();
-    return tools;
-  },
-  getToolsFromMCPServer: async (serverFileName?: string) => {
-    const tools = await getToolsFromMCPServer(serverFileName);
-    return tools;
-  }
+  getTools: getToolsFromAllEnabledMCPServers,
+  getToolsFromMCPServer
 };
