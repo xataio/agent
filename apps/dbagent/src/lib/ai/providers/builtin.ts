@@ -42,6 +42,16 @@ const builtinOpenAIModels: BuiltinProvider = {
       id: 'openai:gpt-4-turbo',
       providerId: 'gpt-4-turbo',
       name: 'GPT-4 Turbo'
+    },
+    {
+      id: 'openai:o4-mini',
+      providerId: 'o4-mini',
+      name: 'OpenAI o4-mini'
+    },
+    {
+      id: 'openai:o1',
+      providerId: 'o1',
+      name: 'OpenAI o1'
     }
   ]
 };
