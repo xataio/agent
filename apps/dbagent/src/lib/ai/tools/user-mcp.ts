@@ -1,4 +1,4 @@
-import { experimental_createMCPClient } from 'ai'; //,
+import { experimental_createMCPClient, type ToolSet } from 'ai'; //,
 import { Experimental_StdioMCPTransport } from 'ai/mcp-stdio';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -15,7 +15,7 @@ export function getMCPSourceDir() {
   return path.join(process.cwd(), baseDir);
 }
 
-async function getToolsFromAllEnabledMCPServers(userId?: string) {
+async function getToolsFromAllEnabledMCPServers(): Promise<ToolSet> {
   //gets all the enabled mcp servers tools by checking the enabled status from the db
   try {
     const mcpSourceDistDir = getMCPSourceDistDir();
@@ -29,7 +29,7 @@ async function getToolsFromAllEnabledMCPServers(userId?: string) {
         const fileName = path.basename(file, '.js');
 
         //check if the server is enabled in the db
-        const getServerFromDb = await actionGetUserMcpServer(fileName, userId);
+        const getServerFromDb = await actionGetUserMcpServer(fileName);
         if (!getServerFromDb?.enabled) {
           return {};
         }
@@ -46,7 +46,7 @@ async function getToolsFromAllEnabledMCPServers(userId?: string) {
   }
 }
 
-async function getToolsFromMCPServer(serverFileName?: string) {
+async function getToolsFromMCPServer(serverFileName?: string): Promise<ToolSet> {
   try {
     const mcpSourceDistDir = getMCPSourceDistDir();
     //only gets tools for a certain mcp server if a serverFileName is provided
@@ -63,11 +63,19 @@ async function getToolsFromMCPServer(serverFileName?: string) {
   }
 }
 
-async function loadToolsFromFile(filePath: string) {
+async function loadToolsFromFile(filePath: string): Promise<ToolSet> {
   try {
+    const serverName = path.basename(filePath, '.js');
+    const serverDetails = await actionGetUserMcpServer(serverName);
+    if (!serverDetails) {
+      console.error(`Server details not found for ${serverName}`);
+      return {};
+    }
+
     const transport = new Experimental_StdioMCPTransport({
       command: 'node',
-      args: [filePath]
+      args: [filePath],
+      env: serverDetails?.envVars
     });
 
     const client = await experimental_createMCPClient({
@@ -84,8 +92,8 @@ async function loadToolsFromFile(filePath: string) {
 }
 
 export const userMCPToolset = {
-  getTools: async (userId?: string) => {
-    const tools = await getToolsFromAllEnabledMCPServers(userId);
+  getTools: async () => {
+    const tools = await getToolsFromAllEnabledMCPServers();
     return tools;
   },
   getToolsFromMCPServer: async (serverFileName?: string) => {

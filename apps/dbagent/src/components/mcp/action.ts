@@ -3,18 +3,18 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { getMCPSourceDir, getMCPSourceDistDir } from '~/lib/ai/tools/user-mcp';
-import { getUserDBAccess } from '~/lib/db/db';
+import { getUserSessionDBAccess } from '~/lib/db/db';
 import { addUserMcpServerToDB, deleteUserMcpServer, getUserMcpServer, updateUserMcpServer } from '~/lib/db/mcp-servers';
 import { MCPServer, MCPServerInsert } from '~/lib/db/schema';
 
 //playbook db insert
-export async function actionAddUserMcpServerToDB(input: MCPServer, asUserId?: string): Promise<MCPServer> {
-  const dbAccess = await getUserDBAccess(asUserId);
+export async function actionAddUserMcpServerToDB(input: MCPServer): Promise<MCPServer> {
+  const dbAccess = await getUserSessionDBAccess();
   return await addUserMcpServerToDB(dbAccess, input);
 }
 
-export async function actionCheckUserMcpServerExists(serverName: string, asUserId?: string): Promise<boolean> {
-  const dbAccess = await getUserDBAccess(asUserId);
+export async function actionCheckUserMcpServerExists(serverName: string): Promise<boolean> {
+  const dbAccess = await getUserSessionDBAccess();
   const result = await getUserMcpServer(dbAccess, serverName);
   if (result) {
     return true;
@@ -23,18 +23,18 @@ export async function actionCheckUserMcpServerExists(serverName: string, asUserI
   }
 }
 
-export async function actionUpdateUserMcpServer(input: MCPServerInsert, asUserId?: string) {
-  const dbAccess = await getUserDBAccess(asUserId);
+export async function actionUpdateUserMcpServer(input: MCPServerInsert) {
+  const dbAccess = await getUserSessionDBAccess();
   return await updateUserMcpServer(dbAccess, input);
 }
 
-export async function actionGetUserMcpServer(serverName: string, asUserId?: string) {
-  const dbAccess = await getUserDBAccess(asUserId);
+export async function actionGetUserMcpServer(serverName: string) {
+  const dbAccess = await getUserSessionDBAccess();
   return await getUserMcpServer(dbAccess, serverName);
 }
 
-export async function actionDeleteUserMcpServerFromDBAndFiles(serverName: string, asUserId?: string): Promise<void> {
-  const dbAccess = await getUserDBAccess(asUserId);
+export async function actionDeleteUserMcpServerFromDBAndFiles(serverName: string): Promise<void> {
+  const dbAccess = await getUserSessionDBAccess();
 
   // Get the server details before deleting from DB
   const server = await getUserMcpServer(dbAccess, serverName);

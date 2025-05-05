@@ -49,20 +49,13 @@ export async function actionGetBuiltInTools(connectionId: string): Promise<Tool[
       throw new Error('Connection not found');
     }
 
-    // Get SQL tools
     const targetDb = getTargetDbPool(connection.connectionString);
     const dbTools = getDBSQLTools(targetDb);
 
-    // Get cluster tools
     const clusterTools = getDBClusterTools(dbAccess, connection, 'aws'); // Default to AWS for now
-
-    // Get playbook tools
     const playbookToolset = getPlaybookToolset(dbAccess, connection.projectId);
-
-    // Merge all built-in toolsets
     const mergedTools = mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools);
 
-    // Convert to array format
     return Object.entries(mergedTools).map(([name, tool]) => ({
       name,
       description: tool.description || 'No description available',
@@ -76,17 +69,13 @@ export async function actionGetBuiltInTools(connectionId: string): Promise<Tool[
 
 export async function actionGetCustomTools(connectionId: string): Promise<Tool[]> {
   try {
-    const userId = await requireUserSession();
     const dbAccess = await getUserSessionDBAccess();
     const connection = await getConnection(dbAccess, connectionId);
     if (!connection) {
       throw new Error('Connection not found');
     }
 
-    // Get MCP tools
-    const mcpTools = await userMCPToolset.getTools(userId);
-
-    // Convert to array format
+    const mcpTools = await userMCPToolset.getTools();
     return Object.entries(mcpTools).map(([name, tool]) => ({
       name,
       description: tool.description || 'No description available',
