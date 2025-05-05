@@ -243,6 +243,9 @@ importers:
       server-only:
         specifier: ^0.0.1
         version: 0.0.1
+      shiki:
+        specifier: ^3.3.0
+        version: 3.3.0
       tailwind-merge:
         specifier: ^3.2.0
         version: 3.2.0
