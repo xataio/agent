@@ -57,6 +57,13 @@
       "when": 1744368189657,
       "tag": "0007_chat_model",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1746433645178,
+      "tag": "0008_mcp_servers",
+      "breakpoints": true
     }
   ]
 }

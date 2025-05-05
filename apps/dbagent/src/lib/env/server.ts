@@ -7,6 +7,9 @@ const schema = z.object({
   // The URL of the database that we use to store data
   DATABASE_URL: z.string(),
 
+  // MCP settings
+  MCP_SOURCE_DIR: z.string().optional(),
+
   // The OpenID client settings
   AUTH_SECRET: z.string().optional(),
   AUTH_OPENID_ID: z.string().optional(),
