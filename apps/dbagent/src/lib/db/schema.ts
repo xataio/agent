@@ -673,3 +673,29 @@ export const playbooks = pgTable(
 
 export type Playbook = InferSelectModel<typeof playbooks>;
 export type PlaybookInsert = InferInsertModel<typeof playbooks>;
+
+export const mcpServers = pgTable(
+  'mcp_servers',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    name: text('name').notNull(),
+    serverName: text('server_name').notNull(),
+    filePath: text('file_path').notNull(),
+    version: text('version').notNull(),
+    enabled: boolean('enabled').default(true).notNull(),
+    envVars: jsonb('env_vars').$type<Record<string, string>>().default({}).notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull()
+  },
+  (table) => [
+    unique('uq_mcp_servers_name').on(table.name),
+    unique('uq_mcp_servers_server_name').on(table.serverName),
+    pgPolicy('mcp_servers_policy', {
+      to: authenticatedUser,
+      for: 'all',
+      using: sql`true`
+    })
+  ]
+);
+
+export type MCPServer = InferSelectModel<typeof mcpServers>;
+export type MCPServerInsert = InferInsertModel<typeof mcpServers>;

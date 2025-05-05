@@ -36,12 +36,14 @@ import {
   AlarmClock,
   CloudIcon,
   DatabaseIcon,
+  Drill,
   HistoryIcon,
   MessageSquare,
   MoreVertical,
   NotebookPen,
   PanelLeft,
   Server,
+  WrenchIcon,
   ZapIcon
 } from 'lucide-react';
 import Link from 'next/link';
@@ -198,6 +200,18 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
       title: 'Playbooks',
       url: `${basePath}/playbooks`,
       icon: NotebookPen,
+      className: 'text-sm'
+    },
+    {
+      title: 'Tools',
+      url: `${basePath}/tools`,
+      icon: Drill,
+      className: 'text-sm'
+    },
+    {
+      title: 'MCP',
+      url: `${basePath}/mcp`,
+      icon: WrenchIcon,
       className: 'text-sm'
     },
     {

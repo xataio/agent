@@ -24,3 +24,5 @@ tsconfig.tsbuildinfo
 *.bun-build
 
 .eval-run-id
+
+dist

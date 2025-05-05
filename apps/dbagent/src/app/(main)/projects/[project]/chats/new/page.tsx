@@ -14,6 +14,7 @@ type SearchParams = {
   scheduleRun?: string;
   playbook?: string;
   start?: string;
+  tool?: string;
 };
 
 export default async function Page({
@@ -24,7 +25,7 @@ export default async function Page({
   searchParams: Promise<SearchParams>;
 }) {
   const { project } = await params;
-  const { scheduleRun, playbook, start } = await searchParams;
+  const { scheduleRun, playbook, start, tool } = await searchParams;
 
   const userId = await requireUserSession();
   const dbAccess = await getUserSessionDBAccess();
@@ -77,6 +78,31 @@ export default async function Page({
             {
               type: 'text',
               text: `Run playbook ${playbook}`
+            }
+          ]
+        }
+      ]
+    );
+  } else if (tool) {
+    await saveChat(
+      dbAccess,
+      {
+        id: chatId,
+        projectId: project,
+        userId,
+        model: 'chat',
+        title: `Tool ${tool}`
+      },
+      [
+        {
+          id: generateUUID(),
+          chatId,
+          projectId: project,
+          role: 'user',
+          parts: [
+            {
+              type: 'text',
+              text: `Run tool ${tool}`
             }
           ]
         }

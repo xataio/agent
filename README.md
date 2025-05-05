@@ -1,5 +1,9 @@
 <div align="center">
-  <img src="brand-kit/banner/xata-agent-banner-github@2x.png" alt="xata agent logo" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand-kit/banner/xata-agent-banner-github-dark-mode@2x.png">
+    <source media="(prefers-color-scheme: light)" srcset="brand-kit/banner/xata-agent-banner-github-light-mode@2x.png">
+    <img alt="Xata logo" src="brand-kit/banner/xata-agent-banner-github@2x.png">
+  </picture>
 </div>
 
 <p align="center">
