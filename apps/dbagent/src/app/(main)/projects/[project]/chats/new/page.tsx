@@ -59,7 +59,6 @@ export default async function Page({
       }))
     );
   } else if (playbook) {
-    console.log('playbook', playbook);
     await saveChat(
       dbAccess,
       {
@@ -85,7 +84,6 @@ export default async function Page({
       ]
     );
   } else if (tool) {
-    console.log('tool', tool);
     await saveChat(
       dbAccess,
       {
