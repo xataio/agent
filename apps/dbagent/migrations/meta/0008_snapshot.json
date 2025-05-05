@@ -1,5 +1,5 @@
 {
-  "id": "ae498fc6-0234-4edd-9584-f023ad7fe625",
+  "id": "e79cf7af-0cbc-43c4-b7e5-939e09229989",
   "prevId": "35bc8b93-8a60-408c-8428-3bff3063184b",
   "version": "7",
   "dialect": "postgresql",
@@ -1072,6 +1072,24 @@
           "primaryKey": false,
           "notNull": true
         },
+        "server_name": {
+          "name": "server_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_path": {
+          "name": "file_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "enabled": {
           "name": "enabled",
           "type": "boolean",
@@ -1095,6 +1113,11 @@
           "name": "uq_mcp_servers_name",
           "nullsNotDistinct": false,
           "columns": ["name"]
+        },
+        "uq_mcp_servers_server_name": {
+          "name": "uq_mcp_servers_server_name",
+          "nullsNotDistinct": false,
+          "columns": ["server_name"]
         }
       },
       "policies": {
