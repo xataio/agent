@@ -23,7 +23,7 @@ import { BookOpenIcon, ChevronLeftIcon, ChevronRightIcon, MoreVerticalIcon } fro
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { UserMcpServer } from '~/lib/tools/user-mcp-servers';
+import { MCPServer } from '~/lib/db/schema';
 import {
   actionAddUserMcpServerToDB,
   actionCheckUserMcpServerExists,
@@ -35,7 +35,7 @@ const ITEMS_PER_PAGE = 10;
 
 export function McpTable() {
   const router = useRouter();
-  const [mcpServers, setMcpServers] = useState<UserMcpServer[]>([]);
+  const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [mcpServerInDb, setmcpServerInDb] = useState<Record<string, boolean>>({});
   const { project } = useParams<{ project: string }>();
@@ -56,15 +56,15 @@ export function McpTable() {
       const status: Record<string, boolean> = {};
 
       await Promise.all(
-        servers.map(async (server: UserMcpServer) => {
+        servers.map(async (server: MCPServer) => {
           const [getServerFromDb, exists] = await Promise.all([
             //used to get enabled status from db
-            actionGetUserMcpServer(server.fileName),
+            actionGetUserMcpServer(server.name),
             //used to check if mcp servers are in db
-            actionCheckUserMcpServerExists(server.fileName)
+            actionCheckUserMcpServerExists(server.name)
           ]);
           server.enabled = getServerFromDb?.enabled || false;
-          status[server.fileName] = exists;
+          status[server.name] = exists;
         })
       );
 
@@ -78,23 +78,23 @@ export function McpTable() {
     }
   };
 
-  const handleToggleEnabled = async (targetMcpServer: UserMcpServer) => {
+  const handleToggleEnabled = async (targetMcpServer: MCPServer) => {
     setMcpServers((prevServers) =>
       prevServers.map((server) =>
-        server.fileName === targetMcpServer.fileName ? { ...server, enabled: !server.enabled } : server
+        server.name === targetMcpServer.name ? { ...server, enabled: !server.enabled } : server
       )
     );
     targetMcpServer.enabled = !targetMcpServer.enabled;
 
     //adds mcp server to db if it doesn't exist
     //updates mcp servers enabled status in db otherwise
-    const serverExists = await actionCheckUserMcpServerExists(targetMcpServer.fileName);
+    const serverExists = await actionCheckUserMcpServerExists(targetMcpServer.name);
     if (!serverExists) {
       await actionAddUserMcpServerToDB(targetMcpServer);
       //updates the mcpServerInDb state to show that the server is added to the database
       setmcpServerInDb((prev) => ({
         ...prev,
-        [targetMcpServer.fileName]: true
+        [targetMcpServer.name]: true
       }));
     } else {
       await actionUpdateUserMcpServer(targetMcpServer);
@@ -166,13 +166,13 @@ export function McpTable() {
             </>
           )}
           {currentServers.map((server) => (
-            <TableRow key={server.fileName}>
+            <TableRow key={server.name}>
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Code variant="primary">
-                    <Link href={getMcpServerUrl(server.fileName)}>{server.serverName}</Link>
+                    <Link href={getMcpServerUrl(server.name)}>{server.serverName}</Link>
                   </Code>
-                  {!mcpServerInDb[server.fileName] && (
+                  {!mcpServerInDb[server.name] && (
                     <Tooltip>
                       <TooltipTrigger>
                         <Badge variant="secondary" className="text-xs">
@@ -197,7 +197,7 @@ export function McpTable() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => router.push(getMcpServerUrl(server.fileName))}>
+                      <DropdownMenuItem onClick={() => router.push(getMcpServerUrl(server.name))}>
                         <BookOpenIcon className="mr-2 h-3 w-3" />
                         View Details
                       </DropdownMenuItem>

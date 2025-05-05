@@ -4,26 +4,18 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { getMCPSourceDir, getMCPSourceDistDir } from '~/lib/ai/tools/user-mcp';
 import { getUserDBAccess } from '~/lib/db/db';
-import {
-  dbAddUserMcpServerToDB,
-  dbDeleteUserMcpServer,
-  dbGetUserMcpServer,
-  dbUpdateUserMcpServer
-} from '~/lib/db/user-mcp-servers';
-import { UserMcpServer } from '~/lib/tools/user-mcp-servers';
+import { addUserMcpServerToDB, deleteUserMcpServer, getUserMcpServer, updateUserMcpServer } from '~/lib/db/mcp-servers';
+import { MCPServer, MCPServerInsert } from '~/lib/db/schema';
 
 //playbook db insert
-export async function actionAddUserMcpServerToDB(input: UserMcpServer, asUserId?: string): Promise<UserMcpServer> {
-  // console.log('adding user mcp server {userMcpServer: ', input, '}');
+export async function actionAddUserMcpServerToDB(input: MCPServer, asUserId?: string): Promise<MCPServer> {
   const dbAccess = await getUserDBAccess(asUserId);
-  return await dbAddUserMcpServerToDB(dbAccess, input);
+  return await addUserMcpServerToDB(dbAccess, input);
 }
 
 export async function actionCheckUserMcpServerExists(serverName: string, asUserId?: string): Promise<boolean> {
-  // console.log(`checking if mcp server exists {serverName: ${serverName}}`);
   const dbAccess = await getUserDBAccess(asUserId);
-  const result = await dbGetUserMcpServer(dbAccess, serverName);
-  // console.log('RESULT', result, dbAccess);
+  const result = await getUserMcpServer(dbAccess, serverName);
   if (result) {
     return true;
   } else {
@@ -31,27 +23,23 @@ export async function actionCheckUserMcpServerExists(serverName: string, asUserI
   }
 }
 
-export async function actionUpdateUserMcpServer(input: UserMcpServer, asUserId?: string) {
-  // console.log('updating user mcp server {userMcpServer: ', input, '}');
+export async function actionUpdateUserMcpServer(input: MCPServerInsert, asUserId?: string) {
   const dbAccess = await getUserDBAccess(asUserId);
-  return await dbUpdateUserMcpServer(dbAccess, input);
+  return await updateUserMcpServer(dbAccess, input);
 }
 
 export async function actionGetUserMcpServer(serverName: string, asUserId?: string) {
-  // console.log(`getting user mcp server {serverName: ${serverName}}`);
   const dbAccess = await getUserDBAccess(asUserId);
-  return await dbGetUserMcpServer(dbAccess, serverName);
+  return await getUserMcpServer(dbAccess, serverName);
 }
 
 export async function actionDeleteUserMcpServerFromDBAndFiles(serverName: string, asUserId?: string): Promise<void> {
   const dbAccess = await getUserDBAccess(asUserId);
 
-  console.log('server', serverName);
-
   // Get the server details before deleting from DB
-  const server = await dbGetUserMcpServer(dbAccess, serverName);
+  const server = await getUserMcpServer(dbAccess, serverName);
   if (server) {
-    await dbDeleteUserMcpServer(dbAccess, serverName);
+    await deleteUserMcpServer(dbAccess, serverName);
   }
 
   // Delete the files

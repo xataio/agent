@@ -28,6 +28,10 @@ if (args.length === 0) {
 }
 
 const databaseUrl = args[0];
+if (!databaseUrl?.startsWith('postgres://')) {
+  console.error('Invalid database URL. It should start with "postgres://"');
+  process.exit(1);
+}
 
 const resourceBaseUrl = new URL(databaseUrl);
 resourceBaseUrl.protocol = 'postgres:';

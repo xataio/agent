@@ -8,18 +8,23 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  Input,
+  toast,
   Tooltip,
   TooltipContent,
   TooltipTrigger
 } from '@internal/components';
-import { ArrowLeft, PlayCircle, Trash2Icon } from 'lucide-react';
+import { ArrowLeft, PlayCircle, PlusIcon, Trash2Icon, XIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { actionGetConnections, actionGetCustomToolsFromMCPServer } from '~/components/tools/action';
-import { Connection } from '~/lib/db/schema';
-import { UserMcpServer } from '~/lib/tools/user-mcp-servers';
-import { actionCheckUserMcpServerExists, actionDeleteUserMcpServerFromDBAndFiles } from './action';
+import { Connection, MCPServerInsert } from '~/lib/db/schema';
+import {
+  actionCheckUserMcpServerExists,
+  actionDeleteUserMcpServerFromDBAndFiles,
+  actionUpdateUserMcpServer
+} from './action';
 
 interface Tool {
   name: string;
@@ -27,15 +32,23 @@ interface Tool {
   isBuiltIn: boolean;
 }
 
-export function McpView({ server }: { server: UserMcpServer }) {
+export function McpView({ server: initialServer }: { server: MCPServerInsert }) {
   const { project } = useParams<{ project: string }>();
   const router = useRouter();
+  const [server, setServer] = useState<MCPServerInsert>(initialServer);
   const [tools, setTools] = useState<Tool[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isInDb, setIsInDb] = useState<boolean>(false);
   const [isCheckingDb, setIsCheckingDb] = useState(true);
+  const [envVars, setEnvVars] = useState<Record<string, string>>(initialServer.envVars || {});
+  const [isSavingEnvVars, setIsSavingEnvVars] = useState(false);
+
+  useEffect(() => {
+    setServer(initialServer);
+    setEnvVars(initialServer.envVars || {});
+  }, [initialServer]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -43,15 +56,19 @@ export function McpView({ server }: { server: UserMcpServer }) {
       try {
         const [connectionsData, serverExists] = await Promise.all([
           actionGetConnections(project),
-          actionCheckUserMcpServerExists(server.fileName)
+          actionCheckUserMcpServerExists(server.name)
         ]);
 
         setIsInDb(serverExists);
 
         const defaultConnection = connectionsData.find((c: Connection) => c.isDefault);
         if (defaultConnection) {
-          const tools = await actionGetCustomToolsFromMCPServer(server.fileName);
-          setTools(tools);
+          if (serverExists || server.enabled) {
+            const tools = await actionGetCustomToolsFromMCPServer(server.name);
+            setTools(tools);
+          } else {
+            setTools([]);
+          }
         }
         setError(null);
       } catch (error) {
@@ -63,15 +80,56 @@ export function McpView({ server }: { server: UserMcpServer }) {
       }
     };
     void loadData();
-  }, [project, server.fileName, server.enabled]);
+  }, [project, server.name, server.enabled]);
 
   const handleDeleteServer = async () => {
     try {
-      await actionDeleteUserMcpServerFromDBAndFiles(server.fileName);
+      await actionDeleteUserMcpServerFromDBAndFiles(server.name);
       router.push(`/projects/${project}/mcp`);
     } catch (error) {
       console.error('Error deleting server:', error);
       setError('Failed to delete server. Please try again later.');
+    }
+  };
+
+  const handleAddEnvVar = () => {
+    setEnvVars({ ...envVars, '': '' });
+  };
+
+  const handleEnvVarChange = (index: number, key: string, value: string) => {
+    const entries = Object.entries(envVars);
+    const oldKey = entries[index]?.[0];
+    const newEntries = entries.filter(([k]) => k !== oldKey);
+    newEntries.splice(index, 0, [key, value]);
+    setEnvVars(Object.fromEntries(newEntries));
+  };
+
+  const handleRemoveEnvVar = (keyToRemove: string) => {
+    const newEnvVars = { ...envVars };
+    delete newEnvVars[keyToRemove];
+    setEnvVars(newEnvVars);
+  };
+
+  const handleSaveEnvVars = async () => {
+    setIsSavingEnvVars(true);
+    try {
+      if (!isInDb) {
+        toast.error('Cannot save environment variables. Please enable the server first to add it to the database.');
+        setIsSavingEnvVars(false);
+        return;
+      }
+
+      const varsToSave = Object.fromEntries(Object.entries(envVars).filter(([key]) => key.trim() !== ''));
+      const updatedServerData = { ...server, envVars: varsToSave };
+      await actionUpdateUserMcpServer(updatedServerData);
+      setServer(updatedServerData);
+      setEnvVars(varsToSave);
+      toast.success('Environment variables saved successfully.');
+    } catch (error) {
+      console.error('Error saving environment variables:', error);
+      toast.error('Failed to save environment variables.');
+    } finally {
+      setIsSavingEnvVars(false);
     }
   };
 
@@ -93,7 +151,7 @@ export function McpView({ server }: { server: UserMcpServer }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
               <h3 className="font-semibold">File Path</h3>
               <p className="text-muted-foreground">{server.filePath}</p>
@@ -111,6 +169,54 @@ export function McpView({ server }: { server: UserMcpServer }) {
                   'Disabled'
                 )}
               </p>
+            </div>
+            <div>
+              <h3 className="font-semibold">Environment Variables</h3>
+              <p className="text-muted-foreground mb-4 text-sm">
+                These variables will be passed to the MCP server process.
+              </p>
+              <div className="space-y-3">
+                {Object.entries(envVars).map(([key, value], index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Input
+                      placeholder="Variable Name"
+                      value={key}
+                      onChange={(e) => handleEnvVarChange(index, e.target.value, value)}
+                      className="flex-1"
+                      disabled={isSavingEnvVars}
+                    />
+                    <Input
+                      placeholder="Variable Value"
+                      value={value}
+                      onChange={(e) => handleEnvVarChange(index, key, e.target.value)}
+                      className="flex-1"
+                      disabled={isSavingEnvVars}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveEnvVar(key)}
+                      disabled={isSavingEnvVars}
+                      aria-label="Remove variable"
+                    >
+                      <XIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button variant="outline" size="sm" onClick={handleAddEnvVar} disabled={isSavingEnvVars}>
+                  <PlusIcon className="mr-2 h-4 w-4" /> Add Variable
+                </Button>
+              </div>
+              <div className="mt-4 flex justify-end">
+                <Button onClick={handleSaveEnvVars} disabled={isSavingEnvVars || !isInDb}>
+                  {isSavingEnvVars ? 'Saving...' : 'Save Environment Variables'}
+                </Button>
+              </div>
+              {!isInDb && (
+                <p className="text-muted-foreground mt-2 text-right text-sm">
+                  Enable the server to save environment variables.
+                </p>
+              )}
             </div>
             <div>
               <h3 className="font-semibold">Available Tools</h3>

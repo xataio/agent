@@ -4,7 +4,7 @@ import path from 'path';
 import { actionGetUserMcpServer } from '~/components/mcp/action';
 import { McpView } from '~/components/mcp/mcp-view';
 import { getMCPSourceDir } from '~/lib/ai/tools/user-mcp';
-import { UserMcpServer } from '~/lib/tools/user-mcp-servers';
+import { MCPServerInsert } from '~/lib/db/schema';
 
 type PageParams = {
   project: string;
@@ -17,7 +17,7 @@ export default async function McpServerPage({ params }: { params: Promise<PagePa
 
   // Check if server file exists locally
   const filePath = path.join(mcpSourceDir, `${serverId}.ts`);
-  let server: UserMcpServer | null = null;
+  let server: MCPServerInsert | null = null;
 
   try {
     // Try to read the local file first
@@ -29,7 +29,7 @@ export default async function McpServerPage({ params }: { params: Promise<PagePa
     const versionMatch = content.match(/version:\s*['"]([^'"]+)['"]/);
 
     server = {
-      fileName: serverId,
+      name: serverId,
       serverName: nameMatch?.[1] ?? serverId,
       version: versionMatch?.[1] ?? '1.0.0',
       filePath: `${serverId}.ts`,
@@ -52,7 +52,7 @@ export default async function McpServerPage({ params }: { params: Promise<PagePa
       const dbServer = await actionGetUserMcpServer(serverId);
       if (dbServer) {
         server = {
-          fileName: dbServer.name,
+          name: dbServer.name,
           serverName: dbServer.serverName,
           version: dbServer.version,
           filePath: dbServer.filePath,

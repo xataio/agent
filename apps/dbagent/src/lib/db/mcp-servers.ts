@@ -2,10 +2,9 @@
 
 import { eq } from 'drizzle-orm';
 import { DBAccess } from '~/lib/db/db';
-import { mcpServers } from '~/lib/db/schema';
-import { UserMcpServer } from '~/lib/tools/user-mcp-servers';
+import { MCPServer, MCPServerInsert, mcpServers } from '~/lib/db/schema';
 
-export async function dbGetUserMcpServers(dbAccess: DBAccess) {
+export async function getUserMcpServers(dbAccess: DBAccess) {
   return await dbAccess.query(async ({ db }) => {
     const results = await db.select().from(mcpServers);
 
@@ -13,7 +12,7 @@ export async function dbGetUserMcpServers(dbAccess: DBAccess) {
   });
 }
 
-export async function dbGetUserMcpServer(dbAccess: DBAccess, serverName: string) {
+export async function getUserMcpServer(dbAccess: DBAccess, serverName: string) {
   return await dbAccess.query(async ({ db }) => {
     const result = await db.select().from(mcpServers).where(eq(mcpServers.name, serverName)).limit(1);
 
@@ -22,25 +21,25 @@ export async function dbGetUserMcpServer(dbAccess: DBAccess, serverName: string)
 }
 
 //might need to update this for version and filepath aswell
-export async function dbUpdateUserMcpServer(dbAccess: DBAccess, input: UserMcpServer) {
+export async function updateUserMcpServer(dbAccess: DBAccess, input: MCPServerInsert) {
   return await dbAccess.query(async ({ db }) => {
     const result = await db
       .update(mcpServers)
       .set({
         enabled: input.enabled
       })
-      .where(eq(mcpServers.name, input.fileName))
+      .where(eq(mcpServers.name, input.name))
       .returning();
 
     if (result.length === 0) {
-      throw new Error(`[UPDATE]Server with name "${input.fileName}" not found`);
+      throw new Error(`[UPDATE]Server with name "${input.name}" not found`);
     }
 
     return result[0];
   });
 }
 
-export async function dbAddUserMcpServerToDB(dbAccess: DBAccess, input: UserMcpServer): Promise<UserMcpServer> {
+export async function addUserMcpServerToDB(dbAccess: DBAccess, input: MCPServer): Promise<MCPServer> {
   return await dbAccess.query(async ({ db }) => {
     // Check if server with same name exists
     const existingServer = await db.select().from(mcpServers).where(eq(mcpServers.name, input.serverName)).limit(1);
@@ -53,7 +52,7 @@ export async function dbAddUserMcpServerToDB(dbAccess: DBAccess, input: UserMcpS
     const result = await db
       .insert(mcpServers)
       .values({
-        name: input.fileName,
+        name: input.name,
         serverName: input.serverName,
         version: input.version,
         filePath: input.filePath,
@@ -67,17 +66,11 @@ export async function dbAddUserMcpServerToDB(dbAccess: DBAccess, input: UserMcpS
       throw new Error('Failed to create server');
     }
 
-    return {
-      fileName: server.name,
-      serverName: server.name,
-      version: server.version,
-      filePath: server.filePath,
-      enabled: server.enabled
-    };
+    return server;
   });
 }
 
-export async function dbDeleteUserMcpServer(dbAccess: DBAccess, serverName: string): Promise<void> {
+export async function deleteUserMcpServer(dbAccess: DBAccess, serverName: string): Promise<void> {
   return await dbAccess.query(async ({ db }) => {
     const result = await db.delete(mcpServers).where(eq(mcpServers.name, serverName)).returning();
 
