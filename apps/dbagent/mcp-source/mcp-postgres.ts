@@ -21,13 +21,7 @@ const server = new Server(
   }
 );
 
-const args = process.argv.slice(2);
-if (args.length === 0) {
-  console.error('Please provide a database URL as a command-line argument');
-  process.exit(1);
-}
-
-const databaseUrl = args[0];
+const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl?.startsWith('postgres://')) {
   console.error('Invalid database URL. It should start with "postgres://"');
   process.exit(1);
