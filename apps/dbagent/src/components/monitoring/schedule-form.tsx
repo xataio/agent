@@ -24,7 +24,7 @@ import {
   Textarea,
   useForm,
   zodResolver
-} from '@internal/components';
+} from '@xata.io/components';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';

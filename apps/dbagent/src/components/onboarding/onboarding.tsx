@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@internal/components';
+import { Button } from '@xata.io/components';
 import confetti from 'canvas-confetti';
 import { Activity, Check, Database, GitBranch, Server } from 'lucide-react';
 import { useRouter } from 'next/navigation';

@@ -1,4 +1,4 @@
-import { toast } from '@internal/components';
+import { toast } from '@xata.io/components';
 import { CopyIcon, HistoryIcon, MessageCircleIcon, PenIcon, RedoIcon, UndoIcon } from 'lucide-react';
 import { ArtifactSuggestion } from '~/lib/db/schema';
 import { Artifact } from '../create-artifact';

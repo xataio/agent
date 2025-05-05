@@ -1,11 +1,11 @@
-import { Code } from '@internal/components';
+import { Code } from '@xata.io/components';
 import Link from 'next/link';
 import { memo } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 const components: Partial<Components> = {
-  code: ({ children }) => <Code variant="primary">{children}</Code>,
+  code: ({ children }) => <Code variant="default">{children}</Code>,
   pre: ({ children }) => <>{children}</>,
   ol: ({ node, children, ...props }) => {
     return <ol {...props}>{children}</ol>;

@@ -1,7 +1,7 @@
 'use client';
 
-import { Button } from '@internal/components';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@xata.io/components';
 import { isAfter } from 'date-fns';
 import { motion } from 'framer-motion';
 import { LoaderIcon } from 'lucide-react';

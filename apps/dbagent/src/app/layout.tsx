@@ -1,4 +1,4 @@
-import '@internal/theme';
+import '@xata.io/theme';
 import { GeistSans } from 'geist/font/sans';
 import { Metadata } from 'next';
 import { Geist_Mono } from 'next/font/google';

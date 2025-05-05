@@ -1,4 +1,4 @@
-import { Button } from '@internal/components';
+import { Button } from '@xata.io/components';
 import { CrossIcon } from 'lucide-react';
 import { memo } from 'react';
 import { initialArtifactData, useArtifact } from './use-artifact';

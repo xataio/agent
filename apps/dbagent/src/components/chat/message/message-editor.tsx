@@ -1,7 +1,7 @@
 'use client';
 
 import { UseChatHelpers } from '@ai-sdk/react';
-import { Button, Textarea } from '@internal/components';
+import { Button, Textarea } from '@xata.io/components';
 import { Message } from 'ai';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { deleteTrailingMessages } from '~/app/(main)/projects/[project]/chats/actions';

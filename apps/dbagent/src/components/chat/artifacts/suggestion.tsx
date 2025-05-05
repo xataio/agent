@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, cn } from '@internal/components';
+import { Button, cn } from '@xata.io/components';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CrossIcon, MessageCircleIcon } from 'lucide-react';
 import { useState } from 'react';

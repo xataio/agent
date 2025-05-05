@@ -1,5 +1,5 @@
 import { includeIgnoreFile } from '@eslint/compat';
-import { nextjs } from '@internal/eslint-config';
+import { nextjs } from '@xata.io/eslint-config';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 

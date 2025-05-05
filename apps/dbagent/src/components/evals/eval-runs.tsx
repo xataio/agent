@@ -1,4 +1,5 @@
 'use client';
+import { useQuery } from '@tanstack/react-query';
 import {
   cn,
   ScrollArea,
@@ -17,8 +18,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger
-} from '@internal/components';
-import { useQuery } from '@tanstack/react-query';
+} from '@xata.io/components';
 import { Check, CircleX, FileText } from 'lucide-react';
 import path from 'path';
 import { CSSProperties, useState } from 'react';

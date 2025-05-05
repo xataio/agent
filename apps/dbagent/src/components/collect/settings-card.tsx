@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
   toast
-} from '@internal/components';
+} from '@xata.io/components';
 import { useEffect, useState } from 'react';
 import { Connection } from '~/lib/db/schema';
 import { PerformanceSetting } from '~/lib/targetdb/db';
