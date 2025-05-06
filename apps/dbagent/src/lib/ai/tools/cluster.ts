@@ -8,6 +8,7 @@ import { getPostgresExtensions, getTablesInfo } from '~/lib/tools/dbinfo';
 import { getInstanceLogsGCP, getInstanceLogsRDS } from '~/lib/tools/logs';
 import { getClusterMetricGCP, getClusterMetricRDS } from '~/lib/tools/metrics';
 import { mergeToolsets, Toolset, ToolsetGroup } from './types';
+
 export function getDBClusterTools(
   dbAccess: DBAccess,
   connection: Connection | (() => Promise<Connection>),
