@@ -74,6 +74,18 @@ export async function POST(request: Request) {
           toolCallStreaming: true,
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
+          experimental_telemetry: {
+            isEnabled: true,
+            metadata: {
+              projectId: connection.projectId,
+              connectionId: connectionId,
+              sessionId: id,
+              model: model.info().id,
+              userId,
+              cloudProvider: project.cloudProvider,
+              tags: ['chat']
+            }
+          },
           tools,
           onFinish: async ({ response }) => {
             try {

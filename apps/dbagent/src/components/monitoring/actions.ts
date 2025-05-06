@@ -23,7 +23,13 @@ export async function generateCronExpression(description: string): Promise<strin
 
   const { text } = await generateText({
     model: openai('gpt-4o'),
-    prompt: prompt
+    prompt: prompt,
+    experimental_telemetry: {
+      isEnabled: true,
+      metadata: {
+        tags: ['internal', 'monitoring', 'cron']
+      }
+    }
   });
 
   return text.trim();
