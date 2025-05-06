@@ -1,26 +1,36 @@
-import { smoothStream, streamText } from 'ai';
-import { getModelInstance } from '~/lib/ai/agent';
+import { AugmentedLanguageModel } from '~/lib/ai/model';
 import { updateDocumentPrompt } from '~/lib/ai/prompts';
+import { getProviderRegistry } from '~/lib/ai/providers';
 import { createDocumentHandler } from '../server';
+
+const titleModel = new AugmentedLanguageModel({
+  providerRegistry: getProviderRegistry,
+  baseModel: 'title',
+  systemPrompt: 'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
+  metadata: {
+    tags: ['artifact', 'text', 'create']
+  }
+});
+
+type DocumentUpdateDeps = {
+  content: string | null;
+};
+
+const documentUpdateModel = new AugmentedLanguageModel<DocumentUpdateDeps>({
+  providerRegistry: getProviderRegistry,
+  baseModel: 'chat',
+  systemPrompt: ({ content }) => updateDocumentPrompt(content, 'text'),
+  metadata: {
+    tags: ['artifact', 'text', 'update']
+  }
+});
 
 export const textDocumentHandler = createDocumentHandler<'text'>({
   kind: 'text',
   onCreateDocument: async ({ title, dataStream }) => {
     let draftContent = '';
 
-    const { fullStream } = streamText({
-      model: await getModelInstance('chat'),
-      system: 'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
-      experimental_transform: smoothStream({ chunking: 'word' }),
-      experimental_telemetry: {
-        isEnabled: true,
-        metadata: {
-          tags: ['artifact', 'text', 'create']
-        }
-      },
-      prompt: title
-    });
-
+    const { fullStream } = await titleModel.streamText({ prompt: title });
     for await (const delta of fullStream) {
       const { type } = delta;
 
@@ -41,16 +51,8 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
   onUpdateDocument: async ({ document, description, dataStream }) => {
     let draftContent = '';
 
-    const { fullStream } = streamText({
-      model: await getModelInstance('chat'),
-      system: updateDocumentPrompt(document.content, 'text'),
-      experimental_transform: smoothStream({ chunking: 'word' }),
-      experimental_telemetry: {
-        isEnabled: true,
-        metadata: {
-          tags: ['artifact', 'text', 'update']
-        }
-      },
+    const { fullStream } = await documentUpdateModel.streamText({
+      deps: { content: document.content },
       prompt: description,
       experimental_providerMetadata: {
         openai: {
