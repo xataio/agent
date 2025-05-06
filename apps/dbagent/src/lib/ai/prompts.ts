@@ -26,6 +26,20 @@ Then use the contents of the playbook as an action plan. Execute the plan step b
 At the end of your execution, print a summary of the results.
 `;
 
+export const awsCloudProviderPrompt = `
+All Postgres instances in this project are hosted on AWS, either RDS or Aurora. 
+When recommending actions, only recommend actions that can be performed on RDS or Aurora.
+If you need to know more about the instance, you can use the getClusterInfo tool.
+If you want to recommend changes to the instance, provide instructions specific to RDS or Aurora.
+`;
+
+export const gcpCloudProviderPrompt = `
+All Postgres instances in this project are GCP Cloud SQL instances.
+When recommending actions, only recommend actions that can be performed on GCP Cloud SQL.
+If you need to know more about the instance, you can use the getInstanceInfo tool.
+If you want to recommend changes to the instance, provide instructions specific to GCP Cloud SQL.
+`;
+
 export const artifactsPrompt = `
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
 

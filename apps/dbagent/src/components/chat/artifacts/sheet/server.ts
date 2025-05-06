@@ -11,6 +11,12 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
 
     const { fullStream } = streamObject({
       model: await getModelInstance('chat'),
+      experimental_telemetry: {
+        isEnabled: true,
+        metadata: {
+          tags: ['artifact', 'sheet', 'create']
+        }
+      },
       system: sheetPrompt,
       prompt: title,
       schema: z.object({
@@ -48,6 +54,12 @@ export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
 
     const { fullStream } = streamObject({
       model: await getModelInstance('chat'),
+      experimental_telemetry: {
+        isEnabled: true,
+        metadata: {
+          tags: ['artifact', 'sheet', 'update']
+        }
+      },
       system: updateDocumentPrompt(document.content, 'sheet'),
       prompt: description,
       schema: z.object({

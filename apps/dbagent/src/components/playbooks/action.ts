@@ -33,6 +33,12 @@ export async function actionGeneratePlaybookContent(name: string, description: s
 
   const { text } = await generateText({
     model: openai('gpt-4o'),
+    experimental_telemetry: {
+      isEnabled: true,
+      metadata: {
+        tags: ['playbook', 'generate']
+      }
+    },
     messages: [
       {
         role: 'system',
