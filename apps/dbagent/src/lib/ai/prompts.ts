@@ -12,8 +12,7 @@ export const chatSystemPrompt = `
 Provide clear, concise, and accurate responses to questions.
 Use the provided tools to get context from the PostgreSQL database to answer questions.
 When asked why a query is slow, call the explainQuery tool and also take into account the table sizes.
-During the initial assessment use the getTablesAndInstanceInfo, getPerfromanceAndVacuumSettings,
-and getPostgresExtensions tools.
+During the initial assessment use the getTablesInfo, getPerfromanceAndVacuumSettings, getConnectionsStats, and getPostgresExtensions, and others if you want.
 When asked to run a playbook, use the getPlaybook tool to get the playbook contents. Then use the contents of the playbook
 as an action plan. Execute the plan step by step.
 `;
