@@ -2,17 +2,18 @@ import { Tool } from 'ai';
 import {
   builtinPlaybookToolset,
   commonToolset,
-  DBSQLTools,
   getDBClusterTools,
-  mergeToolsets,
-  playbookTools,
-  Toolset
+  getDBSQLTools,
+  getPlaybookToolset,
+  getProjectClusterService,
+  projectPlaybookService,
+  targetDBService
 } from '~/lib/ai/tools';
 import { getConnectionByName, getDefaultConnection } from '~/lib/db/connections';
 import { DBUserAccess } from '~/lib/db/db';
 import { getProjectByName } from '~/lib/db/projects';
 import { CloudProvider, Connection } from '~/lib/db/schema';
-import { getTargetDbPool, Pool } from '~/lib/targetdb/db';
+import { getTargetDbPool } from '~/lib/targetdb/db';
 
 type PlaygroundToolsConfig = {
   projectConnection?: string;
@@ -21,8 +22,8 @@ type PlaygroundToolsConfig = {
   cloudProvider?: CloudProvider;
 };
 
-export function buildPlaygroundTools(config: PlaygroundToolsConfig): Record<string, Tool> {
-  const toolsets: Toolset[] = [commonToolset];
+export async function buildPlaygroundTools(config: PlaygroundToolsConfig): Promise<Record<string, Tool>> {
+  const toolsets: Record<string, Tool>[] = [commonToolset];
   const connString: string | null = config.dbUrl ?? null;
 
   // Set up user ID provider if configured
@@ -37,79 +38,56 @@ export function buildPlaygroundTools(config: PlaygroundToolsConfig): Record<stri
       }
 
       const db = new DBUserAccess(config.userId);
-      const connGetter = createConnectionGetter(config.userId, projectName, connectionName);
+      const conn = await getConnection(config.userId, projectName, connectionName);
       if (config.cloudProvider) {
-        toolsets.push(getDBClusterTools(db, connGetter, config.cloudProvider));
+        const clusterService = getProjectClusterService(db, conn, config.cloudProvider);
+        toolsets.push(getDBClusterTools(clusterService));
       }
 
-      const playbookToolset = new playbookTools(db, async () => {
-        const conn = await connGetter();
-        return { projectId: conn.projectId };
-      });
+      const playbookToolset = getPlaybookToolset(projectPlaybookService(db, conn.projectId));
       toolsets.push(playbookToolset);
       hasPlaybookToolset = true;
 
       if (!connString) {
-        const targetDBPoolGetter = createTargetDBPoolGetter(connGetter);
-        toolsets.push(new DBSQLTools(targetDBPoolGetter));
+        const targetDBPool = getTargetDbPool(conn.connectionString);
+        toolsets.push(getDBSQLTools({ db: targetDBService(targetDBPool) }));
         hasDBTools = true;
       }
     }
   }
 
   if (connString && !hasDBTools) {
-    toolsets.push(new DBSQLTools(getTargetDbPool(connString)));
+    toolsets.push(getDBSQLTools({ db: targetDBService(getTargetDbPool(connString)) }));
   }
   if (!hasPlaybookToolset) {
     toolsets.push(builtinPlaybookToolset);
   }
 
-  return mergeToolsets(...toolsets);
+  return toolsets.reduce((acc, toolset) => {
+    return {
+      ...acc,
+      ...toolset
+    };
+  }, {});
 }
 
-function createConnectionGetter(
-  userId: string,
-  projectName: string,
-  connectionName?: string
-): () => Promise<Connection> {
-  let cachedConnection: Connection | null = null;
-  return async () => {
-    if (cachedConnection) {
-      return cachedConnection;
-    }
+export async function getConnection(userId: string, projectName: string, connectionName?: string): Promise<Connection> {
+  const db = new DBUserAccess(userId);
+  const project = await getProjectByName(db, projectName);
+  if (!project) {
+    throw new Error(`Project "${projectName}" not found or access denied`);
+  }
 
-    const db = new DBUserAccess(userId);
+  const connection = connectionName
+    ? await getConnectionByName(db, project.id, connectionName)
+    : await getDefaultConnection(db, project.id);
+  if (!connection) {
+    throw new Error(
+      connectionName
+        ? `Connection "${connectionName}" not found in project "${projectName}"`
+        : `No default connection found in project "${projectName}"`
+    );
+  }
 
-    // First find the project by name where user has access
-    const project = await getProjectByName(db, projectName);
-    if (!project) {
-      throw new Error(`Project "${projectName}" not found or access denied`);
-    }
-
-    const connection = connectionName
-      ? await getConnectionByName(db, project.id, connectionName)
-      : await getDefaultConnection(db, project.id);
-    if (!connection) {
-      throw new Error(
-        connectionName
-          ? `Connection "${connectionName}" not found in project "${projectName}"`
-          : `No default connection found in project "${projectName}"`
-      );
-    }
-
-    cachedConnection = connection;
-    return connection;
-  };
-}
-
-function createTargetDBPoolGetter(connGetter: () => Promise<Connection>) {
-  let cachedPool: Pool | null = null;
-  return async () => {
-    if (cachedPool) {
-      return cachedPool;
-    }
-    const connection = await connGetter();
-    cachedPool = getTargetDbPool(connection.connectionString);
-    return cachedPool;
-  };
+  return connection;
 }

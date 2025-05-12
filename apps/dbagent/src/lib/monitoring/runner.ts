@@ -1,10 +1,9 @@
 import { Message } from '@ai-sdk/ui-utils';
 import { generateId, generateObject, generateText, LanguageModelV1 } from 'ai';
 import { z } from 'zod';
-import { getMonitoringModel, getMonitoringSystemPrompt } from '../ai/agent';
-import { getTools } from '../ai/tools';
+import { agentModelDeps, getMonitoringModel, getMonitoringSystemPrompt, monitoringModel } from '../ai/agent';
 import { getConnectionFromSchedule } from '../db/connections';
-import { DBAccess } from '../db/db';
+import { DBAccess, getUserDBAccess } from '../db/db';
 import { getProjectById } from '../db/projects';
 import { insertScheduleRunLimitHistory } from '../db/schedule-runs';
 import { Connection, Project, Schedule } from '../db/schema';
@@ -38,16 +37,23 @@ async function runModelPlaybook({
     createdAt: new Date()
   });
 
-  const monitoringSystemPrompt = getMonitoringSystemPrompt({ cloudProvider: project.cloudProvider });
   const targetDb = getTargetDbPool(connection.connectionString);
+  const dbAccess = await getUserDBAccess(schedule.userId);
+  const deps = agentModelDeps({
+    withMCP: true,
+    targetDb,
+    dbAccess,
+    connection,
+    cloudProvider: project.cloudProvider,
+    userId: schedule.userId
+  });
+
   try {
-    const tools = await getTools({ project, connection, targetDb, userId: schedule.userId });
-    const result = await generateText({
+    const result = await monitoringModel.generateText({
       model: modelInstance,
-      system: monitoringSystemPrompt,
       maxSteps: 20,
-      tools,
-      messages
+      messages,
+      deps
     });
 
     messages.push({

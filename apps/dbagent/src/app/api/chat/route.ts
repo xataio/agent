@@ -1,32 +1,14 @@
-import { appendResponseMessages, createDataStreamResponse, DataStreamWriter, UIMessage } from 'ai';
+import { appendResponseMessages, createDataStreamResponse, UIMessage } from 'ai';
 import { notFound } from 'next/navigation';
 import { NextRequest } from 'next/server';
 import { generateTitleFromUserMessage } from '~/app/(main)/projects/[project]/chats/actions';
-import { AugmentedLanguageModel } from '~/lib/ai/model';
-import {
-  artifactsPrompt,
-  awsCloudProviderPrompt,
-  chatSystemPrompt,
-  commonSystemPrompt,
-  gcpCloudProviderPrompt
-} from '~/lib/ai/prompts';
-import { getLanguageModel, getProviderRegistry } from '~/lib/ai/providers';
-import {
-  AWSDBClusterTools,
-  CommonDBClusterTools,
-  commonToolset,
-  GCPDBClusterTools,
-  getDBSQLTools,
-  getPlaybookToolset
-} from '~/lib/ai/tools';
-import { getArtifactTools } from '~/lib/ai/tools/artifacts';
-import { mcpToolset } from '~/lib/ai/tools/user-mcp';
+import { agentModelDeps, chatModel } from '~/lib/ai/agent';
+import { getLanguageModel } from '~/lib/ai/providers';
 import { deleteChatById, getChatById, getChatsByProject, saveChat } from '~/lib/db/chats';
 import { getConnection } from '~/lib/db/connections';
-import { DBAccess, getUserSessionDBAccess } from '~/lib/db/db';
+import { getUserSessionDBAccess } from '~/lib/db/db';
 import { getProjectById } from '~/lib/db/projects';
-import { Connection, Project } from '~/lib/db/schema';
-import { getTargetDbPool, Pool } from '~/lib/targetdb/db';
+import { getTargetDbPool } from '~/lib/targetdb/db';
 import { requireUserSession } from '~/utils/route';
 
 export const maxDuration = 60;
@@ -48,66 +30,6 @@ export async function GET(request: NextRequest) {
 
   return Response.json({ chats });
 }
-
-type ChatModelDeps = {
-  dbAccess: DBAccess;
-  project: Project;
-  connection: Connection;
-  targetDb: Pool;
-  useArtifacts: boolean;
-  userId: string;
-  dataStream?: DataStreamWriter;
-};
-
-const chatModel = new AugmentedLanguageModel<ChatModelDeps>({
-  providerRegistry: getProviderRegistry,
-  baseModel: 'chat',
-  metadata: {
-    tags: ['chat']
-  },
-  systemPrompt: [commonSystemPrompt, chatSystemPrompt],
-  toolsSets: [
-    { tools: mcpToolset.listMCPTools },
-    { tools: commonToolset },
-    { tools: async ({ targetDb }) => getDBSQLTools(targetDb).toolset() },
-
-    // Playbook support
-    { tools: async ({ dbAccess, project }) => getPlaybookToolset(dbAccess, project.id) },
-
-    // Common cloud provider DB support
-    {
-      tools: async ({ dbAccess, connection }) =>
-        new CommonDBClusterTools(dbAccess, () => Promise.resolve(connection)).toolset()
-    }
-  ]
-});
-
-// AWS cloud provider support
-chatModel.addSystemPrompts(({ project }) => (project.cloudProvider === 'aws' ? awsCloudProviderPrompt : ''));
-chatModel.addToolSet({
-  active: (deps?: ChatModelDeps) => deps?.project.cloudProvider === 'aws',
-  tools: async ({ dbAccess, connection }) => {
-    return new AWSDBClusterTools(dbAccess, () => Promise.resolve(connection)).toolset();
-  }
-});
-
-// GCP cloud provider support
-chatModel.addSystemPrompts(({ project }) => (project.cloudProvider === 'gcp' ? gcpCloudProviderPrompt : ''));
-chatModel.addToolSet({
-  active: (deps?: ChatModelDeps) => deps?.project.cloudProvider === 'gcp',
-  tools: async ({ dbAccess, connection }) => {
-    return new GCPDBClusterTools(dbAccess, () => Promise.resolve(connection)).toolset();
-  }
-});
-
-// Artifacts support
-chatModel.addSystemPrompts(({ useArtifacts }) => (useArtifacts ? artifactsPrompt : ''));
-chatModel.addToolSet({
-  active: (deps?: ChatModelDeps) => !!deps?.useArtifacts && !!deps?.dataStream,
-  tools: async ({ dbAccess, userId, project, dataStream }) => {
-    return getArtifactTools({ dbAccess, userId, projectId: project.id, dataStream: dataStream! });
-  }
-});
 
 export async function POST(request: Request) {
   try {
@@ -142,15 +64,16 @@ export async function POST(request: Request) {
       execute: async (dataStream) => {
         const result = await chatModel.streamText({
           model: model.instance(),
-          deps: {
-            dbAccess: await getUserSessionDBAccess(),
-            project,
-            connection,
+          deps: agentModelDeps({
             targetDb,
-            useArtifacts,
+            dbAccess,
+            connection,
+            cloudProvider: project.cloudProvider,
             userId,
+            withMCP: true,
+            withArtifacts: useArtifacts,
             dataStream
-          },
+          }),
           messages,
           maxSteps: 20,
           metadata: {

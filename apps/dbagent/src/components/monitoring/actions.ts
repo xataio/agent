@@ -1,8 +1,7 @@
 'use server';
 
 import { auth } from '~/auth';
-import { AugmentedLanguageModel } from '~/lib/ai/model';
-import { getProviderRegistry } from '~/lib/ai/providers';
+import { commonModel } from '~/lib/ai/agent';
 import { getUserDBAccess, getUserSessionDBAccess } from '~/lib/db/db';
 import { getScheduleRuns } from '~/lib/db/schedule-runs';
 import {
@@ -17,19 +16,16 @@ import { Schedule, ScheduleInsert, ScheduleRun } from '~/lib/db/schema';
 import { scheduleGetNextRun, utcToLocalDate } from '~/lib/monitoring/scheduler';
 import { listPlaybooks } from '~/lib/tools/playbooks';
 
-const utilModel = new AugmentedLanguageModel({
-  providerRegistry: getProviderRegistry,
-  baseModel: 'openai:gpt-4o',
-  metadata: {
-    tags: ['internal', 'monitoring', 'cron']
-  }
-});
-
 export async function generateCronExpression(description: string): Promise<string> {
   const prompt = `Generate a cron expression for the following schedule description: "${description}". 
   Return strictly the cron expression, no quotes or anything else.`;
 
-  const { text } = await utilModel.generateText({ prompt });
+  const { text } = await commonModel.generateText({
+    prompt,
+    metadata: {
+      tags: ['internal', 'monitoring', 'cron']
+    }
+  });
   return text.trim();
 }
 

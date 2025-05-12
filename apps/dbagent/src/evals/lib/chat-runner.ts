@@ -1,8 +1,8 @@
-import { CoreMessage, generateText, Message as SDKMessage } from 'ai';
+import { CoreMessage, Message as SDKMessage } from 'ai';
 import { ExpectStatic } from 'vitest';
 import { generateUUID } from '~/components/chat/utils';
-import { getChatSystemPrompt, getModelInstance } from '~/lib/ai/agent';
-import { getTools } from '~/lib/ai/tools';
+import { agentModelDeps, chatModel, getChatSystemPrompt } from '~/lib/ai/agent';
+import { getUserDBAccess } from '~/lib/db/db';
 import { Connection, Project } from '~/lib/db/schema';
 import { env } from '~/lib/env/eval';
 import { getTargetDbPool } from '~/lib/targetdb/db';
@@ -31,14 +31,23 @@ export const evalChat = async ({
     isDefault: true
   };
 
+  const userId = 'evalUser';
   const targetDb = getTargetDbPool(connection.connectionString);
+  const dbAccess = await getUserDBAccess(userId);
   try {
-    const tools = await getTools({ project, connection, targetDb, userId: 'evalUser' });
-    const response = await generateText({
-      model: await getModelInstance(env.CHAT_MODEL),
+    const response = await chatModel.generateText({
+      model: env.CHAT_MODEL,
       system: getChatSystemPrompt({ cloudProvider: project.cloudProvider }),
       maxSteps: 20,
-      tools,
+      deps: agentModelDeps({
+        withMCP: true,
+        targetDb,
+        dbAccess,
+        connection,
+        cloudProvider: project.cloudProvider,
+        userId,
+        withArtifacts: false
+      }),
       messages
     });
     traceVercelAiResponse(response, expect);

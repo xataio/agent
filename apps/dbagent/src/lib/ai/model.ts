@@ -1,23 +1,26 @@
 import { AttributeValue } from '@opentelemetry/api';
 import {
   CoreMessage,
-  DataStreamOptions,
-  DataStreamWriter,
+  DeepPartial,
+  generateObject,
+  GenerateObjectResult,
   generateText,
   GenerateTextResult,
   LanguageModel,
   Message,
   ProviderMetadata,
+  Schema,
   Tool as SDKTool,
   tool as sdkTool,
   ToolSet as SDKToolSet,
   smoothStream,
+  streamObject,
+  StreamObjectResult,
   streamText,
   StreamTextOnChunkCallback,
   StreamTextOnErrorCallback,
   StreamTextOnFinishCallback,
-  StreamTextOnStepFinishCallback,
-  TextStreamPart
+  StreamTextOnStepFinishCallback
 } from 'ai';
 
 function generateUUID(): string {
@@ -38,9 +41,23 @@ interface Telemetry {
   metadata?: Record<string, AttributeValue>;
 }
 
+type ModelSettings = {
+  maxTokens?: number;
+  temperature?: number;
+  topP?: number;
+  topK?: number;
+  presencePenalty?: number;
+  frequencyPenalty?: number;
+  stopSequences?: string[];
+  seed?: number;
+  maxRetries?: number;
+  abortSignal?: AbortSignal;
+};
+
 type StreamTextOptions<DEPS> = PromptOptions &
   Telemetry & {
     model?: LanguageModel | string;
+    modelSettings?: ModelSettings;
     deps?: DEPS;
     maxSteps?: number;
     onChunk?: StreamTextOnChunkCallback<SDKToolSet>;
@@ -50,19 +67,38 @@ type StreamTextOptions<DEPS> = PromptOptions &
     experimental_providerMetadata?: ProviderMetadata;
   };
 
-type AsyncIterableStream<T> = AsyncIterable<T> & ReadableStream<T>;
-
-interface StreamResult {
-  readonly fullStream: AsyncIterableStream<TextStreamPart<SDKToolSet>>;
-  consumeStream(options?: { onError?: (error: unknown) => void }): Promise<void>;
-  mergeIntoDataStream(dataStream: DataStreamWriter, options?: DataStreamOptions): void;
-}
+type StreamResult = Awaited<ReturnType<typeof streamText>>;
 
 type GenerateTextOptions<DEPS> = PromptOptions &
   Telemetry & {
     model?: LanguageModel | string;
+    modelSettings?: ModelSettings;
     deps?: DEPS;
     maxSteps?: number;
+  };
+
+type GenerateObjectOptions<DEPS, OBJECT> = PromptOptions &
+  Telemetry & {
+    model?: LanguageModel | string;
+    modelSettings?: ModelSettings;
+    deps?: DEPS;
+    maxSteps?: number;
+    schema: z.Schema<OBJECT, z.ZodTypeDef, any>;
+    schemaName?: string;
+    schemaDescription?: string;
+    mode?: 'auto' | 'json' | 'tool';
+  };
+
+type StreamObjectOptions<DEPS, SCHEMA> = PromptOptions &
+  Telemetry & {
+    model?: LanguageModel | string;
+    modelSettings?: ModelSettings;
+    deps?: DEPS;
+    maxSteps?: number;
+    schema: z.Schema<SCHEMA, z.ZodTypeDef, any> | Schema<SCHEMA>;
+    schemaName?: string;
+    schemaDescription?: string;
+    mode?: 'auto' | 'json' | 'tool';
   };
 
 interface Model<DEPS = any> {
@@ -83,13 +119,13 @@ export class AugmentedLanguageModel<DEPS = any> implements Model<DEPS> {
     providerRegistry,
     metadata,
     systemPrompt,
-    toolsSets
+    toolsets
   }: {
     baseModel?: LanguageModel | string;
     providerRegistry?: ProviderRegistry | (() => Promise<ProviderRegistry>);
     metadata?: Record<string, AttributeValue>;
     systemPrompt?: Prompt<DEPS> | Prompt<DEPS>[];
-    toolsSets?: ToolSet<DEPS> | ToolSet<DEPS>[];
+    toolsets?: ToolSet<DEPS> | ToolSet<DEPS>[];
   }) {
     if (!baseModel && !providerRegistry) {
       throw new Error('baseModel and providerRegistry are required.');
@@ -104,11 +140,11 @@ export class AugmentedLanguageModel<DEPS = any> implements Model<DEPS> {
         this.#systemPrompt.push(systemPrompt);
       }
     }
-    if (toolsSets) {
-      if (Array.isArray(toolsSets)) {
-        this.#toolSets.push(...toolsSets);
+    if (toolsets) {
+      if (Array.isArray(toolsets)) {
+        this.#toolSets.push(...toolsets);
       } else {
-        this.#toolSets.push(toolsSets);
+        this.#toolSets.push(toolsets);
       }
     }
   }
@@ -154,17 +190,25 @@ export class AugmentedLanguageModel<DEPS = any> implements Model<DEPS> {
     return model as LanguageModel;
   }
 
-  private async getTools(deps?: DEPS): Promise<SDKToolSet> {
+  async getTools(deps?: DEPS): Promise<SDKToolSet> {
+    const { tools } = await this.getToolsWithPrompt(deps);
+    return tools;
+  }
+
+  private async getToolsWithPrompt(deps?: DEPS): Promise<{ tools: SDKToolSet; systemPrompts: Prompt<DEPS>[] }> {
+    const systemPrompts: Prompt<DEPS>[] = [];
     const toolsetTools: Record<string, Tool<DEPS>> = (
       await Promise.all(
         this.#toolSets.map(async (toolSet) => {
           if (toolSet.active && !toolSet.active(deps)) {
             return {};
           }
-          if (typeof toolSet.tools === 'function') {
-            return deps ? await toolSet.tools(deps) : {};
+
+          const tools = typeof toolSet.tools !== 'function' ? toolSet.tools : deps ? await toolSet.tools(deps) : {};
+          if (toolSet.systemPrompt && Object.keys(tools).length > 0) {
+            systemPrompts.push(toolSet.systemPrompt);
           }
-          return toolSet.tools;
+          return tools;
         })
       )
     ).reduce((acc: Record<string, Tool<DEPS>>, tools: Record<string, Tool<DEPS>>) => {
@@ -173,26 +217,36 @@ export class AugmentedLanguageModel<DEPS = any> implements Model<DEPS> {
 
     const allTools = { ...toolsetTools, ...this.#tools };
     if (!deps) {
-      return Object.fromEntries(
-        Object.entries(allTools)
-          .filter(([_, t]) => t.type !== 'function-deps')
-          .map(([key, t]) => [key, t as SDKTool])
-      );
+      return {
+        systemPrompts,
+        tools: Object.fromEntries(
+          Object.entries(allTools)
+            .filter(([_, t]) => t.type !== 'function-deps')
+            .map(([key, t]) => [key, t as SDKTool])
+        )
+      };
     }
 
-    return Object.fromEntries(
-      Object.entries(allTools)
-        .map(([key, t]) => [key, toSDKTool(t, deps)] as [string, SDKTool | null])
-        .filter(([, tool]) => tool !== null)
-    ) as SDKToolSet;
+    return {
+      systemPrompts,
+      tools: Object.fromEntries(
+        Object.entries(allTools)
+          .map(([key, t]) => [key, toSDKTool(t, deps)] as [string, SDKTool | null])
+          .filter(([, tool]) => tool !== null)
+      ) as SDKToolSet
+    };
   }
 
-  private getSystemPrompt(deps?: DEPS, system?: string) {
-    let systemPrompt = generatePrompt(this.#systemPrompt, deps);
+  private getSystemPrompt(deps?: DEPS, system?: string, toolSystemPrompts?: Prompt<DEPS>[]) {
+    const systemPrompts = [generatePrompt(this.#systemPrompt, deps)];
     if (system) {
-      systemPrompt = joinPrompts([systemPrompt, system]);
+      systemPrompts.push(system);
     }
-    return systemPrompt;
+    if (toolSystemPrompts) {
+      const toolPrompts = generatePrompt(toolSystemPrompts, deps);
+      systemPrompts.push(toolPrompts);
+    }
+    return joinPrompts(systemPrompts);
   }
 
   private getTelemetryConfig(metadata?: Record<string, AttributeValue>) {
@@ -204,31 +258,30 @@ export class AugmentedLanguageModel<DEPS = any> implements Model<DEPS> {
       }
     };
   }
-  async streamText({
-    model,
-    deps,
-    system,
-    prompt,
-    messages,
-    maxSteps,
-    onChunk,
-    onError,
-    onFinish,
-    onStepFinish,
-    metadata
-  }: StreamTextOptions<DEPS>): Promise<StreamResult> {
-    const systemPrompt = this.getSystemPrompt(deps, system);
-    const tools: SDKToolSet = await this.getTools(deps);
+  async streamText(options: StreamTextOptions<DEPS>): Promise<StreamResult> {
+    const {
+      model,
+      modelSettings,
+      deps,
+      system,
+      prompt,
+      messages,
+      metadata,
+      maxSteps,
+      onChunk,
+      onError,
+      onFinish,
+      onStepFinish
+    } = options;
+
+    const { tools, systemPrompts: toolSystemPrompts } = await this.getToolsWithPrompt(deps);
+    const systemPrompt = this.getSystemPrompt(deps, system, toolSystemPrompts);
     const llm = await this.getModel(model);
     const telemetry = this.getTelemetryConfig(metadata);
 
-    console.log('systemPrompt', systemPrompt);
-    console.log('prompt', prompt);
-    console.log('messages', messages);
-    console.log('tools', tools);
-
     return streamText({
       model: llm,
+      ...modelSettings,
       system: systemPrompt,
       prompt,
       messages,
@@ -245,22 +298,16 @@ export class AugmentedLanguageModel<DEPS = any> implements Model<DEPS> {
     });
   }
 
-  async generateText<OUTPUT>({
-    model,
-    deps,
-    system,
-    prompt,
-    messages,
-    maxSteps,
-    metadata
-  }: GenerateTextOptions<DEPS>): Promise<GenerateTextResult<SDKToolSet, OUTPUT>> {
-    const systemPrompt = this.getSystemPrompt(deps, system);
-    const tools: SDKToolSet = await this.getTools(deps);
+  async generateText<OUTPUT>(options: GenerateTextOptions<DEPS>): Promise<GenerateTextResult<SDKToolSet, OUTPUT>> {
+    const { model, modelSettings, deps, system, prompt, messages, metadata, maxSteps } = options;
+    const { tools, systemPrompts: toolSystemPrompts } = await this.getToolsWithPrompt(deps);
+    const systemPrompt = this.getSystemPrompt(deps, system, toolSystemPrompts);
     const llm = await this.getModel(model);
     const telemetry = this.getTelemetryConfig(metadata);
 
     return generateText({
       model: llm,
+      ...modelSettings,
       system: systemPrompt,
       prompt,
       messages,
@@ -268,6 +315,93 @@ export class AugmentedLanguageModel<DEPS = any> implements Model<DEPS> {
       tools,
       experimental_telemetry: telemetry
     });
+  }
+
+  async generateObject<OBJECT>(options: GenerateObjectOptions<DEPS, OBJECT>): Promise<GenerateObjectResult<OBJECT>> {
+    const {
+      model,
+      modelSettings,
+      deps,
+      system,
+      prompt,
+      messages,
+      metadata,
+      schema,
+      schemaName,
+      schemaDescription,
+      mode
+    } = options;
+    const { systemPrompts: toolSystemPrompts } = await this.getToolsWithPrompt(deps);
+    const systemPrompt = this.getSystemPrompt(deps, system, toolSystemPrompts);
+    const llm = await this.getModel(model);
+    const telemetry = this.getTelemetryConfig(metadata);
+
+    return generateObject({
+      model: llm,
+      ...modelSettings,
+      system: systemPrompt,
+      messages,
+      prompt,
+      schema: schema,
+      schemaName,
+      schemaDescription,
+      mode,
+      experimental_telemetry: telemetry
+    });
+  }
+
+  async streamObject<OBJECT>(
+    options: StreamObjectOptions<DEPS, OBJECT> & {
+      output?: 'object' | undefined;
+    }
+  ): Promise<StreamObjectResult<DeepPartial<OBJECT>, OBJECT, never>>;
+  async streamObject<ELEMENT>(
+    options: StreamObjectOptions<DEPS, ELEMENT> & {
+      output: 'array';
+    }
+  ): Promise<StreamObjectResult<Array<ELEMENT>, Array<ELEMENT>, AsyncIterable<ELEMENT> & ReadableStream<ELEMENT>>>;
+
+  async streamObject<OBJECT>(
+    options: StreamObjectOptions<DEPS, OBJECT> & { output?: 'object' }
+  ): Promise<StreamObjectResult<DeepPartial<OBJECT>, OBJECT, never>>;
+  async streamObject<ELEMENT>(
+    options: StreamObjectOptions<DEPS, Array<ELEMENT>> & { output: 'array' }
+  ): Promise<StreamObjectResult<Array<ELEMENT>, Array<ELEMENT>, AsyncIterable<ELEMENT> & ReadableStream<ELEMENT>>>;
+  async streamObject<SCHEMA, PARTIAL, RESULT, ELEMENT_STREAM>(
+    options: StreamObjectOptions<DEPS, SCHEMA> & { output?: 'object' | 'array' }
+  ): Promise<StreamObjectResult<PARTIAL, RESULT, ELEMENT_STREAM>> {
+    const {
+      model,
+      output = 'object',
+      modelSettings,
+      deps,
+      system,
+      prompt,
+      messages,
+      metadata,
+      schema,
+      schemaName,
+      schemaDescription,
+      mode
+    } = options;
+    const { systemPrompts: toolSystemPrompts } = await this.getToolsWithPrompt(deps);
+    const systemPrompt = this.getSystemPrompt(deps, system, toolSystemPrompts);
+    const llm = await this.getModel(model);
+    const telemetry = this.getTelemetryConfig(metadata);
+
+    return streamObject({
+      model: llm,
+      output: output as any,
+      ...modelSettings,
+      system: systemPrompt,
+      messages,
+      prompt,
+      schema,
+      schemaName,
+      schemaDescription,
+      mode,
+      experimental_telemetry: telemetry
+    }) as unknown as StreamObjectResult<PARTIAL, RESULT, ELEMENT_STREAM>;
   }
 }
 
@@ -311,8 +445,9 @@ type Tool<DEPS = any, PARAMETERS extends ToolParameters = ToolParameters, RESULT
       execute: (deps: DEPS, args: z.infer<PARAMETERS>, options: ToolExecutionOptions) => PromiseLike<RESULT>;
     };
 
-type ToolSet<DEPS = any> = {
+export type ToolSet<DEPS = any> = {
   active?: (deps?: DEPS) => boolean;
+  systemPrompt?: Prompt<DEPS>;
   tools: Record<string, Tool<DEPS>> | ((deps: DEPS) => Promise<Record<string, Tool<DEPS>>>);
 };
 
