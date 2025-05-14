@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, describe } from 'vitest';
-import { evalChat } from '~/evals/lib/chat-runner';
+import { evalChat, turnFromResponse } from '~/evals/lib/chat-runner';
 import { PostgresConfig, runSql, startPostgresContainer } from '../lib/eval-docker-db';
+import { evalTurn } from '../lib/llmcheck';
+import { toolChoiceMetric } from '../lib/llmcheck/metrics/toolchoice';
 import { mockGetConnectionInfo, mockGetProjectsById } from '../lib/mocking';
 import { EvalCase, runEvals } from '../lib/vitest-helpers';
 
@@ -171,12 +173,21 @@ describe.concurrent('tool_choice', () => {
       expect
     });
 
-    const allToolCalls = result.steps.flatMap((step) => step.toolCalls);
-    const toolCallNames = allToolCalls.map((toolCall) => toolCall.toolName);
-    expect(toolCallNames).toEqual(expect.arrayContaining(toolCalls));
-    const unexpectedToolCalls = toolCallNames.filter((toolCall) => !toolCalls.includes(toolCall));
-    if (!allowOtherTools) {
-      expect(unexpectedToolCalls).toEqual([]);
-    }
+    const turn = {
+      ...turnFromResponse(prompt, result),
+      expectedTools: toolCalls.map((toolCall) => ({
+        name: toolCall
+      }))
+    };
+
+    const measure = await evalTurn(
+      turn,
+      toolChoiceMetric({
+        allowMissing: false,
+        allowOthers: allowOtherTools
+      })
+    );
+
+    expect(measure.success).toBe(true);
   });
 });

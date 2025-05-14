@@ -1,7 +1,7 @@
 import { AugmentedLanguageModel } from '~/lib/ai/model';
 import { updateDocumentPrompt } from '~/lib/ai/prompts';
 import { getProviderRegistry } from '~/lib/ai/providers';
-import { createDocumentHandler } from '../server';
+import { createDocumentHandler } from '../server-document-handler';
 
 const titleModel = new AugmentedLanguageModel({
   providerRegistry: getProviderRegistry,

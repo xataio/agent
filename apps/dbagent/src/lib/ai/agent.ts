@@ -63,9 +63,66 @@ export function agentModelDeps({
   };
 }
 
+export function getAgentMockDeps({
+  withMCP = false,
+  useArtifacts = false,
+  targetDbService,
+  playbookService,
+  clusterService,
+  artifactsService
+}: {
+  withMCP?: boolean;
+  useArtifacts?: boolean;
+  targetDbService?: DBService;
+  playbookService?: PlaybookService;
+  clusterService?: ClusterService | CloudProvider;
+  artifactsService?: ArtifactsService;
+}): AgentModelDeps {
+  const mockHandler = {
+    get(_target: any, prop: any, _receiver: any) {
+      console.trace(`Stack trace for property access: ${prop}`);
+      throw new Error(`Not implemented: ${prop}`);
+    }
+  };
+
+  const useClusterService = clusterService
+    ? typeof clusterService === 'string'
+      ? getMockClusterService(clusterService)
+      : clusterService
+    : getMockClusterService('aws');
+
+  return {
+    withMCP: withMCP ?? false,
+    targetDb: targetDbService || new Proxy<DBService>({} as DBService, mockHandler),
+    playbookService: playbookService || new Proxy<PlaybookService>({} as PlaybookService, mockHandler),
+    clusterService: useClusterService,
+    artifactsService:
+      artifactsService || (useArtifacts ? new Proxy<ArtifactsService>({} as ArtifactsService, mockHandler) : undefined)
+  };
+}
+
+export function getMockClusterService(cloudProvider: CloudProvider): ClusterService {
+  const mockData = {
+    type: cloudProvider
+  };
+
+  return new Proxy<ClusterService>(mockData as unknown as ClusterService, {
+    get(target, prop): any {
+      if (!(prop in target)) {
+        console.trace(`Stack trace for property access: ${String(prop)}`);
+        throw new Error(`Property ${String(prop)} is not implemented in mockData.`);
+      }
+      return target[prop as keyof typeof target];
+    }
+  });
+}
+
 export const toolsets = [
   {
-    active: (deps?: { withMCP: boolean }) => deps?.withMCP || true,
+    active: (deps?: { withMCP: boolean }) => {
+      const enabled = !deps || deps.withMCP !== false;
+      return enabled;
+    },
     tools: mcpToolset.listMCPTools
   },
   { tools: commonToolset },

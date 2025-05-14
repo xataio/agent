@@ -1,35 +1,36 @@
-import { afterAll, beforeAll, describe } from 'vitest';
-import { evalChat } from '~/evals/lib/chat-runner';
-import { PostgresConfig, runSql, startPostgresContainer } from '../lib/eval-docker-db';
-import { mockGetConnectionInfo, mockGetProjectsById } from '../lib/mocking';
+import { describe } from 'vitest';
+import { evalChat, turnFromResponse } from '~/evals/lib/chat-runner';
+import { TableStat } from '~/lib/targetdb/db';
+import { evalTurn } from '../lib/llmcheck';
+import { regexResponseMetric } from '../lib/llmcheck/metrics/regex-response';
 import { EvalCase, runEvals } from '../lib/vitest-helpers';
-
-let dbConfig: PostgresConfig;
-beforeAll(async () => {
-  mockGetProjectsById();
-  mockGetConnectionInfo();
-  try {
-    dbConfig = await startPostgresContainer({ port: 9889 });
-    await runSql(
-      `create table dogs (
-          id serial primary key,
-          name text
-      );`,
-      dbConfig
-    );
-  } catch (error) {
-    console.error('Error starting postgres container', error);
-    throw error;
-  }
-});
-
-afterAll(async () => {
-  await dbConfig.close();
-});
 
 type Test = EvalCase & {
   prompt: string;
   finalAnswerRegex: RegExp;
+};
+
+const toolCalls = {
+  findTableSchema: async (_table: string) => {
+    return 'public';
+  },
+
+  getTablesInfo: async () => {
+    const data: TableStat[] = [
+      {
+        name: 'dogs',
+        schema: 'public',
+        rows: 100,
+        size: '24 kB',
+        seqScans: 100,
+        idxScans: 100,
+        nTupIns: 100,
+        nTupUpd: 100,
+        nTupDel: 100
+      }
+    ];
+    return data;
+  }
 };
 
 describe.concurrent('test', () => {
@@ -51,14 +52,11 @@ describe.concurrent('test', () => {
     }
   ];
   runEvals(evalCases, async ({ prompt, finalAnswerRegex }, { expect }) => {
-    const result = await evalChat({
-      messages: [{ role: 'user', content: prompt }],
-      dbConnection: dbConfig.connectionString,
-      expect
-    });
+    const result = await evalChat({ prompt, expect, toolCalls });
+    const turn = turnFromResponse(prompt, result);
+    const metric = regexResponseMetric(finalAnswerRegex);
+    const measure = await evalTurn(turn, metric);
 
-    const finalAnswer = result.text;
-
-    expect(finalAnswer).toMatch(finalAnswerRegex);
+    expect(measure.success).toBe(true);
   });
 });

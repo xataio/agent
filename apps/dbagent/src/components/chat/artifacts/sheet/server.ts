@@ -1,7 +1,13 @@
 import { z } from 'zod';
 import { commonModel } from '~/lib/ai/agent';
 import { sheetPrompt, updateDocumentPrompt } from '~/lib/ai/prompts';
-import { createDocumentHandler } from '../server';
+import { createDocumentHandler } from '../server-document-handler';
+
+// Note: To mock createDocumentHandler in tests, you can use a jest mock or a similar mocking library.
+// For example, you can define a mock implementation like this:
+// jest.mock('~/components/chat/artifacts/server', () => ({
+//   createDocumentHandler: jest.fn().mockReturnValue(jest.fn())
+// }));
 
 export const sheetDocumentHandler = createDocumentHandler<'sheet'>({
   kind: 'sheet',

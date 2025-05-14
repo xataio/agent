@@ -77,13 +77,7 @@ function getSlowQueries({ db }: DBToolsProps): Tool {
 the max execution time in seconds, the mean execution time in seconds, the total execution time
 (all calls together) in seconds, and the query itself.`,
     parameters: z.object({}),
-    execute: async () => {
-      try {
-        return await db.slowQueries(2000);
-      } catch (error) {
-        return `Error getting slow queries: ${error}`;
-      }
-    }
+    execute: async () => await db.slowQueries(2000)
   });
 }
 
@@ -98,13 +92,9 @@ If you know the schema, pass it in as well.`,
       query: z.string()
     }),
     execute: async ({ schema = 'public', query }) => {
-      try {
-        const explain = await db.explainQuery(schema, query);
-        if (!explain) return 'Could not run EXPLAIN on the query';
-        return explain;
-      } catch (error) {
-        return `Error running EXPLAIN on the query: ${error}`;
-      }
+      const explain = await db.explainQuery(schema, query);
+      if (!explain) return 'Could not run EXPLAIN on the query';
+      return explain;
     }
   });
 }
@@ -116,13 +106,7 @@ function describeTable({ db }: DBToolsProps): Tool {
       schema: z.string(),
       table: z.string()
     }),
-    execute: async ({ schema = 'public', table }) => {
-      try {
-        return await db.describeTable(schema, table);
-      } catch (error) {
-        return `Error describing table: ${error}`;
-      }
-    }
+    execute: async ({ schema = 'public', table }) => await db.describeTable(schema, table)
   });
 }
 
@@ -132,13 +116,7 @@ function findTableSchema({ db }: DBToolsProps): Tool {
     parameters: z.object({
       table: z.string()
     }),
-    execute: async ({ table }) => {
-      try {
-        return await db.findTableSchema(table);
-      } catch (error) {
-        return `Error finding table schema: ${error}`;
-      }
-    }
+    execute: async ({ table }) => await db.findTableSchema(table)
   });
 }
 
@@ -146,13 +124,7 @@ function getCurrentActiveQueries({ db }: DBToolsProps): Tool {
   return tool({
     description: `Get the currently active queries.`,
     parameters: z.object({}),
-    execute: async () => {
-      try {
-        return await db.currentActiveQueries();
-      } catch (error) {
-        return `Error getting current active queries: ${error}`;
-      }
-    }
+    execute: async () => await db.currentActiveQueries()
   });
 }
 
@@ -160,13 +132,7 @@ function getQueriesWaitingOnLocks({ db }: DBToolsProps): Tool {
   return tool({
     description: `Get the queries that are currently blocked waiting on locks.`,
     parameters: z.object({}),
-    execute: async () => {
-      try {
-        return await db.queriesWaitingOnLocks();
-      } catch (error) {
-        return `Error getting queries waiting on locks: ${error}`;
-      }
-    }
+    execute: async () => await db.queriesWaitingOnLocks()
   });
 }
 
@@ -174,13 +140,7 @@ function getVacuumStats({ db }: DBToolsProps): Tool {
   return tool({
     description: `Get the vacuum stats for the top tables in the database. They are sorted by the number of dead tuples descending.`,
     parameters: z.object({}),
-    execute: async () => {
-      try {
-        return await db.vacuumStats();
-      } catch (error) {
-        return `Error getting vacuum stats: ${error}`;
-      }
-    }
+    execute: async () => await db.vacuumStats()
   });
 }
 
@@ -188,13 +148,7 @@ function getConnectionsStats({ db }: DBToolsProps): Tool {
   return tool({
     description: `Get the connections stats for the database.`,
     parameters: z.object({}),
-    execute: async () => {
-      try {
-        return await db.connectionsStats();
-      } catch (error) {
-        return `Error getting connections stats: ${error}`;
-      }
-    }
+    execute: async () => await db.connectionsStats()
   });
 }
 
@@ -202,13 +156,7 @@ function getConnectionsGroups({ db }: DBToolsProps): Tool {
   return tool({
     description: `Get the connections groups for the database. This is a view in the pg_stat_activity table, grouped by (state, user, application_name, client_addr, wait_event_type, wait_event).`,
     parameters: z.object({}),
-    execute: async () => {
-      try {
-        return await db.connectionsGroups();
-      } catch (error) {
-        return `Error getting connections groups: ${error}`;
-      }
-    }
+    execute: async () => await db.connectionsGroups()
   });
 }
 
@@ -216,12 +164,6 @@ function getPerformanceAndVacuumSettings({ db }: DBToolsProps): Tool {
   return tool({
     description: `Get the performance and vacuum settings for the database.`,
     parameters: z.object({}),
-    execute: async () => {
-      try {
-        return await db.getPerformanceAndVacuumSettings();
-      } catch (error) {
-        return `Error getting performance and vacuum settings: ${error}`;
-      }
-    }
+    execute: async () => await db.getPerformanceAndVacuumSettings()
   });
 }

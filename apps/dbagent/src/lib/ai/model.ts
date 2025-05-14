@@ -41,7 +41,7 @@ interface Telemetry {
   metadata?: Record<string, AttributeValue>;
 }
 
-type ModelSettings = {
+type ModelOptions = {
   maxTokens?: number;
   temperature?: number;
   topP?: number;
@@ -54,10 +54,16 @@ type ModelSettings = {
   abortSignal?: AbortSignal;
 };
 
+type ToolOptions<DEPS> = {
+  // Add additional tools or modify existing tools
+  tools?: Record<string, Tool<DEPS>> | ((tools: Record<string, Tool<DEPS>>, deps?: DEPS) => Record<string, Tool<DEPS>>);
+};
+
 type StreamTextOptions<DEPS> = PromptOptions &
+  ToolOptions<DEPS> &
   Telemetry & {
     model?: LanguageModel | string;
-    modelSettings?: ModelSettings;
+    modelSettings?: ModelOptions;
     deps?: DEPS;
     maxSteps?: number;
     onChunk?: StreamTextOnChunkCallback<SDKToolSet>;
@@ -70,9 +76,10 @@ type StreamTextOptions<DEPS> = PromptOptions &
 type StreamResult = Awaited<ReturnType<typeof streamText>>;
 
 type GenerateTextOptions<DEPS> = PromptOptions &
+  ToolOptions<DEPS> &
   Telemetry & {
     model?: LanguageModel | string;
-    modelSettings?: ModelSettings;
+    modelSettings?: ModelOptions;
     deps?: DEPS;
     maxSteps?: number;
   };
@@ -80,7 +87,7 @@ type GenerateTextOptions<DEPS> = PromptOptions &
 type GenerateObjectOptions<DEPS, OBJECT> = PromptOptions &
   Telemetry & {
     model?: LanguageModel | string;
-    modelSettings?: ModelSettings;
+    modelSettings?: ModelOptions;
     deps?: DEPS;
     maxSteps?: number;
     schema: z.Schema<OBJECT, z.ZodTypeDef, any>;
@@ -92,7 +99,7 @@ type GenerateObjectOptions<DEPS, OBJECT> = PromptOptions &
 type StreamObjectOptions<DEPS, SCHEMA> = PromptOptions &
   Telemetry & {
     model?: LanguageModel | string;
-    modelSettings?: ModelSettings;
+    modelSettings?: ModelOptions;
     deps?: DEPS;
     maxSteps?: number;
     schema: z.Schema<SCHEMA, z.ZodTypeDef, any> | Schema<SCHEMA>;
@@ -191,11 +198,14 @@ export class AugmentedLanguageModel<DEPS = any> implements Model<DEPS> {
   }
 
   async getTools(deps?: DEPS): Promise<SDKToolSet> {
-    const { tools } = await this.getToolsWithPrompt(deps);
+    const { tools } = await this.getToolsWithPrompt({}, deps);
     return tools;
   }
 
-  private async getToolsWithPrompt(deps?: DEPS): Promise<{ tools: SDKToolSet; systemPrompts: Prompt<DEPS>[] }> {
+  private async getToolsWithPrompt(
+    options: ToolOptions<DEPS>,
+    deps?: DEPS
+  ): Promise<{ tools: SDKToolSet; systemPrompts: Prompt<DEPS>[] }> {
     const systemPrompts: Prompt<DEPS>[] = [];
     const toolsetTools: Record<string, Tool<DEPS>> = (
       await Promise.all(
@@ -215,25 +225,18 @@ export class AugmentedLanguageModel<DEPS = any> implements Model<DEPS> {
       return { ...acc, ...tools };
     }, {});
 
-    const allTools = { ...toolsetTools, ...this.#tools };
-    if (!deps) {
-      return {
-        systemPrompts,
-        tools: Object.fromEntries(
-          Object.entries(allTools)
-            .filter(([_, t]) => t.type !== 'function-deps')
-            .map(([key, t]) => [key, t as SDKTool])
-        )
-      };
+    let allTools = { ...toolsetTools, ...this.#tools };
+    if (options.tools) {
+      if (typeof options.tools === 'function') {
+        allTools = options.tools(allTools, deps);
+      } else {
+        allTools = { ...allTools, ...options.tools };
+      }
     }
 
     return {
       systemPrompts,
-      tools: Object.fromEntries(
-        Object.entries(allTools)
-          .map(([key, t]) => [key, toSDKTool(t, deps)] as [string, SDKTool | null])
-          .filter(([, tool]) => tool !== null)
-      ) as SDKToolSet
+      tools: toSDKTools(allTools, deps)
     };
   }
 
@@ -258,6 +261,7 @@ export class AugmentedLanguageModel<DEPS = any> implements Model<DEPS> {
       }
     };
   }
+
   async streamText(options: StreamTextOptions<DEPS>): Promise<StreamResult> {
     const {
       model,
@@ -271,10 +275,11 @@ export class AugmentedLanguageModel<DEPS = any> implements Model<DEPS> {
       onChunk,
       onError,
       onFinish,
-      onStepFinish
+      onStepFinish,
+      tools: toolsOptions
     } = options;
 
-    const { tools, systemPrompts: toolSystemPrompts } = await this.getToolsWithPrompt(deps);
+    const { tools, systemPrompts: toolSystemPrompts } = await this.getToolsWithPrompt({ tools: toolsOptions }, deps);
     const systemPrompt = this.getSystemPrompt(deps, system, toolSystemPrompts);
     const llm = await this.getModel(model);
     const telemetry = this.getTelemetryConfig(metadata);
@@ -299,8 +304,8 @@ export class AugmentedLanguageModel<DEPS = any> implements Model<DEPS> {
   }
 
   async generateText<OUTPUT>(options: GenerateTextOptions<DEPS>): Promise<GenerateTextResult<SDKToolSet, OUTPUT>> {
-    const { model, modelSettings, deps, system, prompt, messages, metadata, maxSteps } = options;
-    const { tools, systemPrompts: toolSystemPrompts } = await this.getToolsWithPrompt(deps);
+    const { model, modelSettings, deps, system, prompt, messages, metadata, maxSteps, tools: toolsOptions } = options;
+    const { tools, systemPrompts: toolSystemPrompts } = await this.getToolsWithPrompt({ tools: toolsOptions }, deps);
     const systemPrompt = this.getSystemPrompt(deps, system, toolSystemPrompts);
     const llm = await this.getModel(model);
     const telemetry = this.getTelemetryConfig(metadata);
@@ -331,8 +336,7 @@ export class AugmentedLanguageModel<DEPS = any> implements Model<DEPS> {
       schemaDescription,
       mode
     } = options;
-    const { systemPrompts: toolSystemPrompts } = await this.getToolsWithPrompt(deps);
-    const systemPrompt = this.getSystemPrompt(deps, system, toolSystemPrompts);
+    const systemPrompt = this.getSystemPrompt(deps, system, []);
     const llm = await this.getModel(model);
     const telemetry = this.getTelemetryConfig(metadata);
 
@@ -384,8 +388,7 @@ export class AugmentedLanguageModel<DEPS = any> implements Model<DEPS> {
       schemaDescription,
       mode
     } = options;
-    const { systemPrompts: toolSystemPrompts } = await this.getToolsWithPrompt(deps);
-    const systemPrompt = this.getSystemPrompt(deps, system, toolSystemPrompts);
+    const systemPrompt = this.getSystemPrompt(deps, system, []);
     const llm = await this.getModel(model);
     const telemetry = this.getTelemetryConfig(metadata);
 
@@ -435,7 +438,7 @@ import { ProviderRegistry } from './providers';
 
 type ToolParameters = z.ZodTypeAny;
 
-type Tool<DEPS = any, PARAMETERS extends ToolParameters = ToolParameters, RESULT = any> =
+export type Tool<DEPS = any, PARAMETERS extends ToolParameters = ToolParameters, RESULT = any> =
   | SDKTool<PARAMETERS, RESULT>
   | {
       type: 'function-deps';
@@ -500,4 +503,50 @@ export function tool<DEPS, PARAMETERS extends ToolParameters, RESULT = any>(tool
     };
   }
   return sdkTool(tool);
+}
+
+export function toSDKTools<DEPS>(tools: Record<string, Tool<DEPS>>, deps?: DEPS): Record<string, SDKTool> {
+  return Object.fromEntries(toolsWithErrorCatch(generateSDKTools(tools, deps)));
+}
+
+function* generateSDKTools<DEPS>(tools: Record<string, Tool<DEPS>>, deps?: DEPS): Generator<[string, SDKTool]> {
+  if (deps) {
+    for (const [key, tool] of Object.entries(tools)) {
+      const sdkToolInstance = toSDKTool(tool, deps);
+      if (sdkToolInstance !== null) {
+        yield [key, sdkToolInstance];
+      }
+    }
+  } else {
+    for (const [key, tool] of Object.entries(tools)) {
+      if (tool.type !== 'function-deps') {
+        yield [key, tool];
+      }
+    }
+  }
+}
+
+export function* toolsWithErrorCatch(tools: Iterable<[string, SDKTool]>): Generator<[string, SDKTool]> {
+  for (const [key, tool] of tools) {
+    if (!tool.execute) {
+      yield [key, tool];
+      continue;
+    }
+    const errorMessage = tool.description ? `Error: ${tool.description.split('.')[0]}` : 'Error, operation failed';
+    tool.execute = executeWithErrorHandling(tool.execute, errorMessage);
+    yield [key, tool];
+  }
+}
+
+export function executeWithErrorHandling<T extends any[], R>(
+  fn: (...args: T) => PromiseLike<R>,
+  errorMessage?: string
+): (...args: T) => Promise<R | string> {
+  return (...args: T): Promise<R | string> => {
+    return Promise.resolve(fn(...args))
+      .then((result) => result)
+      .catch((error) => {
+        return errorMessage ? `${errorMessage}: ${error}` : `Error: ${error}`;
+      });
+  };
 }

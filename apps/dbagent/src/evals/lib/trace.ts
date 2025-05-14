@@ -4,7 +4,7 @@ import path from 'path';
 import { ExpectStatic } from 'vitest';
 import { ensureTraceFolderExistsExpect } from './test-id';
 
-type GenerateTextResponse = Awaited<ReturnType<typeof generateText>>;
+export type GenerateTextResponse = Awaited<ReturnType<typeof generateText>>;
 
 const toolResultToHuman = (toolResult: any) => {
   return `
@@ -31,15 +31,37 @@ const parseRequestBody = (response: GenerateTextResponse) => {
 
 const getSystemPromptFromResponse = (response: GenerateTextResponse) => {
   const body = parseRequestBody(response);
-  return body.system[0].text;
+  const system =
+    body.system && body.system.length > 0
+      ? getResponseMessageText(body.system[0])
+      : body.messages[0].role === 'system'
+        ? getResponseMessageText(body.messages[0].content)
+        : '';
+  return system;
 };
 
 const getUserPromptFromResponse = (response: GenerateTextResponse) => {
   const body = parseRequestBody(response);
-  return body.messages[0].content[0].text;
+  for (const message of body.messages) {
+    if (message.role === 'user') {
+      return getResponseMessageText(message.content);
+    }
+  }
+  return '';
+};
+
+const getResponseMessageText = (content: any) => {
+  if (typeof content === 'string') {
+    return content;
+  } else if (Array.isArray(content)) {
+    return content[0].text;
+  }
+  return '';
 };
 
 export const traceVercelAiResponse = (response: GenerateTextResponse, expect: ExpectStatic) => {
+  console.log(response);
+
   const traceFolder = ensureTraceFolderExistsExpect(expect);
   const humanTraceFile = path.join(traceFolder, 'human.txt');
   const humanTrace = `
