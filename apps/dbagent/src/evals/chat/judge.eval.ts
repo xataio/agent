@@ -7,8 +7,7 @@ import { env } from '~/lib/env/eval';
 import { TableStat } from '~/lib/targetdb/db';
 import { turnFromResponse } from '../lib/chat-runner';
 import { evalTurn, LLMTurn, setEvalModel } from '../lib/llmcheck';
-import { conciseAnswerMetric, Metric } from '../lib/llmcheck/metrics';
-import { finalAnswerMetric } from '../lib/llmcheck/metrics/final-answer';
+import { conciseAnswerMetric, finalAnswerMetric, Metric } from '../lib/llmcheck/metrics';
 import { ensureTraceFolderExistsExpect } from '../lib/test-id';
 import { EvalCase, runEvals } from '../lib/vitest-helpers';
 

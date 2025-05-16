@@ -1,5 +1,6 @@
 import { DataStreamWriter, LanguageModel } from 'ai';
 import { Pool } from 'pg';
+import { ArtifactsService, projectArtifactService } from '~/lib/tools/artifacts';
 import { DBAccess } from '../db/db';
 import { CloudProvider, Connection } from '../db/schema';
 import { AugmentedLanguageModel, ToolSet } from './model';
@@ -13,7 +14,7 @@ import {
 } from './prompts';
 import { getLanguageModel, getLanguageModelWithFallback, getProviderRegistry, ModelWithFallback } from './providers';
 import { commonToolset } from './tools';
-import { ArtifactsService, getArtifactTools, projectArtifactService } from './tools/artifacts';
+import { getArtifactTools } from './tools/artifacts';
 import { ClusterService, getDBClusterTools, getProjectClusterService } from './tools/cluster';
 import { DBService, getDBSQLTools, targetDBService } from './tools/db';
 import { getPlaybookToolset, PlaybookService, projectPlaybookService } from './tools/playbook';

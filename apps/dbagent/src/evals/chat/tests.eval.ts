@@ -2,7 +2,7 @@ import { describe } from 'vitest';
 import { evalChat, turnFromResponse } from '~/evals/lib/chat-runner';
 import { TableStat } from '~/lib/targetdb/db';
 import { evalTurn } from '../lib/llmcheck';
-import { regexResponseMetric } from '../lib/llmcheck/metrics/regex-response';
+import { regexResponseMetric } from '../lib/llmcheck/metrics';
 import { EvalCase, runEvals } from '../lib/vitest-helpers';
 
 type Test = EvalCase & {

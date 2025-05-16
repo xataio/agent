@@ -12,12 +12,30 @@ import { GenerateTextResponse, traceVercelAiResponse } from './trace';
 
 export const turnFromResponse = (prompt: string, response: GenerateTextResponse): LLMTurn => {
   const allToolCalls = response.steps.flatMap((step) => {
-    return step.toolResults.flatMap((toolResult) => {
-      return Object.values(toolResult).map((toolCall: any) => ({
-        name: toolCall.toolName,
-        inputs: toolCall.args,
-        output: toolCall.result
-      }));
+    console.log(`step ${step.usage.totalTokens}`);
+
+    return step.toolResults.flatMap((toolResult: any) => {
+      console.log(`  toolResult: ${JSON.stringify(toolResult, null, 2)}`);
+
+      if ('type' in toolResult && toolResult.type === 'tool-result') {
+        // generateText format
+        return [
+          {
+            name: toolResult.toolName,
+            inputs: toolResult.args,
+            output: toolResult.result
+          }
+        ];
+      }
+      return Object.values(toolResult).map((toolCall: any) => {
+        const transformed = {
+          name: toolCall.toolName,
+          inputs: toolCall.args,
+          output: toolCall.result
+        };
+        console.log(`    transformed: ${JSON.stringify(transformed)}`);
+        return transformed;
+      });
     });
   });
 

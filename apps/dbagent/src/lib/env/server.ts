@@ -38,5 +38,6 @@ const schema = z.object({
 });
 
 const serverEnv = schema.parse(process.env);
+console.log('serverEnv', serverEnv);
 
 export const env = { ...clientEnv, ...serverEnv };

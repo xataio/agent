@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe } from 'vitest';
 import { evalChat, turnFromResponse } from '~/evals/lib/chat-runner';
 import { PostgresConfig, runSql, startPostgresContainer } from '../lib/eval-docker-db';
 import { evalTurn } from '../lib/llmcheck';
-import { toolChoiceMetric } from '../lib/llmcheck/metrics/toolchoice';
+import { toolChoiceMetric } from '../lib/llmcheck/metrics';
 import { mockGetConnectionInfo, mockGetProjectsById } from '../lib/mocking';
 import { EvalCase, runEvals } from '../lib/vitest-helpers';
 

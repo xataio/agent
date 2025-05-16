@@ -1,4 +1,5 @@
 export type Chat = {
+  id?: string;
   turns: LLMTurn[];
   name?: string;
 };
@@ -6,6 +7,7 @@ export type Chat = {
 export type LLMTurnField = keyof LLMTurn;
 
 export type LLMTurn = {
+  id?: string;
   name?: string;
   input: string;
   output: string;
@@ -21,6 +23,7 @@ export type LLMTurn = {
 export type ToolCallFields = keyof ToolCall;
 
 export type ToolCall = {
+  id?: string;
   name: string;
   description?: string;
   inputs?: any[];

@@ -21,12 +21,12 @@ export const toolChoice = toolChoiceMetric({ allowOthers: false, allowMissing: f
 function measureTurn(turn: LLMTurn, { expectedToolCalls, allowOthers, allowMissing }: ToolChoiceProps): Measure {
   const expectedToolsSet = new Set([
     ...(turn.expectedTools?.map((tool) => tool.name) ?? []),
-    ...(expectedToolCalls?.map((tool) => tool.inputs) ?? [])
+    ...(expectedToolCalls?.map((tool) => tool.name) ?? [])
   ]);
   const actualToolsSet = new Set(turn.toolCalls?.map((tool) => tool.name) ?? []);
 
-  const missing = [...expectedToolsSet].filter((tool) => !actualToolsSet.has(tool));
-  const others = [...actualToolsSet].filter((tool) => !expectedToolsSet.has(tool));
+  const missing = [...expectedToolsSet].filter((tool) => !actualToolsSet.has(tool)).sort();
+  const others = [...actualToolsSet].filter((tool) => !expectedToolsSet.has(tool)).sort();
 
   const errorReport: string[] = [];
   let success = true;

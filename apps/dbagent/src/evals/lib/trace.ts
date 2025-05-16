@@ -60,8 +60,6 @@ const getResponseMessageText = (content: any) => {
 };
 
 export const traceVercelAiResponse = (response: GenerateTextResponse, expect: ExpectStatic) => {
-  console.log(response);
-
   const traceFolder = ensureTraceFolderExistsExpect(expect);
   const humanTraceFile = path.join(traceFolder, 'human.txt');
   const humanTrace = `
