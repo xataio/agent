@@ -3,91 +3,87 @@ import { z } from 'zod';
 import { getClusterByConnection } from '~/lib/db/aws-clusters';
 import { DBAccess } from '~/lib/db/db';
 import { getInstanceByConnection } from '~/lib/db/gcp-instances';
-import { CloudProvider, Connection } from '~/lib/db/schema';
+import { AWSCluster, CloudProvider, Connection, GCPInstance } from '~/lib/db/schema';
 import { getPostgresExtensions, getTablesInfo } from '~/lib/tools/dbinfo';
 import { getInstanceLogsGCP, getInstanceLogsRDS } from '~/lib/tools/logs';
 import { getClusterMetricGCP, getClusterMetricRDS } from '~/lib/tools/metrics';
-import { mergeToolsets, Toolset, ToolsetGroup } from './types';
-export function getDBClusterTools(
+
+export interface ClusterService {
+  type: 'aws' | 'gcp' | 'other';
+  getTablesInfo(): Promise<string>;
+  getPostgresExtensions(): Promise<string>;
+}
+
+export interface AWSProjectClusterService extends ClusterService {
+  type: 'aws';
+  getInstanceLogs({ periodInSeconds, grep }: { periodInSeconds: number; grep?: string }): Promise<string>;
+  getInstanceMetric({
+    metricName,
+    periodInSeconds,
+    stat
+  }: {
+    metricName: string;
+    periodInSeconds: number;
+    stat: 'Average' | 'Maximum' | 'Minimum' | 'Sum';
+  }): Promise<string>;
+  getClusterInfo(): Promise<AWSCluster | null>;
+}
+
+export interface GCPProjectClusterService extends ClusterService {
+  type: 'gcp';
+  getInstanceLogs({ periodInSeconds, grep }: { periodInSeconds: number; grep?: string }): Promise<string>;
+  getInstanceMetric({ metricName, periodInSeconds }: { metricName: string; periodInSeconds: number }): Promise<string>;
+  getInstanceInfo(): Promise<GCPInstance | null>;
+}
+
+export function getDBClusterTools(tools: ClusterService): Record<string, Tool> {
+  switch (tools.type) {
+    case 'aws':
+      return awsDBClusterTools(tools as AWSProjectClusterService);
+    case 'gcp':
+      return gpcDBClusterTools(tools as GCPProjectClusterService);
+    default:
+      return commonDBClusterTools(tools);
+  }
+}
+
+export function getProjectClusterService(
   dbAccess: DBAccess,
   connection: Connection | (() => Promise<Connection>),
   cloudProvider: CloudProvider
-): Record<string, Tool> {
-  const connectionGetter = typeof connection === 'function' ? connection : () => Promise.resolve(connection);
-  const toolset: Toolset[] = [new CommonDBClusterTools(dbAccess, connectionGetter)];
-
+): ClusterService {
   if (cloudProvider === 'aws') {
-    toolset.push(new AWSDBClusterTools(dbAccess, connectionGetter));
+    return awsProjectClusterTools(dbAccess, connection);
   } else if (cloudProvider === 'gcp') {
-    toolset.push(new GCPDBClusterTools(dbAccess, connectionGetter));
-  }
-  return mergeToolsets(...toolset);
-}
-
-export class CommonDBClusterTools implements ToolsetGroup {
-  #dbAccess: DBAccess;
-  #getter: () => Promise<Connection>;
-
-  constructor(dbAccess: DBAccess, getter: () => Promise<Connection>) {
-    this.#dbAccess = dbAccess;
-    this.#getter = getter;
-  }
-
-  toolset(): Record<string, Tool> {
+    return gcpProjectClusterTools(dbAccess, connection);
+  } else {
+    const getter = typeof connection === 'function' ? connection : () => Promise.resolve(connection);
     return {
-      getTablesInfo: this.getTablesInfo(),
-      getPostgresExtensions: this.getPostgresExtensions()
+      type: 'other',
+      getTablesInfo: async () => await getTablesInfo(dbAccess, await getter()),
+      getPostgresExtensions: async () => await getPostgresExtensions(dbAccess, await getter())
     };
   }
+}
 
-  private getTablesInfo(): Tool {
-    const getter = this.#getter;
-    const db = this.#dbAccess;
-    return tool({
+export function commonDBClusterTools(clusterTools: ClusterService): Record<string, Tool> {
+  return {
+    getTablesInfo: tool({
       description: `Get the information about tables (sizes, row counts, usage).`,
       parameters: z.object({}),
-      execute: async () => {
-        const connection = await getter();
-        return await getTablesInfo(db, connection);
-      }
-    });
-  }
-
-  private getPostgresExtensions(): Tool {
-    const getter = this.#getter;
-    const db = this.#dbAccess;
-    return tool({
+      execute: async () => clusterTools.getTablesInfo()
+    }),
+    getPostgresExtensions: tool({
       description: `Get the available and installed PostgreSQL extensions for the database.`,
       parameters: z.object({}),
-      execute: async () => {
-        const connection = await getter();
-        return await getPostgresExtensions(db, connection);
-      }
-    });
-  }
+      execute: async () => clusterTools.getPostgresExtensions()
+    })
+  };
 }
 
-export class AWSDBClusterTools implements ToolsetGroup {
-  #dbAccess: DBAccess;
-  #getter: () => Promise<Connection>;
-
-  constructor(dbAccess: DBAccess, getter: () => Promise<Connection>) {
-    this.#dbAccess = dbAccess;
-    this.#getter = getter;
-  }
-
-  toolset(): Record<string, Tool> {
-    return {
-      getInstanceLogs: this.getInstanceLogsRDS(),
-      getInstanceMetric: this.getInstanceMetricRDS(),
-      getClusterInfo: this.getClusterInfo()
-    };
-  }
-
-  private getInstanceLogsRDS(): Tool {
-    const getter = this.#getter;
-    const db = this.#dbAccess;
-    return tool({
+export function createAWSDBClusterTools(awsClusterTools: AWSProjectClusterService): Record<string, Tool> {
+  return {
+    getInstanceLogs: tool({
       description: `Get the recent logs from the RDS instance. You can specify the period in seconds and optionally grep for a substring. 
       If you don't want to grep for a substring, you can pass an empty string.`,
       parameters: z.object({
@@ -96,16 +92,10 @@ export class AWSDBClusterTools implements ToolsetGroup {
       }),
       execute: async ({ periodInSeconds, grep }) => {
         console.log('getInstanceLogs', periodInSeconds, grep);
-        const connection = await getter();
-        return await getInstanceLogsRDS(db, { connection, periodInSeconds, grep });
+        return await awsClusterTools.getInstanceLogs({ periodInSeconds, grep });
       }
-    });
-  }
-
-  private getInstanceMetricRDS(): Tool {
-    const getter = this.#getter;
-    const db = this.#dbAccess;
-    return tool({
+    }),
+    getInstanceMetric: tool({
       description: `Get the metrics for the RDS instance. If this is a cluster, the metric is read from the current writer instance.
       You can specify the period in seconds. The stat parameter is one of the following: Average, Maximum, Minimum, Sum.`,
       parameters: z.object({
@@ -115,47 +105,88 @@ export class AWSDBClusterTools implements ToolsetGroup {
       }),
       execute: async ({ metricName, periodInSeconds, stat }) => {
         console.log('getClusterMetric', metricName, periodInSeconds);
-        const connection = await getter();
-        return await getClusterMetricRDS(db, { connection, metricName, periodInSeconds, stat });
+        return await awsClusterTools.getInstanceMetric({ metricName, periodInSeconds, stat });
       }
-    });
-  }
-
-  private getClusterInfo(): Tool {
-    const getter = this.#getter;
-    const db = this.#dbAccess;
-    return tool({
+    }),
+    getClusterInfo: tool({
       description: `Get the information about the RDS cluster or instance.`,
       parameters: z.object({}),
       execute: async () => {
-        const connection = await getter();
-        return await getClusterByConnection(db, connection.id);
+        return await awsClusterTools.getClusterInfo();
       }
-    });
-  }
+    })
+  };
 }
 
-export class GCPDBClusterTools implements ToolsetGroup {
-  #dbAccess: DBAccess;
-  #getter: () => Promise<Connection>;
+export function awsDBClusterTools(awsClusterTools: AWSProjectClusterService): Record<string, Tool> {
+  const commonTools = commonDBClusterTools(awsClusterTools);
+  return {
+    ...commonTools,
+    getInstanceLogs: tool({
+      description: `Get the recent logs from the RDS instance. You can specify the period in seconds and optionally grep for a substring. 
+        If you don't want to grep for a substring, you can pass an empty string.`,
+      parameters: z.object({
+        periodInSeconds: z.number(),
+        grep: z.string()
+      }),
+      execute: async ({ periodInSeconds, grep }) => {
+        console.log('getInstanceLogs', periodInSeconds, grep);
+        return await awsClusterTools.getInstanceLogs({ periodInSeconds, grep });
+      }
+    }),
+    getInstanceMetric: tool({
+      description: `Get the metrics for the RDS instance. If this is a cluster, the metric is read from the current writer instance.
+        You can specify the period in seconds. The stat parameter is one of the following: Average, Maximum, Minimum, Sum.`,
+      parameters: z.object({
+        metricName: z.string(),
+        periodInSeconds: z.number(),
+        stat: z.enum(['Average', 'Maximum', 'Minimum', 'Sum'])
+      }),
+      execute: async ({ metricName, periodInSeconds, stat }) => {
+        console.log('getClusterMetric', metricName, periodInSeconds);
+        return await awsClusterTools.getInstanceMetric({ metricName, periodInSeconds, stat });
+      }
+    }),
+    getClusterInfo: tool({
+      description: `Get the information about the RDS cluster or instance.`,
+      parameters: z.object({}),
+      execute: async () => {
+        return await awsClusterTools.getClusterInfo();
+      }
+    })
+  };
+}
 
-  constructor(dbAccess: DBAccess, getter: () => Promise<Connection>) {
-    this.#dbAccess = dbAccess;
-    this.#getter = getter;
-  }
+export function awsProjectClusterTools(
+  dbAccess: DBAccess,
+  connection: Connection | (() => Promise<Connection>)
+): AWSProjectClusterService {
+  const getter = typeof connection === 'function' ? connection : () => Promise.resolve(connection);
 
-  toolset(): Record<string, Tool> {
-    return {
-      getInstanceLogs: this.getInstanceLogsGCP(),
-      getInstanceMetric: this.getInstanceMetricGCP(),
-      getInstanceInfo: this.getInstanceInfo()
-    };
-  }
+  return {
+    type: 'aws',
+    getTablesInfo: async () => await getTablesInfo(dbAccess, await getter()),
+    getPostgresExtensions: async () => await getPostgresExtensions(dbAccess, await getter()),
+    getInstanceLogs: async ({ periodInSeconds, grep }) => {
+      const connection = await getter();
+      return await getInstanceLogsRDS(dbAccess, { connection, periodInSeconds, grep });
+    },
+    getInstanceMetric: async ({ metricName, periodInSeconds, stat }) => {
+      const connection = await getter();
+      return getClusterMetricRDS(dbAccess, { connection, metricName, periodInSeconds, stat });
+    },
+    getClusterInfo: async () => {
+      const connection = await getter();
+      return await getClusterByConnection(dbAccess, connection.id);
+    }
+  };
+}
 
-  private getInstanceLogsGCP(): Tool {
-    const getter = this.#getter;
-    const db = this.#dbAccess;
-    return tool({
+export function gpcDBClusterTools(gcpProjectClusterTools: GCPProjectClusterService): Record<string, Tool> {
+  const commonTools = commonDBClusterTools(gcpProjectClusterTools);
+  return {
+    ...commonTools,
+    getInstanceLogs: tool({
       description: `Get the recent logs from a GCP CloudSQL instance. You can specify the period in seconds and optionally grep for a substring.`,
       parameters: z.object({
         periodInSeconds: z.number(),
@@ -163,52 +194,63 @@ export class GCPDBClusterTools implements ToolsetGroup {
       }),
       execute: async ({ periodInSeconds, grep }) => {
         console.log('getInstanceLogs', periodInSeconds, grep);
-        const connection = await getter();
-        return await getInstanceLogsGCP(db, { connection, periodInSeconds, grep });
+        return await gcpProjectClusterTools.getInstanceLogs({ periodInSeconds, grep });
       }
-    });
-  }
-
-  private getInstanceMetricGCP(): Tool {
-    const getter = this.#getter;
-    const db = this.#dbAccess;
-
-    return tool({
+    }),
+    getInstanceMetric: tool({
       description: `Get the metrics for the GCP Cloud SQL instance. You can specify the period in seconds.
-      The metric name MUST be a valid Cloud SQL metric name. Common CloudSQL metrics are:
-      - cloudsql.googleapis.com/database/cpu/utilization
-      - cloudsql.googleapis.com/database/memory/utilization
-      - cloudsql.googleapis.com/database/disk/utilization
-      - cloudsql.googleapis.com/database/disk/write_ops_count
-      - cloudsql.googleapis.com/database/disk/read_ops_count      
-      - cloudsql.googleapis.com/database/memory/total_usage
-      - cloudsql.googleapis.com/database/postgresql/num_backends
-      - cloudsql.googleapis.com/database/postgresql/new_connection_count
-      - cloudsql.googleapis.com/database/postgresql/deadlock_count
-      - cloudsql.googleapis.com/database/postgresql/write_ahead_log/written_bytes_count
-      `,
+        The metric name MUST be a valid Cloud SQL metric name. Common CloudSQL metrics are:
+        - cloudsql.googleapis.com/database/cpu/utilization
+        - cloudsql.googleapis.com/database/memory/utilization
+        - cloudsql.googleapis.com/database/disk/utilization
+        - cloudsql.googleapis.com/database/disk/write_ops_count
+        - cloudsql.googleapis.com/database/disk/read_ops_count      
+        - cloudsql.googleapis.com/database/memory/total_usage
+        - cloudsql.googleapis.com/database/postgresql/num_backends
+        - cloudsql.googleapis.com/database/postgresql/new_connection_count
+        - cloudsql.googleapis.com/database/postgresql/deadlock_count
+        - cloudsql.googleapis.com/database/postgresql/write_ahead_log/written_bytes_count
+        `,
       parameters: z.object({
         metricName: z.string(),
         periodInSeconds: z.number()
       }),
       execute: async ({ metricName, periodInSeconds }) => {
         console.log('getClusterMetricGCP', metricName, periodInSeconds);
-        const connection = await getter();
-        return await getClusterMetricGCP(db, { connection, metricName, periodInSeconds });
+        return await gcpProjectClusterTools.getInstanceMetric({ metricName, periodInSeconds });
       }
-    });
-  }
-
-  private getInstanceInfo(): Tool {
-    const getter = this.#getter;
-    const db = this.#dbAccess;
-    return tool({
+    }),
+    getInstanceInfo: tool({
       description: `Get the information about the GCP Cloud SQL instance.`,
       parameters: z.object({}),
       execute: async () => {
-        const connection = await getter();
-        return await getInstanceByConnection(db, connection.id);
+        return await gcpProjectClusterTools.getInstanceInfo();
       }
-    });
-  }
+    })
+  };
+}
+
+export function gcpProjectClusterTools(
+  dbAccess: DBAccess,
+  connection: Connection | (() => Promise<Connection>)
+): GCPProjectClusterService {
+  const getter = typeof connection === 'function' ? connection : () => Promise.resolve(connection);
+
+  return {
+    type: 'gcp',
+    getTablesInfo: async () => await getTablesInfo(dbAccess, await getter()),
+    getPostgresExtensions: async () => await getPostgresExtensions(dbAccess, await getter()),
+    getInstanceLogs: async ({ periodInSeconds, grep }) => {
+      const connection = await getter();
+      return await getInstanceLogsGCP(dbAccess, { connection, periodInSeconds, grep });
+    },
+    getInstanceMetric: async ({ metricName, periodInSeconds }) => {
+      const connection = await getter();
+      return await getClusterMetricGCP(dbAccess, { connection, metricName, periodInSeconds });
+    },
+    getInstanceInfo: async () => {
+      const connection = await getter();
+      return await getInstanceByConnection(dbAccess, connection.id);
+    }
+  };
 }

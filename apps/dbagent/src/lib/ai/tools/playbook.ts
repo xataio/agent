@@ -3,10 +3,42 @@ import { z } from 'zod';
 import { DBAccess } from '~/lib/db/db';
 import { getCustomPlaybookAndPlaybookTool, listCustomPlaybooksAndPlaybookTool } from '~/lib/tools/custom-playbooks';
 import { getPlaybook, listPlaybooks } from '~/lib/tools/playbooks';
-import { ToolsetGroup } from './types';
 
-export function getPlaybookToolset(dbAccess: DBAccess, projectId: string): Record<string, Tool> {
-  return new playbookTools(dbAccess, () => Promise.resolve({ projectId })).toolset();
+export interface PlaybookService {
+  fetch(name: string): Promise<string>;
+  list(): Promise<string[]>;
+}
+
+export function getPlaybookToolset(tools?: PlaybookService): Record<string, Tool> {
+  if (!tools) {
+    return builtinPlaybookToolset;
+  }
+  return {
+    fetch: playbookFetchTool(async (name: string) => tools.fetch(name)),
+    list: playbookListTool(async () => tools.list())
+  };
+}
+
+export const builtinPlaybookToolset = {
+  getPlaybookTool: playbookFetchTool(async (name: string) => getPlaybook(name)),
+  listPlaybooksTool: playbookListTool(async () => listPlaybooks())
+};
+
+export function projectPlaybookService(
+  dbAccess: DBAccess,
+  connProjectId: string | (() => Promise<{ projectId: string }>)
+): PlaybookService {
+  const getter = typeof connProjectId === 'string' ? async () => ({ projectId: connProjectId }) : connProjectId;
+  return {
+    fetch: async (name: string): Promise<string> => {
+      const { projectId } = await getter();
+      return await getCustomPlaybookAndPlaybookTool(dbAccess, name, projectId);
+    },
+    list: async (): Promise<string[]> => {
+      const { projectId } = await getter();
+      return await listCustomPlaybooksAndPlaybookTool(dbAccess, projectId);
+    }
+  };
 }
 
 function playbookFetchTool(execute: (name: string) => Promise<string>): Tool {
@@ -25,44 +57,4 @@ function playbookListTool(execute: () => Promise<string[]>): Tool {
     parameters: z.object({}),
     execute: async () => execute()
   });
-}
-
-export const builtinPlaybookToolset = {
-  getPlaybookTool: playbookFetchTool(async (name: string) => getPlaybook(name)),
-  listPlaybooksTool: playbookListTool(async () => listPlaybooks())
-};
-
-export class playbookTools implements ToolsetGroup {
-  #dbAccess: DBAccess;
-  #connProjectId: () => Promise<{ projectId: string }>;
-
-  constructor(dbAccess: DBAccess, getter: () => Promise<{ projectId: string }>) {
-    this.#dbAccess = dbAccess;
-    this.#connProjectId = getter;
-  }
-
-  toolset(): Record<string, Tool> {
-    return {
-      getPlaybookTool: this.getPlaybookTool(),
-      listPlaybooksTool: this.listPlaybooksTool()
-    };
-  }
-
-  private getPlaybookTool(): Tool {
-    const db = this.#dbAccess;
-    const getter = this.#connProjectId;
-    return playbookFetchTool(async (name: string) => {
-      const { projectId } = await getter();
-      return await getCustomPlaybookAndPlaybookTool(db, name, projectId);
-    });
-  }
-
-  private listPlaybooksTool(): Tool {
-    const db = this.#dbAccess;
-    const getter = this.#connProjectId;
-    return playbookListTool(async () => {
-      const { projectId } = await getter();
-      return await listCustomPlaybooksAndPlaybookTool(db, projectId);
-    });
-  }
 }

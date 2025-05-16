@@ -1,110 +1,93 @@
-import { generateObject } from 'ai';
 import fs from 'fs';
 import path from 'path';
 import { afterAll, beforeAll, describe } from 'vitest';
-import { z } from 'zod';
-import { evalChat } from '~/evals/lib/chat-runner';
-import { getModelInstance } from '~/lib/ai/agent';
+import { AgentModelDeps, chatModel, getAgentMockDeps, getModelInstance } from '~/lib/ai/agent';
+import { Tool } from '~/lib/ai/model';
 import { env } from '~/lib/env/eval';
-import { PostgresConfig, runSql, startPostgresContainer } from '../lib/eval-docker-db';
-import { mockGetConnectionInfo, mockGetProjectsById } from '../lib/mocking';
-import { evalResultEnum } from '../lib/schemas';
+import { TableStat } from '~/lib/targetdb/db';
+import { turnFromResponse } from '../lib/chat-runner';
+import { evalTurn, LLMTurn, setEvalModel } from '../lib/llmcheck';
+import { conciseAnswerMetric, finalAnswerMetric, Metric } from '../lib/llmcheck/metrics';
 import { ensureTraceFolderExistsExpect } from '../lib/test-id';
-import { stepToHuman } from '../lib/trace';
 import { EvalCase, runEvals } from '../lib/vitest-helpers';
 
-let dbConfig: PostgresConfig;
 beforeAll(async () => {
-  mockGetProjectsById();
-  mockGetConnectionInfo();
-  try {
-    dbConfig = await startPostgresContainer({ port: 9888 });
-    await runSql(
-      `create table dogs (
-          id serial primary key,
-          name text
-      );`,
-      dbConfig
-    );
-  } catch (error) {
-    console.error('Error starting postgres container', error);
-    throw error;
-  }
+  const model = await getModelInstance(env.JUDGE_MODEL);
+  setEvalModel(model);
 });
 
 afterAll(async () => {
-  await dbConfig.close();
+  setEvalModel(undefined);
 });
 
-type LLMJudgeConfig = {
-  prompt: (args: { input: string; steps: string[]; finalAnswer: string }) => string;
-  name: string;
+type LLMJudgeEval = EvalCase & { turn: LLMTurn; judge: Metric };
+
+const conciseAnswer = conciseAnswerMetric();
+
+// Mock the agent backend services. The getAgentMockDeps creates
+// mocks that will raise an error when the tools are called.
+// Set some default tool response for the eval via toolMocks. `toolMocks` gets
+// the mocked tools as used by the agent and modifies the responsess for a
+// selected set of tools.
+const deps = getAgentMockDeps({});
+const toolMocks = (tools: Record<string, Tool<AgentModelDeps>>) => {
+  tools.getTablesInfo!.execute = async () => {
+    const data: TableStat[] = [
+      {
+        name: 'dogs',
+        schema: 'public',
+        rows: 100,
+        size: '100',
+        seqScans: 100,
+        idxScans: 100,
+        nTupIns: 100,
+        nTupUpd: 100,
+        nTupDel: 100
+      }
+    ];
+    return data;
+  };
+  return tools;
 };
 
-const finalAnswerJudge = (expectedAnswer = ''): LLMJudgeConfig => ({
-  name: 'final_answer',
-  prompt: ({ input, finalAnswer }) => `
-  The following question was answered by an expert in PostgreSQL and database administration:
-  <question>${input}</question>
-  <expertAnswer>${finalAnswer}</expertAnswer>
-  ${expectedAnswer ? `<expectedAnswer>${expectedAnswer}</expectedAnswer>` : ''} 
-  Please determine whether expert passed or failed at answering the question correctly and accurately. Please provied a critique of how the answer could be improved or does not match the response of an expert in PostgreSQl and database administration.
-  `
-});
+describe.concurrent('judge', async () => {
+  const evalCases: LLMJudgeEval[] = (
+    await Promise.all(
+      [
+        {
+          id: 'tables_in_db',
+          prompt: 'What tables do I have in my db?',
+          judges: [finalAnswerMetric('dogs'), conciseAnswer]
+        },
+        {
+          id: 'tables_in_db_how_many',
+          prompt: 'How many tables do I have in my db?',
+          judges: [finalAnswerMetric('1'), conciseAnswer]
+        }
+      ].map(async (evalCase) => {
+        const result = await chatModel.generateText({
+          prompt: evalCase.prompt,
+          deps,
+          maxSteps: 20,
+          tools: toolMocks
+        });
 
-const conciseAnswerJudge: LLMJudgeConfig = {
-  name: 'concise',
-  prompt: ({ input, finalAnswer }) => `
-  The following question was answered by an expert in PostgreSQL and database administration:
-    <question>${input}</question>
-    <answer>${finalAnswer}</answer>
+        return evalCase.judges.map((judge) => ({
+          id: `${judge.name()}_${evalCase.id}`,
+          turn: turnFromResponse(evalCase.prompt, result),
+          judge
+        })) as LLMJudgeEval[];
+      })
+    )
+  ).flat();
 
-  Please determine whether expert passed or failed at answering the question concisely with no extra information offered unless it's explicitly asked for in the question or it's almost certain from the question the user would want it. Please provied a critique of how the answer could be improved or does not match the resp`
-};
-
-type LLMJudgeEval = EvalCase & { prompt: string; judge: LLMJudgeConfig };
-
-describe.concurrent('judge', () => {
-  const evalCases: LLMJudgeEval[] = [
-    {
-      id: 'tables_in_db',
-      prompt: 'What tables do I have in my db?',
-      judges: [finalAnswerJudge('dogs'), conciseAnswerJudge]
-    },
-    {
-      id: 'tables_in_db_how_many',
-      prompt: 'How many tables do I have in my db?',
-      judges: [finalAnswerJudge('1'), conciseAnswerJudge]
-    }
-  ].flatMap((evalCase) =>
-    evalCase.judges.map((judge) => ({
-      id: `${judge.name}_${evalCase.id}`,
-      prompt: evalCase.prompt,
-      judge: judge
-    }))
-  );
-
-  runEvals(evalCases, async ({ prompt, judge }, { expect }) => {
+  runEvals(evalCases, async ({ turn, judge }, { expect }) => {
     const traceFolder = ensureTraceFolderExistsExpect(expect);
-    const result = await evalChat({
-      messages: [{ role: 'user', content: prompt }],
-      dbConnection: dbConfig.connectionString,
-      expect
-    });
 
-    const humanSteps = result.steps.map(stepToHuman);
-    const finalAnswer = result.text;
-    const { object: judgeResponse } = await generateObject({
-      model: await getModelInstance(env.JUDGE_MODEL),
-      schema: z.object({
-        result: evalResultEnum,
-        critique: z.string()
-      }),
-      prompt: judge.prompt({ input: prompt, steps: humanSteps, finalAnswer })
-    });
-    const judgeResponseFile = path.join(traceFolder, 'judgeResponse.txt');
-    fs.writeFileSync(judgeResponseFile, judgeResponse.critique);
+    const measure = await evalTurn(turn, judge);
 
-    expect(judgeResponse.result).toEqual('passed');
+    const evalFile = path.join(traceFolder, 'eval.txt');
+    fs.writeFileSync(evalFile, measure.reason ?? '');
+    expect(measure.success).toBe(true);
   });
 });

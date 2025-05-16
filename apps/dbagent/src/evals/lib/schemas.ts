@@ -2,8 +2,13 @@ import { z } from 'zod';
 import { evalEnvSchema } from '../../lib/env/eval';
 
 export const evalResultSchema = z
-  .object({ id: z.string(), result: z.enum(['passed', 'failed']), env: evalEnvSchema })
+  .object({
+    id: z.string(),
+    result: z.enum(['passed', 'failed']),
+    env: evalEnvSchema
+  })
   .strict();
+
 export type EvalResult = z.infer<typeof evalResultSchema>;
 
 export const evalResultEnum = z.enum(['passed', 'failed']);

@@ -1,11 +1,9 @@
-import { UIMessage, appendResponseMessages, createDataStreamResponse, smoothStream, streamText } from 'ai';
+import { appendResponseMessages, createDataStreamResponse, UIMessage } from 'ai';
 import { notFound } from 'next/navigation';
 import { NextRequest } from 'next/server';
 import { generateTitleFromUserMessage } from '~/app/(main)/projects/[project]/chats/actions';
-import { generateUUID } from '~/components/chat/utils';
-import { getChatSystemPrompt } from '~/lib/ai/agent';
+import { agentModelDeps, chatModel } from '~/lib/ai/agent';
 import { getLanguageModel } from '~/lib/ai/providers';
-import { getTools } from '~/lib/ai/tools';
 import { deleteChatById, getChatById, getChatsByProject, saveChat } from '~/lib/db/chats';
 import { getConnection } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
@@ -59,34 +57,33 @@ export async function POST(request: Request) {
     if (!chat) notFound();
 
     const targetDb = getTargetDbPool(connection.connectionString);
-    const context = getChatSystemPrompt({ cloudProvider: project.cloudProvider, useArtifacts });
+    // const context = getChatSystemPrompt({ cloudProvider: project.cloudProvider, useArtifacts });
     const model = await getLanguageModel(modelId);
 
     return createDataStreamResponse({
       execute: async (dataStream) => {
-        const tools = await getTools({ project, connection, targetDb, useArtifacts, userId, dataStream });
-
-        const result = streamText({
+        const result = await chatModel.streamText({
           model: model.instance(),
-          system: context,
+          deps: agentModelDeps({
+            targetDb,
+            dbAccess,
+            connection,
+            cloudProvider: project.cloudProvider,
+            userId,
+            withMCP: true,
+            withArtifacts: useArtifacts,
+            dataStream
+          }),
           messages,
           maxSteps: 20,
-          toolCallStreaming: true,
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          experimental_generateMessageId: generateUUID,
-          experimental_telemetry: {
-            isEnabled: true,
-            metadata: {
-              projectId: connection.projectId,
-              connectionId: connectionId,
-              sessionId: id,
-              model: model.info().id,
-              userId,
-              cloudProvider: project.cloudProvider,
-              tags: ['chat']
-            }
+          metadata: {
+            projectId: connection.projectId,
+            connectionId: connectionId,
+            sessionId: id,
+            model: model.info().id,
+            userId,
+            cloudProvider: project.cloudProvider
           },
-          tools,
           onFinish: async ({ response }) => {
             try {
               const assistantId = getTrailingMessageId({

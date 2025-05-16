@@ -1,10 +1,6 @@
 'use server';
 
-import { getDBClusterTools } from '~/lib/ai/tools/cluster';
-import { commonToolset } from '~/lib/ai/tools/common';
-import { getDBSQLTools } from '~/lib/ai/tools/db';
-import { getPlaybookToolset } from '~/lib/ai/tools/playbook';
-import { mergeToolsets } from '~/lib/ai/tools/types';
+import { agentModelDeps, chatModel } from '~/lib/ai/agent';
 import { mcpToolset } from '~/lib/ai/tools/user-mcp';
 import { getConnection, listConnections } from '~/lib/db/connections';
 import { getUserSessionDBAccess } from '~/lib/db/db';
@@ -43,20 +39,26 @@ export async function actionGetBuiltInAndCustomTools(connectionId: string): Prom
 export async function actionGetBuiltInTools(connectionId: string): Promise<Tool[]> {
   try {
     await requireUserSession();
+    const userId = await requireUserSession();
     const dbAccess = await getUserSessionDBAccess();
     const connection = await getConnection(dbAccess, connectionId);
     if (!connection) {
       throw new Error('Connection not found');
     }
 
-    const targetDb = getTargetDbPool(connection.connectionString);
-    const dbTools = getDBSQLTools(targetDb);
+    const chatTools = await chatModel.getTools(
+      agentModelDeps({
+        targetDb: getTargetDbPool(connection.connectionString),
+        dbAccess,
+        connection,
+        userId,
+        cloudProvider: 'aws',
+        withArtifacts: false,
+        withMCP: false
+      })
+    );
 
-    const clusterTools = getDBClusterTools(dbAccess, connection, 'aws'); // Default to AWS for now
-    const playbookToolset = getPlaybookToolset(dbAccess, connection.projectId);
-    const mergedTools = mergeToolsets(commonToolset, playbookToolset, dbTools, clusterTools);
-
-    return Object.entries(mergedTools).map(([name, tool]) => ({
+    return Object.entries(chatTools).map(([name, tool]) => ({
       name,
       description: tool.description || 'No description available',
       isBuiltIn: true

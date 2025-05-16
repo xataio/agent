@@ -1,8 +1,7 @@
 'use server';
 
-import { openai } from '@ai-sdk/openai';
-import { generateText } from 'ai';
 import { auth } from '~/auth';
+import { commonModel } from '~/lib/ai/agent';
 
 import { dbCreatePlaybook, dbDeletePlaybook, dbUpdatePlaybook } from '~/lib/db/custom-playbooks';
 import { getUserDBAccess, getUserSessionDBAccess } from '~/lib/db/db';
@@ -31,29 +30,17 @@ export async function actionGeneratePlaybookContent(name: string, description: s
 
                   Please generate the playbook content:`;
 
-  const { text } = await generateText({
-    model: openai('gpt-4o'),
-    experimental_telemetry: {
-      isEnabled: true,
-      metadata: {
-        tags: ['playbook', 'generate']
-      }
+  const { text } = await commonModel.generateText({
+    modelSettings: {
+      //lower values for temperature and topP are more deterministic higher are more creative(max 2.0)
+      //0.1 is deterministic, 0.7 is creative
+      temperature: 0.2,
+      topP: 0.1,
+      maxTokens: 1000
     },
-    messages: [
-      {
-        role: 'system',
-        content: 'You are a database expert who creates detailed, step-by-step playbooks for database operations.'
-      },
-      {
-        role: 'user',
-        content: prompt
-      }
-    ],
-    //lower values for temperature and topP are more deterministic higher are more creative(max 2.0)
-    //0.1 is deterministic, 0.7 is creative
-    temperature: 0.2,
-    topP: 0.1,
-    maxTokens: 1000
+    metadata: { tags: ['playbook', 'generate'] },
+    system: 'You are a database expert who creates detailed, step-by-step playbooks for database operations.',
+    prompt
   });
 
   try {
