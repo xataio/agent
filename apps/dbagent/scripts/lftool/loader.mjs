@@ -1,4 +1,4 @@
-import { resolve as resolvePath, dirname } from 'path';
+import { dirname, resolve as resolvePath } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -12,4 +12,4 @@ export async function resolve(specifier, context, nextResolve) {
   }
 
   return nextResolve(specifier);
-} 
+}
