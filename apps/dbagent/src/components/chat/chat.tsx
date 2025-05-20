@@ -1,8 +1,8 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
-import { toast } from '@internal/components';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from '@xata.io/components';
 import type { UIMessage } from 'ai';
 import { memo, useEffect, useRef, useState } from 'react';
 import { Connection, MessageVote } from '~/lib/db/schema';

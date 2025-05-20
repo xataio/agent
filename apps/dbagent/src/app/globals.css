@@ -1,3 +1,6 @@
+@import '@xata.io/theme/theme.css';
+@source "../../node_modules/@xata.io/components";
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

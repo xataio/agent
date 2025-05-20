@@ -1,7 +1,7 @@
 'use client';
 
-import { Button, toast } from '@internal/components';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Button, toast } from '@xata.io/components';
 import { format } from 'date-fns';
 import { MessageSquare, Trash2 } from 'lucide-react';
 import Link from 'next/link';

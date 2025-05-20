@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@internal/components';
+import { Button } from '@xata.io/components';
 import { UploadIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';

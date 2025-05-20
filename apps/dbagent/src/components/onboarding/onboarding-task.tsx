@@ -1,4 +1,4 @@
-import { Button, cn } from '@internal/components';
+import { Button, cn } from '@xata.io/components';
 import { Check } from 'lucide-react';
 
 interface OnboardingTaskProps {

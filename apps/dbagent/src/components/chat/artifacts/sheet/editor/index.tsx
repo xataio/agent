@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@internal/components';
+import { cn } from '@xata.io/components';
 import { useTheme } from 'next-themes';
 import { parse, unparse } from 'papaparse';
 import { memo, useEffect, useMemo, useState } from 'react';

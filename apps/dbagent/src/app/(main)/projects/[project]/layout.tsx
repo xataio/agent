@@ -1,4 +1,4 @@
-import { SidebarInset } from '@internal/components';
+import { SidebarInset } from '@xata.io/components';
 import { notFound } from 'next/navigation';
 import { getCompletedTaskPercentage } from '~/components/onboarding/actions';
 import { Container } from '~/components/ui/container';

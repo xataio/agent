@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle, Textarea } from '@internal/components';
+import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle, Textarea } from '@xata.io/components';
 import { ArrowLeft, TrashIcon, Wand2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';

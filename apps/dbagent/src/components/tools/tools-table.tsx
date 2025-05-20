@@ -13,7 +13,7 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from '@internal/components';
+} from '@xata.io/components';
 import { BookOpenIcon, ChevronLeftIcon, ChevronRightIcon, MoreVerticalIcon, PlayIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -110,7 +110,7 @@ export function ToolsTable() {
           {currentTools.map((tool) => (
             <TableRow key={`${tool.isBuiltIn}-${tool.name}`}>
               <TableCell>
-                <Code variant="primary">
+                <Code variant="default">
                   <Link href={getToolUrl(tool.name)}>{tool.name}</Link>
                 </Code>
               </TableCell>

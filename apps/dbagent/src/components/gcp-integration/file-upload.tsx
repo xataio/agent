@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@internal/components';
+import { Button } from '@xata.io/components';
 import { DragEvent, useRef, useState } from 'react';
 
 interface FileUploadProps {

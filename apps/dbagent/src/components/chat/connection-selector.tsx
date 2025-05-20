@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
-} from '@internal/components';
+} from '@xata.io/components';
 import { CheckCircleIcon, ChevronDownIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Connection } from '~/lib/db/schema';

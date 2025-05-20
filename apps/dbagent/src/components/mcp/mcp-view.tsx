@@ -13,7 +13,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger
-} from '@internal/components';
+} from '@xata.io/components';
 import { ArrowLeft, PlayCircle, PlusIcon, Trash2Icon, XIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';

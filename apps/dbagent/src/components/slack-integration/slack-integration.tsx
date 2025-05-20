@@ -14,7 +14,7 @@ import {
   Label,
   toast,
   useForm
-} from '@internal/components';
+} from '@xata.io/components';
 import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';

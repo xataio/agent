@@ -13,7 +13,7 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from '@internal/components';
+} from '@xata.io/components';
 import { BookOpenIcon, ClockIcon, CopyIcon, MoreVerticalIcon, PencilIcon, PlayIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -89,7 +89,7 @@ export function PlaybooksTable() {
           {playbooks.map((playbook) => (
             <TableRow key={`built-in-${playbook.name}`}>
               <TableCell>
-                <Code variant="primary">
+                <Code variant="default">
                   <Link href={`/projects/${project}/playbooks/${playbook.name}`}>{playbook.name}</Link>
                 </Code>
               </TableCell>
@@ -138,7 +138,7 @@ export function PlaybooksTable() {
           {customPlaybooks.map((customPlaybook) => (
             <TableRow key={`custom-${customPlaybook.id}`}>
               <TableCell>
-                <Code variant="primary">
+                <Code variant="default">
                   <Link href={`/projects/${project}/playbooks/${customPlaybook.id}`}>{customPlaybook.name}</Link>
                 </Code>
               </TableCell>

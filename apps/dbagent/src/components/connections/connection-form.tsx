@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Input, Label, toast, useForm } from '@internal/components';
+import { Button, Input, Label, toast, useForm } from '@xata.io/components';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { actionDeleteConnection, actionGetConnection, actionSaveConnection, validateConnection } from './actions';
