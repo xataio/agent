@@ -90,7 +90,13 @@ Also provide a one sentence summary of the result. It can be something like "No 
     schema: z.object({
       summary: z.string(),
       notificationLevel: z.enum(['info', 'warning', 'alert'])
-    })
+    }),
+    experimental_telemetry: {
+      isEnabled: true,
+      metadata: {
+        tags: ['monitoring', 'notification']
+      }
+    }
   });
 
   messages.push({
@@ -132,7 +138,13 @@ Return:
     schema: z.object({
       shouldRunPlaybook: z.boolean(),
       recommendedPlaybook: z.string().optional()
-    })
+    }),
+    experimental_telemetry: {
+      isEnabled: true,
+      metadata: {
+        tags: ['monitoring', 'playbook', 'select']
+      }
+    }
   });
 
   messages.push({
@@ -165,7 +177,13 @@ In the Root cause analysis section, mention which playbooks you run.`;
   const summaryResult = await generateText({
     model: modelInstance,
     system: monitoringSystemPrompt,
-    messages: messages
+    messages: messages,
+    experimental_telemetry: {
+      isEnabled: true,
+      metadata: {
+        tags: ['monitoring', 'summary']
+      }
+    }
   });
 
   messages.push({
