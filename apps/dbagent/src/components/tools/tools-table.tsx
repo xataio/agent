@@ -13,7 +13,7 @@ import {
   TableHead,
   TableHeader,
   TableRow
-} from '@internal/components';
+} from '@xata.io/components';
 import { BookOpenIcon, ChevronLeftIcon, ChevronRightIcon, MoreVerticalIcon, PlayIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';

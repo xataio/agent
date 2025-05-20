@@ -18,7 +18,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger
-} from '@internal/components';
+} from '@xata.io/components';
 import { BookOpenIcon, ChevronLeftIcon, ChevronRightIcon, MoreVerticalIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -149,7 +149,7 @@ export function McpTable() {
             <TableRow key={server.name}>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Code variant="primary">
+                  <Code variant="default">
                     <Link href={getMcpServerUrl(server)}>{server.serverName}</Link>
                   </Code>
                   {!mcpServerInDb[server.name] && (
