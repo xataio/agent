@@ -110,7 +110,7 @@ export function ToolsTable() {
           {currentTools.map((tool) => (
             <TableRow key={`${tool.isBuiltIn}-${tool.name}`}>
               <TableCell>
-                <Code variant="primary">
+                <Code variant="default">
                   <Link href={getToolUrl(tool.name)}>{tool.name}</Link>
                 </Code>
               </TableCell>
