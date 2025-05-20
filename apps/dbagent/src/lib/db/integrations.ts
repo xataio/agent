@@ -4,11 +4,33 @@ import { and, eq } from 'drizzle-orm';
 import { DBAccess } from './db';
 import { integrations } from './schema';
 
-export type AwsIntegration = {
-  accessKeyId: string;
-  secretAccessKey: string;
+// Base AWS Integration type
+type AwsIntegrationBase = {
   region: string;
 };
+
+// AWS Integration with Credentials
+type AwsIntegrationWithCredentials = AwsIntegrationBase & {
+  authMethod: 'credentials';
+  accessKeyId: string;
+  secretAccessKey: string;
+};
+
+// AWS Integration with CloudFormation
+type AwsIntegrationWithCloudFormation = AwsIntegrationBase & {
+  authMethod: 'cloudformation';
+  cloudformationStackArn: string;
+};
+
+// AWS Integration with EC2 Instance Profile
+type AwsIntegrationWithEc2Instance = AwsIntegrationBase & {
+  authMethod: 'ec2instance';
+};
+
+export type AwsIntegration =
+  | AwsIntegrationWithCredentials
+  | AwsIntegrationWithCloudFormation
+  | AwsIntegrationWithEc2Instance;
 
 export type GcpIntegration = {
   clientEmail: string;

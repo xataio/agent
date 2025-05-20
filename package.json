@@ -59,5 +59,8 @@
     "node": "22.x",
     "pnpm": "10.x"
   },
-  "packageManager": "pnpm@10.5.2"
+  "packageManager": "pnpm@10.5.2",
+  "dependencies": {
+    "@aws-sdk/client-sts": "^3.812.0"
+  }
 }

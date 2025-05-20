@@ -7,6 +7,8 @@ import {
   DownloadDBLogFilePortionCommand,
   RDSClient
 } from '@aws-sdk/client-rds';
+import { STSClient, AssumeRoleCommand, AssumeRoleCommandOutput } from '@aws-sdk/client-sts';
+import { AwsIntegration } from '../db/integrations'; // Import the new type
 
 export interface RDSInstanceInfo {
   identifier: string;
@@ -37,36 +39,98 @@ export interface RDSClusterInfo {
   isStandaloneInstance: boolean;
 }
 
-export interface AWSCredentials {
-  accessKeyId: string;
-  secretAccessKey: string;
-  region: string;
+// The AWSCredentials interface is no longer needed as we'll use AwsIntegration directly.
+
+export async function initializeRDSClient(integration: AwsIntegration): Promise<RDSClient> {
+  const region = integration.region;
+
+  switch (integration.authMethod) {
+    case 'credentials':
+      return new RDSClient({
+        region,
+        credentials: {
+          accessKeyId: integration.accessKeyId,
+          secretAccessKey: integration.secretAccessKey
+        }
+      });
+    case 'cloudformation': {
+      const stsClient = new STSClient({ region });
+      const assumeRoleCommand = new AssumeRoleCommand({
+        RoleArn: integration.cloudformationStackArn, // This should be Role ARN, field name might need adjustment
+        RoleSessionName: 'DBAgentRDSSession' // TODO: ensure cloudformationStackArn is actually a Role ARN
+      });
+      try {
+        const assumedRole = await stsClient.send(assumeRoleCommand);
+        if (!assumedRole.Credentials) {
+          throw new Error('Failed to assume role, credentials not received.');
+        }
+        return new RDSClient({
+          region,
+          credentials: {
+            accessKeyId: assumedRole.Credentials.AccessKeyId!,
+            secretAccessKey: assumedRole.Credentials.SecretAccessKey!,
+            sessionToken: assumedRole.Credentials.SessionToken!
+          }
+        });
+      } catch (error) {
+        console.error('Error assuming role for CloudFormation:', error);
+        throw new Error(`Failed to assume role with ARN ${integration.cloudformationStackArn}: ${error}`);
+      }
+    }
+    case 'ec2instance':
+      // AWS SDK automatically uses EC2 instance profile credentials if no explicit credentials are provided
+      return new RDSClient({ region });
+    default:
+      // Exhaustive check for all authMethods
+      const exhaustiveCheck: never = integration;
+      throw new Error(`Unhandled authMethod: ${(exhaustiveCheck as any).authMethod}`);
+  }
 }
 
-export function initializeRDSClient(credentials: AWSCredentials, region?: string): RDSClient {
-  if (!region) {
-    region = credentials.region;
-  }
-  return new RDSClient({
-    credentials: {
-      accessKeyId: credentials.accessKeyId,
-      secretAccessKey: credentials.secretAccessKey
-    },
-    region: region
-  });
-}
+export async function initializeCloudWatchClient(integration: AwsIntegration): Promise<CloudWatchClient> {
+  const region = integration.region;
 
-export function initializeCloudWatchClient(credentials: AWSCredentials, region: string): CloudWatchClient {
-  if (!region) {
-    region = credentials.region;
+  switch (integration.authMethod) {
+    case 'credentials':
+      return new CloudWatchClient({
+        region,
+        credentials: {
+          accessKeyId: integration.accessKeyId,
+          secretAccessKey: integration.secretAccessKey
+        }
+      });
+    case 'cloudformation': {
+      const stsClient = new STSClient({ region });
+      const assumeRoleCommand = new AssumeRoleCommand({
+        RoleArn: integration.cloudformationStackArn, // This should be Role ARN
+        RoleSessionName: 'DBAgentCloudWatchSession' // TODO: ensure cloudformationStackArn is actually a Role ARN
+      });
+      try {
+        const assumedRole = await stsClient.send(assumeRoleCommand);
+        if (!assumedRole.Credentials) {
+          throw new Error('Failed to assume role, credentials not received.');
+        }
+        return new CloudWatchClient({
+          region,
+          credentials: {
+            accessKeyId: assumedRole.Credentials.AccessKeyId!,
+            secretAccessKey: assumedRole.Credentials.SecretAccessKey!,
+            sessionToken: assumedRole.Credentials.SessionToken!
+          }
+        });
+      } catch (error) {
+        console.error('Error assuming role for CloudFormation:', error);
+        throw new Error(`Failed to assume role with ARN ${integration.cloudformationStackArn}: ${error}`);
+      }
+    }
+    case 'ec2instance':
+      // AWS SDK automatically uses EC2 instance profile credentials if no explicit credentials are provided
+      return new CloudWatchClient({ region });
+    default:
+      // Exhaustive check for all authMethods
+      const exhaustiveCheck: never = integration;
+      throw new Error(`Unhandled authMethod: ${(exhaustiveCheck as any).authMethod}`);
   }
-  return new CloudWatchClient({
-    credentials: {
-      accessKeyId: credentials.accessKeyId,
-      secretAccessKey: credentials.secretAccessKey
-    },
-    region: region
-  });
 }
 
 export async function listRDSClusters(client: RDSClient): Promise<RDSClusterInfo[]> {
@@ -269,6 +333,66 @@ export async function getRDSClusterLogs(
   }
 }
 
+/**
+ * Checks if the current environment is an EC2 instance with an IAM role attached.
+ * It queries the EC2 metadata service.
+ * @returns {Promise<boolean>} True if running on EC2 with an IAM role, false otherwise.
+ */
+export async function isEc2InstanceWithRole(): Promise<boolean> {
+  const metadataServiceUrlBase = 'http://169.254.169.254/latest/meta-data/';
+  const instanceIdUrl = `${metadataServiceUrlBase}instance-id`;
+  const iamRoleUrl = `${metadataServiceUrlBase}iam/security-credentials/`;
+  const timeoutMs = 1000; // 1 second timeout
+
+  const fetchWithTimeout = async (url: string): Promise<Response | null> => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      // Check if the error is due to AbortError, which is expected on timeout
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.debug(`Fetch to ${url} timed out after ${timeoutMs}ms.`);
+      } else {
+        console.debug(`Fetch to ${url} failed:`, error);
+      }
+      return null;
+    }
+  };
+
+  try {
+    // 1. Check for instance ID (indicates EC2 environment)
+    const instanceIdResponse = await fetchWithTimeout(instanceIdUrl);
+    if (!instanceIdResponse || !instanceIdResponse.ok) {
+      console.debug('Not an EC2 instance or metadata service not reachable (instance-id check failed).');
+      return false;
+    }
+    // Optionally, you could check the content of instanceIdResponse.text() if needed
+
+    // 2. Check for IAM role (indicates an IAM role is attached)
+    const iamRoleResponse = await fetchWithTimeout(iamRoleUrl);
+    if (!iamRoleResponse || !iamRoleResponse.ok) {
+      console.debug('EC2 instance does not have an IAM role attached (iam/security-credentials/ check failed).');
+      return false;
+    }
+    const roleName = await iamRoleResponse.text();
+    if (!roleName || roleName.trim().length === 0) {
+      console.debug('EC2 instance has an empty IAM role name.');
+      return false;
+    }
+
+    console.debug('Running on EC2 instance with IAM role:', roleName.trim());
+    return true;
+  } catch (error) {
+    console.error('Error during EC2 instance/role check:', error);
+    return false;
+  }
+}
+
 export async function getRDSInstanceLogs(
   instanceIdentifier: string,
   client: RDSClient,
@@ -315,20 +439,20 @@ export async function getRDSInstanceLogs(
 
 export async function getRDSClusterMetric(
   clusterIdentifier: string,
-  region: string,
-  credentials: AWSCredentials,
+  integration: AwsIntegration, // Changed from AWSCredentials
   metricName: string,
   startTime: Date = new Date(Date.now() - 24 * 60 * 60 * 1000), // Default to last 24 hours
   endTime: Date = new Date(),
   stat: 'Average' | 'Maximum' | 'Minimum' | 'Sum' = 'Average'
 ): Promise<{ timestamp: Date; value: number }[]> {
   try {
-    const rdsClient = initializeRDSClient(credentials, region);
+    // Region is part of integration object, explicit region parameter is not needed here
+    const rdsClient = await initializeRDSClient(integration); 
     const describeClusterCommand = new DescribeDBClustersCommand({
       DBClusterIdentifier: clusterIdentifier
     });
 
-    const clusterResponse = await rdsClient.send(describeClusterCommand);
+    const clusterResponse = await rdsClient.send(describeClusterCommand); // initializeRDSClient is now async
     const cluster = clusterResponse.DBClusters?.[0];
 
     if (!cluster || !cluster.DBClusterMembers || cluster.DBClusterMembers.length === 0) {
@@ -345,10 +469,10 @@ export async function getRDSClusterMetric(
     }
 
     // Now get metrics for the writer instance
+    // Pass the whole integration object
     return await getRDSInstanceMetric(
       writerMember.DBInstanceIdentifier,
-      region,
-      credentials,
+      integration, 
       metricName,
       startTime,
       endTime,
@@ -362,8 +486,7 @@ export async function getRDSClusterMetric(
 
 export async function getRDSInstanceMetric(
   instanceIdentifier: string,
-  region: string,
-  credentials: AWSCredentials,
+  integration: AwsIntegration, // Changed from AWSCredentials
   metricName: string,
   startTime: Date,
   endTime: Date,
@@ -386,7 +509,8 @@ export async function getRDSInstanceMetric(
       period = 300; // 5 minute intervals
     }
 
-    const client = initializeCloudWatchClient(credentials, region);
+    // Region is part of integration object
+    const client = await initializeCloudWatchClient(integration); 
     const command = new GetMetricStatisticsCommand({
       Namespace: 'AWS/RDS',
       MetricName: metricName,
@@ -404,7 +528,7 @@ export async function getRDSInstanceMetric(
 
     console.log('command', JSON.stringify(command, null, 2));
 
-    const response = await client.send(command);
+    const response = await client.send(command); // initializeCloudWatchClient is now async
 
     if (!response.Datapoints?.length) {
       return [];
