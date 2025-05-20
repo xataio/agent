@@ -12,6 +12,12 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
       model: await getModelInstance('chat'),
       system: 'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
       experimental_transform: smoothStream({ chunking: 'word' }),
+      experimental_telemetry: {
+        isEnabled: true,
+        metadata: {
+          tags: ['artifact', 'text', 'create']
+        }
+      },
       prompt: title
     });
 
@@ -39,6 +45,12 @@ export const textDocumentHandler = createDocumentHandler<'text'>({
       model: await getModelInstance('chat'),
       system: updateDocumentPrompt(document.content, 'text'),
       experimental_transform: smoothStream({ chunking: 'word' }),
+      experimental_telemetry: {
+        isEnabled: true,
+        metadata: {
+          tags: ['artifact', 'text', 'update']
+        }
+      },
       prompt: description,
       experimental_providerMetadata: {
         openai: {

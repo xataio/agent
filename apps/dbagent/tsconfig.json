@@ -2,6 +2,7 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "@xata.io/tsconfig/nextjs.json",
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "paths": {
       "~/*": ["./src/*"]
     }

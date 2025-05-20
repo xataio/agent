@@ -20,20 +20,20 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@eslint/compat": "^1.2.8",
-    "@types/node": "^22.15.3",
-    "@types/react": "^19.1.2",
+    "@eslint/compat": "^1.2.9",
+    "@types/node": "^22.15.19",
+    "@types/react": "^19.1.4",
     "@xata.io/tsconfig": "^0.0.1",
-    "eslint": "^9.25.1",
+    "eslint": "^9.27.0",
     "husky": "^9.1.7",
-    "lint-staged": "^15.5.1",
+    "lint-staged": "^16.0.0",
     "prettier": "^3.5.3",
     "prettier-plugin-organize-imports": "^4.1.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tsx": "^4.19.4",
-    "turbo": "^2.5.2",
+    "turbo": "^2.5.3",
     "typescript": "^5.8.3",
-    "vitest": "^3.1.2"
+    "vitest": "^3.1.4"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
