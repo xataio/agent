@@ -108,6 +108,18 @@ export function McpTable() {
       <TableCell>
         <div className="bg-muted h-4 w-24 animate-pulse rounded" />
       </TableCell>
+      <TableCell>
+        <div className="bg-muted h-4 w-16 animate-pulse rounded" />
+      </TableCell>
+      <TableCell>
+        <div className="bg-muted h-4 w-32 animate-pulse rounded" />
+      </TableCell>
+      <TableCell>
+        <div className="bg-muted h-4 w-12 animate-pulse rounded" />
+      </TableCell>
+      <TableCell>
+        <div className="bg-muted h-4 w-20 animate-pulse rounded" />
+      </TableCell>
     </TableRow>
   );
 
@@ -133,6 +145,8 @@ export function McpTable() {
           <TableRow>
             <TableHead>Sever Name</TableHead>
             <TableHead>File</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>URL</TableHead>
             <TableHead>Enabled</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -165,6 +179,31 @@ export function McpTable() {
                 </div>
               </TableCell>
               <TableCell>{server.filePath}</TableCell>
+              <TableCell>
+                <Badge variant={server.type === 'stdio' ? 'outline' : 'default'}>
+                  {server.type}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                {server.url ? (
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Link
+                        href={server.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="truncate hover:underline"
+                        style={{ maxWidth: '150px', display: 'inline-block' }}
+                      >
+                        {server.url}
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent>{server.url}</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <span className="text-muted-foreground">N/A</span>
+                )}
+              </TableCell>
               <TableCell>
                 <Switch checked={server.enabled} onCheckedChange={() => handleToggleEnabled(server)} />
               </TableCell>

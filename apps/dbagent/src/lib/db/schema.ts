@@ -37,6 +37,9 @@ export type MemberRole = InferEnumType<typeof memberRole>;
 export const cloudProvider = pgEnum('cloud_provider', ['aws', 'gcp', 'other']);
 export type CloudProvider = InferEnumType<typeof cloudProvider>;
 
+export const mcpServerType = pgEnum('mcp_server_type', ['stdio', 'sse', 'streamable-http']);
+export type MCPServerType = InferEnumType<typeof mcpServerType>;
+
 export const awsClusters = pgTable(
   'aws_clusters',
   {
@@ -684,7 +687,9 @@ export const mcpServers = pgTable(
     version: text('version').notNull(),
     enabled: boolean('enabled').default(true).notNull(),
     envVars: jsonb('env_vars').$type<Record<string, string>>().default({}).notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull()
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    type: mcpServerType('type').default('stdio'),
+    url: text('url')
   },
   (table) => [
     unique('uq_mcp_servers_name').on(table.name),
