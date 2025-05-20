@@ -21,7 +21,8 @@ function PureChat({
   connections,
   initialMessages,
   initialInput,
-  suggestedActions
+  suggestedActions,
+  initialConnectionId
 }: {
   id: string;
   projectId: string;
@@ -30,10 +31,11 @@ function PureChat({
   initialMessages?: Array<UIMessage>;
   initialInput?: string;
   suggestedActions?: SuggestedAction[];
+  initialConnectionId?: string | null;
 }) {
   const queryClient = useQueryClient();
   const defaultConnection = connections.find((c) => c.isDefault);
-  const [connectionId, setConnectionId] = useState<string>(defaultConnection?.id || '');
+  const [connectionId, setConnectionId] = useState<string>(initialConnectionId || defaultConnection?.id || '');
   const [model, setModel] = useState<string>(defaultLanguageModel);
 
   const { messages, setMessages, handleSubmit, input, setInput, append, status, stop, reload } = useChat({
@@ -150,6 +152,7 @@ export const Chat = memo(PureChat, (prevProps, nextProps) => {
     prevProps.projectId === nextProps.projectId &&
     prevProps.defaultLanguageModel === nextProps.defaultLanguageModel &&
     prevProps.initialMessages?.length === nextProps.initialMessages?.length &&
-    prevProps.initialInput === nextProps.initialInput
+    prevProps.initialInput === nextProps.initialInput &&
+    prevProps.initialConnectionId === nextProps.initialConnectionId
   );
 });
