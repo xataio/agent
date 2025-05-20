@@ -674,21 +674,34 @@ export const playbooks = pgTable(
 export type Playbook = InferSelectModel<typeof playbooks>;
 export type PlaybookInsert = InferInsertModel<typeof playbooks>;
 
+export type McpServerConfig =
+  | {
+      type: 'local';
+      filePath: string;
+      envVars?: Record<string, string>;
+    }
+  | {
+      type: 'sse';
+      url: string;
+      headers?: Record<string, string>;
+    }
+  | {
+      type: 'streamable-http';
+      url: string;
+    };
+
 export const mcpServers = pgTable(
   'mcp_servers',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     name: text('name').notNull(),
-    serverName: text('server_name').notNull(),
-    filePath: text('file_path').notNull(),
+    config: jsonb('config').$type<McpServerConfig>().notNull(),
     version: text('version').notNull(),
     enabled: boolean('enabled').default(true).notNull(),
-    envVars: jsonb('env_vars').$type<Record<string, string>>().default({}).notNull(),
     createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull()
   },
   (table) => [
     unique('uq_mcp_servers_name').on(table.name),
-    unique('uq_mcp_servers_server_name').on(table.serverName),
     pgPolicy('mcp_servers_policy', {
       to: authenticatedUser,
       for: 'all',
