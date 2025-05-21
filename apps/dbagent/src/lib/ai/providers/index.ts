@@ -29,7 +29,14 @@ function buildProviderRegistry() {
         })
     );
   } else {
-    registries.push(() => Promise.resolve(getBuiltinProviderRegistry()));
+    if (
+      env.OPENAI_API_KEY ||
+      env.DEEPSEEK_API_KEY ||
+      env.ANTHROPIC_API_KEY ||
+      env.GOOGLE_GENERATIVE_AI_API_KEY
+    ) {
+      registries.push(() => Promise.resolve(getBuiltinProviderRegistry()));
+    }
   }
 
   // Add optional registries.
