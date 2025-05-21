@@ -456,7 +456,8 @@ export const chats = pgTable(
     createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
     title: text('title').notNull(),
     model: text('model').notNull(),
-    userId: text('user_id').notNull()
+    userId: text('user_id').notNull(),
+    connectionId: uuid('connection_id')
   },
   (table) => [
     foreignKey({
@@ -464,8 +465,14 @@ export const chats = pgTable(
       foreignColumns: [projects.id],
       name: 'fk_chats_project'
     }).onDelete('cascade'),
+    foreignKey({
+      columns: [table.connectionId],
+      foreignColumns: [connections.id],
+      name: 'fk_chats_connection'
+    }).onDelete('set null'),
     index('idx_chats_project_id').on(table.projectId),
     index('idx_chats_user_id').on(table.userId),
+    index('idx_chats_connection_id').on(table.connectionId),
     pgPolicy('chats_policy', {
       to: authenticatedUser,
       for: 'all',

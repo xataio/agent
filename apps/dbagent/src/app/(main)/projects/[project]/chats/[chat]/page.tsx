@@ -37,6 +37,7 @@ export default async function Page({ params }: { params: Promise<PageParams> }) 
   const dbAccess = await getUserSessionDBAccess();
   const connections = await listConnections(dbAccess, projectId);
   const defaultLanguageModel = await getDefaultLanguageModel();
+  const defaultConnection = connections.find((c) => c.isDefault);
 
   const chat = await getMessagesByChatId(dbAccess, { id: chatId });
 
@@ -66,6 +67,7 @@ export default async function Page({ params }: { params: Promise<PageParams> }) 
         connections={connections}
         initialMessages={convertToUIMessages(chat.messages)}
         suggestedActions={suggestedActions}
+        initialConnectionId={chat.connectionId ?? defaultConnection?.id}
       />
 
       <DataStreamHandler id={chatId} />
