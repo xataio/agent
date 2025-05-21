@@ -24,7 +24,7 @@ export function DatabaseConnectionSelector({
       return;
     }
 
-    const result = await saveClusterDetails(clusterIdentifier, region, selectedConnection);
+    const result = await saveClusterDetails(clusterIdentifier, selectedConnection);
     if (result.success) {
       toast.success(result.message);
     } else {

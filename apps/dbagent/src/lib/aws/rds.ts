@@ -45,7 +45,7 @@ export async function initializeRDSClient(integration: AwsIntegration): Promise<
   const region = integration.region;
 
   switch (integration.authMethod) {
-    case 'credentials':
+    case 'credentials': {
       return new RDSClient({
         region,
         credentials: {
@@ -53,6 +53,7 @@ export async function initializeRDSClient(integration: AwsIntegration): Promise<
           secretAccessKey: integration.secretAccessKey
         }
       });
+    }
     case 'cloudformation': {
       const stsClient = new STSClient({ region });
       const assumeRoleCommand = new AssumeRoleCommand({
@@ -77,13 +78,15 @@ export async function initializeRDSClient(integration: AwsIntegration): Promise<
         throw new Error(`Failed to assume role with ARN ${integration.cloudformationStackArn}: ${error}`);
       }
     }
-    case 'ec2instance':
+    case 'ec2instance': {
       // AWS SDK automatically uses EC2 instance profile credentials if no explicit credentials are provided
       return new RDSClient({ region });
-    default:
+    }
+    default: {
       // Exhaustive check for all authMethods
       const exhaustiveCheck: never = integration;
       throw new Error(`Unhandled authMethod: ${(exhaustiveCheck as any).authMethod}`);
+    }
   }
 }
 
@@ -91,7 +94,7 @@ export async function initializeCloudWatchClient(integration: AwsIntegration): P
   const region = integration.region;
 
   switch (integration.authMethod) {
-    case 'credentials':
+    case 'credentials': {
       return new CloudWatchClient({
         region,
         credentials: {
@@ -99,6 +102,7 @@ export async function initializeCloudWatchClient(integration: AwsIntegration): P
           secretAccessKey: integration.secretAccessKey
         }
       });
+    }
     case 'cloudformation': {
       const stsClient = new STSClient({ region });
       const assumeRoleCommand = new AssumeRoleCommand({
@@ -123,13 +127,15 @@ export async function initializeCloudWatchClient(integration: AwsIntegration): P
         throw new Error(`Failed to assume role with ARN ${integration.cloudformationStackArn}: ${error}`);
       }
     }
-    case 'ec2instance':
+    case 'ec2instance': {
       // AWS SDK automatically uses EC2 instance profile credentials if no explicit credentials are provided
       return new CloudWatchClient({ region });
-    default:
+    }
+    default: {
       // Exhaustive check for all authMethods
       const exhaustiveCheck: never = integration;
       throw new Error(`Unhandled authMethod: ${(exhaustiveCheck as any).authMethod}`);
+    }
   }
 }
 
@@ -208,9 +214,9 @@ export async function getRDSClusterInfo(
         status: instance.DBInstanceStatus || '',
         endpoint: instance.Endpoint
           ? {
-              address: instance.Endpoint.Address || '',
-              port: instance.Endpoint.Port || 5432
-            }
+            address: instance.Endpoint.Address || '',
+            port: instance.Endpoint.Port || 5432
+          }
           : undefined,
         allocatedStorage: instance.AllocatedStorage || 0,
         multiAZ: instance.MultiAZ || false
@@ -242,9 +248,9 @@ export async function listRDSInstances(client: RDSClient): Promise<RDSInstanceIn
     status: instance.DBInstanceStatus || '',
     endpoint: instance.Endpoint
       ? {
-          address: instance.Endpoint.Address || '',
-          port: instance.Endpoint.Port || 5432
-        }
+        address: instance.Endpoint.Address || '',
+        port: instance.Endpoint.Port || 5432
+      }
       : undefined,
     allocatedStorage: instance.AllocatedStorage || 0,
     multiAZ: instance.MultiAZ || false,
@@ -281,9 +287,9 @@ export async function getRDSInstanceInfo(
       status: instance.DBInstanceStatus || '',
       endpoint: instance.Endpoint
         ? {
-            address: instance.Endpoint.Address || '',
-            port: instance.Endpoint.Port || 5432
-          }
+          address: instance.Endpoint.Address || '',
+          port: instance.Endpoint.Port || 5432
+        }
         : undefined,
       allocatedStorage: instance.AllocatedStorage || 0,
       multiAZ: instance.MultiAZ || false,
@@ -439,20 +445,19 @@ export async function getRDSInstanceLogs(
 
 export async function getRDSClusterMetric(
   clusterIdentifier: string,
-  integration: AwsIntegration, // Changed from AWSCredentials
+  integration: AwsIntegration,
   metricName: string,
   startTime: Date = new Date(Date.now() - 24 * 60 * 60 * 1000), // Default to last 24 hours
   endTime: Date = new Date(),
   stat: 'Average' | 'Maximum' | 'Minimum' | 'Sum' = 'Average'
 ): Promise<{ timestamp: Date; value: number }[]> {
   try {
-    // Region is part of integration object, explicit region parameter is not needed here
     const rdsClient = await initializeRDSClient(integration);
     const describeClusterCommand = new DescribeDBClustersCommand({
       DBClusterIdentifier: clusterIdentifier
     });
 
-    const clusterResponse = await rdsClient.send(describeClusterCommand); // initializeRDSClient is now async
+    const clusterResponse = await rdsClient.send(describeClusterCommand);
     const cluster = clusterResponse.DBClusters?.[0];
 
     if (!cluster || !cluster.DBClusterMembers || cluster.DBClusterMembers.length === 0) {
@@ -468,8 +473,6 @@ export async function getRDSClusterMetric(
       return [];
     }
 
-    // Now get metrics for the writer instance
-    // Pass the whole integration object
     return await getRDSInstanceMetric(
       writerMember.DBInstanceIdentifier,
       integration,
@@ -486,7 +489,7 @@ export async function getRDSClusterMetric(
 
 export async function getRDSInstanceMetric(
   instanceIdentifier: string,
-  integration: AwsIntegration, // Changed from AWSCredentials
+  integration: AwsIntegration,
   metricName: string,
   startTime: Date,
   endTime: Date,
@@ -509,7 +512,6 @@ export async function getRDSInstanceMetric(
       period = 300; // 5 minute intervals
     }
 
-    // Region is part of integration object
     const client = await initializeCloudWatchClient(integration);
     const command = new GetMetricStatisticsCommand({
       Namespace: 'AWS/RDS',
@@ -526,9 +528,7 @@ export async function getRDSInstanceMetric(
       Statistics: [stat]
     });
 
-    console.log('command', JSON.stringify(command, null, 2));
-
-    const response = await client.send(command); // initializeCloudWatchClient is now async
+    const response = await client.send(command);
 
     if (!response.Datapoints?.length) {
       return [];
