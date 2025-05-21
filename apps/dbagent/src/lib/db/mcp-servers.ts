@@ -20,44 +20,50 @@ export async function getUserMcpServer(dbAccess: DBAccess, serverName: string) {
   });
 }
 
-//might need to update this for version and filepath aswell
-export async function updateUserMcpServer(dbAccess: DBAccess, input: MCPServerInsert) {
+export async function updateUserMcpServer(dbAccess: DBAccess, input: Partial<MCPServerInsert> & { name: string }) {
   return await dbAccess.query(async ({ db }) => {
+    if (!input.name) {
+      throw new Error('Server name (input.name) is required for update.');
+    }
+
     const result = await db
       .update(mcpServers)
       .set({
         enabled: input.enabled,
-        envVars: input.envVars
+        config: input.config
       })
       .where(eq(mcpServers.name, input.name))
       .returning();
 
     if (result.length === 0) {
-      throw new Error(`[UPDATE]Server with name "${input.name}" not found`);
+      throw new Error(
+        `[UPDATE]Server with name "${input.name}" not found, or update failed due to constraints (e.g., serverName already exists).`
+      );
     }
 
     return result[0];
   });
 }
 
-export async function addUserMcpServerToDB(dbAccess: DBAccess, input: MCPServer): Promise<MCPServer> {
+export async function addUserMcpServerToDB(dbAccess: DBAccess, input: MCPServerInsert): Promise<MCPServer> {
   return await dbAccess.query(async ({ db }) => {
     // Check if server with same name exists
-    const existingServer = await db.select().from(mcpServers).where(eq(mcpServers.name, input.serverName)).limit(1);
+    const existingServer = await db.select().from(mcpServers).where(eq(mcpServers.name, input.name)).limit(1);
 
     if (existingServer.length > 0) {
-      throw new Error(`Server with name "${input.serverName}" already exists`);
+      throw new Error(`Server with name "${input.name}" already exists`);
     }
 
     // Create new server
+    // All fields in MCPServerInsert should be passed.
+    // Drizzle handles undefined for optional fields (inserts NULL or uses default)
     const result = await db
       .insert(mcpServers)
       .values({
         name: input.name,
-        serverName: input.serverName,
         version: input.version,
-        filePath: input.filePath,
-        enabled: input.enabled
+        enabled: input.enabled,
+        config: input.config
       })
       .returning();
 

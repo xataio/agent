@@ -8,7 +8,7 @@ import { addUserMcpServerToDB, deleteUserMcpServer, getUserMcpServer, updateUser
 import { MCPServer, MCPServerInsert } from '~/lib/db/schema';
 
 //playbook db insert
-export async function actionAddUserMcpServerToDB(input: MCPServer): Promise<MCPServer> {
+export async function actionAddUserMcpServerToDB(input: MCPServerInsert): Promise<MCPServer> {
   const dbAccess = await getUserSessionDBAccess();
   return await addUserMcpServerToDB(dbAccess, input);
 }

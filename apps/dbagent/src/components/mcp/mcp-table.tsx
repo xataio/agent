@@ -108,6 +108,18 @@ export function McpTable() {
       <TableCell>
         <div className="bg-muted h-4 w-24 animate-pulse rounded" />
       </TableCell>
+      <TableCell>
+        <div className="bg-muted h-4 w-16 animate-pulse rounded" />
+      </TableCell>
+      <TableCell>
+        <div className="bg-muted h-4 w-32 animate-pulse rounded" />
+      </TableCell>
+      <TableCell>
+        <div className="bg-muted h-4 w-12 animate-pulse rounded" />
+      </TableCell>
+      <TableCell>
+        <div className="bg-muted h-4 w-20 animate-pulse rounded" />
+      </TableCell>
     </TableRow>
   );
 
@@ -131,8 +143,9 @@ export function McpTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Sever Name</TableHead>
-            <TableHead>File</TableHead>
+            <TableHead>Server Name</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>URL</TableHead>
             <TableHead>Enabled</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -150,7 +163,7 @@ export function McpTable() {
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Code variant="default">
-                    <Link href={getMcpServerUrl(server)}>{server.serverName}</Link>
+                    <Link href={getMcpServerUrl(server)}>{server.name}</Link>
                   </Code>
                   {!mcpServerInDb[server.name] && (
                     <Tooltip>
@@ -164,7 +177,29 @@ export function McpTable() {
                   )}
                 </div>
               </TableCell>
-              <TableCell>{server.filePath}</TableCell>
+              <TableCell>
+                <Badge variant={server.config.type === 'local' ? 'outline' : 'default'}>{server.config.type}</Badge>
+              </TableCell>
+              <TableCell>
+                {server.config.type === 'sse' || server.config.type === 'streamable-http' ? (
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Link
+                        href={server.config.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="truncate hover:underline"
+                        style={{ maxWidth: '150px', display: 'inline-block' }}
+                      >
+                        {server.config.url}
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent>{server.config.url}</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <span className="text-muted-foreground">{server.config.filePath}</span>
+                )}
+              </TableCell>
               <TableCell>
                 <Switch checked={server.enabled} onCheckedChange={() => handleToggleEnabled(server)} />
               </TableCell>
