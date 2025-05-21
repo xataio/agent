@@ -117,7 +117,7 @@ export async function POST(request: Request) {
                   ...chat,
                   title,
                   model: model.info().id,
-                  connectionId: connectionId // Use connectionId from the request
+                  connectionId
                 },
                 [
                   {

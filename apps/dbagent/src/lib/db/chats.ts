@@ -1,8 +1,8 @@
 import 'server-only';
 
 import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm';
-
 import { ArtifactKind } from '~/components/chat/artifacts/artifact';
+import { compactObject } from '~/utils/types';
 import { DBAccess } from './db';
 import {
   artifactDocuments,
@@ -24,11 +24,11 @@ export async function saveChat(dbAccess: DBAccess, chat: ChatInsert, chatMessage
         .values(chat)
         .onConflictDoUpdate({
           target: [chats.id],
-          set: {
+          set: compactObject({
             model: chat.model,
             title: chat.title,
             connectionId: chat.connectionId
-          }
+          })
         });
 
       if (chatMessages.length > 0) {
