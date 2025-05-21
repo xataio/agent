@@ -18,6 +18,7 @@ import {
   uuid,
   varchar
 } from 'drizzle-orm/pg-core';
+import z from 'zod';
 import { RDSClusterDetailedInfo } from '../aws/rds';
 import { CloudSQLInstanceInfo } from '../gcp/cloudsql';
 
@@ -36,9 +37,6 @@ export type MemberRole = InferEnumType<typeof memberRole>;
 
 export const cloudProvider = pgEnum('cloud_provider', ['aws', 'gcp', 'other']);
 export type CloudProvider = InferEnumType<typeof cloudProvider>;
-
-export const mcpServerType = pgEnum('mcp_server_type', ['stdio', 'sse', 'streamable-http']);
-export type MCPServerType = InferEnumType<typeof mcpServerType>;
 
 export const awsClusters = pgTable(
   'aws_clusters',
@@ -677,23 +675,37 @@ export const playbooks = pgTable(
 export type Playbook = InferSelectModel<typeof playbooks>;
 export type PlaybookInsert = InferInsertModel<typeof playbooks>;
 
+export const mcpServerConfigSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('local'),
+    filePath: z.string(),
+    env: z.record(z.string()).optional()
+  }),
+  z.object({
+    type: z.literal('sse'),
+    url: z.string(),
+    headers: z.record(z.string()).optional()
+  }),
+  z.object({
+    type: z.literal('streamable-http'),
+    url: z.string()
+  })
+]);
+
+export type McpServerConfig = z.infer<typeof mcpServerConfigSchema>;
+
 export const mcpServers = pgTable(
   'mcp_servers',
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     name: text('name').notNull(),
-    serverName: text('server_name').notNull(),
-    filePath: text('file_path').notNull(),
+    config: jsonb('config').$type<McpServerConfig>().notNull(),
     version: text('version').notNull(),
     enabled: boolean('enabled').default(true).notNull(),
-    envVars: jsonb('env_vars').$type<Record<string, string>>().default({}).notNull(),
-    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
-    type: mcpServerType('type').default('stdio'),
-    url: text('url')
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull()
   },
   (table) => [
     unique('uq_mcp_servers_name').on(table.name),
-    unique('uq_mcp_servers_server_name').on(table.serverName),
     pgPolicy('mcp_servers_policy', {
       to: authenticatedUser,
       for: 'all',

@@ -143,8 +143,7 @@ export function McpTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Sever Name</TableHead>
-            <TableHead>File</TableHead>
+            <TableHead>Server Name</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>URL</TableHead>
             <TableHead>Enabled</TableHead>
@@ -164,7 +163,7 @@ export function McpTable() {
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Code variant="default">
-                    <Link href={getMcpServerUrl(server)}>{server.serverName}</Link>
+                    <Link href={getMcpServerUrl(server)}>{server.name}</Link>
                   </Code>
                   {!mcpServerInDb[server.name] && (
                     <Tooltip>
@@ -178,30 +177,27 @@ export function McpTable() {
                   )}
                 </div>
               </TableCell>
-              <TableCell>{server.filePath}</TableCell>
               <TableCell>
-                <Badge variant={server.type === 'stdio' ? 'outline' : 'default'}>
-                  {server.type}
-                </Badge>
+                <Badge variant={server.config.type === 'local' ? 'outline' : 'default'}>{server.config.type}</Badge>
               </TableCell>
               <TableCell>
-                {server.url ? (
+                {server.config.type === 'sse' || server.config.type === 'streamable-http' ? (
                   <Tooltip>
                     <TooltipTrigger>
                       <Link
-                        href={server.url}
+                        href={server.config.url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="truncate hover:underline"
                         style={{ maxWidth: '150px', display: 'inline-block' }}
                       >
-                        {server.url}
+                        {server.config.url}
                       </Link>
                     </TooltipTrigger>
-                    <TooltipContent>{server.url}</TooltipContent>
+                    <TooltipContent>{server.config.url}</TooltipContent>
                   </Tooltip>
                 ) : (
-                  <span className="text-muted-foreground">N/A</span>
+                  <span className="text-muted-foreground">{server.config.filePath}</span>
                 )}
               </TableCell>
               <TableCell>

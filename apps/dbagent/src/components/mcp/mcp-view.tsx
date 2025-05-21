@@ -19,8 +19,9 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { actionGetConnections, actionGetCustomToolsFromMCPServer } from '~/components/tools/action';
-import { Connection, MCPServerInsert } from '~/lib/db/schema';
+import { Connection, McpServerConfig, MCPServerInsert } from '~/lib/db/schema';
 import {
+  actionAddUserMcpServerToDB,
   actionCheckUserMcpServerExists,
   actionDeleteUserMcpServerFromDBAndFiles,
   actionUpdateUserMcpServer
@@ -42,12 +43,12 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isInDb, setIsInDb] = useState<boolean>(false);
   const [isCheckingDb, setIsCheckingDb] = useState(true);
-  const [envVars, setEnvVars] = useState<Record<string, string>>(initialServer.envVars || {});
+  const [config, setConfig] = useState<McpServerConfig>(initialServer.config);
   const [isSavingEnvVars, setIsSavingEnvVars] = useState(false);
 
   useEffect(() => {
     setServer(initialServer);
-    setEnvVars(initialServer.envVars || {});
+    setConfig(initialServer.config);
   }, [initialServer]);
 
   useEffect(() => {
@@ -93,24 +94,32 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
   };
 
   const handleAddEnvVar = () => {
-    setEnvVars({ ...envVars, '': '' });
+    if (config.type !== 'local') return;
+
+    setConfig({ ...config, env: { ...config.env, '': '' } });
   };
 
   const handleEnvVarChange = (index: number, key: string, value: string) => {
-    const entries = Object.entries(envVars);
+    if (config.type !== 'local') return;
+
+    const entries = Object.entries(config.env ?? {});
     const oldKey = entries[index]?.[0];
     const newEntries = entries.filter(([k]) => k !== oldKey);
     newEntries.splice(index, 0, [key, value]);
-    setEnvVars(Object.fromEntries(newEntries));
+    setConfig({ ...config, env: Object.fromEntries(newEntries) });
   };
 
   const handleRemoveEnvVar = (keyToRemove: string) => {
-    const newEnvVars = { ...envVars };
-    delete newEnvVars[keyToRemove];
-    setEnvVars(newEnvVars);
+    if (config.type !== 'local') return;
+
+    const newConfig = { ...config };
+    delete newConfig.env?.[keyToRemove];
+    setConfig(newConfig);
   };
 
   const handleSaveEnvVars = async () => {
+    if (config.type !== 'local') return;
+
     setIsSavingEnvVars(true);
     try {
       if (!isInDb) {
@@ -119,11 +128,11 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
         return;
       }
 
-      const varsToSave = Object.fromEntries(Object.entries(envVars).filter(([key]) => key.trim() !== ''));
+      const varsToSave = Object.fromEntries(Object.entries(config.env ?? {}).filter(([key]) => key.trim() !== ''));
       const updatedServerData = { ...server, envVars: varsToSave };
       await actionUpdateUserMcpServer(updatedServerData);
       setServer(updatedServerData);
-      setEnvVars(varsToSave);
+      setConfig({ ...config, env: varsToSave });
       toast.success('Environment variables saved successfully.');
     } catch (error) {
       console.error('Error saving environment variables:', error);
@@ -145,15 +154,15 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>MCP Server: {server.serverName}</CardTitle>
+          <CardTitle>MCP Server: {server.name}</CardTitle>
           <CardDescription>
             <p className="text-muted-foreground">Version: {server.version}</p>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <h3 className="font-semibold">File Path</h3>
-            <p className="text-muted-foreground">{server.filePath}</p>
+            <h3 className="font-semibold">Type</h3>
+            <p className="text-muted-foreground">{server.config.type}</p>
           </div>
           <div>
             <h3 className="font-semibold">Status</h3>
@@ -170,86 +179,14 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
             </p>
           </div>
 
-          {/* Editable Fields Start */}
-          {/* Add Input for 'name' (identifier), crucial for creation */}
-          {!initialServer.id && ( // Only show 'name' input if it's a new server (no id yet)
-            <div className="space-y-2">
-              <label htmlFor="name" className="font-semibold">Server Identifier (Name)</label>
-              <Input
-                id="name"
-                value={server.name || ''}
-                onChange={(e) => setServer({ ...server, name: e.target.value })}
-                placeholder="my-unique-server-name"
-                disabled={!!initialServer.id} // Disable if editing existing
-              />
-              <p className="text-xs text-muted-foreground">Unique identifier for the server. Cannot be changed after creation.</p>
-            </div>
-          )}
-          <div className="space-y-2">
-            <label htmlFor="serverName" className="font-semibold">Server Display Name</label>
-            <Input
-              id="serverName"
-              value={server.serverName || ''}
-              onChange={(e) => setServer({ ...server, serverName: e.target.value })}
-              placeholder="My Awesome Server"
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="filePath" className="font-semibold">File Path</label>
-            <Input
-              id="filePath"
-              value={server.filePath || ''}
-              onChange={(e) => setServer({ ...server, filePath: e.target.value })}
-              placeholder="src/my-server.ts"
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="version" className="font-semibold">Version</label>
-            <Input
-              id="version"
-              value={server.version || ''}
-              onChange={(e) => setServer({ ...server, version: e.target.value })}
-              placeholder="1.0.0"
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="type" className="font-semibold">Type</label>
-            {/* Assuming Select components are available from @xata.io/components or using native HTML */}
-            <select
-              id="type"
-              value={server.type || 'stdio'}
-              onChange={(e) => setServer({ ...server, type: e.target.value as MCPServerInsert['type'], url: e.target.value === 'stdio' ? null : server.url })}
-              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="stdio">stdio</option>
-              <option value="sse">sse</option>
-              <option value="streamable-http">streamable-http</option>
-            </select>
-          </div>
-          {(server.type === 'sse' || server.type === 'streamable-http') && (
-            <div className="space-y-2">
-              <label htmlFor="url" className="font-semibold">URL</label>
-              <Input
-                id="url"
-                value={server.url || ''}
-                onChange={(e) => setServer({ ...server, url: e.target.value })}
-                placeholder="http://localhost:8000/stream"
-              />
-            </div>
-          )}
-          {/* Editable Fields End */}
-          
-          {/* Save Server Changes Button - to be added near CardFooter or repurpose existing save */}
-
-
-          {isInDb && (
+          {isInDb && config.type === 'local' && (
             <div>
               <h3 className="font-semibold">Environment Variables</h3>
               <p className="text-muted-foreground mb-4 text-sm">
                 These variables will be passed to the MCP server process.
               </p>
               <div className="space-y-3">
-                {Object.entries(envVars).map(([key, value], index) => (
+                {Object.entries(config.env ?? {}).map(([key, value], index) => (
                   <div key={index} className="flex items-center gap-2">
                     <Input
                       placeholder="Variable Name"
@@ -290,35 +227,30 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
 
           {/* Placeholder for a general Save Server button */}
           <div className="mt-6 flex justify-end">
-             <Button 
+            <Button
               onClick={async () => {
                 try {
                   let payload = { ...server };
-                  if (server.type === 'stdio') {
-                    payload.url = null; // Ensure URL is null for stdio
-                  } else if ((server.type === 'sse' || server.type === 'streamable-http') && !server.url) {
-                    toast.error(`URL is required for type '${server.type}'.`);
+
+                  // Validate required fields
+                  if (!payload.name || !payload.version || !payload.config.type) {
+                    toast.error('Name, Server Name, File Path, Version, and Type are required.');
                     return;
                   }
 
-                  // Validate required fields
-                  if (!payload.name || !payload.serverName || !payload.filePath || !payload.version || !payload.type) {
-                     toast.error('Name, Server Name, File Path, Version, and Type are required.');
-                     return;
-                  }
-                  
-                  if (!initialServer.id && !isInDb) { // CREATE MODE
+                  if (!initialServer.id && !isInDb) {
+                    // CREATE MODE
                     // Check if server with this name already exists (client-side check before calling action)
                     // The actionAddUserMcpServerToDB also checks, but this is a quicker feedback
                     const exists = await actionCheckUserMcpServerExists(payload.name);
                     if (exists) {
-                        toast.error(`Server with identifier (name) "${payload.name}" already exists.`);
-                        return;
+                      toast.error(`Server with identifier (name) "${payload.name}" already exists.`);
+                      return;
                     }
                     const newServer = await actionAddUserMcpServerToDB(payload);
                     toast.success('Server created successfully!');
                     // Update isInDb and potentially initialServer to reflect creation
-                    setIsInDb(true); 
+                    setIsInDb(true);
                     // It's better to navigate to the edit view of the new server or refresh.
                     // For now, just update local state and initialServer to allow further edits as if it's an edit page.
                     // This might need router.push(`/projects/${project}/mcp/${newServer.name}`) for a full SPA feel.
@@ -328,12 +260,13 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
                     // A robust solution would involve navigating or the parent component refreshing `initialServer`.
                     // For now, we assume `setServer` with the new server (which has an ID) is enough for subsequent saves to be updates.
                     // A proper "create" page would likely redirect.
-                    if (newServer.id) { // Simulate that it's now an existing server for subsequent saves
-                        initialServer.id = newServer.id; 
-                        initialServer.name = newServer.name; // ensure name is also updated if it was somehow different
+                    if (newServer.id) {
+                      // Simulate that it's now an existing server for subsequent saves
+                      initialServer.id = newServer.id;
+                      initialServer.name = newServer.name; // ensure name is also updated if it was somehow different
                     }
-
-                  } else { // UPDATE MODE
+                  } else {
+                    // UPDATE MODE
                     await actionUpdateUserMcpServer(payload);
                     toast.success('Server updated successfully!');
                   }
@@ -345,10 +278,10 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
               }}
               disabled={isCheckingDb || isSavingEnvVars}
             >
-              {(!initialServer.id && !isInDb) ? 'Create Server' : 'Save Server Changes'}
+              {!initialServer.id && !isInDb ? 'Create Server' : 'Save Server Changes'}
             </Button>
           </div>
-          
+
           <div>
             <h3 className="font-semibold">Available Tools</h3>
             {isLoading ? (
