@@ -355,11 +355,7 @@ export function AWSIntegration({ projectId, connections }: { projectId: string; 
         {clusterDetails && !isLoading && (
           <div className="mt-8">
             <RDSClusterCard clusterInfo={clusterDetails} />
-            <DatabaseConnectionSelector
-              clusterIdentifier={clusterDetails.identifier}
-              region={region}
-              connections={connections}
-            />
+            <DatabaseConnectionSelector clusterIdentifier={clusterDetails.identifier} connections={connections} />
           </div>
         )}
       </CardContent>
