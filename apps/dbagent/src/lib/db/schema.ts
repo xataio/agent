@@ -678,7 +678,7 @@ export type McpServerConfig =
   | {
       type: 'local';
       filePath: string;
-      envVars?: Record<string, string>;
+      env?: Record<string, string>;
     }
   | {
       type: 'sse';

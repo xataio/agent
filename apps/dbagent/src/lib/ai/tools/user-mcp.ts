@@ -1,8 +1,10 @@
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { experimental_createMCPClient, type ToolSet } from 'ai'; //,
 import { Experimental_StdioMCPTransport } from 'ai/mcp-stdio';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { actionGetUserMcpServer } from '~/components/mcp/action';
+import { McpServerConfig } from '~/lib/db/schema';
 import { env } from '~/lib/env/server';
 
 export function getMCPSourceDistDir() {
@@ -60,6 +62,27 @@ async function getMCPToolForServer(serverFileName: string): Promise<ToolSet> {
   }
 }
 
+function createTransport(config: McpServerConfig) {
+  switch (config.type) {
+    case 'local':
+      return new Experimental_StdioMCPTransport({
+        command: 'node',
+        args: [config.filePath],
+        env: config.env
+      });
+    case 'sse':
+      return {
+        type: 'sse',
+        url: config.url,
+        headers: config.headers
+      } as const;
+    case 'streamable-http':
+      return new StreamableHTTPClientTransport(new URL(config.url), {
+        sessionId: undefined
+      });
+  }
+}
+
 async function loadToolsFromFile(filePath: string): Promise<ToolSet> {
   try {
     const serverName = path.basename(filePath, '.js');
@@ -69,14 +92,8 @@ async function loadToolsFromFile(filePath: string): Promise<ToolSet> {
       return {};
     }
 
-    const transport = new Experimental_StdioMCPTransport({
-      command: 'node',
-      args: [filePath],
-      env: serverDetails?.envVars
-    });
-
     const client = await experimental_createMCPClient({
-      transport
+      transport: createTransport(serverDetails.config)
     });
 
     return await client.tools();

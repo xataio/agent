@@ -19,7 +19,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { actionGetConnections, actionGetCustomToolsFromMCPServer } from '~/components/tools/action';
-import { Connection, MCPServerInsert } from '~/lib/db/schema';
+import { Connection, McpServerConfig, MCPServerInsert } from '~/lib/db/schema';
 import {
   actionCheckUserMcpServerExists,
   actionDeleteUserMcpServerFromDBAndFiles,
@@ -42,12 +42,12 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isInDb, setIsInDb] = useState<boolean>(false);
   const [isCheckingDb, setIsCheckingDb] = useState(true);
-  const [envVars, setEnvVars] = useState<Record<string, string>>(initialServer.envVars || {});
+  const [config, setConfig] = useState<McpServerConfig>(initialServer.config);
   const [isSavingEnvVars, setIsSavingEnvVars] = useState(false);
 
   useEffect(() => {
     setServer(initialServer);
-    setEnvVars(initialServer.envVars || {});
+    setConfig(initialServer.config);
   }, [initialServer]);
 
   useEffect(() => {
@@ -93,24 +93,32 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
   };
 
   const handleAddEnvVar = () => {
-    setEnvVars({ ...envVars, '': '' });
+    if (config.type !== 'local') return;
+
+    setConfig({ ...config, env: { ...config.env, '': '' } });
   };
 
   const handleEnvVarChange = (index: number, key: string, value: string) => {
-    const entries = Object.entries(envVars);
+    if (config.type !== 'local') return;
+
+    const entries = Object.entries(config.env ?? {});
     const oldKey = entries[index]?.[0];
     const newEntries = entries.filter(([k]) => k !== oldKey);
     newEntries.splice(index, 0, [key, value]);
-    setEnvVars(Object.fromEntries(newEntries));
+    setConfig({ ...config, env: Object.fromEntries(newEntries) });
   };
 
   const handleRemoveEnvVar = (keyToRemove: string) => {
-    const newEnvVars = { ...envVars };
-    delete newEnvVars[keyToRemove];
-    setEnvVars(newEnvVars);
+    if (config.type !== 'local') return;
+
+    const newConfig = { ...config };
+    delete newConfig.env?.[keyToRemove];
+    setConfig(newConfig);
   };
 
   const handleSaveEnvVars = async () => {
+    if (config.type !== 'local') return;
+
     setIsSavingEnvVars(true);
     try {
       if (!isInDb) {
@@ -119,11 +127,11 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
         return;
       }
 
-      const varsToSave = Object.fromEntries(Object.entries(envVars).filter(([key]) => key.trim() !== ''));
+      const varsToSave = Object.fromEntries(Object.entries(config.env ?? {}).filter(([key]) => key.trim() !== ''));
       const updatedServerData = { ...server, envVars: varsToSave };
       await actionUpdateUserMcpServer(updatedServerData);
       setServer(updatedServerData);
-      setEnvVars(varsToSave);
+      setConfig({ ...config, env: varsToSave });
       toast.success('Environment variables saved successfully.');
     } catch (error) {
       console.error('Error saving environment variables:', error);
@@ -145,15 +153,15 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>MCP Server: {server.serverName}</CardTitle>
+          <CardTitle>MCP Server: {server.name}</CardTitle>
           <CardDescription>
             <p className="text-muted-foreground">Version: {server.version}</p>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <h3 className="font-semibold">File Path</h3>
-            <p className="text-muted-foreground">{server.filePath}</p>
+            <h3 className="font-semibold">Type</h3>
+            <p className="text-muted-foreground">{server.config.type}</p>
           </div>
           <div>
             <h3 className="font-semibold">Status</h3>
@@ -170,14 +178,14 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
             </p>
           </div>
 
-          {isInDb && (
+          {isInDb && config.type === 'local' && (
             <div>
               <h3 className="font-semibold">Environment Variables</h3>
               <p className="text-muted-foreground mb-4 text-sm">
                 These variables will be passed to the MCP server process.
               </p>
               <div className="space-y-3">
-                {Object.entries(envVars).map(([key, value], index) => (
+                {Object.entries(config.env ?? {}).map(([key, value], index) => (
                   <div key={index} className="flex items-center gap-2">
                     <Input
                       placeholder="Variable Name"

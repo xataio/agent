@@ -27,7 +27,7 @@ export async function updateUserMcpServer(dbAccess: DBAccess, input: MCPServerIn
       .update(mcpServers)
       .set({
         enabled: input.enabled,
-        envVars: input.envVars
+        config: input.config
       })
       .where(eq(mcpServers.name, input.name))
       .returning();
@@ -43,10 +43,10 @@ export async function updateUserMcpServer(dbAccess: DBAccess, input: MCPServerIn
 export async function addUserMcpServerToDB(dbAccess: DBAccess, input: MCPServer): Promise<MCPServer> {
   return await dbAccess.query(async ({ db }) => {
     // Check if server with same name exists
-    const existingServer = await db.select().from(mcpServers).where(eq(mcpServers.name, input.serverName)).limit(1);
+    const existingServer = await db.select().from(mcpServers).where(eq(mcpServers.name, input.name)).limit(1);
 
     if (existingServer.length > 0) {
-      throw new Error(`Server with name "${input.serverName}" already exists`);
+      throw new Error(`Server with name "${input.name}" already exists`);
     }
 
     // Create new server
@@ -54,10 +54,9 @@ export async function addUserMcpServerToDB(dbAccess: DBAccess, input: MCPServer)
       .insert(mcpServers)
       .values({
         name: input.name,
-        serverName: input.serverName,
         version: input.version,
-        filePath: input.filePath,
-        enabled: input.enabled
+        enabled: input.enabled,
+        config: input.config
       })
       .returning();
 

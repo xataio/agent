@@ -29,11 +29,13 @@ export default async function McpServerPage({ params }: { params: Promise<PagePa
     const versionMatch = content.match(/version:\s*['"]([^'"]+)['"]/);
 
     server = {
-      name: serverId,
-      serverName: nameMatch?.[1] ?? serverId,
+      name: nameMatch?.[1] ?? serverId,
       version: versionMatch?.[1] ?? '1.0.0',
-      filePath: `${serverId}.ts`,
-      enabled: false
+      enabled: false,
+      config: {
+        type: 'local',
+        filePath
+      }
     };
 
     // Try to get additional data from database if it exists
@@ -53,10 +55,12 @@ export default async function McpServerPage({ params }: { params: Promise<PagePa
       if (dbServer) {
         server = {
           name: dbServer.name,
-          serverName: dbServer.serverName,
           version: dbServer.version,
-          filePath: dbServer.filePath,
-          enabled: dbServer.enabled
+          enabled: dbServer.enabled,
+          config: {
+            type: 'local',
+            filePath
+          }
         };
       }
     } catch (error) {
