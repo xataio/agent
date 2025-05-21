@@ -1,8 +1,8 @@
 import 'server-only';
 
 import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm';
-
 import { ArtifactKind } from '~/components/chat/artifacts/artifact';
+import { compactObject } from '~/utils/types';
 import { DBAccess } from './db';
 import {
   artifactDocuments,
@@ -24,10 +24,11 @@ export async function saveChat(dbAccess: DBAccess, chat: ChatInsert, chatMessage
         .values(chat)
         .onConflictDoUpdate({
           target: [chats.id],
-          set: {
+          set: compactObject({
             model: chat.model,
-            title: chat.title
-          }
+            title: chat.title,
+            connectionId: chat.connectionId
+          })
         });
 
       if (chatMessages.length > 0) {
@@ -70,7 +71,18 @@ export async function getChatsByProject(
 
 export async function getChatById(dbAccess: DBAccess, { id }: { id: string }) {
   return dbAccess.query(async ({ db }) => {
-    const [selectedChat] = await db.select().from(chats).where(eq(chats.id, id));
+    const [selectedChat] = await db
+      .select({
+        id: chats.id,
+        projectId: chats.projectId,
+        createdAt: chats.createdAt,
+        title: chats.title,
+        model: chats.model,
+        userId: chats.userId,
+        connectionId: chats.connectionId
+      })
+      .from(chats)
+      .where(eq(chats.id, id));
     return selectedChat;
   });
 }
@@ -82,7 +94,8 @@ export async function getMessagesByChatId(dbAccess: DBAccess, { id }: { id: stri
         chat: {
           id: chats.id,
           title: chats.title,
-          model: chats.model
+          model: chats.model,
+          connectionId: chats.connectionId
         },
         messages: messages
       })

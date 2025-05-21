@@ -64,6 +64,13 @@
       "when": 1746433645178,
       "tag": "0008_mcp_servers",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1747805782814,
+      "tag": "0009_connection_id_chats",
+      "breakpoints": true
     }
   ]
 }
