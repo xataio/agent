@@ -4,7 +4,7 @@ import {
   getRDSClusterInfo,
   getRDSInstanceInfo,
   initializeRDSClient,
-  isEc2InstanceWithRole, // Added import
+  isEc2InstanceWithRole,
   listRDSClusters,
   listRDSInstances,
   RDSClusterDetailedInfo,
