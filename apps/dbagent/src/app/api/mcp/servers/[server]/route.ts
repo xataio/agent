@@ -1,39 +1,43 @@
 import { promises as fs } from 'fs';
 import { NextResponse } from 'next/server';
 import path from 'path';
-import { getMCPSourceDir } from '~/lib/ai/tools/user-mcp';
+import { getMCPServersDir } from '~/lib/ai/tools/user-mcp';
+import { MCPServerInsert } from '~/lib/db/schema';
 
-const mcpSourceDir = getMCPSourceDir();
+const mcpServersDir = getMCPServersDir();
+
+export async function findServerOnDisk(server: string): Promise<MCPServerInsert | null> {
+  // Ensure server name is safe and only contains alphanumeric characters, dots, and hyphens
+  const sanitizedServer = server.replace(/[^a-zA-Z0-9.-]/g, '');
+  const filePath = path.join(mcpServersDir, `${sanitizedServer}.js`);
+  if (!filePath.startsWith(mcpServersDir) || filePath.includes('..')) {
+    return null;
+  }
+
+  // Check if file exists
+  try {
+    await fs.access(filePath);
+  } catch (error) {
+    return null;
+  }
+
+  const metadata = {
+    name: sanitizedServer,
+    serverName: sanitizedServer,
+    filePath: `${sanitizedServer}.js`,
+    enabled: false,
+    version: '0.0.0' // not used
+  };
+  return metadata;
+}
 
 export async function GET(_: Request, { params }: { params: Promise<{ server: string }> }) {
   try {
     const { server } = await params;
-    const filePath = path.join(mcpSourceDir, `${server}.ts`);
-
-    // Check if file exists
-    try {
-      await fs.access(filePath);
-    } catch (error) {
+    const metadata = await findServerOnDisk(server);
+    if (!metadata) {
       return NextResponse.json({ error: 'Server file not found' }, { status: 404 });
     }
-
-    // Read file content
-    const content = await fs.readFile(filePath, 'utf-8');
-
-    // Extract metadata from file content
-    const nameMatch = content.match(/name:\s*['"]([^'"]+)['"]/);
-    const versionMatch = content.match(/version:\s*['"]([^'"]+)['"]/);
-    const descriptionMatch = content.match(/description:\s*['"]([^'"]+)['"]/);
-
-    const metadata = {
-      name: server,
-      serverName: nameMatch ? nameMatch[1] : server,
-      version: versionMatch ? versionMatch[1] : '1.0.0',
-      description: descriptionMatch ? descriptionMatch[1] : '',
-      filePath: `${server}.ts`,
-      enabled: false
-    };
-
     return NextResponse.json(metadata);
   } catch (error) {
     console.error('Error reading server file:', error);

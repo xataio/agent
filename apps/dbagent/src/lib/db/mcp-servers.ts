@@ -20,7 +20,6 @@ export async function getUserMcpServer(dbAccess: DBAccess, serverName: string) {
   });
 }
 
-//might need to update this for version and filepath aswell
 export async function updateUserMcpServer(dbAccess: DBAccess, input: MCPServerInsert) {
   return await dbAccess.query(async ({ db }) => {
     const result = await db
@@ -33,7 +32,7 @@ export async function updateUserMcpServer(dbAccess: DBAccess, input: MCPServerIn
       .returning();
 
     if (result.length === 0) {
-      throw new Error(`[UPDATE]Server with name "${input.name}" not found`);
+      throw new Error(`[UPDATE] Server with name "${input.name}" not found`);
     }
 
     return result[0];
@@ -55,8 +54,8 @@ export async function addUserMcpServerToDB(dbAccess: DBAccess, input: MCPServer)
       .values({
         name: input.name,
         serverName: input.serverName,
-        version: input.version,
-        filePath: input.filePath,
+        version: '0.0.0', // not used
+        filePath: `${input.name}.js`,
         enabled: input.enabled
       })
       .returning();
