@@ -8,7 +8,6 @@ const schema = z.object({
   DATABASE_URL: z.string(),
 
   // MCP settings
-  MCP_SOURCE_DIR: z.string().optional(),
   MCP_SERVERS_DIR: z.string().optional(),
   // The OpenID client settings
   AUTH_SECRET: z.string().optional(),
