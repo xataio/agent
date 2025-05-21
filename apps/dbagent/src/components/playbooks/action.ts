@@ -1,8 +1,8 @@
 'use server';
 
-import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { auth } from '~/auth';
+import { getModelInstance } from '~/lib/ai/agent';
 
 import { dbCreatePlaybook, dbDeletePlaybook, dbUpdatePlaybook } from '~/lib/db/custom-playbooks';
 import { getUserDBAccess, getUserSessionDBAccess } from '~/lib/db/db';
@@ -32,7 +32,7 @@ export async function actionGeneratePlaybookContent(name: string, description: s
                   Please generate the playbook content:`;
 
   const { text } = await generateText({
-    model: openai('gpt-4o'),
+    model: await getModelInstance('chat'),
     experimental_telemetry: {
       isEnabled: true,
       metadata: {

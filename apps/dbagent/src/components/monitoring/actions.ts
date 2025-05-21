@@ -1,8 +1,8 @@
 'use server';
 
-import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { auth } from '~/auth';
+import { getModelInstance } from '~/lib/ai/agent';
 import { getUserDBAccess, getUserSessionDBAccess } from '~/lib/db/db';
 import { getScheduleRuns } from '~/lib/db/schedule-runs';
 import {
@@ -22,7 +22,7 @@ export async function generateCronExpression(description: string): Promise<strin
   Return strictly the cron expression, no quotes or anything else.`;
 
   const { text } = await generateText({
-    model: openai('gpt-4o'),
+    model: await getModelInstance('title'),
     prompt: prompt,
     experimental_telemetry: {
       isEnabled: true,
