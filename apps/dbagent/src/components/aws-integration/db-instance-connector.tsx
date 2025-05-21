@@ -6,15 +6,10 @@ import { saveClusterDetails } from './actions';
 
 interface DatabaseConnectionSelectorProps {
   clusterIdentifier: string;
-  region: string;
   connections: Connection[];
 }
 
-export function DatabaseConnectionSelector({
-  clusterIdentifier,
-  region,
-  connections
-}: DatabaseConnectionSelectorProps) {
+export function DatabaseConnectionSelector({ clusterIdentifier, connections }: DatabaseConnectionSelectorProps) {
   const defaultConnection = connections.find((c) => c.isDefault);
   const [selectedConnection, setSelectedConnection] = useState<Connection | undefined>(defaultConnection);
 
@@ -24,7 +19,7 @@ export function DatabaseConnectionSelector({
       return;
     }
 
-    const result = await saveClusterDetails(clusterIdentifier, region, selectedConnection);
+    const result = await saveClusterDetails(clusterIdentifier, selectedConnection);
     if (result.success) {
       toast.success(result.message);
     } else {

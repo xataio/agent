@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  Creates an IAM Role for the Xata Agent to access AWS RDS cluster information,
+  instance details, logs, and CloudWatch metrics. You need to provide the
+  AWS Account ID where your Xata Agent or the users/roles that will assume this
+  role reside.
+
+Parameters:
+  TrustedAwsAccountId:
+    Type: AWS::AccountId
+    Description: The AWS Account ID that will be trusted to assume this role (e.g., the account where your application or Xata Agent runs).
+  RoleName:
+    Type: String
+    Default: XataAgentRDSAccessRole
+    Description: Name for the IAM role. Keep the default unless you have specific naming conventions.
+
+Resources:
+  XataAgentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref RoleName
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${TrustedAwsAccountId}:root" # Trusts the root of the specified AWS Account ID
+            Action:
+              - sts:AssumeRole
+      Path: "/" # Default path
+      Policies:
+        - PolicyName: XataAgentRDSAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rds:DescribeDBClusters
+                  - rds:DescribeDBInstances
+                  - rds:DescribeDBLogFiles
+                  - rds:DownloadDBLogFilePortion
+                  - cloudwatch:GetMetricStatistics
+                  # The following permission is for future use, e.g., detecting if the agent is on an EC2 instance.
+                  # It can be kept commented if not immediately required by your setup.
+                  # - ec2:DescribeInstances
+                Resource: "*" # For simplicity, this policy allows access to all RDS and CloudWatch resources.
+                               # For a more secure setup, you can restrict this to specific resources if known.
+
+Outputs:
+  XataAgentRoleArn:
+    Description: ARN of the created IAM role for Xata Agent. Use this ARN in the Xata Agent UI.
+    Value: !GetAtt XataAgentRole.Arn
+    Export:
+      Name: XataAgentRoleArn # Makes it easier to reference this role ARN in other CloudFormation stacks.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Role Configuration"
+        Parameters:
+          - RoleName
+      - Label:
+          default: "Trusted Principal Configuration"
+        Parameters:
+          - TrustedAwsAccountId
+    ParameterLabels:
+      TrustedAwsAccountId:
+        default: "Trusted AWS Account ID"
+      RoleName:
+        default: "IAM Role Name"
+```

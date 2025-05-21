@@ -36,7 +36,6 @@ export async function getClusterMetricRDS(
     if (!cluster.data.isStandaloneInstance) {
       datapoints = await getRDSClusterMetric(
         cluster.clusterIdentifier,
-        cluster.region,
         awsCredentials,
         metricName,
         startTime,
@@ -46,7 +45,6 @@ export async function getClusterMetricRDS(
     } else {
       datapoints = await getRDSInstanceMetric(
         cluster.clusterIdentifier,
-        cluster.region,
         awsCredentials,
         metricName,
         startTime,

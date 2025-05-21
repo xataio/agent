@@ -29,7 +29,7 @@ export async function getInstanceLogsRDS(
   }
 
   // Initialize RDS client
-  const rdsClient = initializeRDSClient(awsCredentials, cluster.region);
+  const rdsClient = await initializeRDSClient(awsCredentials);
 
   const startTime = new Date(Date.now() - periodInSeconds * 1000);
 
