@@ -18,10 +18,6 @@ COPY package.json ./
 # Copy all package.json files from the monorepo
 # This ensures all workspace packages are correctly identified
 COPY apps/dbagent/package.json ./apps/dbagent/
-#COPY packages/components/package.json ./packages/components/
-#COPY packages/theme/package.json ./packages/theme/
-#COPY configs/eslint-config/package.json ./configs/eslint-config/
-#COPY configs/tsconfig/package.json ./configs/tsconfig/
 
 # Now copy the source code of all workspace packages
 COPY packages/ ./packages/
