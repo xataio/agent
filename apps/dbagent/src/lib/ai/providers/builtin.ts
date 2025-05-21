@@ -145,18 +145,11 @@ const builtinProviderModels: Record<string, Model> = (function () {
   );
 })();
 
-const defaultLanguageModel =
-  env.OPENAI_API_KEY && builtinProviderModels['openai:gpt-4.1']
-    ? builtinProviderModels['openai:gpt-4.1']
-    : Object.values(builtinProviderModels)[0]!;
-const defaultTitleModel =
-  env.OPENAI_API_KEY && builtinProviderModels['openai:gpt-4.1-mini']
-    ? builtinProviderModels['openai:gpt-4.1-mini']
-    : Object.values(builtinProviderModels)[0]!;
-const defaultSummaryModel =
-  env.OPENAI_API_KEY && builtinProviderModels['openai:gpt-4.1-mini']
-    ? builtinProviderModels['openai:gpt-4.1-mini']
-    : Object.values(builtinProviderModels)[0]!;
+// We default to OpenAI GPT-4.1 if available, otherwise fallback to the first model in the list
+const fallbackModel = Object.values(builtinProviderModels)[0]!;
+const defaultLanguageModel = builtinProviderModels['openai:gpt-4.1'] ?? fallbackModel;
+const defaultTitleModel = builtinProviderModels['openai:gpt-4.1-mini'] ?? fallbackModel;
+const defaultSummaryModel = builtinProviderModels['openai:gpt-4.1-mini'] ?? fallbackModel;
 
 const builtinModelAliases: Record<string, string> = {
   chat: defaultLanguageModel.info().id,
