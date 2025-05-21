@@ -17,7 +17,8 @@ export const sqlArtifact = new Artifact<'sql', SqlArtifactMetadata>({
   },
   onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
     // TODO: Handle stream parts if the SQL query can be streamed
-    if (streamPart.type === 'sql-delta') { // Or a more generic type if applicable
+    if (streamPart.type === 'sql-delta') {
+      // Or a more generic type if applicable
       setArtifact((draftArtifact) => {
         return {
           ...draftArtifact,
@@ -57,9 +58,7 @@ export const sqlArtifact = new Artifact<'sql', SqlArtifactMetadata>({
 
     return (
       <div className="p-4">
-        <pre className="bg-gray-100 p-2 rounded_md whitespace-pre-wrap">
-          {content}
-        </pre>
+        <pre className="rounded_md whitespace-pre-wrap bg-gray-100 p-2">{content}</pre>
       </div>
     );
   },
@@ -72,15 +71,15 @@ export const sqlArtifact = new Artifact<'sql', SqlArtifactMetadata>({
           toast.error('Query is empty.');
           return;
         }
-        setMetadata(prev => ({ ...prev, isRunningQuery: true, error: null }));
+        setMetadata((prev) => ({ ...prev, isRunningQuery: true, error: null }));
         try {
           toast.info('Running query...');
           const response = await fetch('/api/sql', {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
+              'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ query: content }),
+            body: JSON.stringify({ query: content })
           });
 
           const result = await response.json();
@@ -88,15 +87,14 @@ export const sqlArtifact = new Artifact<'sql', SqlArtifactMetadata>({
           if (!response.ok) {
             throw new Error(result.error || `HTTP error! status: ${response.status}`);
           }
-          
+
           toast.success('Query executed successfully!');
           console.log('Query results:', result.results);
-          setMetadata(prev => ({ ...prev, results: result.results, error: null, isRunningQuery: false }));
-          
+          setMetadata((prev) => ({ ...prev, results: result.results, error: null, isRunningQuery: false }));
         } catch (error: any) {
           console.error('Failed to run query:', error);
           toast.error(`Failed to run query: ${error.message}`);
-          setMetadata(prev => ({ ...prev, results: null, error: error.message, isRunningQuery: false }));
+          setMetadata((prev) => ({ ...prev, results: null, error: error.message, isRunningQuery: false }));
         }
       }
     },
@@ -121,7 +119,7 @@ ${JSON.stringify(metadata.results, null, 2)}`);
           toast.info('No results to display. Run a query first.');
         }
       },
-      isDisabled: ({ metadata }) => !!metadata?.isRunningQuery,
+      isDisabled: ({ metadata }) => !!metadata?.isRunningQuery
     }
   ],
   toolbar: [

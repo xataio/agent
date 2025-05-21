@@ -1,18 +1,17 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { render, screen } from '@testing-library/react';
+import React from 'react';
 import { sqlArtifact } from './client'; // Adjust path as necessary
-import { ArtifactContent } from '../create-artifact'; // Adjust path
 
 // Mock toast
 const mockToast = {
   info: jest.fn(),
   success: jest.fn(),
-  error: jest.fn(),
+  error: jest.fn()
 };
 jest.mock('@xata.io/components', () => ({
   ...jest.requireActual('@xata.io/components'), // Import and retain default exports
-  toast: mockToast, // Mock the toast export
+  toast: mockToast // Mock the toast export
 }));
 
 // Mock dependencies and props
@@ -33,25 +32,23 @@ const defaultProps: React.ComponentProps<typeof sqlArtifact.content> = {
   getDocumentContentById: mockGetDocumentContentById,
   isLoading: false,
   metadata: {},
-  setMetadata: mockSetMetadata,
+  setMetadata: mockSetMetadata
 };
 
 describe('SqlArtifact Content', () => {
   it('should render the SQL query content', () => {
     render(React.createElement(sqlArtifact.content, defaultProps));
-    
+
     // Check if the SQL query is displayed
     const queryElement = screen.getByText((content, element) => {
       // Allow matching part of the text content if it's inside a <pre> or similar
       const hasText = (node: Element | null) => node?.textContent === defaultProps.content;
       const elementHasText = hasText(element);
-      const childrenDontHaveText = Array.from(element?.children || []).every(
-        (child) => !hasText(child)
-      );
+      const childrenDontHaveText = Array.from(element?.children || []).every((child) => !hasText(child));
       return elementHasText && childrenDontHaveText;
     });
     expect(queryElement).toBeInTheDocument();
-    
+
     // Check if it's in a <pre> tag for formatting
     expect(queryElement.tagName).toBe('PRE');
   });
@@ -62,7 +59,6 @@ describe('SqlArtifact Content', () => {
     // Mock fetch globally for these tests
     global.fetch = jest.fn();
 
-
     beforeEach(() => {
       // Reset mocks before each test
       (global.fetch as jest.Mock).mockClear();
@@ -72,7 +68,7 @@ describe('SqlArtifact Content', () => {
       mockSetMetadata.mockClear(); // Assuming mockSetMetadata is available from outer scope
     });
 
-    const runQueryAction = sqlArtifact.actions.find(a => a.description === 'Run Query');
+    const runQueryAction = sqlArtifact.actions.find((a) => a.description === 'Run Query');
 
     if (!runQueryAction) {
       throw new Error('Run Query action not found in sqlArtifact.actions');
@@ -81,7 +77,7 @@ describe('SqlArtifact Content', () => {
     it('should call /api/sql with the query and show success toast on successful execution', async () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ results: [{ id: 1, name: 'Test' }] }),
+        json: async () => ({ results: [{ id: 1, name: 'Test' }] })
       });
 
       const actionContext = {
@@ -91,7 +87,7 @@ describe('SqlArtifact Content', () => {
         isCurrentVersion: true,
         mode: 'edit' as 'edit' | 'diff',
         metadata: {},
-        setMetadata: mockSetMetadata,
+        setMetadata: mockSetMetadata
       };
 
       await runQueryAction.onClick(actionContext);
@@ -99,12 +95,18 @@ describe('SqlArtifact Content', () => {
       expect(global.fetch).toHaveBeenCalledWith('/api/sql', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: actionContext.content }),
+        body: JSON.stringify({ query: actionContext.content })
       });
       expect(mockToast.info).toHaveBeenCalledWith('Running query...');
       expect(mockToast.success).toHaveBeenCalledWith('Query executed successfully!');
-      expect(mockSetMetadata).toHaveBeenNthCalledWith(1, expect.objectContaining({ isRunningQuery: true, error: null }));
-      expect(mockSetMetadata).toHaveBeenNthCalledWith(2, expect.objectContaining({ results: [{ id: 1, name: 'Test' }], error: null, isRunningQuery: false }));
+      expect(mockSetMetadata).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ isRunningQuery: true, error: null })
+      );
+      expect(mockSetMetadata).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ results: [{ id: 1, name: 'Test' }], error: null, isRunningQuery: false })
+      );
     });
 
     it('should show error toast if query is empty', async () => {
@@ -115,7 +117,7 @@ describe('SqlArtifact Content', () => {
         isCurrentVersion: true,
         mode: 'edit' as 'edit' | 'diff',
         metadata: {},
-        setMetadata: mockSetMetadata,
+        setMetadata: mockSetMetadata
       };
 
       await runQueryAction.onClick(actionContext);
@@ -129,9 +131,9 @@ describe('SqlArtifact Content', () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: false,
         status: 500,
-        json: async () => ({ error: 'Internal Server Error' }),
+        json: async () => ({ error: 'Internal Server Error' })
       });
-      
+
       const actionContext = {
         content: 'SELECT * FROM error_table;',
         handleVersionChange: jest.fn(),
@@ -139,7 +141,7 @@ describe('SqlArtifact Content', () => {
         isCurrentVersion: true,
         mode: 'edit' as 'edit' | 'diff',
         metadata: {},
-        setMetadata: mockSetMetadata,
+        setMetadata: mockSetMetadata
       };
 
       await runQueryAction.onClick(actionContext);
@@ -147,14 +149,20 @@ describe('SqlArtifact Content', () => {
       expect(global.fetch).toHaveBeenCalledWith('/api/sql', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: actionContext.content }),
+        body: JSON.stringify({ query: actionContext.content })
       });
       expect(mockToast.info).toHaveBeenCalledWith('Running query...');
       expect(mockToast.error).toHaveBeenCalledWith('Failed to run query: Internal Server Error');
-      expect(mockSetMetadata).toHaveBeenNthCalledWith(1, expect.objectContaining({ isRunningQuery: true, error: null }));
-      expect(mockSetMetadata).toHaveBeenNthCalledWith(2, expect.objectContaining({ results: null, error: 'Internal Server Error', isRunningQuery: false }));
+      expect(mockSetMetadata).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ isRunningQuery: true, error: null })
+      );
+      expect(mockSetMetadata).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ results: null, error: 'Internal Server Error', isRunningQuery: false })
+      );
     });
-     it('should show error toast on network failure', async () => {
+    it('should show error toast on network failure', async () => {
       (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network failed'));
 
       const actionContext = {
@@ -164,20 +172,26 @@ describe('SqlArtifact Content', () => {
         isCurrentVersion: true,
         mode: 'edit' as 'edit' | 'diff',
         metadata: {},
-        setMetadata: mockSetMetadata,
+        setMetadata: mockSetMetadata
       };
 
       await runQueryAction.onClick(actionContext);
-      
+
       expect(mockToast.info).toHaveBeenCalledWith('Running query...');
       expect(mockToast.error).toHaveBeenCalledWith('Failed to run query: Network failed');
-      expect(mockSetMetadata).toHaveBeenNthCalledWith(1, expect.objectContaining({ isRunningQuery: true, error: null }));
-      expect(mockSetMetadata).toHaveBeenNthCalledWith(2, expect.objectContaining({ results: null, error: 'Network failed', isRunningQuery: false }));
+      expect(mockSetMetadata).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ isRunningQuery: true, error: null })
+      );
+      expect(mockSetMetadata).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ results: null, error: 'Network failed', isRunningQuery: false })
+      );
     });
   });
 
   describe('View Results Action', () => {
-    const viewResultsAction = sqlArtifact.actions.find(a => a.description === 'View Results');
+    const viewResultsAction = sqlArtifact.actions.find((a) => a.description === 'View Results');
 
     if (!viewResultsAction) {
       throw new Error('View Results action not found in sqlArtifact.actions');
@@ -192,7 +206,7 @@ describe('SqlArtifact Content', () => {
       mockToast.info.mockClear();
       mockToast.success.mockClear();
       mockToast.error.mockClear();
-      mockSetMetadata.mockClear(); 
+      mockSetMetadata.mockClear();
     });
 
     afterAll(() => {
@@ -201,7 +215,7 @@ describe('SqlArtifact Content', () => {
 
     it('should be disabled if query is running', () => {
       const actionContext = {
-        metadata: { isRunningQuery: true },
+        metadata: { isRunningQuery: true }
         // other context properties are not relevant for isDisabled here
       } as any; // Cast to any to simplify context for isDisabled
       expect(viewResultsAction.isDisabled?.(actionContext)).toBe(true);
@@ -209,14 +223,14 @@ describe('SqlArtifact Content', () => {
 
     it('should be enabled if query is not running', () => {
       const actionContext = {
-        metadata: { isRunningQuery: false },
+        metadata: { isRunningQuery: false }
       } as any;
       expect(viewResultsAction.isDisabled?.(actionContext)).toBe(false);
     });
-    
+
     it('should show info toast if query is running when onClick is called', () => {
       const actionContext = {
-        metadata: { isRunningQuery: true },
+        metadata: { isRunningQuery: true }
       } as any;
       viewResultsAction.onClick(actionContext);
       expect(mockToast.info).toHaveBeenCalledWith('Query is currently running.');
@@ -226,7 +240,7 @@ describe('SqlArtifact Content', () => {
     it('should show results via alert and toast if results are present', () => {
       const mockResults = [{ id: 1, data: 'some data' }];
       const actionContext = {
-        metadata: { results: mockResults, isRunningQuery: false },
+        metadata: { results: mockResults, isRunningQuery: false }
       } as any;
       viewResultsAction.onClick(actionContext);
       expect(mockToast.success).toHaveBeenCalledWith('Displaying results (see alert/console).');
@@ -236,7 +250,7 @@ describe('SqlArtifact Content', () => {
     it('should show error toast if error is present in metadata', () => {
       const mockError = 'Failed query';
       const actionContext = {
-        metadata: { error: mockError, isRunningQuery: false },
+        metadata: { error: mockError, isRunningQuery: false }
       } as any;
       viewResultsAction.onClick(actionContext);
       expect(mockToast.error).toHaveBeenCalledWith(`Error from previous query run: ${mockError}`);
@@ -245,7 +259,7 @@ describe('SqlArtifact Content', () => {
 
     it('should show info toast if no results or error are present', () => {
       const actionContext = {
-        metadata: { isRunningQuery: false }, // No results, no error
+        metadata: { isRunningQuery: false } // No results, no error
       } as any;
       viewResultsAction.onClick(actionContext);
       expect(mockToast.info).toHaveBeenCalledWith('No results to display. Run a query first.');
@@ -265,7 +279,7 @@ describe('SqlArtifact Definition', () => {
     expect(sqlArtifact.actions).toBeInstanceOf(Array);
     expect(sqlArtifact.actions.length).toBeGreaterThan(0);
     // Check for specific actions by description
-    expect(sqlArtifact.actions.find(action => action.description === 'Run Query')).toBeDefined();
-    expect(sqlArtifact.actions.find(action => action.description === 'View Results')).toBeDefined();
+    expect(sqlArtifact.actions.find((action) => action.description === 'Run Query')).toBeDefined();
+    expect(sqlArtifact.actions.find((action) => action.description === 'View Results')).toBeDefined();
   });
 });

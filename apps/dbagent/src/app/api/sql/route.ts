@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     // Simulate successful execution with dummy results
     const dummyResults = [
       { id: 1, name: 'Dummy Result 1' },
-      { id: 2, name: 'Dummy Result 2' },
+      { id: 2, name: 'Dummy Result 2' }
     ];
 
     // Simulate an error for demonstration purposes if query contains "ERROR"
@@ -35,15 +35,14 @@ export async function POST(req: Request) {
       console.error('Simulated error executing query:', query);
       return NextResponse.json({ error: 'Simulated error executing query' }, { status: 500 });
     }
-    
+
     console.log('Simulated query execution successful.');
     return NextResponse.json({ results: dummyResults });
-
   } catch (error) {
     console.error('Error in /api/sql/route.ts:', error);
     let errorMessage = 'Internal Server Error';
     if (error instanceof Error) {
-        errorMessage = error.message;
+      errorMessage = error.message;
     }
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
