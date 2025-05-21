@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the environment variables
 vi.mock('~/lib/env/server', () => ({
@@ -10,17 +10,17 @@ vi.mock('~/lib/env/server', () => ({
     LITELLM_BASE_URL: undefined,
     LITELLM_API_KEY: undefined,
     OLLAMA_HOST: undefined,
-    OLLAMA_HEADERS: undefined,
+    OLLAMA_HEADERS: undefined
   }
 }));
 
 async function reImportModules() {
   // Dynamically import modules to re-evaluate them with new mocks
-  const { env } = (await import('~/lib/env/server'));
-  const providers = (await import('./index'));
+  const { env } = await import('~/lib/env/server');
+  const providers = await import('./index');
   // It's crucial to also re-import builtin if its internal state (like default models)
   // depends on env variables evaluated at module scope.
-  const builtinProviders = (await import('./builtin'));
+  const builtinProviders = await import('./builtin');
   return { env, providers, builtinProviders };
 }
 
@@ -61,9 +61,7 @@ describe('AI Provider Logic', () => {
       currentEnv.OLLAMA_HOST = undefined;
 
       const { providers } = await reImportModules();
-      await expect(providers.getDefaultLanguageModel()).rejects.toThrow(
-        'No provider registry configured'
-      );
+      await expect(providers.getDefaultLanguageModel()).rejects.toThrow('No provider registry configured');
     });
 
     it('Scenario: No API keys for built-in, but LiteLLM is configured - should not throw and return LiteLLM model', async () => {
@@ -74,14 +72,22 @@ describe('AI Provider Logic', () => {
 
       // Mock LiteLLM provider to return a dummy model
       vi.mock('./litellm', async (importOriginal) => {
-        const original = await importOriginal() as any;
+        const original = (await importOriginal()) as any;
         return {
           ...original,
           createLiteLLMProviderRegistry: vi.fn().mockResolvedValue({
-            listLanguageModels: () => [{ id: 'litellm/custom-model', info: () => ({ id: 'litellm/custom-model', name: 'LiteLLM Model', private: false }) }],
+            listLanguageModels: () => [
+              {
+                id: 'litellm/custom-model',
+                info: () => ({ id: 'litellm/custom-model', name: 'LiteLLM Model', private: false })
+              }
+            ],
             languageModel: (id: string) => ({ id, info: () => ({ id, name: 'LiteLLM Model', private: false }) }),
-            defaultLanguageModel: () => ({ id: 'litellm/custom-model', info: () => ({ id: 'litellm/custom-model', name: 'LiteLLM Model', private: false }) }),
-          }),
+            defaultLanguageModel: () => ({
+              id: 'litellm/custom-model',
+              info: () => ({ id: 'litellm/custom-model', name: 'LiteLLM Model', private: false })
+            })
+          })
         };
       });
 
@@ -97,21 +103,25 @@ describe('AI Provider Logic', () => {
       currentEnv.OLLAMA_HOST = 'http://localhost:11434';
 
       vi.mock('./ollama', async (importOriginal) => {
-        const original = await importOriginal() as any;
+        const original = (await importOriginal()) as any;
         return {
           ...original,
           createOllamaProviderRegistry: vi.fn().mockResolvedValue({
-            listLanguageModels: () => [{ id: 'ollama/llama2', info: () => ({ id: 'ollama/llama2', name: 'Ollama Llama2', private: false }) }],
+            listLanguageModels: () => [
+              { id: 'ollama/llama2', info: () => ({ id: 'ollama/llama2', name: 'Ollama Llama2', private: false }) }
+            ],
             languageModel: (id: string) => ({ id, info: () => ({ id, name: 'Ollama Llama2', private: false }) }),
-            defaultLanguageModel: () => ({ id: 'ollama/llama2', info: () => ({ id: 'ollama/llama2', name: 'Ollama Llama2', private: false }) }),
-          }),
+            defaultLanguageModel: () => ({
+              id: 'ollama/llama2',
+              info: () => ({ id: 'ollama/llama2', name: 'Ollama Llama2', private: false })
+            })
+          })
         };
       });
       const { providers } = await reImportModules();
       const model = await providers.getDefaultLanguageModel();
       expect(model.info().id).toBe('ollama/llama2');
     });
-
 
     it('Scenario: Only OpenAI API key provided - should return an OpenAI model', async () => {
       currentEnv.OPENAI_API_KEY = 'fake-openai-key';
