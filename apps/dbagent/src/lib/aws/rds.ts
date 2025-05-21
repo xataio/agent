@@ -214,9 +214,9 @@ export async function getRDSClusterInfo(
         status: instance.DBInstanceStatus || '',
         endpoint: instance.Endpoint
           ? {
-            address: instance.Endpoint.Address || '',
-            port: instance.Endpoint.Port || 5432
-          }
+              address: instance.Endpoint.Address || '',
+              port: instance.Endpoint.Port || 5432
+            }
           : undefined,
         allocatedStorage: instance.AllocatedStorage || 0,
         multiAZ: instance.MultiAZ || false
@@ -248,9 +248,9 @@ export async function listRDSInstances(client: RDSClient): Promise<RDSInstanceIn
     status: instance.DBInstanceStatus || '',
     endpoint: instance.Endpoint
       ? {
-        address: instance.Endpoint.Address || '',
-        port: instance.Endpoint.Port || 5432
-      }
+          address: instance.Endpoint.Address || '',
+          port: instance.Endpoint.Port || 5432
+        }
       : undefined,
     allocatedStorage: instance.AllocatedStorage || 0,
     multiAZ: instance.MultiAZ || false,
@@ -287,9 +287,9 @@ export async function getRDSInstanceInfo(
       status: instance.DBInstanceStatus || '',
       endpoint: instance.Endpoint
         ? {
-          address: instance.Endpoint.Address || '',
-          port: instance.Endpoint.Port || 5432
-        }
+            address: instance.Endpoint.Address || '',
+            port: instance.Endpoint.Port || 5432
+          }
         : undefined,
       allocatedStorage: instance.AllocatedStorage || 0,
       multiAZ: instance.MultiAZ || false,
