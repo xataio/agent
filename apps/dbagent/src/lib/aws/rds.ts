@@ -7,7 +7,7 @@ import {
   DownloadDBLogFilePortionCommand,
   RDSClient
 } from '@aws-sdk/client-rds';
-import { STSClient, AssumeRoleCommand, AssumeRoleCommandOutput } from '@aws-sdk/client-sts';
+import { AssumeRoleCommand, STSClient } from '@aws-sdk/client-sts';
 import { AwsIntegration } from '../db/integrations'; // Import the new type
 
 export interface RDSInstanceInfo {
@@ -447,7 +447,7 @@ export async function getRDSClusterMetric(
 ): Promise<{ timestamp: Date; value: number }[]> {
   try {
     // Region is part of integration object, explicit region parameter is not needed here
-    const rdsClient = await initializeRDSClient(integration); 
+    const rdsClient = await initializeRDSClient(integration);
     const describeClusterCommand = new DescribeDBClustersCommand({
       DBClusterIdentifier: clusterIdentifier
     });
@@ -472,7 +472,7 @@ export async function getRDSClusterMetric(
     // Pass the whole integration object
     return await getRDSInstanceMetric(
       writerMember.DBInstanceIdentifier,
-      integration, 
+      integration,
       metricName,
       startTime,
       endTime,
@@ -510,7 +510,7 @@ export async function getRDSInstanceMetric(
     }
 
     // Region is part of integration object
-    const client = await initializeCloudWatchClient(integration); 
+    const client = await initializeCloudWatchClient(integration);
     const command = new GetMetricStatisticsCommand({
       Namespace: 'AWS/RDS',
       MetricName: metricName,
