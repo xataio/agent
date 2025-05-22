@@ -15,7 +15,6 @@ import {
   toast,
   useForm
 } from '@xata.io/components';
-import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { actionGetWebhookUrl, actionSaveWebhookUrl } from './actions';
@@ -73,7 +72,6 @@ export function SlackIntegration({ projectId }: { projectId: string }) {
       <CardContent>
         <div className="mb-6">
           <Alert>
-            <AlertCircle className="h-4 w-4" />
             <AlertTitle>Create a Slack Webhook</AlertTitle>
             <AlertDescription>
               To create an incoming webhook for posting to your Slack workspace,{' '}

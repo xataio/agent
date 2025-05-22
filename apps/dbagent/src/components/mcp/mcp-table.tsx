@@ -1,6 +1,9 @@
 'use client';
 
 import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
   Badge,
   Button,
   Code,
@@ -115,6 +118,25 @@ export function McpTable() {
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">MCP Servers</h1>
       </div>
+
+      <div className="mb-6">
+        <Alert>
+          <AlertTitle>Add custom tools via a new MCP server</AlertTitle>
+          <AlertDescription>
+            To add custom tools, you can create a new MCP server, which the Agent will run locally. To create a new MCP
+            server,{' '}
+            <Link
+              href="https://github.com/xataio/agent/wiki/Create-custom-tools-via-a-local-MCP-server"
+              target="_blank"
+              className="font-medium underline"
+            >
+              follow this guide
+            </Link>
+            .
+          </AlertDescription>
+        </Alert>
+      </div>
+
       <Table>
         <TableHeader>
           <TableRow>
