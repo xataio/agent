@@ -1,8 +1,9 @@
 # Use Node.js 22 as the base image
 FROM node:22-alpine AS base
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@10.5.2 --activate
+# Install pnpm and git
+RUN corepack enable && corepack prepare pnpm@10.5.2 --activate && \
+    apk add --no-cache git
 
 # Set working directory
 WORKDIR /app
@@ -18,15 +19,24 @@ COPY package.json ./
 # Copy all package.json files from the monorepo
 # This ensures all workspace packages are correctly identified
 COPY apps/dbagent/package.json ./apps/dbagent/
-COPY packages/components/package.json ./packages/components/
-COPY packages/theme/package.json ./packages/theme/
-COPY configs/eslint-config/package.json ./configs/eslint-config/
-COPY configs/tsconfig/package.json ./configs/tsconfig/
 
 # Now copy the source code of all workspace packages
 COPY packages/ ./packages/
 COPY configs/ ./configs/
-COPY apps/dbagent/ ./apps/dbagent/
+
+# Create a temporary directory for the archive
+RUN mkdir -p /tmp/dbagent
+
+# Copy the git archive of dbagent
+COPY .git /tmp/dbagent/.git
+WORKDIR /tmp/dbagent
+RUN git archive --format=tar HEAD:apps/dbagent | tar xf - -C /app/apps/dbagent/
+
+# Clean up temporary files
+RUN rm -rf /tmp/dbagent
+
+# Return to the app directory
+WORKDIR /app
 
 # Install dependencies
 RUN pnpm install
@@ -43,7 +53,7 @@ RUN mkdir -p /app/apps/dbagent/public
 
 # Build the Next.js application
 WORKDIR /app/apps/dbagent
-RUN pnpm build
+RUN DATABASE_URL="dummy" OPENAI_API_KEY="dummy" pnpm build
 
 # Production image, copy all the files and run next
 FROM base AS runner
