@@ -62,7 +62,6 @@ function createExporter(): SpanExporter | undefined {
       headers['Authorization'] = `Bearer ${env.OTEL_EXPORTER_OTLP_KEY}`;
     }
 
-    console.log('OTEL exporter is enabled');
     exporters.push(
       otelExporter(env.OTEL_EXPORTER_OTLP_PROTOCOL || 'http/json', {
         url: env.OTEL_EXPORTER_OTLP_ENDPOINT,
@@ -72,7 +71,6 @@ function createExporter(): SpanExporter | undefined {
   }
 
   if (env.LANGFUSE_HOST && env.LANGFUSE_PUBLIC_KEY && env.LANGFUSE_SECRET_KEY) {
-    console.log('Langfuse exporter is enabled');
     exporters.push(
       new LangfuseExporter({
         baseUrl: env.LANGFUSE_HOST,
@@ -108,7 +106,6 @@ function createExporter(): SpanExporter | undefined {
   } as SpanExporter;
 }
 
-console.log('Initializing OTel SDK');
 const traceExporter = createExporter();
 const contextManager = new AsyncLocalStorageContextManager();
 contextManager.enable();
@@ -120,14 +117,13 @@ const sdk = new NodeSDK({
   instrumentations: [getNodeAutoInstrumentations()]
 });
 
-console.log('Starting OTel SDK');
 sdk.start();
 
 process.on('SIGTERM', () => {
   sdk
     .shutdown()
     .then(
-      () => console.log('OTel shutdown complete'),
+      () => {},
       (error) => console.error('OTel shutdown error', error)
     )
     .finally(() => process.exit(0));
