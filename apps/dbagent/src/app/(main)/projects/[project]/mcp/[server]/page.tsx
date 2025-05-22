@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
-import { findServerOnDisk } from '~/app/api/mcp/servers/[server]/route';
 import { McpView } from '~/components/mcp/mcp-view';
+import { findServerOnDisk } from '~/lib/db/mcp-servers';
 
 type PageParams = {
   project: string;

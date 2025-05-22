@@ -1,8 +1,11 @@
 'use server';
 
 import { eq } from 'drizzle-orm';
+import { promises as fs } from 'fs';
+import path from 'path';
 import { DBAccess } from '~/lib/db/db';
 import { MCPServer, MCPServerInsert, mcpServers } from '~/lib/db/schema';
+import { getMCPServersDir } from '../ai/tools/user-mcp';
 
 export async function getUserMcpServers(dbAccess: DBAccess) {
   return await dbAccess.query(async ({ db }) => {
@@ -18,6 +21,33 @@ export async function getUserMcpServer(dbAccess: DBAccess, serverName: string) {
 
     return result[0];
   });
+}
+
+export async function findServerOnDisk(server: string): Promise<MCPServerInsert | null> {
+  const mcpServersDir = getMCPServersDir();
+
+  // Ensure server name is safe and only contains alphanumeric characters, dots, and hyphens
+  const sanitizedServer = server.replace(/[^a-zA-Z0-9.-]/g, '');
+  const filePath = path.join(mcpServersDir, `${sanitizedServer}.js`);
+  if (!filePath.startsWith(mcpServersDir) || filePath.includes('..')) {
+    return null;
+  }
+
+  // Check if file exists
+  try {
+    await fs.access(filePath);
+  } catch (error) {
+    return null;
+  }
+
+  const metadata = {
+    name: sanitizedServer,
+    serverName: sanitizedServer,
+    filePath: `${sanitizedServer}.js`,
+    enabled: false,
+    version: '0.0.0' // not used
+  };
+  return metadata;
 }
 
 export async function updateUserMcpServer(dbAccess: DBAccess, input: MCPServerInsert) {
