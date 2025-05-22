@@ -12,12 +12,15 @@ services:
       - db_network
 
   xata-agent:
-    image: xataio/agent:0.2.2
+    image: xataio/agent:0.3.1
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-dbagent}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-dbagent}
       NODE_ENV: production
       AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-localhost}
+      MCP_SERVERS_DIR: mcp-servers
     env_file: '.env.production'
+    volumes:
+      - ./mcp-servers:/app/apps/dbagent/mcp-servers
     ports:
       - '8080:8080'
     depends_on:
