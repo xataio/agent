@@ -22,7 +22,7 @@ import {
   Textarea,
   toast
 } from '@xata.io/components';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Connection } from '~/lib/db/schema';
@@ -115,7 +115,6 @@ export function GCPIntegration({ projectId, connections }: { projectId: string; 
       <CardContent>
         <div className="mb-6">
           <Alert>
-            <AlertCircle className="h-4 w-4" />
             <AlertTitle>Create a service account</AlertTitle>
             <AlertDescription>
               To create a GCP service account for the Agent, follow this guide:{' '}

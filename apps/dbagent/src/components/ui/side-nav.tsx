@@ -36,7 +36,6 @@ import {
   AlarmClock,
   CloudIcon,
   DatabaseIcon,
-  Drill,
   HistoryIcon,
   MessageSquare,
   MoreVertical,
@@ -200,12 +199,6 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
       title: 'Playbooks',
       url: `${basePath}/playbooks`,
       icon: NotebookPen,
-      className: 'text-sm'
-    },
-    {
-      title: 'Tools',
-      url: `${basePath}/tools`,
-      icon: Drill,
       className: 'text-sm'
     },
     {

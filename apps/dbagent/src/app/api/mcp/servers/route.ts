@@ -1,29 +1,19 @@
 import { promises as fs } from 'fs';
 import { NextResponse } from 'next/server';
-import path from 'path';
-import { getMCPSourceDir } from '~/lib/ai/tools/user-mcp';
+import { getMCPServersDir } from '~/lib/ai/tools/user-mcp';
 
-const mcpSourceDir = getMCPSourceDir();
+const mcpServersDir = getMCPServersDir();
 
 export async function GET() {
   try {
-    const files = await fs.readdir(mcpSourceDir);
-    const serverFiles = files.filter((file) => file.endsWith('.ts') && !file.endsWith('.d.ts'));
+    const files = await fs.readdir(mcpServersDir);
+    const serverFiles = files.filter((file) => file.endsWith('.js'));
 
     const servers = await Promise.all(
       serverFiles.map(async (file) => {
-        const filePath = path.join(mcpSourceDir, file);
-        const content = await fs.readFile(filePath, 'utf-8');
-
-        // Extract server name and version from the file content
-        const nameMatch = content.match(/name:\s*['"]([^'"]+)['"]/);
-        const versionMatch = content.match(/version:\s*['"]([^'"]+)['"]/);
-
         return {
-          name: path.basename(file, '.ts'),
-          serverName: nameMatch ? nameMatch[1] : path.basename(file, '.ts'),
-          version: versionMatch ? versionMatch[1] : '1.0.0',
-          filePath: file,
+          name: file.endsWith('.js') ? file.slice(0, -3) : file,
+          serverName: file,
           enabled: false
         };
       })

@@ -8,8 +8,7 @@ const schema = z.object({
   DATABASE_URL: z.string(),
 
   // MCP settings
-  MCP_SOURCE_DIR: z.string().optional(),
-
+  MCP_SERVERS_DIR: z.string().optional(),
   // The OpenID client settings
   AUTH_SECRET: z.string().optional(),
   AUTH_OPENID_ID: z.string().optional(),
@@ -34,7 +33,8 @@ const schema = z.object({
   MAX_PARALLEL_RUNS: z.number().default(20), // How many schedules can be run in parallel
   TIMEOUT_FOR_RUNNING_SCHEDULE_SECS: z.number().default(15 * 60), // How long to wait before assuming it's dead and restart
 
-  EVAL: z.string(z.enum(['true', 'false'])).default('false')
+  EVAL: z.string(z.enum(['true', 'false'])).default('false'),
+  EVAL_FOLDER: z.string().optional()
 });
 
 const serverEnv = schema.parse(process.env);

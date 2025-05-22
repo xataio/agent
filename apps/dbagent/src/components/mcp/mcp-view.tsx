@@ -4,8 +4,6 @@ import {
   Button,
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
   Input,
@@ -14,17 +12,13 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@xata.io/components';
-import { ArrowLeft, PlayCircle, PlusIcon, Trash2Icon, XIcon } from 'lucide-react';
+import { ArrowLeft, PlayCircle, PlusIcon, XIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { actionGetConnections, actionGetCustomToolsFromMCPServer } from '~/components/tools/action';
 import { Connection, MCPServerInsert } from '~/lib/db/schema';
-import {
-  actionCheckUserMcpServerExists,
-  actionDeleteUserMcpServerFromDBAndFiles,
-  actionUpdateUserMcpServer
-} from './action';
+import { actionCheckUserMcpServerExists, actionUpdateUserMcpServer } from './action';
 
 interface Tool {
   name: string;
@@ -34,12 +28,10 @@ interface Tool {
 
 export function McpView({ server: initialServer }: { server: MCPServerInsert }) {
   const { project } = useParams<{ project: string }>();
-  const router = useRouter();
   const [server, setServer] = useState<MCPServerInsert>(initialServer);
   const [tools, setTools] = useState<Tool[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isInDb, setIsInDb] = useState<boolean>(false);
   const [isCheckingDb, setIsCheckingDb] = useState(true);
   const [envVars, setEnvVars] = useState<Record<string, string>>(initialServer.envVars || {});
@@ -81,16 +73,6 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
     };
     void loadData();
   }, [project, server.name, server.enabled]);
-
-  const handleDeleteServer = async () => {
-    try {
-      await actionDeleteUserMcpServerFromDBAndFiles(server.name);
-      router.push(`/projects/${project}/mcp`);
-    } catch (error) {
-      console.error('Error deleting server:', error);
-      setError('Failed to delete server. Please try again later.');
-    }
-  };
 
   const handleAddEnvVar = () => {
     setEnvVars({ ...envVars, '': '' });
@@ -146,9 +128,6 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
       <Card>
         <CardHeader>
           <CardTitle>MCP Server: {server.serverName}</CardTitle>
-          <CardDescription>
-            <p className="text-muted-foreground">Version: {server.version}</p>
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -261,23 +240,6 @@ export function McpView({ server: initialServer }: { server: MCPServerInsert }) 
             )}
           </div>
         </CardContent>
-        <CardFooter className="flex justify-end gap-3 pt-6">
-          {!showDeleteConfirm ? (
-            <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)}>
-              <Trash2Icon className="mr-2 h-4 w-4" />
-              Delete Server
-            </Button>
-          ) : (
-            <div className="flex gap-2">
-              <Button variant="destructive" onClick={handleDeleteServer}>
-                Confirm Delete
-              </Button>
-              <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
-                Cancel Delete
-              </Button>
-            </div>
-          )}
-        </CardFooter>
       </Card>
     </main>
   );
