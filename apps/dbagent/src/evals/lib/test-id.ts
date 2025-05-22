@@ -4,6 +4,11 @@ import { ExpectStatic } from 'vitest';
 
 /* eslint no-process-env: 0 */
 
+if (!process.env.EVAL_FOLDER) {
+  throw new Error('Expected process.env.EVAL_FOLDER to be defined');
+}
+const EVAL_FOLDER = process.env.EVAL_FOLDER;
+
 export const getEvalId = (expect: ExpectStatic) => {
   const testName = expect.getState().currentTestName;
   return testNameToEvalId(testName);
@@ -17,7 +22,7 @@ export const getTestRunId = () => {
 };
 
 export const ensureTraceFolderExists = (evalId: string) => {
-  const traceFolder = path.join('/tmp/dbagenteval', getTestRunId(), evalId);
+  const traceFolder = path.join(EVAL_FOLDER, getTestRunId(), evalId);
   fs.mkdirSync(traceFolder, { recursive: true });
   return traceFolder;
 };
@@ -28,7 +33,7 @@ export const ensureTraceFolderExistsExpect = (expect: ExpectStatic) => {
 };
 
 export const ensureTestRunTraceFolderExists = () => {
-  const traceFolder = path.join('/tmp/dbagenteval', getTestRunId());
+  const traceFolder = path.join(EVAL_FOLDER, getTestRunId());
   fs.mkdirSync(traceFolder, { recursive: true });
   return traceFolder;
 };
