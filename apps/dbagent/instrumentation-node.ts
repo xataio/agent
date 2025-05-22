@@ -47,7 +47,7 @@ function otelExporter(
   }
 }
 
-function createExporter(): SpanExporter {
+function createExporter(): SpanExporter | undefined {
   const exporters: SpanExporter[] = [];
 
   const level = env.OTEL_DEBUG === 'true' ? DiagLogLevel.DEBUG : DiagLogLevel.ERROR;
@@ -62,7 +62,6 @@ function createExporter(): SpanExporter {
       headers['Authorization'] = `Bearer ${env.OTEL_EXPORTER_OTLP_KEY}`;
     }
 
-    console.log('OTEL exporter is enabled');
     exporters.push(
       otelExporter(env.OTEL_EXPORTER_OTLP_PROTOCOL || 'http/json', {
         url: env.OTEL_EXPORTER_OTLP_ENDPOINT,
@@ -72,7 +71,6 @@ function createExporter(): SpanExporter {
   }
 
   if (env.LANGFUSE_HOST && env.LANGFUSE_PUBLIC_KEY && env.LANGFUSE_SECRET_KEY) {
-    console.log('Langfuse exporter is enabled');
     exporters.push(
       new LangfuseExporter({
         baseUrl: env.LANGFUSE_HOST,
@@ -83,11 +81,12 @@ function createExporter(): SpanExporter {
     );
   }
 
-  if (exporters.length === 0) {
-    return new ConsoleSpanExporter();
+  if (env.OTEL_DEBUG === 'true') {
+    exporters.push(new ConsoleSpanExporter());
   }
-  if (exporters.length === 1) {
-    return exporters[0] as SpanExporter;
+
+  if (exporters.length === 0) {
+    return undefined;
   }
 
   return {
@@ -95,39 +94,36 @@ function createExporter(): SpanExporter {
       for (const exporter of exporters) {
         exporter.export(spans, resultCallback);
       }
-      console.log('Exported spans', spans.length);
     },
 
-    shutdown(): Promise<void> {
-      return Promise.all(exporters.map((exporter) => exporter.shutdown())).then(() => undefined);
+    async shutdown(): Promise<void> {
+      return await Promise.all(exporters.map((exporter) => exporter.shutdown())).then(() => undefined);
     },
 
-    forceFlush(): Promise<void> {
-      return Promise.all(exporters.map((exporter) => exporter.forceFlush?.())).then(() => undefined);
+    async forceFlush(): Promise<void> {
+      return await Promise.all(exporters.map((exporter) => exporter.forceFlush?.())).then(() => undefined);
     }
   } as SpanExporter;
 }
 
-console.log('Initializing OTel SDK');
-const exporter = createExporter();
+const traceExporter = createExporter();
 const contextManager = new AsyncLocalStorageContextManager();
 contextManager.enable();
 
 const sdk = new NodeSDK({
   contextManager,
-  traceExporter: exporter,
-  spanProcessor: new BatchSpanProcessor(exporter),
+  traceExporter,
+  spanProcessor: traceExporter ? new BatchSpanProcessor(traceExporter) : undefined,
   instrumentations: [getNodeAutoInstrumentations()]
 });
 
-console.log('Starting OTel SDK');
 sdk.start();
 
 process.on('SIGTERM', () => {
   sdk
     .shutdown()
     .then(
-      () => console.log('OTel shutdown complete'),
+      () => {},
       (error) => console.error('OTel shutdown error', error)
     )
     .finally(() => process.exit(0));
