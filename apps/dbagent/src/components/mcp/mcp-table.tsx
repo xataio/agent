@@ -1,13 +1,12 @@
 'use client';
 
 import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
   Badge,
   Button,
   Code,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
   Switch,
   Table,
   TableBody,
@@ -19,7 +18,7 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@xata.io/components';
-import { BookOpenIcon, ChevronLeftIcon, ChevronRightIcon, MoreVerticalIcon } from 'lucide-react';
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -40,8 +39,6 @@ export function McpTable() {
   const [mcpServerInDb, setmcpServerInDb] = useState<Record<string, boolean>>({});
   const { project } = useParams<{ project: string }>();
   const [currentPage, setCurrentPage] = useState(1);
-
-  const [isAddButtonDisabled, setIsAddButtonDisabled] = useState(false);
 
   const loadMcpServers = async () => {
     try {
@@ -99,10 +96,6 @@ export function McpTable() {
     void loadMcpServers();
   }, [project]);
 
-  useEffect(() => {
-    setIsAddButtonDisabled(false);
-  }, []);
-
   const SkeletonRow = () => (
     <TableRow>
       <TableCell>
@@ -124,15 +117,30 @@ export function McpTable() {
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">MCP Servers</h1>
-        <Button onClick={() => router.push(`/projects/${project}/mcp/create`)} disabled={isAddButtonDisabled}>
-          Add MCP Server
-        </Button>
       </div>
+
+      <div className="mb-6">
+        <Alert>
+          <AlertTitle>Add custom tools via a new MCP server</AlertTitle>
+          <AlertDescription>
+            To add custom tools, you can create a new MCP server, which the Agent will run locally. To create a new MCP
+            server,{' '}
+            <Link
+              href="https://github.com/xataio/agent/wiki/Create-custom-tools-via-a-local-MCP-server"
+              target="_blank"
+              className="font-medium underline"
+            >
+              follow this guide
+            </Link>
+            .
+          </AlertDescription>
+        </Alert>
+      </div>
+
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Sever Name</TableHead>
-            <TableHead>File</TableHead>
             <TableHead>Enabled</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -150,7 +158,7 @@ export function McpTable() {
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Code variant="default">
-                    <Link href={getMcpServerUrl(server)}>{server.serverName}</Link>
+                    <Link href={getMcpServerUrl(server)}>{server.name}</Link>
                   </Code>
                   {!mcpServerInDb[server.name] && (
                     <Tooltip>
@@ -164,26 +172,13 @@ export function McpTable() {
                   )}
                 </div>
               </TableCell>
-              <TableCell>{server.filePath}</TableCell>
               <TableCell>
                 <Switch checked={server.enabled} onCheckedChange={() => handleToggleEnabled(server)} />
               </TableCell>
               <TableCell>
-                <div className="flex gap-2">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="icon">
-                        <MoreVerticalIcon className="h-3 w-3" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => router.push(getMcpServerUrl(server))}>
-                        <BookOpenIcon className="mr-2 h-3 w-3" />
-                        View Details
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                <Button variant="outline" size="sm" onClick={() => router.push(getMcpServerUrl(server))}>
+                  Edit
+                </Button>
               </TableCell>
             </TableRow>
           ))}

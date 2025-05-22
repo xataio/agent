@@ -19,7 +19,7 @@ import {
   SelectValue,
   toast
 } from '@xata.io/components';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { RDSClusterDetailedInfo, RDSClusterInfo } from '~/lib/aws/rds';
@@ -130,7 +130,6 @@ export function AWSIntegration({ projectId, connections }: { projectId: string; 
       <CardContent>
         <div className="mb-6">
           <Alert>
-            <AlertCircle className="h-4 w-4" />
             <AlertTitle>Add an IAM policy and user</AlertTitle>
             <AlertDescription>
               To obtain the Access Key ID and Secret Access Key,{' '}
