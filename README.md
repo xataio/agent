@@ -45,7 +45,7 @@ Letting the agent introduce itself:
 
 Here is an under 4 minutes walkthrough of the agent in action:
 
-https://github.com/user-attachments/assets/cdd2da8f-2d9d-4794-ada5-da161a8861fd
+https://github.com/user-attachments/assets/78f58598-c1c4-4a50-b9c5-402e912c1d8a
 
 A youtube version of the demo is available [here](https://youtu.be/SLVRdihoRwI).
 
