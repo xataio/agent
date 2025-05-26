@@ -61,6 +61,25 @@ export async function insertScheduleRun(
   });
 }
 
+export async function getLatestProblematicRun(
+  dbAccess: DBAccess,
+  scheduleId: string
+): Promise<ScheduleRun | null> {
+  return dbAccess.query(async ({ db }) => {
+    const result = await db
+      .select()
+      .from(scheduleRuns)
+      .where(
+        eq(scheduleRuns.scheduleId, scheduleId) &&
+          (eq(scheduleRuns.notificationLevel, 'alert') ||
+            eq(scheduleRuns.notificationLevel, 'warning'))
+      )
+      .orderBy(desc(scheduleRuns.createdAt))
+      .limit(1);
+    return result[0] || null;
+  });
+}
+
 export async function getScheduleRuns(dbAccess: DBAccess, scheduleId: string): Promise<ScheduleRun[]> {
   return dbAccess.query(async ({ db }) => {
     return await db

@@ -7,6 +7,7 @@ import { getConnectionFromSchedule } from '../db/connections';
 import { DBAccess } from '../db/db';
 import { getProjectById } from '../db/projects';
 import { insertScheduleRunLimitHistory } from '../db/schedule-runs';
+import { incrementScheduleFailures } from '../db/schedules';
 import { Connection, Project, Schedule } from '../db/schema';
 import { sendScheduleNotification } from '../notifications/slack-webhook';
 import { getTargetDbPool } from '../targetdb/db';
@@ -242,6 +243,10 @@ export async function runSchedule(dbAccess: DBAccess, schedule: Schedule, now: D
 
   const notificationResult = await decideNotificationLevel(messages, modelInstance, monitoringSystemPrompt);
   console.log('notificationResult', notificationResult);
+
+  if (notificationResult.notificationLevel === 'alert') {
+    await incrementScheduleFailures(dbAccess, schedule);
+  }
 
   // drilling down to more actionable playbooks
   if (schedule.maxSteps && shouldNotify(schedule.notifyLevel, notificationResult.notificationLevel)) {

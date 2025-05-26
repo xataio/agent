@@ -1,12 +1,25 @@
 'use client';
 
-import { Button, Switch, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@xata.io/components';
-import { ListIcon, PencilIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
+import {
+  Button,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@xata.io/components';
+import { AlertCircle, AlertTriangle, ListIcon, PencilIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Connection, Schedule } from '~/lib/db/schema';
-import { actionGetSchedules, actionUpdateScheduleEnabled } from './actions';
+import { Connection, NotificationLevel } from '~/lib/db/schema';
+import { actionGetSchedules, actionUpdateScheduleEnabled, ScheduleWithProblemDetails } from './actions';
 
 function displayRelativeTime(date1: Date, date2: Date): string {
   const diff = date2.getTime() - date1.getTime();
@@ -25,7 +38,7 @@ function displayRelativeTime(date1: Date, date2: Date): string {
 }
 
 export function MonitoringScheduleTable({ connections }: { connections: Connection[] }) {
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [schedules, setSchedules] = useState<ScheduleWithProblemDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { project } = useParams<{ project: string }>();
 
@@ -78,6 +91,9 @@ export function MonitoringScheduleTable({ connections }: { connections: Connecti
         <div className="bg-muted h-4 w-16 animate-pulse rounded" />
       </TableCell>
       <TableCell>
+        <div className="bg-muted h-4 w-32 animate-pulse rounded" />
+      </TableCell>
+      <TableCell>
         <div className="bg-muted h-6 w-10 animate-pulse rounded" />
       </TableCell>
       <TableCell>
@@ -111,6 +127,7 @@ export function MonitoringScheduleTable({ connections }: { connections: Connecti
             <TableHead className="w-[150px]">Status</TableHead>
             <TableHead className="w-[150px]">Last Run</TableHead>
             <TableHead className="w-[150px]">Next Run</TableHead>
+            <TableHead className="w-[200px]">Last Detected Issue</TableHead>
             <TableHead className="w-[100px]">Failures</TableHead>
             <TableHead className="w-[100px]">Enabled</TableHead>
             <TableHead className="w-[100px]">Actions</TableHead>
@@ -126,13 +143,13 @@ export function MonitoringScheduleTable({ connections }: { connections: Connecti
           ) : schedules.length === 0 ? (
             <>
               <TableRow>
-                <TableCell colSpan={10} className="text-muted-foreground py-8 text-center">
+                <TableCell colSpan={11} className="text-muted-foreground py-8 text-center">
                   Monitoring schedules make the agent execute a playbook periodically in order to proactively identify
                   issues.
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell colSpan={10} className="text-center">
+                <TableCell colSpan={11} className="text-center">
                   <Link href={`/projects/${project}/monitoring/schedule/add`}>
                     <Button>Add Schedule</Button>
                   </Link>
@@ -154,6 +171,43 @@ export function MonitoringScheduleTable({ connections }: { connections: Connecti
                     <span title={schedule.lastRun}>
                       {displayRelativeTime(new Date(Date.parse(schedule.lastRun)), new Date())} ago
                     </span>
+                  ) : (
+                    '-'
+                  )}
+                </TableCell>
+                <TableCell>
+                  {schedule.lastRunProblemSummary ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex max-w-[200px] cursor-default items-center">
+                            {schedule.lastRunProblemLevel === 'alert' && (
+                              <AlertCircle className="mr-1 h-4 w-4 flex-shrink-0 text-red-500" />
+                            )}
+                            {schedule.lastRunProblemLevel === 'warning' && (
+                              <AlertTriangle className="mr-1 h-4 w-4 flex-shrink-0 text-amber-500" />
+                            )}
+                            <span className="truncate whitespace-nowrap">
+                              {schedule.lastRunProblemSummary}
+                            </span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="font-bold">
+                            {schedule.lastRunProblemLevel === 'alert'
+                              ? 'Alert'
+                              : schedule.lastRunProblemLevel === 'warning'
+                                ? 'Warning'
+                                : 'Issue'}{' '}
+                            Detected
+                          </p>
+                          {schedule.lastRunProblemDate && (
+                            <p>Date: {new Date(schedule.lastRunProblemDate).toLocaleString()}</p>
+                          )}
+                          <p>Details: {schedule.lastRunProblemSummary}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   ) : (
                     '-'
                   )}

@@ -4,7 +4,7 @@ import { generateText } from 'ai';
 import { auth } from '~/auth';
 import { getModelInstance } from '~/lib/ai/agent';
 import { getUserDBAccess, getUserSessionDBAccess } from '~/lib/db/db';
-import { getScheduleRuns } from '~/lib/db/schedule-runs';
+import { getLatestProblematicRun, getScheduleRuns } from '~/lib/db/schedule-runs';
 import {
   deleteSchedule,
   getSchedule,
@@ -13,9 +13,15 @@ import {
   updateSchedule,
   updateScheduleRunData
 } from '~/lib/db/schedules';
-import { Schedule, ScheduleInsert, ScheduleRun } from '~/lib/db/schema';
+import { Schedule, ScheduleInsert, ScheduleRun, NotificationLevel } from '~/lib/db/schema';
 import { scheduleGetNextRun, utcToLocalDate } from '~/lib/monitoring/scheduler';
 import { listPlaybooks } from '~/lib/tools/playbooks';
+
+export type ScheduleWithProblemDetails = Schedule & {
+  lastRunProblemSummary?: string | null;
+  lastRunProblemLevel?: NotificationLevel | null;
+  lastRunProblemDate?: string | null;
+};
 
 export async function generateCronExpression(description: string): Promise<string> {
   const prompt = `Generate a cron expression for the following schedule description: "${description}". 
@@ -53,19 +59,32 @@ export async function actionUpdateSchedule(schedule: Omit<Schedule, 'userId'>): 
   return updateSchedule(dbAccess, { ...schedule, userId });
 }
 
-export async function actionGetSchedules(): Promise<Schedule[]> {
+export async function actionGetSchedules(): Promise<ScheduleWithProblemDetails[]> {
   const dbAccess = await getUserSessionDBAccess();
   const schedules = await getSchedules(dbAccess);
-  // Ensure last_run is serialized as string
-  schedules.forEach((schedule) => {
+  const schedulesWithProblemDetails: ScheduleWithProblemDetails[] = [];
+
+  for (const schedule of schedules) {
+    const problematicRun = await getLatestProblematicRun(dbAccess, schedule.id);
+    const scheduleWithDetails: ScheduleWithProblemDetails = { ...schedule };
+
+    if (problematicRun) {
+      scheduleWithDetails.lastRunProblemSummary = problematicRun.summary;
+      scheduleWithDetails.lastRunProblemLevel = problematicRun.notificationLevel;
+      scheduleWithDetails.lastRunProblemDate = problematicRun.createdAt
+        ? utcToLocalDate(problematicRun.createdAt).toString()
+        : null;
+    }
+
     if (schedule.lastRun) {
-      schedule.lastRun = utcToLocalDate(schedule.lastRun).toString();
+      scheduleWithDetails.lastRun = utcToLocalDate(schedule.lastRun).toString();
     }
     if (schedule.nextRun) {
-      schedule.nextRun = utcToLocalDate(schedule.nextRun).toString();
+      scheduleWithDetails.nextRun = utcToLocalDate(schedule.nextRun).toString();
     }
-  });
-  return schedules;
+    schedulesWithProblemDetails.push(scheduleWithDetails);
+  }
+  return schedulesWithProblemDetails;
 }
 
 export async function actionGetSchedule(id: string): Promise<Schedule> {
