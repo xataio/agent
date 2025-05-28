@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:17
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-dbagent}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
@@ -13,6 +14,7 @@ services:
 
   xata-agent:
     image: xataio/agent:0.3.1
+    restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-dbagent}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-dbagent}
       NODE_ENV: production
