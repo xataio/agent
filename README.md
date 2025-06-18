@@ -77,7 +77,7 @@ Go to the `apps/dbagent` directory and follow the instructions in the [README](.
 
 The agent can be extended via the following mechanisms:
 
-- **Tools**: These are functions that the agent can call to get information about the database. They are written in TypeScript, see this [file](https://github.com/xataio/agent/blob/main/apps/dbagent/src/lib/ai/aidba.ts#L50) for their description.
+- **Tools**: These are functions that the agent can call to get information about the database. They are written in TypeScript, see this [file](https://github.com/xataio/agent/blob/main/apps/dbagent/src/lib/ai/tools/db.ts/#L47) for their description.
 - **Playbooks**: These are sequences of steps that the agent can follow to troubleshoot an issue. They are simply written in english. The pre-defined playbooks are [here](https://github.com/xataio/agent/blob/main/apps/dbagent/src/lib/tools/playbooks.ts).
 - **Integrations**: For example, the AWS and Slack integrations. They contain configuration and UI widgets.
 
