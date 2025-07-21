@@ -20,18 +20,18 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@eslint/compat": "^1.3.0",
-    "@types/node": "^24.0.3",
+    "@eslint/compat": "^1.3.1",
+    "@types/node": "^24.0.15",
     "@types/react": "^19.1.8",
     "@xata.io/tsconfig": "^0.0.1",
-    "eslint": "^9.29.0",
+    "eslint": "^9.31.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
-    "prettier": "^3.6.0",
+    "prettier": "^3.6.2",
     "prettier-plugin-organize-imports": "^4.1.0",
-    "prettier-plugin-tailwindcss": "^0.6.13",
+    "prettier-plugin-tailwindcss": "^0.6.14",
     "tsx": "^4.20.3",
-    "turbo": "^2.5.4",
+    "turbo": "^2.5.5",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   },
@@ -55,7 +55,8 @@
       "vite@>=6.2.0 <=6.2.6": ">=6.2.7",
       "tar-fs@>=2.0.0 <2.1.3": ">=2.1.3",
       "brace-expansion@>=1.0.0 <=1.1.11": ">=1.1.12",
-      "brace-expansion@>=2.0.0 <=2.0.1": ">=2.0.2"
+      "brace-expansion@>=2.0.0 <=2.0.1": ">=2.0.2",
+      "@eslint/plugin-kit@<0.3.3": ">=0.3.3"
     }
   },
   "engines": {
