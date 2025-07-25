@@ -95,7 +95,7 @@ Given the information you collected above, think about the ideal settings for th
 - autovacuum_scale_factor
 - autovacuum_naptime
 - autovacuum_max_workers
-- autovacuum_cost_limit
+- autovacuum_vacuum_cost_limit
 - bgwriter_delay
 - bgwriter_lru_maxpages
 - bgwriter_lru_multiplier
