@@ -26,7 +26,7 @@ const monitoringPrompt = getMonitoringSystemPrompt({ cloudProvider });
 export function createAgents() {
   const evals = {
     completeness: new CompletenessMetric(),
-    relevancy: new AnswerRelevancyMetric(openai('gpt-4o-mini'), {
+    relevancy: new AnswerRelevancyMetric(openai('gpt-5-mini'), {
       uncertaintyWeight: 0.3, // Weight for 'unsure' verdicts
       scale: 1 // Scale for the final score
     })
@@ -41,7 +41,7 @@ export function createAgents() {
       tools: defaultTools,
       evals: {
         ...evals,
-        'prompt-alignment': new PromptAlignmentMetric(openai('gpt-4o-mini'), {
+        'prompt-alignment': new PromptAlignmentMetric(openai('gpt-5-mini'), {
           instructions: [monitoringPrompt],
           scale: 1 // Scale for the final score
         })
@@ -54,7 +54,7 @@ export function createAgents() {
       tools: defaultTools,
       evals: {
         ...evals,
-        'prompt-alignment': new PromptAlignmentMetric(openai('gpt-4o-mini'), {
+        'prompt-alignment': new PromptAlignmentMetric(openai('gpt-5-mini'), {
           instructions: [chatPrompt],
           scale: 1 // Scale for the final score
         })

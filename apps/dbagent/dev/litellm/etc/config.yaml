@@ -1,22 +1,27 @@
 model_list:
-  - model_name: GPT-4o
+  - model_name: GPT-5
     litellm_params:
-      model: openai/gpt-4o
+      model: openai/gpt-5
+    model_info:
+      xata_agent:
+        group_fallback: openai
+        alias:
+          - chat
+  - model_name: GPT-5 Turbo
+    litellm_params:
+      model: openai/gpt-5-turbo
+    model_info:
+      xata_agent:
+        group_fallback: openai
+  - model_name: GPT-5 Mini
+    litellm_params:
+      model: openai/gpt-5-mini
     model_info:
       xata_agent:
         group_fallback: openai
         alias:
           - title
           - summary
-  - model_name: GPT-4 Turbo
-    litellm_params:
-      model: openai/gpt-4-turbo
-  - model_name: GPT-4.1
-    litellm_params:
-      model: openai/gpt-4.1
-  - model_name: GPT-4.1 Mini
-    litellm_params:
-      model: openai/gpt-4.1-mini
 
   - model_name: DeepSeek Chat
     litellm_params:

@@ -20,38 +20,23 @@ const builtinOpenAIModels: BuiltinProvider = {
     name: 'OpenAI',
     id: 'openai',
     kind: openai,
-    fallback: 'gpt-4o'
+    fallback: 'gpt-5'
   },
   models: [
     {
-      id: 'openai:gpt-4.1',
-      providerId: 'gpt-4.1',
-      name: 'GPT-4.1'
+      id: 'openai:gpt-5',
+      providerId: 'gpt-5',
+      name: 'GPT-5'
     },
     {
-      id: 'openai:gpt-4.1-mini',
-      providerId: 'gpt-4.1-mini',
-      name: 'GPT-4.1 Mini'
+      id: 'openai:gpt-5-turbo',
+      providerId: 'gpt-5-turbo',
+      name: 'GPT-5 Turbo'
     },
     {
-      id: 'openai:gpt-4o',
-      providerId: 'gpt-4o',
-      name: 'GPT-4o'
-    },
-    {
-      id: 'openai:gpt-4-turbo',
-      providerId: 'gpt-4-turbo',
-      name: 'GPT-4 Turbo'
-    },
-    {
-      id: 'openai:o4-mini',
-      providerId: 'o4-mini',
-      name: 'OpenAI o4-mini'
-    },
-    {
-      id: 'openai:o1',
-      providerId: 'o1',
-      name: 'OpenAI o1'
+      id: 'openai:gpt-5-mini',
+      providerId: 'gpt-5-mini',
+      name: 'GPT-5 Mini'
     }
   ]
 };
@@ -145,11 +130,11 @@ const builtinProviderModels: Record<string, Model> = (function () {
   );
 })();
 
-// We default to OpenAI GPT-4.1 if available, otherwise fallback to the first model in the list
+// We default to OpenAI GPT-5 if available, otherwise fallback to the first model in the list
 const fallbackModel = Object.values(builtinProviderModels)[0]!;
-const defaultLanguageModel = builtinProviderModels['openai:gpt-4.1'] ?? fallbackModel;
-const defaultTitleModel = builtinProviderModels['openai:gpt-4.1-mini'] ?? fallbackModel;
-const defaultSummaryModel = builtinProviderModels['openai:gpt-4.1-mini'] ?? fallbackModel;
+const defaultLanguageModel = builtinProviderModels['openai:gpt-5'] ?? fallbackModel;
+const defaultTitleModel = builtinProviderModels['openai:gpt-5-mini'] ?? fallbackModel;
+const defaultSummaryModel = builtinProviderModels['openai:gpt-5-mini'] ?? fallbackModel;
 
 const builtinModelAliases: Record<string, string> = {
   chat: defaultLanguageModel.info().id,
