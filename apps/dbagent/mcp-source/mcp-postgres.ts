@@ -113,8 +113,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         content: [{ type: 'text', text: JSON.stringify(result.rows, null, 2) }],
         isError: false
       };
-    } catch (error) {
-      throw error;
     } finally {
       client.query('ROLLBACK').catch((error) => console.warn('Could not roll back transaction:', error));
 
