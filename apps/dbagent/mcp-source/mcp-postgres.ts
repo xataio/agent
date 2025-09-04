@@ -21,6 +21,7 @@ const server = new Server(
   }
 );
 
+// eslint-disable-next-line no-process-env
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
   throw new Error('DATABASE_URL environment variable is not set');
@@ -113,8 +114,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         content: [{ type: 'text', text: JSON.stringify(result.rows, null, 2) }],
         isError: false
       };
-    } catch (error) {
-      throw error;
     } finally {
       client.query('ROLLBACK').catch((error) => console.warn('Could not roll back transaction:', error));
 
