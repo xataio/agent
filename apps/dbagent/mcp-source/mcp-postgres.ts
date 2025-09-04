@@ -21,6 +21,7 @@ const server = new Server(
   }
 );
 
+// eslint-disable-next-line no-process-env
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
   throw new Error('DATABASE_URL environment variable is not set');
