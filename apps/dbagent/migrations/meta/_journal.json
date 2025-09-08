@@ -71,6 +71,13 @@
       "when": 1747805782814,
       "tag": "0009_connection_id_chats",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1754985154693,
+      "tag": "0010_gpt5_migration",
+      "breakpoints": true
     }
   ]
 }
