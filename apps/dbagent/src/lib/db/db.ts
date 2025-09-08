@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import { requireUserSession } from '~/utils/route';
 import { env } from '../env/server';
@@ -20,7 +20,7 @@ export interface DBAccess {
    * @param callback Function that receives the database instance and user ID
    * @returns The result of the callback function
    */
-  query: <T>(callback: (params: { db: ReturnType<typeof drizzle>; userId: string }) => Promise<T>) => Promise<T>;
+  query: <T>(callback: (params: { db: NodePgDatabase<any>; userId: string }) => Promise<T>) => Promise<T>;
 }
 
 /**
@@ -28,7 +28,7 @@ export interface DBAccess {
  * This bypasses user role restrictions and sets the user ID to 'admin'.
  */
 export class DBAdminAccess implements DBAccess {
-  async query<T>(callback: (params: { db: ReturnType<typeof drizzle>; userId: string }) => Promise<T>): Promise<T> {
+  async query<T>(callback: (params: { db: NodePgDatabase<any>; userId: string }) => Promise<T>): Promise<T> {
     const client = await pool.connect();
     try {
       const db = drizzle(client);
@@ -53,7 +53,7 @@ export class DBUserAccess implements DBAccess {
     this._userId = userId;
   }
 
-  async query<T>(callback: (params: { db: ReturnType<typeof drizzle>; userId: string }) => Promise<T>): Promise<T> {
+  async query<T>(callback: (params: { db: NodePgDatabase<any>; userId: string }) => Promise<T>): Promise<T> {
     const client = await pool.connect();
     try {
       const db = drizzle(client);

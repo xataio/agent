@@ -20,19 +20,19 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@eslint/compat": "^1.3.0",
-    "@types/node": "^24.0.3",
-    "@types/react": "^19.1.8",
+    "@eslint/compat": "^1.3.2",
+    "@types/node": "^24.3.0",
+    "@types/react": "^19.1.12",
     "@xata.io/tsconfig": "^0.0.1",
-    "eslint": "^9.29.0",
+    "eslint": "^9.34.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.1.2",
-    "prettier": "^3.6.0",
-    "prettier-plugin-organize-imports": "^4.1.0",
-    "prettier-plugin-tailwindcss": "^0.6.13",
-    "tsx": "^4.20.3",
-    "turbo": "^2.5.4",
-    "typescript": "^5.8.3",
+    "lint-staged": "^16.1.6",
+    "prettier": "^3.6.2",
+    "prettier-plugin-organize-imports": "^4.2.0",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "tsx": "^4.20.5",
+    "turbo": "^2.5.6",
+    "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   },
   "lint-staged": {
@@ -46,16 +46,8 @@
   "pnpm": {
     "overrides": {
       "esbuild@<=0.24.2": ">=0.25.0",
-      "prismjs@<1.30.0": ">=1.30.0",
-      "@babel/runtime@<7.26.10": ">=7.26.10",
-      "vite@>=6.1.0 <6.1.2": ">=6.1.2",
-      "tar-fs@>=2.0.0 <2.1.2": ">=2.1.2",
-      "vite@>=6.2.0 <6.2.4": ">=6.2.4",
-      "vite@>=6.2.0 <6.2.5": ">=6.2.5",
       "vite@>=6.2.0 <=6.2.6": ">=6.2.7",
-      "tar-fs@>=2.0.0 <2.1.3": ">=2.1.3",
-      "brace-expansion": "^1.1.11",
-      "minimatch": "^9.0.5"
+      "prismjs@<1.30.0": ">=1.30.0"
     }
   },
   "engines": {
