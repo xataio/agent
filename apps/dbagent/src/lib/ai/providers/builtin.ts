@@ -1,7 +1,7 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { deepseek } from '@ai-sdk/deepseek';
 import { google } from '@ai-sdk/google';
-import { openai } from '@ai-sdk/openai';
+import { createOpenAI, openai } from '@ai-sdk/openai';
 import { env } from '~/lib/env/server';
 
 import { Model, Provider, ProviderModel, ProviderRegistry } from './types';
@@ -15,11 +15,21 @@ type BuiltinProviderModel = ProviderModel & {
   providerId: string;
 };
 
+function getOpenAIProvider() {
+  if (env.OPENAI_API_BASE) {
+    return createOpenAI({
+      baseURL: env.OPENAI_API_BASE,
+      apiKey: env.OPENAI_API_KEY
+    });
+  }
+  return openai;
+}
+
 const builtinOpenAIModels: BuiltinProvider = {
   info: {
     name: 'OpenAI',
     id: 'openai',
-    kind: openai,
+    kind: getOpenAIProvider(),
     fallback: 'gpt-5'
   },
   models: [
