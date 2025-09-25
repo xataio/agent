@@ -361,6 +361,7 @@ interface SlowQuery {
   mean_exec_secs: number;
   total_exec_secs: number;
   query: string;
+  queryid: string;
 }
 
 export async function getSlowQueries(client: ClientBase, thresholdMs: number): Promise<SlowQuery[]> {
@@ -370,7 +371,8 @@ export async function getSlowQueries(client: ClientBase, thresholdMs: number): P
       round(max_exec_time/1000) max_exec_secs,
       round(mean_exec_time/1000) mean_exec_secs,
       round(total_exec_time/1000) total_exec_secs,
-      query
+      query,
+      queryid::text as queryid
     FROM pg_stat_statements
     WHERE max_exec_time > $1
     ORDER BY total_exec_time DESC

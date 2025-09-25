@@ -1,4 +1,4 @@
-import { isSingleStatement } from './explain';
+import { isSingleStatement } from './unsafe-explain';
 
 describe('isSingleStatement', () => {
   describe('positive tests - should return true', () => {

@@ -52,7 +52,7 @@ export class DBSQLTools implements ToolsetGroup {
     return tool({
       description: `Get a list of slow queries formatted as a JSON array. Contains how many times the query was called,
 the max execution time in seconds, the mean execution time in seconds, the total execution time
-(all calls together) in seconds, and the query itself.`,
+(all calls together) in seconds, the query itself, and the queryid for use with safeExplainQuery.`,
       parameters: z.object({}),
       execute: async () => {
         try {
@@ -95,10 +95,11 @@ If you know the schema, pass it in as well.`,
     const pool = this.#pool;
     return tool({
       description: `Safely run EXPLAIN on a query by fetching it from pg_stat_statements using queryId. 
-This prevents SQL injection by not accepting raw SQL queries. Returns the explain plan as received from PostgreSQL.`,
+This prevents SQL injection by not accepting raw SQL queries. Returns the explain plan as received from PostgreSQL.
+Use the queryid field from the getSlowQueries tool output as the queryId parameter.`,
       parameters: z.object({
-        schema: z.string().optional(),
-        queryId: z.string().describe('The query ID from pg_stat_statements')
+        schema: z.string(),
+        queryId: z.string().describe('The query ID from pg_stat_statements (use the queryid field from getSlowQueries)')
       }),
       execute: async ({ schema = 'public', queryId }) => {
         try {

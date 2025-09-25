@@ -1,5 +1,4 @@
 import { ClientBase } from './db';
-import { isSingleStatement } from './unsafe-explain';
 
 export async function safeExplainQuery(client: ClientBase, schema: string, queryId: string): Promise<string> {
   if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(schema)) {
@@ -14,11 +13,6 @@ export async function safeExplainQuery(client: ClientBase, schema: string, query
   }
 
   const query = queryResult.rows[0].query;
-
-  // Now run the same validation and EXPLAIN logic as unsafeExplainQuery
-  if (!isSingleStatement(query)) {
-    return 'The query is not a single safe statement. Only SELECT, INSERT, UPDATE, DELETE, and WITH statements are allowed.';
-  }
 
   if (query.includes('$1') || query.includes('$2') || query.includes('$3') || query.includes('$4')) {
     // TODO: we could use `GENERIC_PLAN` to still get the plan in this case.
