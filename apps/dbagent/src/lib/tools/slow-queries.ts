@@ -1,5 +1,5 @@
 import { ClientBase, describeTable, getSlowQueries } from '../targetdb/db';
-import { explainQuery } from '../targetdb/explain';
+import { unsafeExplainQuery } from '../targetdb/explain';
 
 export async function toolGetSlowQueries(client: ClientBase, thresholdMs: number): Promise<string> {
   const slowQueries = await getSlowQueries(client, thresholdMs);
@@ -20,8 +20,8 @@ export async function toolGetSlowQueries(client: ClientBase, thresholdMs: number
   return JSON.stringify(filteredSlowQueries);
 }
 
-export async function toolExplainQuery(client: ClientBase, schema: string, query: string): Promise<string> {
-  const result = await explainQuery(client, schema, query);
+export async function toolUnsafeExplainQuery(client: ClientBase, schema: string, query: string): Promise<string> {
+  const result = await unsafeExplainQuery(client, schema, query);
   return JSON.stringify(result);
 }
 

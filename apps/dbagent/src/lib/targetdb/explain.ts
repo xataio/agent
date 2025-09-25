@@ -218,7 +218,7 @@ class SQLParser {
   }
 }
 
-export async function explainQuery(client: ClientBase, schema: string, query: string): Promise<string> {
+export async function unsafeExplainQuery(client: ClientBase, schema: string, query: string): Promise<string> {
   if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(schema)) {
     return 'Invalid schema name. Only alphanumeric characters and underscores are allowed.';
   }

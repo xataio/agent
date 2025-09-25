@@ -1,7 +1,7 @@
 import { Tool, tool } from 'ai';
 import { z } from 'zod';
 import { getPerformanceAndVacuumSettings, toolFindTableSchema } from '~/lib/tools/dbinfo';
-import { toolDescribeTable, toolExplainQuery, toolGetSlowQueries } from '~/lib/tools/slow-queries';
+import { toolDescribeTable, toolGetSlowQueries, toolUnsafeExplainQuery } from '~/lib/tools/slow-queries';
 import {
   toolCurrentActiveQueries,
   toolGetConnectionsGroups,
@@ -29,7 +29,7 @@ export class DBSQLTools implements ToolsetGroup {
   toolset(): Record<string, Tool> {
     return {
       getSlowQueries: this.getSlowQueries(),
-      explainQuery: this.explainQuery(),
+      unsafeExplainQuery: this.unsafeExplainQuery(),
       describeTable: this.describeTable(),
       findTableSchema: this.findTableSchema(),
       getCurrentActiveQueries: this.getCurrentActiveQueries(),
@@ -58,7 +58,7 @@ the max execution time in seconds, the mean execution time in seconds, the total
     });
   }
 
-  explainQuery(): Tool {
+  unsafeExplainQuery(): Tool {
     const pool = this.#pool;
     return tool({
       description: `Run explain on a a query. Returns the explain plan as received from PostgreSQL.
@@ -73,7 +73,7 @@ If you know the schema, pass it in as well.`,
         try {
           const explain = await withPoolConnection(
             pool,
-            async (client) => await toolExplainQuery(client, schema, query)
+            async (client) => await toolUnsafeExplainQuery(client, schema, query)
           );
           if (!explain) return 'Could not run EXPLAIN on the query';
 
