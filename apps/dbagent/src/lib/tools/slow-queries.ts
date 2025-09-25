@@ -1,5 +1,5 @@
 import { ClientBase, describeTable, getSlowQueries } from '../targetdb/db';
-import { unsafeExplainQuery } from '../targetdb/explain';
+import { unsafeExplainQuery } from '../targetdb/unsafe-explain';
 
 export async function toolGetSlowQueries(client: ClientBase, thresholdMs: number): Promise<string> {
   const slowQueries = await getSlowQueries(client, thresholdMs);
