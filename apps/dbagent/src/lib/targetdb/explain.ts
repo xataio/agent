@@ -104,7 +104,11 @@ class SQLParser {
       } else if (char === '"') {
         this.parseDoubleQuotedString();
       } else if (char === '$') {
-        this.parseDollarQuotedString();
+        if (this.isDollarParameter()) {
+          this.parseDollarParameter();
+        } else {
+          this.parseDollarQuotedString();
+        }
       } else if (char === '/' && this.pos + 1 < this.len && this.input[this.pos + 1] === '*') {
         this.parseBlockComment();
       } else if (char === '-' && this.pos + 1 < this.len && this.input[this.pos + 1] === '-') {
@@ -193,6 +197,37 @@ class SQLParser {
       this.pos++;
     }
     // Don't consume the newline, let skipWhitespace handle it
+  }
+
+  private isDollarParameter(): boolean {
+    // Check if this looks like $1, $2, etc. (parameter placeholder)
+    // vs $tag$content$tag$ (dollar-quoted string)
+    if (this.pos + 1 >= this.len) {
+      return false;
+    }
+
+    let i = this.pos + 1; // Skip the $
+
+    // Check if the character after $ is a digit
+    if (!/\d/.test(this.input[i]!)) {
+      return false;
+    }
+
+    // Check if it's all digits until we hit a non-digit
+    while (i < this.len && /\d/.test(this.input[i]!)) {
+      i++;
+    }
+
+    // If the next character after digits is not $, then it's a parameter placeholder
+    return i >= this.len || this.input[i] !== '$';
+  }
+
+  private parseDollarParameter(): void {
+    this.pos++; // Skip $
+    // Skip the digits
+    while (this.pos < this.len && /\d/.test(this.input[this.pos]!)) {
+      this.pos++;
+    }
   }
 
   private skipWhitespace(): void {
