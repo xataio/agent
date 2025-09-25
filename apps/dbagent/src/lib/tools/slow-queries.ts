@@ -1,4 +1,5 @@
-import { ClientBase, describeTable, explainQuery, getSlowQueries } from '../targetdb/db';
+import { ClientBase, describeTable, getSlowQueries } from '../targetdb/db';
+import { explainQuery } from '../targetdb/explain';
 
 export async function toolGetSlowQueries(client: ClientBase, thresholdMs: number): Promise<string> {
   const slowQueries = await getSlowQueries(client, thresholdMs);

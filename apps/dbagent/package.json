@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "tsc": "tsc --noEmit",
     "test": "vitest --passWithNoTests",
+    "unit": "vitest run --exclude '**/evals/**'",
     "eval": "vitest --config vitesteval.config.ts",
     "db:migrate": "drizzle-kit migrate",
     "db:generate": "drizzle-kit generate",
