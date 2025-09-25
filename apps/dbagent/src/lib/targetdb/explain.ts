@@ -16,13 +16,11 @@ export function isSingleStatement(query: string): boolean {
     return false;
   }
 
-  // Trim whitespace
   const trimmed = query.trim();
   if (!trimmed) {
     return false;
   }
 
-  // Parse the query to check for single statement
   const parser = new SQLParser(trimmed);
   return parser.isSingleStatement();
 }
@@ -39,7 +37,6 @@ class SQLParser {
 
   isSingleStatement(): boolean {
     try {
-      // Skip leading whitespace
       this.skipWhitespace();
 
       if (this.pos >= this.len) {
@@ -52,10 +49,7 @@ class SQLParser {
         return false;
       }
 
-      // Parse the rest of the statement
       this.parseStatement();
-
-      // Skip trailing whitespace and comments
       this.skipWhitespaceAndComments();
 
       // Check if we're at the end or if there's only a trailing semicolon
@@ -70,14 +64,6 @@ class SQLParser {
         return this.pos >= this.len;
       }
 
-      // Check if there's another statement after comments/whitespace
-      // Look for another verb (SELECT, INSERT, etc.)
-      const nextVerb = this.parseVerb();
-      if (nextVerb && this.isAllowedVerb(nextVerb)) {
-        // Found another statement - this is multiple statements
-        return false;
-      }
-
       // If we have content after the statement that's not whitespace/comments/semicolon
       return false;
     } catch (error) {
@@ -87,7 +73,6 @@ class SQLParser {
   }
 
   private parseVerb(): string | null {
-    // Skip whitespace and comments before looking for the verb
     this.skipWhitespaceAndComments();
 
     const start = this.pos;
@@ -124,13 +109,6 @@ class SQLParser {
         this.parseBlockComment();
       } else if (char === '-' && this.pos + 1 < this.len && this.input[this.pos + 1] === '-') {
         this.parseLineComment();
-      } else if (char === '(') {
-        this.pos++;
-        this.parseStatement(); // Recursively parse nested content
-      } else if (char === ')') {
-        // End of nested content
-        this.pos++;
-        return;
       } else {
         this.pos++;
       }
