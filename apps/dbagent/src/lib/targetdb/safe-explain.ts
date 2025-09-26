@@ -19,10 +19,7 @@ export async function safeExplainQuery(client: ClientBase, schema: string, query
     return 'The query is not a single safe statement. Only SELECT, INSERT, UPDATE, DELETE, and WITH statements are allowed.';
   }
 
-  if (query.includes('$1') || query.includes('$2') || query.includes('$3') || query.includes('$4')) {
-    // TODO: we could use `GENERIC_PLAN` to still get the plan in this case.
-    return 'The query seems to contain placeholders ($1, $2, etc). Replace them with actual values and try again.';
-  }
+  const hasPlaceholders = /\$\d+/.test(query);
 
   let toReturn = '';
   try {
@@ -30,7 +27,7 @@ export async function safeExplainQuery(client: ClientBase, schema: string, query
     await client.query("SET LOCAL statement_timeout = '2000ms'");
     await client.query("SET LOCAL lock_timeout = '200ms'");
     await client.query(`SET search_path TO ${schema}`);
-    const explainQuery = `EXPLAIN ${query}`;
+    const explainQuery = hasPlaceholders ? `EXPLAIN (GENERIC_PLAN true) ${query}` : `EXPLAIN ${query}`;
     console.log(schema);
     console.log(explainQuery);
     const result = await client.query(explainQuery);

@@ -153,7 +153,7 @@ describe.concurrent('tool_choice', () => {
     {
       id: 'explain_query',
       prompt: 'Explain SELECT * FROM dogs',
-      expectedToolCalls: ['unsafeExplainQuery'],
+      expectedToolCalls: ['safeExplainQuery'],
       allowOtherTools: false
     },
     {
