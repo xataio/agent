@@ -37,6 +37,11 @@ describe('isSingleStatement', () => {
       expect(isSingleStatement('SELECT * FROM schema_name.table_name;')).toBe(true);
     });
 
+    test('complex SELECT with CASE, JOIN, UNION ALL and parameterized queries', () => {
+      const complexQuery = `SELECT CASE WHEN $3 < LENGTH(CAST("public"."Post"."geoJson" AS TEXT)) THEN $4 ELSE "public"."Post"."geoJson" END AS "geoJson", CASE WHEN $5 < LENGTH(CAST("public"."Post"."runs" AS TEXT)) THEN $6 ELSE "public"."Post"."runs" END AS "runs", CASE WHEN $7 < LENGTH(CAST("public"."Post"."sprints" AS TEXT)) THEN $8 ELSE "public"."Post"."sprints" END AS "sprints" FROM "public"."Post" INNER JOIN ( (SELECT "public"."Post"."id" FROM "public"."Post" ORDER BY "public"."Post"."id" ASC LIMIT $1) UNION ALL (SELECT "public"."Post"."id" FROM "public"."Post" ORDER BY "public"."Post"."id" DESC LIMIT $2) ) AS "result" ON ("result"."id" = "public"."Post"."id")`;
+      expect(isSingleStatement(complexQuery)).toBe(true);
+    });
+
     test('complex multi-line statement with comments and quotes', () => {
       const complexQuery = `
         /* multi-line comment */
