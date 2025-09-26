@@ -1,7 +1,12 @@
 import { Tool, tool } from 'ai';
 import { z } from 'zod';
 import { getPerformanceAndVacuumSettings, toolFindTableSchema } from '~/lib/tools/dbinfo';
-import { toolDescribeTable, toolGetSlowQueries, toolUnsafeExplainQuery } from '~/lib/tools/slow-queries';
+import {
+  toolDescribeTable,
+  toolGetSlowQueries,
+  toolSafeExplainQuery,
+  toolUnsafeExplainQuery
+} from '~/lib/tools/slow-queries';
 import {
   toolCurrentActiveQueries,
   toolGetConnectionsGroups,
@@ -30,6 +35,7 @@ export class DBSQLTools implements ToolsetGroup {
     return {
       getSlowQueries: this.getSlowQueries(),
       unsafeExplainQuery: this.unsafeExplainQuery(),
+      safeExplainQuery: this.safeExplainQuery(),
       describeTable: this.describeTable(),
       findTableSchema: this.findTableSchema(),
       getCurrentActiveQueries: this.getCurrentActiveQueries(),
@@ -46,7 +52,7 @@ export class DBSQLTools implements ToolsetGroup {
     return tool({
       description: `Get a list of slow queries formatted as a JSON array. Contains how many times the query was called,
 the max execution time in seconds, the mean execution time in seconds, the total execution time
-(all calls together) in seconds, and the query itself.`,
+(all calls together) in seconds, the query itself, and the queryid for use with safeExplainQuery.`,
       parameters: z.object({}),
       execute: async () => {
         try {
@@ -80,6 +86,26 @@ If you know the schema, pass it in as well.`,
           return explain;
         } catch (error) {
           return `Error running EXPLAIN on the query: ${error}`;
+        }
+      }
+    });
+  }
+
+  safeExplainQuery(): Tool {
+    const pool = this.#pool;
+    return tool({
+      description: `Safely run EXPLAIN on a query by fetching it from pg_stat_statements using queryId. 
+This prevents SQL injection by not accepting raw SQL queries. Returns the explain plan as received from PostgreSQL.
+Use the queryid field from the getSlowQueries tool output as the queryId parameter.`,
+      parameters: z.object({
+        schema: z.string(),
+        queryId: z.string().describe('The query ID from pg_stat_statements (use the queryid field from getSlowQueries)')
+      }),
+      execute: async ({ schema = 'public', queryId }) => {
+        try {
+          return await withPoolConnection(pool, async (client) => await toolSafeExplainQuery(client, schema, queryId));
+        } catch (error) {
+          return `Error running safe EXPLAIN on the query: ${error}`;
         }
       }
     });
