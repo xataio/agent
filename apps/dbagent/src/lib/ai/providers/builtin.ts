@@ -1,7 +1,7 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { deepseek } from '@ai-sdk/deepseek';
 import { google } from '@ai-sdk/google';
-import { openai } from '@ai-sdk/openai';
+import { createOpenAI } from '@ai-sdk/openai';
 import { env } from '~/lib/env/server';
 
 import { Model, Provider, ProviderModel, ProviderRegistry } from './types';
@@ -14,6 +14,11 @@ type BuiltinProvider = Provider & {
 type BuiltinProviderModel = ProviderModel & {
   providerId: string;
 };
+
+const openai = createOpenAI({
+  baseURL: env.OPENAI_BASE_URL,
+  apiKey: env.OPENAI_API_KEY
+});
 
 const builtinOpenAIModels: BuiltinProvider = {
   info: {
@@ -37,6 +42,11 @@ const builtinOpenAIModels: BuiltinProvider = {
       id: 'openai:gpt-5-mini',
       providerId: 'gpt-5-mini',
       name: 'GPT-5 Mini'
+    },
+    {
+      id: 'openai:gpt-4o',
+      providerId: 'gpt-4o',
+      name: 'GPT-4o'
     }
   ]
 };
@@ -64,14 +74,14 @@ const builtinAnthropicModels: BuiltinProvider = {
   },
   models: [
     {
-      id: 'anthropic:claude-3-7-sonnet',
-      providerId: 'claude-3-7-sonnet-20250219',
-      name: 'Claude 3.7 Sonnet'
+      id: 'anthropic:claude-sonnet-4-5',
+      providerId: 'claude-sonnet-4-5',
+      name: 'Claude Sonnet 4.5'
     },
     {
-      id: 'anthropic:claude-3-5-haiku',
-      providerId: 'claude-3-5-haiku-20241022',
-      name: 'Claude 3.5 Haiku'
+      id: 'anthropic:claude-opus-4-1',
+      providerId: 'claude-opus-4-1',
+      name: 'Claude Opus 4.1'
     }
   ]
 };
@@ -85,18 +95,18 @@ const builtinGoogleModels: BuiltinProvider = {
   models: [
     {
       id: 'google:gemini-2.5-pro',
-      providerId: 'gemini-2.5-pro-preview-03-25',
+      providerId: 'gemini-2.5-pro',
       name: 'Gemini 2.5 Pro'
     },
     {
-      id: 'google:gemini-2.0-flash',
-      providerId: 'gemini-2.0-flash',
-      name: 'Gemini 2.0 Flash'
+      id: 'google:gemini-2.5-flash',
+      providerId: 'gemini-2.5-flash',
+      name: 'Gemini 2.5 Flash'
     },
     {
-      id: 'google:gemini-2.0-flash-lite',
-      providerId: 'gemini-2.0-flash-lite',
-      name: 'Gemini 2.0 Flash Lite'
+      id: 'google:gemini-2.5-flash-lite',
+      providerId: 'gemini-2.5-flash-lite',
+      name: 'Gemini 2.5 Flash Lite'
     }
   ]
 };
