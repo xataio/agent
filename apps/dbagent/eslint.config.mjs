@@ -8,7 +8,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default [
   includeIgnoreFile(path.resolve(__dirname, '.gitignore')),
   {
-    ignores: ['next.config.js', 'react-table-config.d.ts', 'eslint.config.mjs', 'postcss.config.js']
+    ignores: [
+      'next.config.js',
+      'react-table-config.d.ts',
+      'eslint.config.mjs',
+      'postcss.config.js',
+      'mcp-source/dist/**/*'
+    ]
   },
   ...nextjs,
   {

@@ -24,7 +24,7 @@ Use the tool findTableSchema to find the schema of the table involved in the slo
 Use the tool describeTable to describe the table you found.
 
 Step 4:
-Use the tool explainQuery to explain the slow queries. Make sure to pass the schema you found to the tool. 
+Use the tool safeExplainQuery to explain the slow queries. Make sure to pass the schema you found to the tool. 
 Also, it's very important to replace the query parameters ($1, $2, etc) with the actual values. Generate your own values, but
   take into account the data types of the columns.
 

@@ -361,6 +361,7 @@ interface SlowQuery {
   mean_exec_secs: number;
   total_exec_secs: number;
   query: string;
+  queryid: string;
 }
 
 export async function getSlowQueries(client: ClientBase, thresholdMs: number): Promise<SlowQuery[]> {
@@ -370,7 +371,8 @@ export async function getSlowQueries(client: ClientBase, thresholdMs: number): P
       round(max_exec_time/1000) max_exec_secs,
       round(mean_exec_time/1000) mean_exec_secs,
       round(total_exec_time/1000) total_exec_secs,
-      query
+      query,
+      queryid::text as queryid
     FROM pg_stat_statements
     WHERE max_exec_time > $1
     ORDER BY total_exec_time DESC
@@ -378,28 +380,6 @@ export async function getSlowQueries(client: ClientBase, thresholdMs: number): P
   `;
   const result = await client.query(query, [thresholdMs]);
   return result.rows;
-}
-
-export async function explainQuery(client: ClientBase, schema: string, query: string): Promise<string> {
-  if (query.includes('$1') || query.includes('$2') || query.includes('$3') || query.includes('$4')) {
-    return 'The query seems to contain placeholders ($1, $2, etc). Replace them with actual values and try again.';
-  }
-  let toReturn = '';
-  try {
-    await client.query('BEGIN');
-    await client.query(`SET search_path TO ${schema}`);
-    const explainQuery = `EXPLAIN ${query}`;
-    console.log(schema);
-    console.log(explainQuery);
-    const result = await client.query(explainQuery);
-    console.log(result.rows);
-    toReturn = result.rows.map((row: { [key: string]: string }) => row['QUERY PLAN']).join('\n');
-  } catch (error) {
-    console.error('Error explaining query', error);
-    toReturn = 'I could not run EXPLAIN on that query. Try a different method.';
-  }
-  await client.query('ROLLBACK');
-  return toReturn;
 }
 
 export async function describeTable(client: ClientBase, schema: string, table: string): Promise<string> {

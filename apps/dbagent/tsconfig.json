@@ -5,7 +5,8 @@
     "allowImportingTsExtensions": true,
     "paths": {
       "~/*": ["./src/*"]
-    }
+    },
+    "types": ["vitest/globals"]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.mjs", ".next/types/**/*.ts", "images.d.ts"],
   "exclude": ["node_modules"]
