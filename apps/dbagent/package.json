@@ -77,7 +77,7 @@
     "langfuse-vercel": "^3.38.5",
     "litellm-api": "^0.0.3",
     "lucide-react": "^0.542.0",
-    "next": "^15.5.2",
+    "next": "15.5.7",
     "next-auth": "5.0.0-beta.30",
     "next-themes": "^0.4.6",
     "ollama": "^0.5.17",
