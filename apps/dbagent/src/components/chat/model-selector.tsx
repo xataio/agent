@@ -11,23 +11,32 @@ import {
   DropdownMenuTrigger
 } from '@xata.io/components';
 import { CheckCircleIcon, ChevronDownIcon } from 'lucide-react';
+import { useParams } from 'next/navigation';
 import { ProviderModel } from '~/lib/ai/providers/types';
-import { actionGetLanguageModel, actionGetLanguageModels } from './actions';
+import { actionGetLanguageModel, actionGetLanguageModels, actionGetLanguageModelsForProject } from './actions';
 
 interface ModelSelectorProps {
   value: string;
   onValueChange: (value: string) => void;
   className?: string;
+  projectId?: string;
 }
 
-export function ModelSelector({ value, onValueChange, className }: ModelSelectorProps) {
+export function ModelSelector({ value, onValueChange, className, projectId: propProjectId }: ModelSelectorProps) {
+  const params = useParams<{ project?: string }>();
+  const projectId = propProjectId || params.project;
+
   const [open, setOpen] = useState(false);
   const [models, setModels] = useState<ProviderModel[]>([]);
   const [selectedChatModel, setSelectedChatModel] = useState<ProviderModel | null>(null);
 
   useEffect(() => {
-    void actionGetLanguageModels().then(setModels);
-  }, []);
+    if (projectId) {
+      void actionGetLanguageModelsForProject(projectId).then(setModels);
+    } else {
+      void actionGetLanguageModels().then(setModels);
+    }
+  }, [projectId]);
 
   useEffect(() => {
     void actionGetLanguageModel(value).then(setSelectedChatModel);
