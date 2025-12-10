@@ -5,13 +5,13 @@ import { CloudProvider } from '~/lib/db/schema';
 
 import { openai } from '@ai-sdk/openai';
 import { getChatSystemPrompt, getMonitoringSystemPrompt } from '~/lib/ai/agent';
-import { getBuiltinProviderRegistry } from '~/lib/ai/providers';
+import { getProviderRegistry } from '~/lib/ai/providers';
 import { buildPlaygroundTools } from '../tools';
 
 /* eslint-disable no-process-env */
-const defaultModel = getBuiltinProviderRegistry()
-  .languageModel(process.env.MASTRA_MODEL ?? 'chat')
-  .instance();
+const defaultModel = await getProviderRegistry().then((registry) =>
+  registry.languageModel(process.env.MASTRA_MODEL ?? 'chat').instance()
+);
 const cloudProvider = (process.env.MASTRA_CLOUD_PROVIDER ?? 'aws') as CloudProvider;
 const defaultTools = buildPlaygroundTools({
   projectConnection: process.env.MASTRA_PROJECT_CONNECTION ?? undefined,

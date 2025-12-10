@@ -15,41 +15,46 @@ type BuiltinProviderModel = ProviderModel & {
   providerId: string;
 };
 
-const openai = createOpenAI({
-  baseURL: env.OPENAI_BASE_URL,
-  apiKey: env.OPENAI_API_KEY
-});
+// Lazy-initialized OpenAI client (only created when OPENAI_API_KEY is set)
+function getOpenAIClient() {
+  return createOpenAI({
+    baseURL: env.OPENAI_BASE_URL,
+    apiKey: env.OPENAI_API_KEY
+  });
+}
 
-const builtinOpenAIModels: BuiltinProvider = {
-  info: {
-    name: 'OpenAI',
-    id: 'openai',
-    kind: openai,
-    fallback: 'gpt-5'
-  },
-  models: [
-    {
-      id: 'openai:gpt-5',
-      providerId: 'gpt-5',
-      name: 'GPT-5'
+function getBuiltinOpenAIModels(): BuiltinProvider {
+  return {
+    info: {
+      name: 'OpenAI',
+      id: 'openai',
+      kind: getOpenAIClient(),
+      fallback: 'gpt-5'
     },
-    {
-      id: 'openai:gpt-5-turbo',
-      providerId: 'gpt-5-turbo',
-      name: 'GPT-5 Turbo'
-    },
-    {
-      id: 'openai:gpt-5-mini',
-      providerId: 'gpt-5-mini',
-      name: 'GPT-5 Mini'
-    },
-    {
-      id: 'openai:gpt-4o',
-      providerId: 'gpt-4o',
-      name: 'GPT-4o'
-    }
-  ]
-};
+    models: [
+      {
+        id: 'openai:gpt-5',
+        providerId: 'gpt-5',
+        name: 'GPT-5'
+      },
+      {
+        id: 'openai:gpt-5-turbo',
+        providerId: 'gpt-5-turbo',
+        name: 'GPT-5 Turbo'
+      },
+      {
+        id: 'openai:gpt-5-mini',
+        providerId: 'gpt-5-mini',
+        name: 'GPT-5 Mini'
+      },
+      {
+        id: 'openai:gpt-4o',
+        providerId: 'gpt-4o',
+        name: 'GPT-4o'
+      }
+    ]
+  };
+}
 
 const builtinDeepseekModels: BuiltinProvider = {
   info: {
@@ -111,10 +116,14 @@ const builtinGoogleModels: BuiltinProvider = {
   ]
 };
 
-const builtinProviderModels: Record<string, Model> = (function () {
+// Lazy-initialized builtin provider registry
+let _builtinProviderRegistry: ProviderRegistry | null | undefined;
+
+function buildBuiltinProviderModels(): Record<string, Model> | null {
   const activeList: BuiltinProvider[] = [];
+
   if (env.OPENAI_API_KEY) {
-    activeList.push(builtinOpenAIModels);
+    activeList.push(getBuiltinOpenAIModels());
   }
   if (env.DEEPSEEK_API_KEY) {
     activeList.push(builtinDeepseekModels);
@@ -126,9 +135,11 @@ const builtinProviderModels: Record<string, Model> = (function () {
     activeList.push(builtinGoogleModels);
   }
 
+  // Return null if no builtin providers are configured (allows other providers like Ollama to work alone)
   if (activeList.length === 0) {
-    throw new Error('No providers enabled. Please configure API keys');
+    return null;
   }
+
   return Object.fromEntries(
     activeList.flatMap((p) => {
       const factory = p.info.kind;
@@ -138,26 +149,41 @@ const builtinProviderModels: Record<string, Model> = (function () {
       });
     })
   );
-})();
+}
 
-// We default to OpenAI GPT-5 if available, otherwise fallback to the first model in the list
-const fallbackModel = Object.values(builtinProviderModels)[0]!;
-const defaultLanguageModel = builtinProviderModels['openai:gpt-5'] ?? fallbackModel;
-const defaultTitleModel = builtinProviderModels['openai:gpt-5-mini'] ?? fallbackModel;
-const defaultSummaryModel = builtinProviderModels['openai:gpt-5-mini'] ?? fallbackModel;
+function buildBuiltinProviderRegistry(): ProviderRegistry | null {
+  const builtinProviderModels = buildBuiltinProviderModels();
 
-const builtinModelAliases: Record<string, string> = {
-  chat: defaultLanguageModel.info().id,
-  title: defaultTitleModel.info().id,
-  summary: defaultSummaryModel.info().id
-};
+  if (!builtinProviderModels) {
+    return null;
+  }
 
-const builtinProviderRegistry = createRegistryFromModels({
-  models: builtinProviderModels,
-  aliases: builtinModelAliases,
-  defaultModel: defaultLanguageModel
-});
+  // We default to OpenAI GPT-5 if available, otherwise fallback to the first model in the list
+  const fallbackModel = Object.values(builtinProviderModels)[0]!;
+  const defaultLanguageModel = builtinProviderModels['openai:gpt-5'] ?? fallbackModel;
+  const defaultTitleModel = builtinProviderModels['openai:gpt-5-mini'] ?? fallbackModel;
+  const defaultSummaryModel = builtinProviderModels['openai:gpt-5-mini'] ?? fallbackModel;
 
-export function getBuiltinProviderRegistry(): ProviderRegistry {
-  return builtinProviderRegistry;
+  const builtinModelAliases: Record<string, string> = {
+    chat: defaultLanguageModel.info().id,
+    title: defaultTitleModel.info().id,
+    summary: defaultSummaryModel.info().id
+  };
+
+  return createRegistryFromModels({
+    models: builtinProviderModels,
+    aliases: builtinModelAliases,
+    defaultModel: defaultLanguageModel
+  });
+}
+
+export function getBuiltinProviderRegistry(): ProviderRegistry | null {
+  if (_builtinProviderRegistry === undefined) {
+    _builtinProviderRegistry = buildBuiltinProviderRegistry();
+  }
+  return _builtinProviderRegistry;
+}
+
+export function hasBuiltinProviders(): boolean {
+  return getBuiltinProviderRegistry() !== null;
 }
