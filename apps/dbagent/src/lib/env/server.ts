@@ -35,7 +35,10 @@ const schema = z.object({
   TIMEOUT_FOR_RUNNING_SCHEDULE_SECS: z.number().default(15 * 60), // How long to wait before assuming it's dead and restart
 
   EVAL: z.string(z.enum(['true', 'false'])).default('false'),
-  EVAL_FOLDER: z.string().optional()
+  EVAL_FOLDER: z.string().optional(),
+
+  // Custom addition to system prompt
+  SYSTEM_PROMPT_ADD: z.string().optional()
 });
 
 const serverEnv = schema.parse(process.env);

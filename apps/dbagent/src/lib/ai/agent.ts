@@ -1,5 +1,6 @@
 import { LanguageModel } from 'ai';
 import { CloudProvider } from '../db/schema';
+import { env } from '../env/server';
 import { artifactsPrompt, chatSystemPrompt, commonSystemPrompt, monitoringSystemPrompt } from './prompts';
 import { getLanguageModel, getLanguageModelWithFallback, ModelWithFallback } from './providers';
 
@@ -33,14 +34,20 @@ export function getChatSystemPrompt({
     commonSystemPrompt,
     chatSystemPrompt,
     getCloudProviderPrompt(cloudProvider),
-    useArtifacts ? artifactsPrompt : ''
+    useArtifacts ? artifactsPrompt : '',
+    env.SYSTEM_PROMPT_ADD ?? ''
   ]
     .filter((item) => item?.trim().length > 0)
     .join('\n');
 }
 
 export function getMonitoringSystemPrompt({ cloudProvider }: { cloudProvider: CloudProvider }): string {
-  return [commonSystemPrompt, monitoringSystemPrompt, getCloudProviderPrompt(cloudProvider)]
+  return [
+    commonSystemPrompt,
+    monitoringSystemPrompt,
+    getCloudProviderPrompt(cloudProvider),
+    env.SYSTEM_PROMPT_ADD ?? ''
+  ]
     .filter((item) => item?.trim().length > 0)
     .join('\n');
 }
