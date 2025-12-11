@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow
 } from '@xata.io/components';
-import { ChevronLeftIcon, ChevronRightIcon, StarIcon } from 'lucide-react';
+import { AlertTriangleIcon, ChevronLeftIcon, ChevronRightIcon, StarIcon, Trash2Icon } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -29,9 +29,11 @@ const ITEMS_PER_PAGE = 10;
 export function ModelsTable() {
   const { project } = useParams<{ project: string }>();
   const [models, setModels] = useState<ModelWithSettings[]>([]);
+  const [missingModels, setMissingModels] = useState<ModelWithSettings[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [updatingModels, setUpdatingModels] = useState<Set<string>>(new Set());
+  const [deletingModels, setDeletingModels] = useState<Set<string>>(new Set());
 
   const loadModels = useCallback(async () => {
     if (!project) return;
@@ -45,9 +47,11 @@ export function ModelsTable() {
 
       const data = await response.json();
       setModels(data.models);
+      setMissingModels(data.missingModels || []);
     } catch (error) {
       console.error('Error loading models:', error);
       setModels([]);
+      setMissingModels([]);
     } finally {
       setIsLoading(false);
     }
@@ -130,6 +134,37 @@ export function ModelsTable() {
       console.error('Error setting default model:', error);
     } finally {
       setUpdatingModels((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(model.id);
+        return newSet;
+      });
+    }
+  };
+
+  const handleDeleteMissingModel = async (model: ModelWithSettings) => {
+    if (model.isDefault) {
+      // Cannot delete default model settings
+      return;
+    }
+
+    setDeletingModels((prev) => new Set(prev).add(model.id));
+
+    try {
+      const response = await fetch(`/api/models?projectId=${project}&modelId=${encodeURIComponent(model.id)}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        // Remove from local state
+        setMissingModels((prev) => prev.filter((m) => m.id !== model.id));
+      } else {
+        const errorText = await response.text();
+        console.error('Error deleting model setting:', errorText);
+      }
+    } catch (error) {
+      console.error('Error deleting model setting:', error);
+    } finally {
+      setDeletingModels((prev) => {
         const newSet = new Set(prev);
         newSet.delete(model.id);
         return newSet;
@@ -267,6 +302,63 @@ export function ModelsTable() {
       {!isLoading && models.length > 0 && (
         <div className="text-muted-foreground mt-4 text-sm">
           Disabled models will not appear in the chat model selector. The default model cannot be disabled.
+        </div>
+      )}
+
+      {/* Missing Models Section */}
+      {!isLoading && missingModels.length > 0 && (
+        <div className="mt-8">
+          <div className="mb-4 flex items-center gap-2">
+            <AlertTriangleIcon className="text-muted-foreground h-5 w-5" />
+            <h2 className="text-muted-foreground text-lg font-semibold">Unavailable Models</h2>
+          </div>
+          <p className="text-muted-foreground mb-4 text-sm">
+            These models have saved settings but are no longer available from your providers. You can remove their
+            settings to clean up.
+          </p>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-muted-foreground">Model ID</TableHead>
+                <TableHead className="text-muted-foreground">Status</TableHead>
+                <TableHead className="text-muted-foreground">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {missingModels.map((model) => (
+                <TableRow key={model.id} className="opacity-60">
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">{model.name}</span>
+                      {model.isDefault && <StarIcon className="h-4 w-4 fill-current text-yellow-500" />}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-muted-foreground text-sm">
+                      {model.isDefault ? 'Default (unavailable)' : model.enabled ? 'Enabled' : 'Disabled'}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteMissingModel(model)}
+                      disabled={model.isDefault || deletingModels.has(model.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2Icon className="mr-1 h-4 w-4" />
+                      Remove
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {missingModels.some((m) => m.isDefault) && (
+            <div className="text-muted-foreground mt-2 text-sm">
+              Note: Cannot remove the default model. Set another available model as default first.
+            </div>
+          )}
         </div>
       )}
     </div>
