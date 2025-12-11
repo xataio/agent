@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockEnv = {
   OPENAI_API_KEY: undefined as string | undefined,
   OPENAI_BASE_URL: undefined as string | undefined,
+  OPENAI_MODEL: undefined as string | undefined,
   DEEPSEEK_API_KEY: undefined as string | undefined,
   ANTHROPIC_API_KEY: undefined as string | undefined,
   GOOGLE_GENERATIVE_AI_API_KEY: undefined as string | undefined
@@ -38,14 +39,22 @@ vi.mock('@ai-sdk/google', () => ({
   }
 }));
 
+// Mock global fetch for dynamic model fetching tests
+const mockFetch = vi.fn();
+
 describe('Builtin Provider Registry', () => {
   beforeEach(() => {
     // Reset all env vars before each test
     mockEnv.OPENAI_API_KEY = undefined;
     mockEnv.OPENAI_BASE_URL = undefined;
+    mockEnv.OPENAI_MODEL = undefined;
     mockEnv.DEEPSEEK_API_KEY = undefined;
     mockEnv.ANTHROPIC_API_KEY = undefined;
     mockEnv.GOOGLE_GENERATIVE_AI_API_KEY = undefined;
+
+    // Reset fetch mock
+    mockFetch.mockReset();
+    vi.stubGlobal('fetch', mockFetch);
 
     // Clear module cache to re-evaluate lazy initialization
     vi.resetModules();
@@ -207,7 +216,7 @@ describe('Builtin Provider Registry', () => {
       expect(chatModel.info().id).toBe('openai:gpt-5');
     });
 
-    it('should resolve title alias to GPT-5-mini when OpenAI is configured', async () => {
+    it('should resolve title alias to first OpenAI model', async () => {
       mockEnv.OPENAI_API_KEY = 'test-openai-key';
 
       const { getBuiltinProviderRegistry } = await import('./builtin');
@@ -215,7 +224,7 @@ describe('Builtin Provider Registry', () => {
       const registry = getBuiltinProviderRegistry();
       const titleModel = registry!.languageModel('title');
 
-      expect(titleModel.info().id).toBe('openai:gpt-5-mini');
+      expect(titleModel.info().id).toBe('openai:gpt-5');
     });
 
     it('should resolve aliases to first available model when OpenAI is not configured', async () => {
@@ -228,6 +237,231 @@ describe('Builtin Provider Registry', () => {
 
       // Should fallback to first DeepSeek model
       expect(chatModel.info().id).toBe('deepseek:chat');
+    });
+  });
+
+  describe('requiresDynamicModelFetching', () => {
+    it('should return false when OPENAI_BASE_URL is not set', async () => {
+      const { requiresDynamicModelFetching } = await import('./builtin');
+
+      expect(requiresDynamicModelFetching()).toBe(false);
+    });
+
+    it('should return false when OPENAI_API_KEY is set (real key)', async () => {
+      mockEnv.OPENAI_API_KEY = 'sk-real-key';
+      mockEnv.OPENAI_BASE_URL = 'http://localhost:8000/v1';
+
+      const { requiresDynamicModelFetching } = await import('./builtin');
+
+      expect(requiresDynamicModelFetching()).toBe(false);
+    });
+
+    it('should return false when OPENAI_MODEL is explicitly set', async () => {
+      mockEnv.OPENAI_BASE_URL = 'http://localhost:8000/v1';
+      mockEnv.OPENAI_MODEL = 'meta-llama/Llama-3.1-70B-Instruct';
+
+      const { requiresDynamicModelFetching } = await import('./builtin');
+
+      expect(requiresDynamicModelFetching()).toBe(false);
+    });
+
+    it('should return true when OPENAI_BASE_URL set, no real API key, no explicit model', async () => {
+      mockEnv.OPENAI_BASE_URL = 'http://localhost:8000/v1';
+
+      const { requiresDynamicModelFetching } = await import('./builtin');
+
+      expect(requiresDynamicModelFetching()).toBe(true);
+    });
+
+    it('should return true when OPENAI_API_KEY is "dumb", OPENAI_BASE_URL set, no explicit model', async () => {
+      mockEnv.OPENAI_API_KEY = 'dumb';
+      mockEnv.OPENAI_BASE_URL = 'http://localhost:8000/v1';
+
+      const { requiresDynamicModelFetching } = await import('./builtin');
+
+      expect(requiresDynamicModelFetching()).toBe(true);
+    });
+  });
+
+  describe('getBuiltinProviderRegistryAsync', () => {
+    it('should fetch models dynamically when OPENAI_BASE_URL is set', async () => {
+      mockEnv.OPENAI_BASE_URL = 'http://localhost:8000/v1';
+
+      // Mock successful /v1/models response
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          object: 'list',
+          data: [
+            { id: 'meta-llama/Llama-3.1-70B-Instruct', object: 'model', created: 1737380356, owned_by: 'vllm' },
+            { id: 'Qwen/Qwen2.5-7B-Instruct', object: 'model', created: 1737380357, owned_by: 'vllm' }
+          ]
+        })
+      });
+
+      const { getBuiltinProviderRegistryAsync } = await import('./builtin');
+
+      const registry = await getBuiltinProviderRegistryAsync();
+
+      expect(registry).not.toBeNull();
+      const models = registry!.listLanguageModels();
+      expect(models.length).toBe(2);
+
+      const modelIds = models.map((m) => m.info().id);
+      expect(modelIds).toContain('openai:meta-llama/Llama-3.1-70B-Instruct');
+      expect(modelIds).toContain('openai:Qwen/Qwen2.5-7B-Instruct');
+
+      // Verify fetch was called with correct URL
+      expect(mockFetch).toHaveBeenCalledWith('http://localhost:8000/v1/models', expect.any(Object));
+    });
+
+    it('should use Authorization header when OPENAI_API_KEY is "dumb"', async () => {
+      mockEnv.OPENAI_BASE_URL = 'http://localhost:8000/v1';
+      mockEnv.OPENAI_API_KEY = 'dumb'; // "dumb" triggers dynamic fetch but still passes the key
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          object: 'list',
+          data: [{ id: 'test-model', object: 'model' }]
+        })
+      });
+
+      const { getBuiltinProviderRegistryAsync } = await import('./builtin');
+
+      await getBuiltinProviderRegistryAsync();
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'Bearer dumb'
+          })
+        })
+      );
+    });
+
+    it('should handle base URL without /v1 suffix', async () => {
+      mockEnv.OPENAI_BASE_URL = 'http://localhost:8000';
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          object: 'list',
+          data: [{ id: 'test-model', object: 'model' }]
+        })
+      });
+
+      const { getBuiltinProviderRegistryAsync } = await import('./builtin');
+
+      await getBuiltinProviderRegistryAsync();
+
+      expect(mockFetch).toHaveBeenCalledWith('http://localhost:8000/v1/models', expect.any(Object));
+    });
+
+    it('should throw error when fetch fails', async () => {
+      mockEnv.OPENAI_BASE_URL = 'http://localhost:8000/v1';
+
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error'
+      });
+
+      const { getBuiltinProviderRegistryAsync } = await import('./builtin');
+
+      await expect(getBuiltinProviderRegistryAsync()).rejects.toThrow('Failed to fetch models');
+    });
+
+    it('should extract friendly name from model ID', async () => {
+      mockEnv.OPENAI_BASE_URL = 'http://localhost:8000/v1';
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          object: 'list',
+          data: [{ id: 'meta-llama/Llama-3.1-70B-Instruct', object: 'model' }]
+        })
+      });
+
+      const { getBuiltinProviderRegistryAsync } = await import('./builtin');
+
+      const registry = await getBuiltinProviderRegistryAsync();
+      const models = registry!.listLanguageModels();
+
+      // Friendly name should be extracted from model ID
+      expect(models[0]!.info().name).toBe('Llama 3.1 70B Instruct');
+    });
+
+    it('should use default models when OPENAI_API_KEY is set (real key)', async () => {
+      mockEnv.OPENAI_API_KEY = 'sk-real-key';
+      mockEnv.OPENAI_BASE_URL = 'http://localhost:8000/v1';
+
+      const { getBuiltinProviderRegistryAsync } = await import('./builtin');
+
+      const registry = await getBuiltinProviderRegistryAsync();
+
+      expect(registry).not.toBeNull();
+      const models = registry!.listLanguageModels();
+
+      const modelIds = models.map((m) => m.info().id);
+      expect(modelIds).toContain('openai:gpt-5');
+      expect(modelIds).toContain('openai:gpt-4o');
+
+      // Fetch should not be called when real API key is present
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('should use explicit OPENAI_MODEL when set', async () => {
+      mockEnv.OPENAI_BASE_URL = 'http://localhost:8000/v1';
+      mockEnv.OPENAI_MODEL = 'meta-llama/Llama-3.1-70B-Instruct';
+
+      const { getBuiltinProviderRegistryAsync } = await import('./builtin');
+
+      const registry = await getBuiltinProviderRegistryAsync();
+
+      expect(registry).not.toBeNull();
+      const models = registry!.listLanguageModels();
+
+      expect(models.length).toBe(1);
+      expect(models[0]!.info().id).toBe('openai:meta-llama/Llama-3.1-70B-Instruct');
+      expect(models[0]!.info().name).toBe('Llama 3.1 70B Instruct');
+
+      // Fetch should not be called when explicit model is set
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('should fetch dynamically when OPENAI_API_KEY is "dumb" and no explicit model', async () => {
+      mockEnv.OPENAI_API_KEY = 'dumb';
+      mockEnv.OPENAI_BASE_URL = 'http://localhost:8000/v1';
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          object: 'list',
+          data: [{ id: 'test-model', object: 'model' }]
+        })
+      });
+
+      const { getBuiltinProviderRegistryAsync } = await import('./builtin');
+
+      const registry = await getBuiltinProviderRegistryAsync();
+
+      expect(registry).not.toBeNull();
+      const models = registry!.listLanguageModels();
+
+      expect(models[0]!.info().id).toBe('openai:test-model');
+      expect(mockFetch).toHaveBeenCalled();
+    });
+  });
+
+  describe('hasBuiltinProviders with OPENAI_BASE_URL', () => {
+    it('should return true when only OPENAI_BASE_URL is set (no API key)', async () => {
+      mockEnv.OPENAI_BASE_URL = 'http://localhost:8000/v1';
+
+      const { hasBuiltinProviders } = await import('./builtin');
+
+      expect(hasBuiltinProviders()).toBe(true);
     });
   });
 });

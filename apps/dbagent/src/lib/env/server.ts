@@ -18,6 +18,7 @@ const schema = z.object({
   // LLM API credentials
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_BASE_URL: z.string().optional(),
+  OPENAI_MODEL: z.string().optional(), // Explicit model for OpenAI-compatible endpoints
   DEEPSEEK_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
   GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
