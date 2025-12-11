@@ -4,7 +4,7 @@ export * from './ollama';
 export * from './types';
 
 import { env } from '~/lib/env/server';
-import { getBuiltinProviderRegistry } from './builtin';
+import { getBuiltinProviderRegistry, hasBuiltinApiKeys } from './builtin';
 import { createLiteLLMProviderRegistry } from './litellm';
 import { createOllamaProviderRegistry } from './ollama';
 import { Model, ModelWithFallback, ProviderRegistry } from './types';
@@ -48,12 +48,10 @@ function buildProviderRegistry() {
 
   // Check if we have any potential providers configured
   // Note: builtin registry may return null if no API keys are set, but that's OK if Ollama is configured
-  const hasLiteLLM = env.LITELLM_BASE_URL && env.LITELLM_API_KEY;
+  const hasLiteLLM = !!(env.LITELLM_BASE_URL && env.LITELLM_API_KEY);
   const hasOllama = !!env.OLLAMA_HOST;
-  const hasBuiltinKeys =
-    env.OPENAI_API_KEY || env.ANTHROPIC_API_KEY || env.DEEPSEEK_API_KEY || env.GOOGLE_GENERATIVE_AI_API_KEY;
 
-  if (!hasLiteLLM && !hasOllama && !hasBuiltinKeys) {
+  if (!hasLiteLLM && !hasOllama && !hasBuiltinApiKeys()) {
     throw new Error(
       'No LLM providers configured. Set at least one of: ' +
         'OPENAI_API_KEY, ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, GOOGLE_GENERATIVE_AI_API_KEY, ' +
