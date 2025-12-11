@@ -20,10 +20,6 @@ COPY package.json ./
 # This ensures all workspace packages are correctly identified
 COPY apps/dbagent/package.json ./apps/dbagent/
 
-# Now copy the source code of all workspace packages
-COPY packages/ ./packages/
-COPY configs/ ./configs/
-
 # Create a temporary directory for the archive
 RUN mkdir -p /tmp/dbagent
 
