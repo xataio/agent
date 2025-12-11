@@ -3,6 +3,8 @@ export * from './litellm';
 export * from './ollama';
 export * from './types';
 
+import { DBAccess } from '~/lib/db/db';
+import { getDefaultModel, getDisabledModelIds } from '~/lib/db/model-settings';
 import { env } from '~/lib/env/server';
 import { getBuiltinProviderRegistry, hasBuiltinApiKeys } from './builtin';
 import { createLiteLLMProviderRegistry } from './litellm';
@@ -96,4 +98,33 @@ export async function getLanguageModel(modelId: string): Promise<Model> {
 export async function getLanguageModelWithFallback(modelId: string): Promise<ModelWithFallback> {
   const registry = await getProviderRegistry();
   return registry.languageModel(modelId, true);
+}
+
+export async function listLanguageModelsForProject(dbAccess: DBAccess, projectId: string): Promise<Model[]> {
+  const allModels = await listLanguageModels();
+  const disabledModelIds = await getDisabledModelIds(dbAccess, projectId);
+
+  // If no settings exist, return all models (backwards compatibility)
+  if (disabledModelIds.length === 0) {
+    return allModels;
+  }
+
+  return allModels.filter((model) => !disabledModelIds.includes(model.info().id));
+}
+
+export async function getDefaultLanguageModelForProject(dbAccess: DBAccess, projectId: string): Promise<Model | null> {
+  const defaultSetting = await getDefaultModel(dbAccess, projectId);
+  if (defaultSetting) {
+    try {
+      return await getLanguageModel(defaultSetting.modelId);
+    } catch {
+      // Model might have been removed, fall through to global default
+    }
+  }
+  // Fallback to global default
+  try {
+    return await getDefaultLanguageModel();
+  } catch {
+    return null;
+  }
 }

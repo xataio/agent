@@ -35,6 +35,7 @@ import {
   ActivityIcon,
   AlarmClock,
   CloudIcon,
+  CpuIcon,
   DatabaseIcon,
   HistoryIcon,
   MessageSquare,
@@ -211,6 +212,12 @@ export function SideNav({ className, project, onboardingComplete }: SideNavProps
       title: 'Monitoring',
       url: `${basePath}/monitoring`,
       icon: ActivityIcon,
+      className: 'text-sm'
+    },
+    {
+      title: 'Models',
+      url: `${basePath}/models`,
+      icon: CpuIcon,
       className: 'text-sm'
     }
   ];

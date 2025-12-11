@@ -78,6 +78,13 @@
       "when": 1754985154693,
       "tag": "0010_gpt5_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1765383740011,
+      "tag": "0011_model_settings",
+      "breakpoints": true
     }
   ]
 }

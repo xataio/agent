@@ -706,3 +706,36 @@ export const mcpServers = pgTable(
 
 export type MCPServer = InferSelectModel<typeof mcpServers>;
 export type MCPServerInsert = InferInsertModel<typeof mcpServers>;
+
+export const modelSettings = pgTable(
+  'model_settings',
+  {
+    id: uuid('id').primaryKey().defaultRandom().notNull(),
+    projectId: uuid('project_id').notNull(),
+    modelId: text('model_id').notNull(),
+    enabled: boolean('enabled').default(true).notNull(),
+    isDefault: boolean('is_default').default(false).notNull(),
+    createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull()
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.projectId],
+      foreignColumns: [projects.id],
+      name: 'fk_model_settings_project'
+    }).onDelete('cascade'),
+    unique('uq_model_settings_project_model').on(table.projectId, table.modelId),
+    index('idx_model_settings_project_id').on(table.projectId),
+    pgPolicy('model_settings_policy', {
+      to: authenticatedUser,
+      for: 'all',
+      using: sql`EXISTS (
+        SELECT 1 FROM project_members
+        WHERE project_id = model_settings.project_id AND user_id = current_setting('app.current_user', true)::TEXT
+      )`
+    })
+  ]
+);
+
+export type ModelSetting = InferSelectModel<typeof modelSettings>;
+export type ModelSettingInsert = InferInsertModel<typeof modelSettings>;
