@@ -4,7 +4,7 @@ export * from './ollama';
 export * from './types';
 
 import { env } from '~/lib/env/server';
-import { getBuiltinProviderRegistry } from './builtin';
+import { getBuiltinProviderRegistry, hasBuiltinApiKeys } from './builtin';
 import { createLiteLLMProviderRegistry } from './litellm';
 import { createOllamaProviderRegistry } from './ollama';
 import { Model, ModelWithFallback, ProviderRegistry } from './types';
@@ -13,12 +13,12 @@ import { cached, combineRegistries, memoize } from './utils';
 const CACHE_TTL_MS = 60 * 1000; // 1 minute
 
 function buildProviderRegistry() {
-  const registries: (() => Promise<ProviderRegistry>)[] = [];
+  const registries: (() => Promise<ProviderRegistry | null>)[] = [];
 
   // Will be true if we have a provider that requires to fetch updates from a remote source.
   let requiresUpdates = false;
 
-  // Choose base registry. Builtin or LiteLLM is always available.
+  // Choose base registry: LiteLLM takes precedence, otherwise use builtin providers if available
   if (env.LITELLM_BASE_URL && env.LITELLM_API_KEY) {
     requiresUpdates = true;
     registries.push(
@@ -29,6 +29,8 @@ function buildProviderRegistry() {
         })
     );
   } else {
+    // Only add builtin registry if at least one builtin provider is configured
+    // This allows the app to start with only Ollama (no API keys required)
     registries.push(() => Promise.resolve(getBuiltinProviderRegistry()));
   }
 
@@ -44,17 +46,24 @@ function buildProviderRegistry() {
     );
   }
 
-  if (registries.length === 0) {
-    throw new Error('No provider registry configured');
+  // Check if we have any potential providers configured
+  // Note: builtin registry may return null if no API keys are set, but that's OK if Ollama is configured
+  const hasLiteLLM = !!(env.LITELLM_BASE_URL && env.LITELLM_API_KEY);
+  const hasOllama = !!env.OLLAMA_HOST;
+
+  if (!hasLiteLLM && !hasOllama && !hasBuiltinApiKeys()) {
+    throw new Error(
+      'No LLM providers configured. Set at least one of: ' +
+        'OPENAI_API_KEY, ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, GOOGLE_GENERATIVE_AI_API_KEY, ' +
+        'OLLAMA_HOST, or LITELLM_BASE_URL + LITELLM_API_KEY'
+    );
   }
 
-  const build =
-    registries.length === 1
-      ? registries[0]!
-      : async () => {
-          const buildRegistries = await Promise.all(registries.map((registry) => registry()));
-          return combineRegistries(buildRegistries);
-        };
+  // Always use combineRegistries to properly handle null values from builtin registry
+  const build = async (): Promise<ProviderRegistry> => {
+    const buildRegistries = await Promise.all(registries.map((registry) => registry()));
+    return combineRegistries(buildRegistries);
+  };
 
   return requiresUpdates ? cached(CACHE_TTL_MS, build) : memoize(build);
 }
