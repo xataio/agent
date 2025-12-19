@@ -1,57 +1,39 @@
+# syntax=docker/dockerfile:1
 # Use Node.js 22 as the base image
 FROM node:22-alpine AS base
 
-# Install pnpm and git
-RUN corepack enable && corepack prepare pnpm@10.5.2 --activate && \
-    apk add --no-cache git
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@10.5.2 --activate
 
 # Set working directory
 WORKDIR /app
 
-# Install dependencies only when needed
-FROM base AS deps
-WORKDIR /app
-
-# Copy workspace configuration first
-COPY pnpm-workspace.yaml ./
-COPY package.json ./
-
-# Copy all package.json files from the monorepo
-# This ensures all workspace packages are correctly identified
-COPY apps/dbagent/package.json ./apps/dbagent/
-
-# Create a temporary directory for the archive
-RUN mkdir -p /tmp/dbagent
-
-# Copy the git archive of dbagent
-COPY .git /tmp/dbagent/.git
-WORKDIR /tmp/dbagent
-RUN git archive --format=tar HEAD:apps/dbagent | tar xf - -C /app/apps/dbagent/
-
-# Clean up temporary files
-RUN rm -rf /tmp/dbagent
-
-# Return to the app directory
-WORKDIR /app
-
-# Install dependencies
-RUN pnpm install
-
-# Rebuild the source code only when needed
+# ============================================
+# Stage 1: Build the application
+# ============================================
 FROM base AS builder
 WORKDIR /app
 
-# Copy all necessary files from deps stage
-COPY --from=deps /app ./
+# Copy dependency files first (better layer caching)
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY apps/dbagent/package.json ./apps/dbagent/
 
-# Create a public directory if it doesn't exist
-RUN mkdir -p /app/apps/dbagent/public
+# Copy source code
+COPY apps/dbagent ./apps/dbagent
+
+# Install dependencies with BuildKit cache mount for pnpm store.
+# On code-only changes, this is very fast (~5-10s) because packages are cached
+# in the persistent mount, and pnpm only needs to recreate symlinks.
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 # Build the Next.js application
 WORKDIR /app/apps/dbagent
 RUN DATABASE_URL="dummy" OPENAI_API_KEY="dummy" pnpm build
 
-# Production image, copy all the files and run next
+# ============================================
+# Stage 2: Production image
+# ============================================
 FROM base AS runner
 WORKDIR /app
 
@@ -78,8 +60,8 @@ EXPOSE 8080
 # Set the working directory to the app
 WORKDIR /app/apps/dbagent
 
-# Configure NODE_PATH to help with module resolution 
+# Configure NODE_PATH to help with module resolution
 ENV NODE_PATH=/app/node_modules
 
 # Start both the scheduler and the Next.js application
-CMD ["sh", "-c", "pnpm drizzle-kit migrate && (pnpm tsx scripts/scheduler.ts & pnpm next start --port $PORT)"] 
+CMD ["sh", "-c", "pnpm drizzle-kit migrate && (pnpm tsx scripts/scheduler.ts & pnpm next start --port $PORT)"]

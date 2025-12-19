@@ -35,4 +35,17 @@ yarn-error.log*
 Thumbs.db
 
 # Testing
-coverage 
+coverage
+
+# Git
+.git
+.gitignore
+
+# Environment files (secrets)
+.env
+.env.*
+!.env.example
+
+# Docker
+Dockerfile
+docker-compose*.yml
