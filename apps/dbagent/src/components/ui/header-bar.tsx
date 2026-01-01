@@ -41,7 +41,7 @@ export const HeaderBar = ({ children }: PropsWithChildren<{ user?: User }>) => {
   const { data: session } = useSession();
 
   return (
-    <header className="bg-background fixed left-0 right-0 top-0 z-50 border-b">
+    <header className="bg-background fixed top-0 right-0 left-0 z-50 border-b">
       <div className="flex h-14 items-center gap-4 px-4">
         <nav aria-labelledby="mainmenulabel">
           <span className="sr-only" id="mainmenulabel">
@@ -76,7 +76,7 @@ function UserAvatar({ user }: { user?: User }) {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="-mr-8 mt-12 w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+        className="mt-12 -mr-8 w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
         side={isMobile ? 'bottom' : 'right'}
         align="end"
         sideOffset={4}

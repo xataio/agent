@@ -27,7 +27,7 @@ export function ToolView({ tool }: { tool: Tool }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="bg-muted prose prose-sm whitespace-pre-wrap rounded-md p-4">{tool.description}</div>
+          <div className="bg-muted prose prose-sm rounded-md p-4 whitespace-pre-wrap">{tool.description}</div>
         </CardContent>
         <CardFooter className="flex justify-end gap-3 pt-6">
           <Link href={`/projects/${project}/chats/new?tool=${tool.name}`}>

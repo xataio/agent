@@ -316,7 +316,7 @@ function CreateProjectOnboarding() {
 
   return (
     <div className="flex h-full w-full items-center justify-center">
-      <div className="pointer-events-none absolute left-0 top-0 overflow-hidden">
+      <div className="pointer-events-none absolute top-0 left-0 overflow-hidden">
         {[...Array(20)].map((_, i) => (
           <div
             key={i}

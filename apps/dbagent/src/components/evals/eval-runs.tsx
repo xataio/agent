@@ -114,7 +114,7 @@ const CurrentEval = ({
   }
   return (
     <Tabs defaultValue={files[0]?.fileName} className="h-full">
-      <div className="mr-4 mt-4 flex items-center justify-between">
+      <div className="mt-4 mr-4 flex items-center justify-between">
         <TabsList>
           {files.map((file) => {
             return (
@@ -148,7 +148,7 @@ const CurrentEval = ({
             key={file.fileName}
           >
             <ScrollArea className="h-full">
-              <pre className="whitespace-pre-wrap font-mono text-sm">{file.contents}</pre>
+              <pre className="font-mono text-sm whitespace-pre-wrap">{file.contents}</pre>
             </ScrollArea>
           </TabsContent>
         );

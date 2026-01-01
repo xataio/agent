@@ -241,7 +241,7 @@ const PureToolbar = ({
   return (
     <TooltipProvider delayDuration={0}>
       <motion.div
-        className="bg-background absolute bottom-6 right-6 flex cursor-pointer flex-col justify-end rounded-full border p-1.5 shadow-lg"
+        className="bg-background absolute right-6 bottom-6 flex cursor-pointer flex-col justify-end rounded-full border p-1.5 shadow-lg"
         initial={{ opacity: 0, y: -20, scale: 1 }}
         animate={
           isToolbarVisible
