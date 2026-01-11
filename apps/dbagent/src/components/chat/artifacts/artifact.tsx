@@ -14,12 +14,13 @@ import { ArtifactActions } from './artifact-actions';
 import { ArtifactCloseButton } from './artifact-close-button';
 import { ArtifactMessages } from './artifact-messages';
 import { sheetArtifact } from './sheet/client';
+import { sqlArtifact } from './sql/client';
 import { textArtifact } from './text/client';
 import { Toolbar } from './toolbar';
 import { useArtifact } from './use-artifact';
 import { VersionFooter } from './version-footer';
 
-export const artifactDefinitions = [textArtifact, sheetArtifact];
+export const artifactDefinitions = [textArtifact, sheetArtifact, sqlArtifact];
 export type ArtifactKind = (typeof artifactDefinitions)[number]['kind'];
 
 export interface UIArtifact {
