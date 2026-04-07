@@ -26,3 +26,5 @@ tsconfig.tsbuildinfo
 .eval-run-id
 
 dist
+
+docker-compose.override.yml

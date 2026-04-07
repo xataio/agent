@@ -49,10 +49,7 @@ export async function actionGeneratePlaybookContent(name: string, description: s
         content: prompt
       }
     ],
-    //lower values for temperature and topP are more deterministic higher are more creative(max 2.0)
-    //0.1 is deterministic, 0.7 is creative
     temperature: 0.2,
-    topP: 0.1,
     maxTokens: 1000
   });
 

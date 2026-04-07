@@ -29,7 +29,7 @@ function buildProviderRegistry() {
         })
     );
   } else {
-    registries.push(() => Promise.resolve(getBuiltinProviderRegistry()));
+    registries.push(getBuiltinProviderRegistry);
   }
 
   // Add optional registries.

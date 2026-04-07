@@ -6,7 +6,12 @@ const mcpServersDir = getMCPServersDir();
 
 export async function GET() {
   try {
-    const files = await fs.readdir(mcpServersDir);
+    let files: string[];
+    try {
+      files = await fs.readdir(mcpServersDir);
+    } catch {
+      return NextResponse.json([]);
+    }
     const serverFiles = files.filter((file) => file.endsWith('.js'));
 
     const servers = await Promise.all(

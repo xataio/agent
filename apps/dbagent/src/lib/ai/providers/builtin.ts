@@ -4,160 +4,165 @@ import { google } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 import { env } from '~/lib/env/server';
 
-import { Model, Provider, ProviderModel, ProviderRegistry } from './types';
-import { createModel, createRegistryFromModels } from './utils';
+import { Model, ProviderRegistry } from './types';
+import { combineRegistries, createModel, createRegistryFromModels } from './utils';
 
-type BuiltinProvider = Provider & {
-  models: BuiltinProviderModel[];
-};
+// ─── OpenAI ──────────────────────────────────────────────────────────────────
 
-type BuiltinProviderModel = ProviderModel & {
-  providerId: string;
-};
+const OPENAI_EXCLUDED_KEYWORDS = [
+  'embedding',
+  'whisper',
+  'tts',
+  'dall-e',
+  'moderation',
+  'realtime',
+  'audio',
+  'instruct'
+];
+const OPENAI_CHAT_PATTERN = /^(gpt-|o\d|chatgpt-)/;
 
-const openai = createOpenAI({
-  baseURL: env.OPENAI_BASE_URL,
-  apiKey: env.OPENAI_API_KEY
-});
+function isOpenAIChatModel(id: string): boolean {
+  const lower = id.toLowerCase();
+  if (OPENAI_EXCLUDED_KEYWORDS.some((kw) => lower.includes(kw))) return false;
+  return OPENAI_CHAT_PATTERN.test(lower);
+}
 
-const builtinOpenAIModels: BuiltinProvider = {
-  info: {
-    name: 'OpenAI',
-    id: 'openai',
-    kind: openai,
-    fallback: 'gpt-5'
-  },
-  models: [
-    {
-      id: 'openai:gpt-5',
-      providerId: 'gpt-5',
-      name: 'GPT-5'
-    },
-    {
-      id: 'openai:gpt-5-turbo',
-      providerId: 'gpt-5-turbo',
-      name: 'GPT-5 Turbo'
-    },
-    {
-      id: 'openai:gpt-5-mini',
-      providerId: 'gpt-5-mini',
-      name: 'GPT-5 Mini'
-    },
-    {
-      id: 'openai:gpt-4o',
-      providerId: 'gpt-4o',
-      name: 'GPT-4o'
+async function createOpenAIRegistry(): Promise<ProviderRegistry> {
+  const openaiProvider = createOpenAI({ baseURL: env.OPENAI_BASE_URL, apiKey: env.OPENAI_API_KEY });
+  const baseUrl = (env.OPENAI_BASE_URL ?? 'https://api.openai.com').replace(/\/$/, '');
+
+  const response = await fetch(`${baseUrl}/v1/models`, {
+    headers: { Authorization: `Bearer ${env.OPENAI_API_KEY}` }
+  });
+  if (!response.ok) throw new Error(`OpenAI models API error: ${response.status} ${response.statusText}`);
+
+  const data = (await response.json()) as { data: Array<{ id: string }> };
+  const models: Model[] = data.data
+    .filter((m) => isOpenAIChatModel(m.id))
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map((m) => createModel({ id: `openai:${m.id}`, name: m.id }, () => openaiProvider.languageModel(m.id)));
+
+  if (models.length === 0) throw new Error('OpenAI returned no usable chat models');
+  return createRegistryFromModels({ models });
+}
+
+// ─── Anthropic ───────────────────────────────────────────────────────────────
+
+async function createAnthropicRegistry(): Promise<ProviderRegistry> {
+  const response = await fetch('https://api.anthropic.com/v1/models', {
+    headers: {
+      'x-api-key': env.ANTHROPIC_API_KEY as string,
+      'anthropic-version': '2023-06-01'
     }
-  ]
-};
+  });
+  if (!response.ok) throw new Error(`Anthropic models API error: ${response.status} ${response.statusText}`);
 
-const builtinDeepseekModels: BuiltinProvider = {
-  info: {
-    name: 'DeepSeek',
-    id: 'deepseek',
-    kind: deepseek
-  },
-  models: [
-    {
-      id: 'deepseek:chat',
-      providerId: 'deepseek-chat',
-      name: 'DeepSeek Chat'
-    }
-  ]
-};
-
-const builtinAnthropicModels: BuiltinProvider = {
-  info: {
-    name: 'Anthropic',
-    id: 'anthropic',
-    kind: anthropic
-  },
-  models: [
-    {
-      id: 'anthropic:claude-sonnet-4-5',
-      providerId: 'claude-sonnet-4-5',
-      name: 'Claude Sonnet 4.5'
-    },
-    {
-      id: 'anthropic:claude-opus-4-1',
-      providerId: 'claude-opus-4-1',
-      name: 'Claude Opus 4.1'
-    }
-  ]
-};
-
-const builtinGoogleModels: BuiltinProvider = {
-  info: {
-    name: 'Google',
-    id: 'google',
-    kind: google
-  },
-  models: [
-    {
-      id: 'google:gemini-2.5-pro',
-      providerId: 'gemini-2.5-pro',
-      name: 'Gemini 2.5 Pro'
-    },
-    {
-      id: 'google:gemini-2.5-flash',
-      providerId: 'gemini-2.5-flash',
-      name: 'Gemini 2.5 Flash'
-    },
-    {
-      id: 'google:gemini-2.5-flash-lite',
-      providerId: 'gemini-2.5-flash-lite',
-      name: 'Gemini 2.5 Flash Lite'
-    }
-  ]
-};
-
-const builtinProviderModels: Record<string, Model> = (function () {
-  const activeList: BuiltinProvider[] = [];
-  if (env.OPENAI_API_KEY) {
-    activeList.push(builtinOpenAIModels);
-  }
-  if (env.DEEPSEEK_API_KEY) {
-    activeList.push(builtinDeepseekModels);
-  }
-  if (env.ANTHROPIC_API_KEY) {
-    activeList.push(builtinAnthropicModels);
-  }
-  if (env.GOOGLE_GENERATIVE_AI_API_KEY) {
-    activeList.push(builtinGoogleModels);
-  }
-
-  if (activeList.length === 0) {
-    throw new Error('No providers enabled. Please configure API keys');
-  }
-  return Object.fromEntries(
-    activeList.flatMap((p) => {
-      const factory = p.info.kind;
-      return p.models.map((model: BuiltinProviderModel) => {
-        const modelInstance = createModel(model, () => factory.languageModel(model.providerId));
-        return [modelInstance.info().id, modelInstance];
-      });
-    })
+  const data = (await response.json()) as { data: Array<{ id: string; display_name: string }> };
+  const models: Model[] = data.data.map((m) =>
+    createModel({ id: `anthropic:${m.id}`, name: m.display_name }, () => anthropic.languageModel(m.id))
   );
-})();
 
-// We default to OpenAI GPT-5 if available, otherwise fallback to the first model in the list
-const fallbackModel = Object.values(builtinProviderModels)[0]!;
-const defaultLanguageModel = builtinProviderModels['openai:gpt-5'] ?? fallbackModel;
-const defaultTitleModel = builtinProviderModels['openai:gpt-5-mini'] ?? fallbackModel;
-const defaultSummaryModel = builtinProviderModels['openai:gpt-5-mini'] ?? fallbackModel;
+  if (models.length === 0) throw new Error('Anthropic returned no usable models');
+  return createRegistryFromModels({ models });
+}
 
-const builtinModelAliases: Record<string, string> = {
-  chat: defaultLanguageModel.info().id,
-  title: defaultTitleModel.info().id,
-  summary: defaultSummaryModel.info().id
-};
+// ─── Google ──────────────────────────────────────────────────────────────────
 
-const builtinProviderRegistry = createRegistryFromModels({
-  models: builtinProviderModels,
-  aliases: builtinModelAliases,
-  defaultModel: defaultLanguageModel
-});
+async function createGoogleRegistry(): Promise<ProviderRegistry> {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models?key=${env.GOOGLE_GENERATIVE_AI_API_KEY}`
+  );
+  if (!response.ok) throw new Error(`Google models API error: ${response.status} ${response.statusText}`);
 
-export function getBuiltinProviderRegistry(): ProviderRegistry {
-  return builtinProviderRegistry;
+  const data = (await response.json()) as {
+    models: Array<{ name: string; displayName: string; supportedGenerationMethods: string[] }>;
+  };
+  const models: Model[] = data.models
+    .filter((m) => m.supportedGenerationMethods.includes('generateContent'))
+    .map((m) => {
+      const modelId = m.name.replace('models/', '');
+      return createModel({ id: `google:${modelId}`, name: m.displayName }, () => google.languageModel(modelId));
+    });
+
+  if (models.length === 0) throw new Error('Google returned no usable chat models');
+  return createRegistryFromModels({ models });
+}
+
+// ─── DeepSeek ────────────────────────────────────────────────────────────────
+
+async function createDeepSeekRegistry(): Promise<ProviderRegistry> {
+  const response = await fetch('https://api.deepseek.com/models', {
+    headers: { Authorization: `Bearer ${env.DEEPSEEK_API_KEY}` }
+  });
+  if (!response.ok) throw new Error(`DeepSeek models API error: ${response.status} ${response.statusText}`);
+
+  const data = (await response.json()) as { data: Array<{ id: string }> };
+  const models: Model[] = data.data.map((m) =>
+    createModel({ id: `deepseek:${m.id}`, name: m.id }, () => deepseek.languageModel(m.id))
+  );
+
+  if (models.length === 0) throw new Error('DeepSeek returned no usable models');
+  return createRegistryFromModels({ models });
+}
+
+// ─── Aliases ─────────────────────────────────────────────────────────────────
+
+// Patterns that indicate a lightweight/cheap model suitable for title/summary tasks
+const SMALL_MODEL_PATTERNS = ['mini', 'flash', 'haiku', 'lite', 'nano'];
+
+function findSmallModel(models: Model[]): Model | undefined {
+  return models.find((m) => {
+    const lower = m.info().id.toLowerCase();
+    return SMALL_MODEL_PATTERNS.some((p) => lower.includes(p));
+  });
+}
+
+// ─── Combined builtin registry ───────────────────────────────────────────────
+
+export async function getBuiltinProviderRegistry(): Promise<ProviderRegistry> {
+  const providers: Array<[string, () => Promise<ProviderRegistry>]> = [];
+
+  if (env.OPENAI_API_KEY) providers.push(['OpenAI', createOpenAIRegistry]);
+  if (env.ANTHROPIC_API_KEY) providers.push(['Anthropic', createAnthropicRegistry]);
+  if (env.GOOGLE_GENERATIVE_AI_API_KEY) providers.push(['Google', createGoogleRegistry]);
+  if (env.DEEPSEEK_API_KEY) providers.push(['DeepSeek', createDeepSeekRegistry]);
+
+  if (providers.length === 0) {
+    throw new Error('No providers enabled. Please configure at least one API key');
+  }
+
+  const results = await Promise.allSettled(providers.map(([, fn]) => fn()));
+
+  const registries: ProviderRegistry[] = [];
+  for (let i = 0; i < results.length; i++) {
+    const result = results[i]!;
+    if (result.status === 'fulfilled') {
+      registries.push(result.value);
+    } else {
+      console.warn(`[builtin] ${providers[i]![0]} registry failed:`, result.reason);
+    }
+  }
+
+  if (registries.length === 0) {
+    const errors = results
+      .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+      .map((r) => String(r.reason))
+      .join('; ');
+    throw new Error(`All provider registries failed to load: ${errors}`);
+  }
+
+  // Combine all provider registries into one, then build aliases over the full model list
+  const combined = combineRegistries(registries);
+  const allModels = combined.listLanguageModels();
+
+  const defaultModel = allModels[0]!;
+  const smallModel = findSmallModel(allModels) ?? defaultModel;
+
+  const aliases: Record<string, string> = {
+    chat: defaultModel.info().id,
+    title: smallModel.info().id,
+    summary: smallModel.info().id
+  };
+
+  return createRegistryFromModels({ models: allModels, aliases, defaultModel });
 }
