@@ -5,8 +5,13 @@ import { TestCase } from 'vitest/node';
 import { Reporter } from 'vitest/reporters';
 import { delay } from '~/utils/delay';
 import { env } from '../lib/env/eval';
-import { EVAL_RESULT_FILE_NAME, EVAL_RESULTS_CSV_FILE_NAME, EVAL_RESULTS_FILE_NAME } from './lib/consts';
-import { EvalResult, evalResultSchema, evalSummarySchema } from './lib/schemas';
+import {
+  EVAL_REPLAY_FILE_NAME,
+  EVAL_RESULT_FILE_NAME,
+  EVAL_RESULTS_CSV_FILE_NAME,
+  EVAL_RESULTS_FILE_NAME
+} from './lib/consts';
+import { evalReplayManifestSchema, EvalResult, evalResultSchema, evalSummarySchema } from './lib/schemas';
 import { ensureTestRunTraceFolderExists, ensureTraceFolderExists, testNameToEvalId } from './lib/test-id';
 
 const getEnv = () => {
@@ -37,9 +42,18 @@ export default class EvalReporter implements Reporter {
     fs.writeFileSync(path.join(evalTraceFolder, EVAL_RESULTS_FILE_NAME), JSON.stringify(testResults, null, 2));
 
     const csvTestResults = testResults.map((testResult) => {
+      const replayFile = testResult.logFiles.find((logFile) => path.basename(logFile) === EVAL_REPLAY_FILE_NAME);
+      const replay = replayFile
+        ? evalReplayManifestSchema.parse(JSON.parse(fs.readFileSync(replayFile, 'utf-8')))
+        : undefined;
       const result: any = {
         id: testResult.id,
         result: testResult.result,
+        classifications: replay?.diagnostics.classifications.join('|') ?? '',
+        expected_tools: replay?.diagnostics.expectedToolCalls.join('|') ?? '',
+        observed_tools: replay?.diagnostics.observedToolCalls.join('|') ?? '',
+        missing_expected_tools: replay?.diagnostics.missingExpectedToolCalls.join('|') ?? '',
+        unexpected_tools: replay?.diagnostics.unexpectedToolCalls.join('|') ?? '',
         ui: `http://localhost:4001/evals?folder=${evalTraceFolder}&evalId=${testResult.id}`
       };
       testResult.logFiles.forEach((logFile, index) => {

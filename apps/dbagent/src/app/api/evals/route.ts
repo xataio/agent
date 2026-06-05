@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 import path from 'path';
 import { z } from 'zod';
 import { evalResponseSchema } from '~/evals/api-schemas';
+import { EVAL_REPLAY_FILE_NAME, EVAL_RESULT_FILE_NAME } from '~/evals/lib/consts';
 import { env } from '~/lib/env/server';
 
 export async function GET(request: NextRequest) {
@@ -43,21 +44,12 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    filesWithContents.sort((a, b) => {
-      if (a.fileName === 'human.txt') {
-        return -1;
-      }
-      if (b.fileName === 'human.txt') {
-        return 1;
-      }
-      if (a.fileName === 'evalResult.json') {
-        return 1;
-      }
-      if (b.fileName === 'evalResult.json') {
-        return -1;
-      }
-      return 0;
-    });
+    const fileOrder = ['human.txt', EVAL_REPLAY_FILE_NAME, 'response.json', EVAL_RESULT_FILE_NAME];
+    const getFileOrder = (fileName: string) => {
+      const index = fileOrder.indexOf(fileName);
+      return index === -1 ? fileOrder.length : index;
+    };
+    filesWithContents.sort((a, b) => getFileOrder(a.fileName) - getFileOrder(b.fileName));
 
     const response = evalResponseSchema.parse({ files: filesWithContents });
 
