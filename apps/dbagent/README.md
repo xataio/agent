@@ -78,3 +78,17 @@ vim .env.eval
 Update you `.env.local` file to contain: `EVAL=true`
 
 Ensure you have docker installed and run: `pnpm run eval`
+
+Each eval writes replay artifacts under the configured `EVAL_FOLDER`:
+
+- `human.txt`: readable prompt, answer, and tool-result transcript
+- `replay.json`: structured replay manifest with model metadata, prompts, tool calls, tool results, and failure diagnostics
+- `response.json`: raw Vercel AI SDK response for deep debugging
+- `evalResult.json`: pass/fail result for the case
+
+The test-run folder also includes `evalResults.csv`. In addition to pass/fail and UI links, the CSV includes diagnostic columns for:
+
+- `classifications`: high-level failure categories such as `missing-expected-tool`, `unexpected-tool-call`, `tool-error`, `no-tool-result`, `malformed-request`, or `empty-final-answer`
+- `expected_tools`, `observed_tools`, `missing_expected_tools`, and `unexpected_tools`
+
+This makes model/provider regressions easier to triage without opening every raw trace. For example, when a tool-choice eval fails, first filter `evalResults.csv` by `missing-expected-tool` or `unexpected-tool-call`, then open the linked eval UI and inspect `replay.json` to see the exact prompt, model, tool-call sequence, arguments, and result/error previews.

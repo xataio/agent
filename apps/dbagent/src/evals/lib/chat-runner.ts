@@ -6,16 +6,19 @@ import { getTools } from '~/lib/ai/tools';
 import { Connection, Project } from '~/lib/db/schema';
 import { env } from '~/lib/env/eval';
 import { getTargetDbPool } from '~/lib/targetdb/db';
+import { EvalTraceMetadata } from './schemas';
 import { traceVercelAiResponse } from './trace';
 
 export const evalChat = async ({
   messages,
   dbConnection,
-  expect
+  expect,
+  traceMetadata
 }: {
   messages: CoreMessage[] | Omit<SDKMessage, 'id'>[];
   dbConnection: string;
   expect: ExpectStatic;
+  traceMetadata?: EvalTraceMetadata;
 }) => {
   const project: Project = {
     id: 'projectId',
@@ -41,7 +44,7 @@ export const evalChat = async ({
       tools,
       messages
     });
-    traceVercelAiResponse(response, expect);
+    traceVercelAiResponse(response, expect, traceMetadata);
     return response;
   } finally {
     await targetDb.end();

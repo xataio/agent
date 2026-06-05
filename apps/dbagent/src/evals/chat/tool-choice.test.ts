@@ -168,7 +168,14 @@ describe.concurrent('tool_choice', () => {
     const result = await evalChat({
       messages: [{ role: 'user', content: prompt }],
       dbConnection: dbConfig.connectionString,
-      expect
+      expect,
+      traceMetadata: {
+        scenario: 'tool-choice',
+        toolPolicy: {
+          expectedToolCalls: toolCalls,
+          allowOtherTools
+        }
+      }
     });
 
     const allToolCalls = result.steps.flatMap((step) => step.toolCalls);
